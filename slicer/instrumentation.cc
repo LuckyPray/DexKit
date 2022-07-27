@@ -709,7 +709,7 @@ void AllocateScratchRegs::Allocate(lir::CodeIr* code_ir, dex::u4 first_reg, int 
 // 1. if there are not params, increase the method regs count and we're done
 // 2. if the method uses less than 16 registers, we can renumber the existing registers
 // 3. if we still have registers to allocate, increase the method registers count,
-//     and generate prologue code to shift the param regs into their original registers
+//     and generate prologue code to shift the fn_param regs into their original registers
 //
 bool AllocateScratchRegs::Apply(lir::CodeIr* code_ir) {
   const auto code = code_ir->ir_method->code;

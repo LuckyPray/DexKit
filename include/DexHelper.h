@@ -5,16 +5,11 @@
 #ifndef DEXKIT_OPCODEFORMATUTIL_H
 #define DEXKIT_OPCODEFORMATUTIL_H
 
-#include <bits/stdc++.h>
+#include <iostream>
+#include <unordered_map>
 
-typedef uint8_t ubyte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef uint32_t uleb128;
-
-class OpCodeFormatUtil {
-private:
-    const std::string *opcodeFormat = new std::string[]{
+namespace {
+    constexpr std::string_view opcodeFormat[] = {
             "10x", "12x", "22x", "32x", "12x", "22x", "32x", "12x", "22x", "32x",
             "11x", "11x", "11x", "11x", "10x", "11x", "11x", "11x", "11n", "21s",
             "31i", "21h", "21s", "31i", "51l", "21h", "21c", "31c", "21c", "11x",
@@ -42,8 +37,8 @@ private:
             "10x", "10x", "10x", "10x", "10x", "10x", "10x", "10x", "10x", "10x",
             "45cc", "4rcc", "35c", "3rc", "21c", "21c"
     };
-
-    const std::map<std::string, int> formatMap = {
+    static_assert(sizeof(opcodeFormat) / sizeof (std::string_view) == 256);
+    const std::unordered_map<std::string_view, uint8_t> formatMap = { // NOLINT
             {"10x",  0x02},
             {"12x",  0x02},
             {"11n",  0x02},
@@ -77,19 +72,18 @@ private:
             {"4rcc", 0x08},
             {"51l",  0x0a},
     };
+}
 
+class DexHelper {
 public:
-    int getOpSize(uint hex) {
-        return formatMap.at(opcodeFormat[hex & 0xff00 >> 8]);
+    static int getOpSize(uint16_t ident) {
+        return formatMap.at(opcodeFormat[ident >> 8]);
     }
 
-    int getOpSize(const ubyte *p) {
-        return formatMap.at(opcodeFormat[*p & 0xff]);
-    }
-
-    int getOpSize(ubyte op) {
+    static int getOpSize(uint8_t op) {
         return formatMap.at(opcodeFormat[op & 0xff]);
     }
+private:
 };
 
 #endif //DEXKIT_OPCODEFORMATUTIL_H
