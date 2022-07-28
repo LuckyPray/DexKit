@@ -38,7 +38,7 @@ public:
         return *emits.begin();
     }
 
-    void addEmit(const std::set<int, std::greater<int>>& emitSet) {
+    void addEmit(const std::set<int, std::greater<int>> &emitSet) {
         for (auto &i: emitSet) {
             addEmit(i);
         }
@@ -90,7 +90,7 @@ public:
     }
 
     std::vector<State *> getStates() {
-        std::vector<State*> states;
+        std::vector<State *> states;
         states.reserve(this->success.size());
         for (auto &i: this->success) {
             states.push_back(i.second);

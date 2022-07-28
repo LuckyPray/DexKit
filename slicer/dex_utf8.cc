@@ -27,44 +27,44 @@ namespace dex {
 // cached before the damage). For performance reasons, this function
 // assumes that the string being parsed is known to be valid (e.g., by
 // already being verified).
-static u2 GetUtf16FromUtf8(const char** pUtf8Ptr) {
-  u4 one = *(*pUtf8Ptr)++;
-  if ((one & 0x80) != 0) {
-    // two- or three-byte encoding
-    u4 two = *(*pUtf8Ptr)++;
-    if ((one & 0x20) != 0) {
-      // three-byte encoding
-      u4 three = *(*pUtf8Ptr)++;
-      return ((one & 0x0f) << 12) | ((two & 0x3f) << 6) | (three & 0x3f);
+static u2 GetUtf16FromUtf8(const char **pUtf8Ptr) {
+    u4 one = *(*pUtf8Ptr)++;
+    if ((one & 0x80) != 0) {
+        // two- or three-byte encoding
+        u4 two = *(*pUtf8Ptr)++;
+        if ((one & 0x20) != 0) {
+            // three-byte encoding
+            u4 three = *(*pUtf8Ptr)++;
+            return ((one & 0x0f) << 12) | ((two & 0x3f) << 6) | (three & 0x3f);
+        } else {
+            // two-byte encoding
+            return ((one & 0x1f) << 6) | (two & 0x3f);
+        }
     } else {
-      // two-byte encoding
-      return ((one & 0x1f) << 6) | (two & 0x3f);
+        // one-byte encoding
+        return one;
     }
-  } else {
-    // one-byte encoding
-    return one;
-  }
 }
 
-int Utf8Cmp(const char* s1, const char* s2) {
-  for (;;) {
-    if (*s1 == '\0') {
-      if (*s2 == '\0') {
-        return 0;
-      }
-      return -1;
-    } else if (*s2 == '\0') {
-      return 1;
-    }
+int Utf8Cmp(const char *s1, const char *s2) {
+    for (;;) {
+        if (*s1 == '\0') {
+            if (*s2 == '\0') {
+                return 0;
+            }
+            return -1;
+        } else if (*s2 == '\0') {
+            return 1;
+        }
 
-    int utf1 = GetUtf16FromUtf8(&s1);
-    int utf2 = GetUtf16FromUtf8(&s2);
-    int diff = utf1 - utf2;
+        int utf1 = GetUtf16FromUtf8(&s1);
+        int utf2 = GetUtf16FromUtf8(&s2);
+        int diff = utf1 - utf2;
 
-    if (diff != 0) {
-      return diff;
+        if (diff != 0) {
+            return diff;
+        }
     }
-  }
 }
 
 }  // namespace dex

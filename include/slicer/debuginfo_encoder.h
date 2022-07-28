@@ -28,27 +28,28 @@ namespace lir {
 
 // Generates debug info from code IR
 class DebugInfoEncoder : public Visitor {
- private:
-  virtual bool Visit(DbgInfoHeader* dbg_header) override;
-  virtual bool Visit(DbgInfoAnnotation* dbg_annotation) override;
+private:
+    virtual bool Visit(DbgInfoHeader *dbg_header) override;
 
- public:
-  explicit DebugInfoEncoder(const InstructionsList& instructions)
-    : instructions_(instructions) {
-  }
+    virtual bool Visit(DbgInfoAnnotation *dbg_annotation) override;
 
-  ~DebugInfoEncoder() = default;
+public:
+    explicit DebugInfoEncoder(const InstructionsList &instructions)
+            : instructions_(instructions) {
+    }
 
-  void Encode(ir::EncodedMethod* ir_method, std::shared_ptr<ir::DexFile> dex_ir);
+    ~DebugInfoEncoder() = default;
 
- private:
-  std::vector<ir::String*>* param_names_ = nullptr;
-  dex::u4 line_start_ = 0;
-  dex::u4 last_line_ = 0;
-  dex::u4 last_address_ = 0;
-  ir::String* source_file_ = nullptr;
-  slicer::Buffer dbginfo_;
-  const InstructionsList& instructions_;
+    void Encode(ir::EncodedMethod *ir_method, std::shared_ptr<ir::DexFile> dex_ir);
+
+private:
+    std::vector<ir::String *> *param_names_ = nullptr;
+    dex::u4 line_start_ = 0;
+    dex::u4 last_line_ = 0;
+    dex::u4 last_address_ = 0;
+    ir::String *source_file_ = nullptr;
+    slicer::Buffer dbginfo_;
+    const InstructionsList &instructions_;
 };
 
 } // namespace lir

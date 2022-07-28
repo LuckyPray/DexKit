@@ -25,80 +25,88 @@ namespace lir {
 
 // Represents a contiguous code "region"
 struct Region {
-  Instruction* first = nullptr;
-  Instruction* last = nullptr;
+    Instruction *first = nullptr;
+    Instruction *last = nullptr;
 };
 
 struct BasicBlock {
-  int id = 0;       // real basic blocks have id > 0
-  Region region;
+    int id = 0;       // real basic blocks have id > 0
+    Region region;
 };
 
 // LIR visitor used to build the list of basic blocks
 class BasicBlocksVisitor : public Visitor {
-  enum class State { Outside, BlockHeader, BlockBody };
+    enum class State {
+        Outside, BlockHeader, BlockBody
+    };
 
- public:
-  explicit BasicBlocksVisitor(bool model_exceptions) : model_exceptions_(model_exceptions) {
-    current_block_.id = 0;
-  }
+public:
+    explicit BasicBlocksVisitor(bool model_exceptions) : model_exceptions_(model_exceptions) {
+        current_block_.id = 0;
+    }
 
-  ~BasicBlocksVisitor() {
-    assert(state_ == State::Outside);
-  }
+    ~BasicBlocksVisitor() {
+        assert(state_ == State::Outside);
+    }
 
-  // Used to mark the end of instruction stream
-  // Returns the list of basic blocks
-  std::vector<BasicBlock> Finish();
+    // Used to mark the end of instruction stream
+    // Returns the list of basic blocks
+    std::vector<BasicBlock> Finish();
 
- private:
-  bool Visit(Bytecode* bytecode) override;
-  bool Visit(Label* label) override;
+private:
+    bool Visit(Bytecode *bytecode) override;
 
-  // Debug info annotations
-  bool Visit(DbgInfoHeader* dbg_header) override { return HandleAnnotation(dbg_header); }
-  bool Visit(DbgInfoAnnotation* dbg_annotation) override { return HandleAnnotation(dbg_annotation); }
+    bool Visit(Label *label) override;
 
-  // EH annotations
-  bool Visit(TryBlockBegin* try_begin) override { return SkipInstruction(try_begin); }
-  bool Visit(TryBlockEnd* try_end) override { return SkipInstruction(try_end); }
+    // Debug info annotations
+    bool Visit(DbgInfoHeader *dbg_header) override { return HandleAnnotation(dbg_header); }
 
-  // data payload
-  bool Visit(PackedSwitchPayload* packed_switch) override  { return SkipInstruction(packed_switch); }
-  bool Visit(SparseSwitchPayload* sparse_switch) override { return SkipInstruction(sparse_switch); }
-  bool Visit(ArrayData* array_data) override { return SkipInstruction(array_data); }
+    bool Visit(DbgInfoAnnotation *dbg_annotation) override { return HandleAnnotation(dbg_annotation); }
 
-  bool HandleAnnotation(Instruction* instr);
-  bool SkipInstruction(Instruction* instr);
+    // EH annotations
+    bool Visit(TryBlockBegin *try_begin) override { return SkipInstruction(try_begin); }
 
-  // Starts a new basic block starting with the specified instruction
-  void StartBlock(Instruction* instr);
+    bool Visit(TryBlockEnd *try_end) override { return SkipInstruction(try_end); }
 
-  // Ends the current basic block at the specified instruction
-  void EndBlock(Instruction* instr);
+    // data payload
+    bool Visit(PackedSwitchPayload *packed_switch) override { return SkipInstruction(packed_switch); }
 
- private:
-  State state_ = State::Outside;
-  BasicBlock current_block_;
-  std::vector<BasicBlock> basic_blocks_;
-  const bool model_exceptions_;
+    bool Visit(SparseSwitchPayload *sparse_switch) override { return SkipInstruction(sparse_switch); }
+
+    bool Visit(ArrayData *array_data) override { return SkipInstruction(array_data); }
+
+    bool HandleAnnotation(Instruction *instr);
+
+    bool SkipInstruction(Instruction *instr);
+
+    // Starts a new basic block starting with the specified instruction
+    void StartBlock(Instruction *instr);
+
+    // Ends the current basic block at the specified instruction
+    void EndBlock(Instruction *instr);
+
+private:
+    State state_ = State::Outside;
+    BasicBlock current_block_;
+    std::vector<BasicBlock> basic_blocks_;
+    const bool model_exceptions_;
 };
 
 // The Control Flow Graph (CFG) for the specified method LIR
 struct ControlFlowGraph {
-  // The list of basic blocks, as non-overlapping regions,
-  // sorted by the byte offset of the region start
-  std::vector<BasicBlock> basic_blocks;
+    // The list of basic blocks, as non-overlapping regions,
+    // sorted by the byte offset of the region start
+    std::vector<BasicBlock> basic_blocks;
 
-  const CodeIr* code_ir;
+    const CodeIr *code_ir;
 
- public:
-  ControlFlowGraph(const CodeIr* code_ir, bool model_exceptions) : code_ir(code_ir) {
-    CreateBasicBlocks(model_exceptions);
-  }
+public:
+    ControlFlowGraph(const CodeIr *code_ir, bool model_exceptions) : code_ir(code_ir) {
+        CreateBasicBlocks(model_exceptions);
+    }
 
- private:
-  void CreateBasicBlocks(bool model_exceptions);
+private:
+    void CreateBasicBlocks(bool model_exceptions);
 };
 
 }  // namespace lir

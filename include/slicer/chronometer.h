@@ -22,32 +22,33 @@ namespace slicer {
 
 // A very simple timing chronometer
 class Chronometer {
-  using Clock = std::chrono::high_resolution_clock;
+    using Clock = std::chrono::high_resolution_clock;
 
- public:
-  // elapsed time is in milliseconds
-  explicit Chronometer(double& elapsed, bool cumulative = false) :
-              elapsed_(elapsed), cumulative_(cumulative) {
-    start_time_ = Clock::now();
-  }
-
-  ~Chronometer() {
-    Clock::time_point end_time = Clock::now();
-    std::chrono::duration<double, std::milli> ms = end_time - start_time_;
-    if (cumulative_) {
-      elapsed_ += ms.count();
-    } else {
-      elapsed_ = ms.count();
+public:
+    // elapsed time is in milliseconds
+    explicit Chronometer(double &elapsed, bool cumulative = false) :
+            elapsed_(elapsed), cumulative_(cumulative) {
+        start_time_ = Clock::now();
     }
-  }
 
-  Chronometer(const Chronometer&) = delete;
-  Chronometer& operator=(const Chronometer&) = delete;
+    ~Chronometer() {
+        Clock::time_point end_time = Clock::now();
+        std::chrono::duration<double, std::milli> ms = end_time - start_time_;
+        if (cumulative_) {
+            elapsed_ += ms.count();
+        } else {
+            elapsed_ = ms.count();
+        }
+    }
 
- private:
-  double& elapsed_;
-  Clock::time_point start_time_;
-  bool cumulative_;
+    Chronometer(const Chronometer &) = delete;
+
+    Chronometer &operator=(const Chronometer &) = delete;
+
+private:
+    double &elapsed_;
+    Clock::time_point start_time_;
+    bool cumulative_;
 };
 
 } // namespace slicer

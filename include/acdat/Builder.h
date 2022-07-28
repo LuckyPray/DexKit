@@ -35,7 +35,7 @@ private:
     void addKeyword(const char *keyword, int index) {
         State *currentState = this->rootState;
         int length = strlen(keyword);
-        while(*keyword != '\0') {
+        while (*keyword != '\0') {
             currentState = currentState->addState(*keyword++);
         }
         currentState->addEmit(index);

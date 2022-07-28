@@ -28,6 +28,6 @@ namespace dex {
 // for the same code point as equivalent, except that only a real '\0'
 // byte is considered the string terminator. The return value is as
 // for strcmp().
-int Utf8Cmp(const char* s1, const char* s2);
+int Utf8Cmp(const char *s1, const char *s2);
 
 }  // namespace dex

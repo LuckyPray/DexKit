@@ -25,25 +25,25 @@ namespace slicer {
 
 // A shallow, non-owning reference to a "view" inside a memory buffer
 class MemView {
- public:
-  MemView() : ptr_(nullptr), size_(0) {}
+public:
+    MemView() : ptr_(nullptr), size_(0) {}
 
-  MemView(const void* ptr, size_t size) : ptr_(ptr), size_(size) {
-    assert(size > 0);
-  }
+    MemView(const void *ptr, size_t size) : ptr_(ptr), size_(size) {
+        assert(size > 0);
+    }
 
-  ~MemView() = default;
+    ~MemView() = default;
 
-  template <class T = void>
-  const T* ptr() const {
-    return static_cast<const T*>(ptr_);
-  }
+    template<class T = void>
+    const T *ptr() const {
+        return static_cast<const T *>(ptr_);
+    }
 
-  size_t size() const { return size_; }
+    size_t size() const { return size_; }
 
- private:
-  const void* ptr_;
-  size_t size_;
+private:
+    const void *ptr_;
+    size_t size_;
 };
 
 } // namespace slicer

@@ -30,57 +30,63 @@ namespace ir {
 //  https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/types.html#type_signatures
 //
 struct MethodId {
-  const char* class_descriptor;
-  const char* method_name;
-  const char* signature;
+    const char *class_descriptor;
+    const char *method_name;
+    const char *signature;
 
-  MethodId(const char* class_descriptor, const char* method_name, const char* signature = nullptr)
-      : class_descriptor(class_descriptor), method_name(method_name), signature(signature) {
-    assert(class_descriptor != nullptr);
-    assert(method_name != nullptr);
-  }
+    MethodId(const char *class_descriptor, const char *method_name, const char *signature = nullptr)
+            : class_descriptor(class_descriptor), method_name(method_name), signature(signature) {
+        assert(class_descriptor != nullptr);
+        assert(method_name != nullptr);
+    }
 
-  bool Match(MethodDecl* method_decl) const;
+    bool Match(MethodDecl *method_decl) const;
 };
 
 // This class enables modifications to a .dex IR
 class Builder {
- public:
-  explicit Builder(std::shared_ptr<ir::DexFile> dex_ir) : dex_ir_(dex_ir) {}
+public:
+    explicit Builder(std::shared_ptr<ir::DexFile> dex_ir) : dex_ir_(dex_ir) {}
 
-  // No copy/move semantics
-  Builder(const Builder&) = delete;
-  Builder& operator=(const Builder&) = delete;
+    // No copy/move semantics
+    Builder(const Builder &) = delete;
 
-  // Get/Create .dex IR nodes
-  // (get existing instance or create a new one)
-  String* GetAsciiString(const char* cstr);
-  Type* GetType(String* descriptor);
-  Proto* GetProto(Type* return_type, TypeList* param_types);
-  FieldDecl* GetFieldDecl(String* name, Type* type, Type* parent);
-  MethodDecl* GetMethodDecl(String* name, Proto* proto, Type* parent);
-  TypeList* GetTypeList(const std::vector<Type*>& types);
+    Builder &operator=(const Builder &) = delete;
 
-  // Convenience overloads
-  Type* GetType(const char* descriptor) {
-    return GetType(GetAsciiString(descriptor));
-  }
+    // Get/Create .dex IR nodes
+    // (get existing instance or create a new one)
+    String *GetAsciiString(const char *cstr);
 
-  // Locate an existing method definition
-  // (returns nullptr if the method is not found)
-  EncodedMethod* FindMethod(const MethodId& method_id) const;
+    Type *GetType(String *descriptor);
 
- private:
-  // Locate an existing .dex IR string
-  // (returns nullptr if the string is not found)
-  String* FindAsciiString(const char* cstr) const;
+    Proto *GetProto(Type *return_type, TypeList *param_types);
 
-  // Locate an existing .dex IR prototype
-  // (returns nullptr if the prototype is not found)
-  Proto* FindPrototype(const char* signature) const;
+    FieldDecl *GetFieldDecl(String *name, Type *type, Type *parent);
 
- private:
-  std::shared_ptr<ir::DexFile> dex_ir_;
+    MethodDecl *GetMethodDecl(String *name, Proto *proto, Type *parent);
+
+    TypeList *GetTypeList(const std::vector<Type *> &types);
+
+    // Convenience overloads
+    Type *GetType(const char *descriptor) {
+        return GetType(GetAsciiString(descriptor));
+    }
+
+    // Locate an existing method definition
+    // (returns nullptr if the method is not found)
+    EncodedMethod *FindMethod(const MethodId &method_id) const;
+
+private:
+    // Locate an existing .dex IR string
+    // (returns nullptr if the string is not found)
+    String *FindAsciiString(const char *cstr) const;
+
+    // Locate an existing .dex IR prototype
+    // (returns nullptr if the prototype is not found)
+    Proto *FindPrototype(const char *signature) const;
+
+private:
+    std::shared_ptr<ir::DexFile> dex_ir_;
 };
 
 }  // namespace ir

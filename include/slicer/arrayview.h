@@ -23,32 +23,35 @@
 namespace slicer {
 
 // A shallow array view
-template <class T>
+template<class T>
 class ArrayView {
- public:
-  ArrayView() = default;
+public:
+    ArrayView() = default;
 
-  ArrayView(const ArrayView&) = default;
-  ArrayView& operator=(const ArrayView&) = default;
+    ArrayView(const ArrayView &) = default;
 
-  ArrayView(T* ptr, size_t count) : begin_(ptr), end_(ptr + count) {}
+    ArrayView &operator=(const ArrayView &) = default;
 
-  T* begin() const { return begin_; }
-  T* end() const { return end_; }
+    ArrayView(T *ptr, size_t count) : begin_(ptr), end_(ptr + count) {}
 
-  T* data() const { return begin_; }
+    T *begin() const { return begin_; }
 
-  T& operator[](size_t i) const {
-    SLICER_CHECK_LT(i, size());
-    return *(begin_ + i);
-  }
+    T *end() const { return end_; }
 
-  size_t size() const { return end_ - begin_; }
-  bool empty() const { return begin_ == end_; }
+    T *data() const { return begin_; }
 
- private:
-  T* begin_ = nullptr;
-  T* end_ = nullptr;
+    T &operator[](size_t i) const {
+        SLICER_CHECK_LT(i, size());
+        return *(begin_ + i);
+    }
+
+    size_t size() const { return end_ - begin_; }
+
+    bool empty() const { return begin_ == end_; }
+
+private:
+    T *begin_ = nullptr;
+    T *end_ = nullptr;
 };
 
 } // namespace slicer

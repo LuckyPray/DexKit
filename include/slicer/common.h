@@ -23,16 +23,18 @@ namespace slicer {
 
 // Encapsulate the runtime check and error reporting policy.
 // (currently a simple fail-fast but the the intention is to allow customization)
-void _checkFailed(const char* expr, int line, const char* file) __attribute__((noreturn));
+void _checkFailed(const char *expr, int line, const char *file) __attribute__((noreturn));
+
 #define SLICER_CHECK(expr) do { if(!(expr)) slicer::_checkFailed(#expr, __LINE__, __FILE__); } while(false)
 
 // Helper methods for SLICER_CHECK_OP macro.
-void _checkFailedOp(const void* lhs, const void* rhs, const char* op, const char* suffix,
-                    int line, const char* file)
-  __attribute__((noreturn));
-void _checkFailedOp(uint32_t lhs, uint32_t rhs, const char* op, const char* suffix, int line,
-                    const char* file)
-  __attribute__((noreturn));
+void _checkFailedOp(const void *lhs, const void *rhs, const char *op, const char *suffix,
+                    int line, const char *file)
+__attribute__((noreturn));
+
+void _checkFailedOp(uint32_t lhs, uint32_t rhs, const char *op, const char *suffix, int line,
+                    const char *file)
+__attribute__((noreturn));
 
 #define SLICER_CHECK_OP(lhs, rhs, op, suffix) \
   do { \
@@ -57,11 +59,13 @@ void _checkFailedOp(uint32_t lhs, uint32_t rhs, const char* op, const char* suff
 //   violated by existing apps. So we need to be able to annotate these common
 //   problems and potentially ignoring them for parity with the Android runtime.
 //
-void _weakCheckFailed(const char* expr, int line, const char* file);
+void _weakCheckFailed(const char *expr, int line, const char *file);
+
 #define SLICER_WEAK_CHECK(expr) do { if(!(expr)) slicer::_weakCheckFailed(#expr, __LINE__, __FILE__); } while(false)
 
 // Report a fatal condition with a printf-formatted message
-void _fatal(const std::string& msg) __attribute__((noreturn));
+void _fatal(const std::string &msg) __attribute__((noreturn));
+
 #define SLICER_FATAL(msg) slicer::_fatal(msg)
 
 // Annotation customization point for extra validation / state.
@@ -79,7 +83,7 @@ void _fatal(const std::string& msg) __attribute__((noreturn));
 #endif // __clang__
 #endif // FALLTHROUGH_INTENDED
 
-typedef void (*logger_type)(const std::string&);
+typedef void (*logger_type)(const std::string &);
 
 // By default, slicer prints error messages to stdout. Users can set their own
 // callback.

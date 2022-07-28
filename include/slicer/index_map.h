@@ -25,27 +25,27 @@ namespace ir {
 
 // A simple index tracking and allocator
 class IndexMap {
- public:
-  dex::u4 AllocateIndex() {
-    const auto size = indexes_map_.size();
-    while (alloc_pos_ < size && indexes_map_[alloc_pos_]) {
-      ++alloc_pos_;
+public:
+    dex::u4 AllocateIndex() {
+        const auto size = indexes_map_.size();
+        while (alloc_pos_ < size && indexes_map_[alloc_pos_]) {
+            ++alloc_pos_;
+        }
+        MarkUsedIndex(alloc_pos_);
+        return alloc_pos_++;
     }
-    MarkUsedIndex(alloc_pos_);
-    return alloc_pos_++;
-  }
 
-  void MarkUsedIndex(dex::u4 index) {
-    if (index >= indexes_map_.size()) {
-      indexes_map_.resize(index + 1);
+    void MarkUsedIndex(dex::u4 index) {
+        if (index >= indexes_map_.size()) {
+            indexes_map_.resize(index + 1);
+        }
+        SLICER_CHECK(!indexes_map_[index]);
+        indexes_map_[index] = true;
     }
-    SLICER_CHECK(!indexes_map_[index]);
-    indexes_map_[index] = true;
-  }
 
- private:
-  std::vector<bool> indexes_map_;
-  dex::u4 alloc_pos_ = 0;
+private:
+    std::vector<bool> indexes_map_;
+    dex::u4 alloc_pos_ = 0;
 };
 
 }  // namespace ir

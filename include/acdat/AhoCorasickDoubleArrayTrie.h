@@ -30,23 +30,23 @@ public:
     std::vector<int> l;
     int size = 0;
 
-    std::vector<Hit<V>> parseText(const char* text);
+    std::vector<Hit<V>> parseText(const char *text);
 
-    void parseText(const char* text, std::function<void(int, int, V)> &callback);
+    void parseText(const char *text, std::function<void(int, int, V)> &callback);
 
-    void parseText(const char* text, std::function<bool(int, int, V)> callback);
+    void parseText(const char *text, std::function<bool(int, int, V)> callback);
 
-    bool matches(const char* text);
+    bool matches(const char *text);
 
-    Hit<V> findFirst(const char* text);
+    Hit<V> findFirst(const char *text);
 
     void save() {}
 
     void load() {}
 
-    V get(const char* key);
+    V get(const char *key);
 
-    bool set(const char* key, V value);
+    bool set(const char *key, V value);
 
     V get(int index) {
         return v[index];
@@ -84,7 +84,7 @@ protected:
 };
 
 template<typename V>
-std::vector<Hit<V>> AhoCorasickDoubleArrayTrie<V>::parseText(const char* text) {
+std::vector<Hit<V>> AhoCorasickDoubleArrayTrie<V>::parseText(const char *text) {
     int position = 1;
     int currentState = 0;
     std::vector<Hit<V>> collectedEmits = std::vector<Hit<V>>();
