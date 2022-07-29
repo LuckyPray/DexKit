@@ -428,6 +428,14 @@ public:
 
     // No copy/move semantics
     DexFile(const DexFile &) = delete;
+    ~DexFile() {
+        types_map.clear();
+        strings_map.clear();
+        protos_map.clear();
+        fields_map.clear();
+        methods_map.clear();
+        classes_map.clear();
+    };
 
     DexFile &operator=(const DexFile &) = delete;
 
@@ -436,11 +444,6 @@ public:
         T *p = new T();
         Track(p);
         return p;
-    }
-
-    template<class T>
-    void Free(T *p) {
-        delete p;
     }
 
     void AttachBuffer(slicer::Buffer &&buffer) {

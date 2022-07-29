@@ -2,6 +2,8 @@
 #include <fstream>
 #include <chrono>
 #include <stack>
+#include <map>
+#include <set>
 #include <thread>
 #include <unistd.h>
 #include "slicer/reader.h"
@@ -9,10 +11,63 @@
 #include "acdat/Builder.h"
 #include "DexHelper.h"
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "LocalValueEscapesScope"
 using namespace dex;
 using namespace std;
+
+struct MemMap {
+    MemMap() = default;
+    explicit MemMap(std::string file_name) {
+        int fd = open(file_name.data(), O_RDONLY | O_CLOEXEC);
+        if (fd > 0) {
+            struct stat s{};
+            fstat(fd, &s);
+            auto *addr = mmap(nullptr, s.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+            if (addr != MAP_FAILED) {
+                addr_ = static_cast<uint8_t*>(addr);
+                len_ = s.st_size;
+            }
+        }
+        close(fd);
+    }
+    explicit MemMap(size_t size) {
+        auto *addr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (addr != MAP_FAILED) {
+            addr_ = static_cast<uint8_t*>(addr);
+            len_ = size;
+        }
+    }
+    ~MemMap() {
+        if (ok()) {
+            munmap(addr_, len_);
+        }
+    }
+
+    [[nodiscard]] bool ok() const { return addr_ && len_; }
+
+    [[nodiscard]] auto addr() const { return addr_; }
+    [[nodiscard]] auto len() const { return len_; }
+
+    MemMap(MemMap&& other) noexcept : addr_(other.addr_), len_(other.len_) {
+        other.addr_ = nullptr;
+        other.len_= 0;
+    }
+    MemMap &operator=(MemMap&& other) noexcept {
+        new (this) MemMap(std::move(other));
+        return *this;
+    }
+
+    MemMap(const MemMap&) = delete;
+    MemMap &operator=(const MemMap&) = delete;
+private:
+    uint8_t* addr_ = nullptr;
+    size_t len_ = 0;
+};
 
 void locateClassInDex(dex::Reader &reader,
                       AhoCorasickDoubleArrayTrie<string> &acdat,
@@ -186,7 +241,8 @@ void locateClassInDex(dex::Reader &reader,
             }
         }
         // 释放空间
-        ir->classes[idx].release(); // NOLINT(bugprone-unused-return-value)
+        delete ir->classes[idx].release();
+//        usleep(500);
     }
 }
 
@@ -200,13 +256,17 @@ void fastLocate(int index,
     } else {
         path = "../dex/qq-8.9.2/classes" + to_string(index) + ".dex";
     }
-    ifstream in(path);
     cout << path << "\n";
-    std::vector<uint8_t> buf{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
-    cout << "dex size: " << buf.size() << "\n";
-    dex::Reader reader(buf.data(), buf.size());
+    auto m = MemMap(path);
+    cout << m.len() << "\n";
+    dex::Reader reader(m.addr(), m.len());
+//    reader.CreateFullIr();
+//    ifstream in(path);
+//    std::vector<uint8_t> buf{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+//    cout << "dex size: " << buf.size() << "\n";
+//    dex::Reader reader(buf.data(), buf.size());
     locateClassInDex(reader, acdat, resourceMap, resultMap);
-    vector<uint8_t>(0).swap(buf);
+//    vector<uint8_t>(0).swap(buf);
 }
 
 int main() {
@@ -240,7 +300,7 @@ int main() {
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     cout << "used time: " << now_ms1.count() - now_ms.count() << "\n";
-//    while (true) sleep(1);
+    while (true) sleep(1);
     return 0;
 //    #include <filesystem>
 //    for (const auto & file : std::filesystem::directory_iterator("../dex/qq-8.9.2")) {

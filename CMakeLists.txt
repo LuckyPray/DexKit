@@ -29,8 +29,11 @@ set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wall -O3 -fPIC -Wshift-count-overflow")
 
 add_library(${PROJECT_NAME}_static STATIC ${DB_SOURCES})
 target_include_directories(${PROJECT_NAME}_static PUBLIC include)
-link_libraries(z ${PROJECT_NAME}_static)
+target_link_libraries(${PROJECT_NAME}_static PUBLIC z)
 
-add_executable(${PROJECT_NAME}
-        main.cpp
-        )
+set(EXECUTABLE ON)
+if (DEFINED EXECUTABLE)
+    link_libraries(z ${PROJECT_NAME}_static)
+    add_executable(${PROJECT_NAME}
+            main.cpp)
+endif ()
