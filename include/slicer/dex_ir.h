@@ -164,8 +164,8 @@ struct String : public IndexedNode {
     // opaque DEX "string_data_item"
     slicer::MemView data;
 
-    const char *c_str() const {
-        const dex::u1 *strData = data.ptr<dex::u1>();
+    [[nodiscard]] const char *c_str() const {
+        const auto *strData = data.ptr<dex::u1>();
         dex::ReadULeb128(&strData);
         return reinterpret_cast<const char *>(strData);
     }
@@ -181,9 +181,9 @@ struct Type : public IndexedNode {
     String *descriptor;
     Class *class_def;
 
-    std::string Decl() const;
+    [[nodiscard]] std::string Decl() const;
 
-    Category GetCategory() const;
+    [[nodiscard]] Category GetCategory() const;
 };
 
 struct TypeList : public Node {
@@ -199,7 +199,7 @@ struct Proto : public IndexedNode {
     Type *return_type;
     TypeList *param_types;
 
-    std::string Signature() const;
+    [[nodiscard]] std::string Signature() const;
 };
 
 struct FieldDecl : public IndexedNode {
@@ -332,7 +332,7 @@ struct Class : public IndexedNode {
 
 // ir::String hashing
 struct StringsHasher {
-    const char *GetKey(const String *string) const { return string->c_str(); }
+    static const char *GetKey(const String *string) { return string->c_str(); }
 
     uint32_t Hash(const char *string_key) const;
 
@@ -341,9 +341,9 @@ struct StringsHasher {
 
 // ir::Proto hashing
 struct ProtosHasher {
-    std::string GetKey(const Proto *proto) const { return proto->Signature(); }
+    static std::string GetKey(const Proto *proto) { return proto->Signature(); }
 
-    uint32_t Hash(const std::string &proto_key) const;
+    [[nodiscard]] uint32_t Hash(const std::string &proto_key) const;
 
     bool Compare(const std::string &proto_key, const Proto *proto) const;
 };
@@ -358,7 +358,7 @@ struct MethodKey {
 struct MethodsHasher {
     MethodKey GetKey(const EncodedMethod *method) const;
 
-    uint32_t Hash(const MethodKey &method_key) const;
+    [[nodiscard]] uint32_t Hash(const MethodKey &method_key) const;
 
     bool Compare(const MethodKey &method_key, const EncodedMethod *method) const;
 };

@@ -40,39 +40,58 @@ public:
 
     ~Reader() = default;
 
-    // No copy/move semantics
+    Reader(Reader &&) = default;
+
+    Reader &operator=(Reader &&) = default;
+
+    // No copy semantics
     Reader(const Reader &) = delete;
 
     Reader &operator=(const Reader &) = delete;
 
 public:
     // Low level dex format interface
-    const dex::Header *Header() const { return header_; }
+    [[nodiscard]] const dex::Header *Header() const { return header_; }
 
-    const char *GetStringMUTF8(dex::u4 index) const;
+    [[nodiscard]] const char *GetStringMUTF8(dex::u4 index) const;
 
-    slicer::ArrayView<const dex::ClassDef> ClassDefs() const;
+    [[nodiscard]] slicer::ArrayView<const dex::ClassDef> ClassDefs() const;
 
-    slicer::ArrayView<const dex::StringId> StringIds() const;
+    [[nodiscard]] slicer::ArrayView<const dex::StringId> StringIds() const;
 
-    slicer::ArrayView<const dex::TypeId> TypeIds() const;
+    [[nodiscard]] slicer::ArrayView<const dex::TypeId> TypeIds() const;
 
-    slicer::ArrayView<const dex::FieldId> FieldIds() const;
+    [[nodiscard]] slicer::ArrayView<const dex::FieldId> FieldIds() const;
 
-    slicer::ArrayView<const dex::MethodId> MethodIds() const;
+    [[nodiscard]] slicer::ArrayView<const dex::MethodId> MethodIds() const;
 
-    slicer::ArrayView<const dex::ProtoId> ProtoIds() const;
+    [[nodiscard]] slicer::ArrayView<const dex::ProtoId> ProtoIds() const;
 
-    const dex::MapList *DexMapList() const;
+    [[nodiscard]] const dex::MapList *DexMapList() const;
 
     // IR creation interface
-    std::shared_ptr<ir::DexFile> GetIr() const { return dex_ir_; }
+    [[nodiscard]] std::shared_ptr<ir::DexFile> GetIr() const { return dex_ir_; }
 
     void CreateFullIr();
 
     void CreateClassIr(dex::u4 index);
 
     dex::u4 FindClassIndex(const char *class_descriptor) const;
+
+    // Convert a file pointer (absolute offset) to an in-memory pointer
+    template<class T>
+    const T *ptr(u4 offset) const {
+        SLICER_CHECK_GE(offset, 0 && offset + sizeof(T) <= size_);
+        return reinterpret_cast<const T *>(image_ + offset);
+    }
+
+    // Convert a data section file pointer (absolute offset) to an in-memory pointer
+    // (offset should be inside the data section)
+    template<class T>
+    [[nodiscard]]  const T *dataPtr(size_t offset) const {
+        SLICER_CHECK_GE(offset, header_->data_off && offset + sizeof(T) <= size_);
+        return reinterpret_cast<const T *>(image_ + offset);
+    }
 
 private:
     // Internal access to IR nodes for indexed .dex structures
@@ -138,21 +157,6 @@ private:
 
     void ParseInstructions(slicer::ArrayView<const dex::u2> code);
 
-    // Convert a file pointer (absolute offset) to an in-memory pointer
-    template<class T>
-    const T *ptr(int offset) const {
-        SLICER_CHECK_GE(offset, 0 && offset + sizeof(T) <= size_);
-        return reinterpret_cast<const T *>(image_ + offset);
-    }
-
-    // Convert a data section file pointer (absolute offset) to an in-memory pointer
-    // (offset should be inside the data section)
-    template<class T>
-    const T *dataPtr(int offset) const {
-        SLICER_CHECK_GE(offset, header_->data_off && offset + sizeof(T) <= size_);
-        return reinterpret_cast<const T *>(image_ + offset);
-    }
-
     // Map an indexed section to an ArrayView<T>
     template<class T>
     slicer::ArrayView<const T> section(int offset, int count) const {
@@ -160,7 +164,7 @@ private:
     }
 
     // Simple accessor for a MUTF8 string data
-    const dex::u1 *GetStringData(dex::u4 index) const {
+    [[nodiscard]] const dex::u1 *GetStringData(dex::u4 index) const {
         auto &stringId = StringIds()[index];
         return dataPtr<dex::u1>(stringId.string_data_off);
     }

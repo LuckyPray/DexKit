@@ -45,7 +45,7 @@ public:
         current_block_.id = 0;
     }
 
-    ~BasicBlocksVisitor() {
+    ~BasicBlocksVisitor() override {
         assert(state_ == State::Outside);
     }
 

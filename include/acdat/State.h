@@ -1,20 +1,16 @@
-//
-// Created by teble on 2022/1/3.
-//
-
-#ifndef ACDAT_STATE_H
-#define ACDAT_STATE_H
+#pragma once
 
 #include <set>
 #include <map>
 #include <vector>
 
+namespace acdat {
+
 
 class State {
 private:
     State *failure = nullptr;
-    // 降序
-    std::set<int, std::greater<int>> emits;
+    std::set<int, std::greater<>> emits;
     std::map<unsigned char, State *> success;
     int index = 0;
 protected:
@@ -38,13 +34,13 @@ public:
         return *emits.begin();
     }
 
-    void addEmit(const std::set<int, std::greater<int>> &emitSet) {
+    void addEmit(const std::set<int, std::greater<>> &emitSet) {
         for (auto &i: emitSet) {
             addEmit(i);
         }
     }
 
-    std::set<int, std::greater<int>> emit() {
+    std::set<int, std::greater<>> emit() {
         return this->emits;
     }
 
@@ -120,4 +116,4 @@ public:
     }
 };
 
-#endif //ACDAT_STATE_H
+}

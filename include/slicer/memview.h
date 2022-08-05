@@ -39,7 +39,7 @@ public:
         return static_cast<const T *>(ptr_);
     }
 
-    size_t size() const { return size_; }
+    [[nodiscard]] size_t size() const { return size_; }
 
 private:
     const void *ptr_;

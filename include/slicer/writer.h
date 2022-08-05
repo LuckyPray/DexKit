@@ -24,6 +24,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace dex {
@@ -45,12 +46,12 @@ public:
         offset_ = offset;
     }
 
-    dex::u4 SectionOffset() const {
+    [[nodiscard]] dex::u4 SectionOffset() const {
         SLICER_CHECK_EQ(offset_ > 0 && offset_ % 4, 0);
         return ItemsCount() > 0 ? offset_ : 0;
     }
 
-    dex::u4 AbsoluteOffset(dex::u4 itemOffset) const {
+    [[nodiscard]] dex::u4 AbsoluteOffset(dex::u4 itemOffset) const {
         SLICER_CHECK_GT(offset_, 0);
         SLICER_CHECK_LT(itemOffset, size());
         return offset_ + itemOffset;
@@ -63,9 +64,9 @@ public:
         return size();
     }
 
-    dex::u4 ItemsCount() const { return count_; }
+    [[nodiscard]] dex::u4 ItemsCount() const { return count_; }
 
-    dex::u2 MapEntryType() const { return map_entry_type_; }
+    [[nodiscard]] dex::u2 MapEntryType() const { return map_entry_type_; }
 
 private:
     dex::u4 offset_ = 0;
@@ -99,7 +100,7 @@ public:
         count_ = 0;
     }
 
-    dex::u4 SectionOffset() const {
+    [[nodiscard]] dex::u4 SectionOffset() const {
         SLICER_CHECK_EQ(offset_ > 0 && offset_ % 4, 0);
         return ItemsCount() > 0 ? offset_ : 0;
     }
@@ -108,13 +109,13 @@ public:
 
     T *end() { return begin() + count_; }
 
-    bool empty() const { return count_ == 0; }
+    [[nodiscard]] bool empty() const { return count_ == 0; }
 
-    dex::u4 ItemsCount() const { return count_; }
+    [[nodiscard]] dex::u4 ItemsCount() const { return count_; }
 
-    const T *data() const { return values_.get(); }
+    [[nodiscard]] const T *data() const { return values_.get(); }
 
-    dex::u4 size() const { return count_ * sizeof(T); }
+    [[nodiscard]] dex::u4 size() const { return count_ * sizeof(T); }
 
     T &operator[](int i) {
         SLICER_CHECK_GE(i, 0 && i < count_);
@@ -185,7 +186,7 @@ public:
     };
 
 public:
-    explicit Writer(std::shared_ptr<ir::DexFile> dex_ir) : dex_ir_(dex_ir) {}
+    explicit Writer(std::shared_ptr<ir::DexFile> dex_ir) : dex_ir_(std::move(dex_ir)) {}
 
     ~Writer() = default;
 
@@ -252,15 +253,15 @@ private:
 
     // Map indexes from the original .dex to the
     // corresponding index in the new image
-    dex::u4 MapStringIndex(dex::u4 index) const;
+    [[nodiscard]] dex::u4 MapStringIndex(dex::u4 index) const;
 
-    dex::u4 MapTypeIndex(dex::u4 index) const;
+    [[nodiscard]] dex::u4 MapTypeIndex(dex::u4 index) const;
 
-    dex::u4 MapFieldIndex(dex::u4 index) const;
+    [[nodiscard]] dex::u4 MapFieldIndex(dex::u4 index) const;
 
-    dex::u4 MapMethodIndex(dex::u4 index) const;
+    [[nodiscard]] dex::u4 MapMethodIndex(dex::u4 index) const;
 
-    dex::u4 MapProtoIndex(dex::u4 index) const;
+    [[nodiscard]] dex::u4 MapProtoIndex(dex::u4 index) const;
 
     // writing parts of a class definition
     void WriteInstructions(slicer::ArrayView<const dex::u2> instructions);

@@ -55,13 +55,13 @@ static void WriteIntValue(dex::u1 type, T value, Section &data) {
         const bool positive = (value >= 0);
         while (positive ? value >= 0x80 : value < -0x80) {
             *dst++ = value & 0xff;
-            value >>= 8;
+            value = value >> 8;
         }
         *dst++ = value & 0xff;
     } else {
         do {
             *dst++ = value & 0xff;
-            value >>= 8;
+            value = value >> 8;
         } while (value != 0);
     }
 

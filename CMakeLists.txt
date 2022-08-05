@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(dex_kit)
 
-set(CMAKE_CXX_STANDARD 20)
+find_program(CCACHE ccache)
 
-#set(ANDROID_ABI "arm64-v8a")
-#set(ANDROID_ABI "armeabi-v7a")
+if (CCACHE)
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
+endif ()
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(DB_SOURCES
         slicer/bytecode_encoder.cc
@@ -21,19 +25,17 @@ set(DB_SOURCES
         slicer/reader.cc
         slicer/tryblocks_encoder.cc
         slicer/writer.cc
-        )
+        dex_kit.cc)
 
 set(CFLAGS -flto -fvisibility=default)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -O3 -fPIC -Wshift-count-overflow")
-set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wall -O3 -fPIC -Wshift-count-overflow")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -fPIC -Wdeprecated-declarations")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -fPIC -Wdeprecated-declarations")
 
 add_library(${PROJECT_NAME}_static STATIC ${DB_SOURCES})
 target_include_directories(${PROJECT_NAME}_static PUBLIC include)
 target_link_libraries(${PROJECT_NAME}_static PUBLIC z)
 
-set(EXECUTABLE ON)
-if (DEFINED EXECUTABLE)
-    link_libraries(z ${PROJECT_NAME}_static)
-    add_executable(${PROJECT_NAME}
-            main.cpp)
-endif ()
+link_libraries(z ${PROJECT_NAME}_static)
+add_executable(${PROJECT_NAME}
+        main.cpp
+        )

@@ -1,12 +1,8 @@
-//
-// Created by teble on 2022/1/4.
-//
+#pragma once
 
-#ifndef ACDAT_AHOCORASICKDOUBLEARRAYTRIE_H
-#define ACDAT_AHOCORASICKDOUBLEARRAYTRIE_H
-
-//#include <bits/stdc++.h>
 #include "State.h"
+
+namespace acdat {
 
 template<typename V>
 class Hit {
@@ -276,4 +272,4 @@ int AhoCorasickDoubleArrayTrie<V>::getMatched(int pos, int len, int result, cons
     return result;
 }
 
-#endif //ACDAT_AHOCORASICKDOUBLEARRAYTRIE_H
+}

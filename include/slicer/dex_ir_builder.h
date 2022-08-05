@@ -74,7 +74,7 @@ public:
 
     // Locate an existing method definition
     // (returns nullptr if the method is not found)
-    EncodedMethod *FindMethod(const MethodId &method_id) const;
+    [[nodiscard]] EncodedMethod *FindMethod(const MethodId &method_id) const;
 
 private:
     // Locate an existing .dex IR string

@@ -46,7 +46,7 @@ class ScopeGuardHelper {
         }
 
         // move constructor only
-        ScopeGuard(ScopeGuard &&) = default;
+        ScopeGuard(ScopeGuard &&)  noexcept = default;
 
         ScopeGuard(const ScopeGuard &) = delete;
 

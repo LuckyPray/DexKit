@@ -30,8 +30,8 @@ Opcode OpcodeFromBytecode(u2 bytecode) {
 }
 
 // Table that maps each opcode to the index type implied by that opcode
-static constexpr std::array<InstructionDescriptor, kNumPackedOpcodes>
-        gInstructionDescriptors = {{
+static constexpr std::array<InstructionDescriptor, kNumPackedOpcodes> gInstructionDescriptors =
+        {{
 #define INSTRUCTION_DESCR(o, c, p, format, index, flags, e, vflags) \
   {                                                                 \
       vflags,                                                       \
@@ -41,10 +41,10 @@ static constexpr std::array<InstructionDescriptor, kNumPackedOpcodes>
   },
 
 #include "slicer/dex_instruction_list.h"
-                                           DEX_INSTRUCTION_LIST(INSTRUCTION_DESCR)
+                 DEX_INSTRUCTION_LIST(INSTRUCTION_DESCR)
 #undef DEX_INSTRUCTION_LIST
 #undef INSTRUCTION_DESCR
-                                   }};
+         }};
 
 InstructionIndexType GetIndexTypeFromOpcode(Opcode opcode) {
     return gInstructionDescriptors[opcode].index_type;

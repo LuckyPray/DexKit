@@ -156,11 +156,11 @@ struct Const32 : public Operand {
         dex::s4 s4_value;
         dex::u4 u4_value;
         float float_value;
-    } u;
+    } u{};
 
     explicit Const32(dex::u4 value) { u.u4_value = value; }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct Const64 : public Operand {
@@ -168,11 +168,11 @@ struct Const64 : public Operand {
         dex::s8 s8_value;
         dex::u8 u8_value;
         double double_value;
-    } u;
+    } u{};
 
     explicit Const64(dex::u8 value) { u.u8_value = value; }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct VReg : public Operand {
@@ -180,7 +180,7 @@ struct VReg : public Operand {
 
     explicit VReg(dex::u4 reg) : reg(reg) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct VRegPair : public Operand {
@@ -188,13 +188,13 @@ struct VRegPair : public Operand {
 
     explicit VRegPair(dex::u4 base_reg) : base_reg(base_reg) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct VRegList : public Operand {
     std::vector<dex::u4> registers;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct VRegRange : public Operand {
@@ -203,7 +203,7 @@ struct VRegRange : public Operand {
 
     VRegRange(dex::u4 base_reg, int count) : base_reg(base_reg), count(count) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct IndexedOperand : public Operand {
@@ -217,7 +217,7 @@ struct String : public IndexedOperand {
 
     String(ir::String *ir_string, dex::u4 index) : IndexedOperand(index), ir_string(ir_string) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct Type : public IndexedOperand {
@@ -225,7 +225,7 @@ struct Type : public IndexedOperand {
 
     Type(ir::Type *ir_type, dex::u4 index) : IndexedOperand(index), ir_type(ir_type) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct Field : public IndexedOperand {
@@ -233,7 +233,7 @@ struct Field : public IndexedOperand {
 
     Field(ir::FieldDecl *ir_field, dex::u4 index) : IndexedOperand(index), ir_field(ir_field) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct Method : public IndexedOperand {
@@ -243,7 +243,7 @@ struct Method : public IndexedOperand {
         SLICER_CHECK_NE(ir_method, nullptr);
     }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct Proto : public IndexedOperand {
@@ -251,7 +251,7 @@ struct Proto : public IndexedOperand {
 
     Proto(ir::Proto *ir_proto, dex::u4 index) : IndexedOperand(index), ir_proto(ir_proto) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct CodeLocation : public Operand {
@@ -259,7 +259,7 @@ struct CodeLocation : public Operand {
 
     explicit CodeLocation(Label *label) : label(label) {}
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 // Code IR is a linked list of Instructions
@@ -301,7 +301,7 @@ inline T *CastOperand(Operand *op) {
 template<>
 inline IndexedOperand *CastOperand<IndexedOperand>(Operand *op) {
 #ifdef RTTI_ENABLED
-    IndexedOperand *operand = dynamic_cast<IndexedOperand *>(op);
+    auto *operand = dynamic_cast<IndexedOperand *>(op);
     SLICER_CHECK_NE(operand, nullptr);
     return operand;
 #else
@@ -343,14 +343,14 @@ struct Bytecode : public Instruction {
         return detail::CastOperand<T>(operands[index]);
     }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct PackedSwitchPayload : public Instruction {
     dex::s4 first_key = 0;
     std::vector<Label *> targets;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct SparseSwitchPayload : public Instruction {
@@ -361,13 +361,13 @@ struct SparseSwitchPayload : public Instruction {
 
     std::vector<SwitchCase> switch_cases;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct ArrayData : public Instruction {
     slicer::MemView data;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct Label : public Instruction {
@@ -377,13 +377,13 @@ struct Label : public Instruction {
 
     explicit Label(dex::u4 offset) { this->offset = offset; }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct TryBlockBegin : public Instruction {
     int id = 0;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct CatchHandler {
@@ -396,13 +396,13 @@ struct TryBlockEnd : public Instruction {
     std::vector<CatchHandler> handlers;
     Label *catch_all = nullptr;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct DbgInfoHeader : public Instruction {
     std::vector<ir::String *> param_names;
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct LineNumber : public Operand {
@@ -412,7 +412,7 @@ struct LineNumber : public Operand {
         SLICER_WEAK_CHECK(line > 0);
     }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 struct DbgInfoAnnotation : public Instruction {
@@ -426,7 +426,7 @@ struct DbgInfoAnnotation : public Instruction {
         return detail::CastOperand<T>(operands[index]);
     }
 
-    virtual bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
 };
 
 // Code IR container and manipulation interface
@@ -439,7 +439,7 @@ struct CodeIr {
 
 public:
     CodeIr(ir::EncodedMethod *ir_method, std::shared_ptr<ir::DexFile> dex_ir)
-            : ir_method(ir_method), dex_ir(dex_ir) {
+            : ir_method(ir_method), dex_ir(std::move(dex_ir)) {
         Disassemble();
     }
 

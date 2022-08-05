@@ -29,16 +29,16 @@ namespace lir {
 // Generates debug info from code IR
 class DebugInfoEncoder : public Visitor {
 private:
-    virtual bool Visit(DbgInfoHeader *dbg_header) override;
+    bool Visit(DbgInfoHeader *dbg_header) override;
 
-    virtual bool Visit(DbgInfoAnnotation *dbg_annotation) override;
+    bool Visit(DbgInfoAnnotation *dbg_annotation) override;
 
 public:
     explicit DebugInfoEncoder(const InstructionsList &instructions)
             : instructions_(instructions) {
     }
 
-    ~DebugInfoEncoder() = default;
+    ~DebugInfoEncoder() override = default;
 
     void Encode(ir::EncodedMethod *ir_method, std::shared_ptr<ir::DexFile> dex_ir);
 

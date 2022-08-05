@@ -87,7 +87,7 @@ typedef void (*logger_type)(const std::string &);
 
 // By default, slicer prints error messages to stdout. Users can set their own
 // callback.
-void set_logger(const logger_type new_logger);
+void set_logger(logger_type new_logger);
 
 } // namespace slicer
 

@@ -131,7 +131,7 @@ public:
         pos->next = nullptr;
     }
 
-    bool empty() const { return begin_ == end_; }
+    [[nodiscard]] bool empty() const { return begin_ == end_; }
 
     Iterator begin() const { return Iterator(begin_); }
 

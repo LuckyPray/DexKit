@@ -103,7 +103,7 @@ public:
 
     explicit ExitHook(const ir::MethodId &hook_method_id) : ExitHook(hook_method_id, Tweak::None) {}
 
-    virtual bool Apply(lir::CodeIr *code_ir) override;
+    bool Apply(lir::CodeIr *code_ir) override;
 
 private:
     ir::MethodId hook_method_id_;
@@ -132,7 +132,7 @@ public:
         SLICER_CHECK_EQ(detour_method_id_.signature, nullptr);
     }
 
-    virtual bool Apply(lir::CodeIr *code_ir) override;
+    bool Apply(lir::CodeIr *code_ir) override;
 
 protected:
     ir::MethodId orig_method_id_;
@@ -151,7 +151,7 @@ public:
             : DetourHook(orig_method_id, detour_method_id) {}
 
 protected:
-    virtual dex::Opcode GetNewOpcode(dex::Opcode opcode) override;
+    dex::Opcode GetNewOpcode(dex::Opcode opcode) override;
 };
 
 // Replace every invoke-interface[/range] to the a specified method with
@@ -163,7 +163,7 @@ public:
             : DetourHook(orig_method_id, detour_method_id) {}
 
 protected:
-    virtual dex::Opcode GetNewOpcode(dex::Opcode opcode) override;
+    dex::Opcode GetNewOpcode(dex::Opcode opcode) override;
 };
 
 // Allocates scratch registers without doing a full register allocation
@@ -174,9 +174,9 @@ public:
         SLICER_CHECK_GT(allocate_count, 0);
     }
 
-    virtual bool Apply(lir::CodeIr *code_ir) override;
+    bool Apply(lir::CodeIr *code_ir) override;
 
-    const std::set<dex::u4> &ScratchRegs() const {
+    [[nodiscard]] const std::set<dex::u4> &ScratchRegs() const {
         SLICER_CHECK_EQ(scratch_regs_.size(), static_cast<size_t>(allocate_count_));
         return scratch_regs_;
     }
@@ -212,7 +212,7 @@ private:
 //
 class MethodInstrumenter {
 public:
-    explicit MethodInstrumenter(std::shared_ptr<ir::DexFile> dex_ir) : dex_ir_(dex_ir) {}
+    explicit MethodInstrumenter(std::shared_ptr<ir::DexFile> dex_ir) : dex_ir_(std::move(dex_ir)) {}
 
     // No copy/move semantics
     MethodInstrumenter(const MethodInstrumenter &) = delete;

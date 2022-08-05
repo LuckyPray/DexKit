@@ -27,14 +27,14 @@ namespace lir {
 // Generates try/catch blocks from code IR
 class TryBlocksEncoder : public Visitor {
 private:
-    virtual bool Visit(TryBlockEnd *try_end) override;
+    bool Visit(TryBlockEnd *try_end) override;
 
 public:
     explicit TryBlocksEncoder(const InstructionsList &instructions)
             : instructions_(instructions) {
     }
 
-    ~TryBlocksEncoder() = default;
+    ~TryBlocksEncoder() override = default;
 
     void Encode(ir::Code *ir_code, std::shared_ptr<ir::DexFile> dex_ir);
 

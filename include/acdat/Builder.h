@@ -1,12 +1,9 @@
-//
-// Created by teble on 2022/1/6.
-//
-
-#ifndef ACDAT_BUILDER_H
-#define ACDAT_BUILDER_H
+#pragma once
 
 #include <queue>
 #include "AhoCorasickDoubleArrayTrie.h"
+
+namespace acdat {
 
 template<typename V>
 class Builder {
@@ -18,7 +15,7 @@ private:
     int nextCheckPos = 0;
     int keySize = 0;
 
-    AhoCorasickDoubleArrayTrie<V> *mACTrie = nullptr;
+    AhoCorasickDoubleArrayTrie <V> *mACTrie = nullptr;
 
     static int fetch(State *parent, std::vector<std::pair<int, State *>> &siblings) {
         if (parent->isAcceptable()) {
@@ -83,7 +80,7 @@ private:
     }
 
     void constructOutput(State *targetState) {
-        std::set<int, std::greater<int>> emit = targetState->emit();
+        std::set<int, std::greater<>> emit = targetState->emit();
         if (emit.empty()) {
             return;
         }
@@ -225,7 +222,7 @@ private:
     }
 
 public:
-    void build(std::map<std::string, V> &map, AhoCorasickDoubleArrayTrie<V> *acdat) {
+    void build(std::map<std::string, V> &map, AhoCorasickDoubleArrayTrie <V> *acdat) {
         this->mACTrie = acdat;
         std::vector<const char *> keys;
         keys.reserve(map.size());
@@ -242,4 +239,4 @@ public:
     }
 };
 
-#endif //ACDAT_BUILDER_H
+}
