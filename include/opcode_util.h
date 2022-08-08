@@ -10,7 +10,7 @@ constexpr uint8_t GetOpcodeLen(dex::u1 opcode);
 constexpr size_t GetBytecodeWidth(const dex::u2 *bytecode);
 
 constexpr std::string_view op_names[] = {
-#define INSTRUCTION_NAME(o, c, pname, f, i, a, e, v) pname,
+#define INSTRUCTION_NAME(o, c, pname, ...) pname,
 
 #include "slicer/dex_instruction_list.h"
         DEX_INSTRUCTION_LIST(INSTRUCTION_NAME)

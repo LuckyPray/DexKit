@@ -74,7 +74,7 @@ private:
 
     void InitStartTime();
 
-    long GetUsedTime();
+    long GetUsedTime() const;
 };
 
 }

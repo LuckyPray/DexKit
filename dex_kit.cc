@@ -185,28 +185,26 @@ void DexKit::InitCached(int dex_idx) {
     auto &method_codes = method_codes_[dex_idx];
     auto &proto_type_list = proto_type_list_[dex_idx];
 
-    strings.reserve(reader.StringIds().size());
+    strings.resize(reader.StringIds().size());
     type_names.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
     method_codes.resize(reader.MethodIds().size(), nullptr);
     proto_type_list.resize(reader.ProtoIds().size(), nullptr);
 
-    for (int str_idx = 0; str_idx < reader.StringIds().size(); ++str_idx) {
-        auto &str = reader.StringIds()[str_idx];
-        auto *ptr = reader.dataPtr<dex::u1>(str.string_data_off);
-        dex::ReadULeb128(&ptr);
-        strings.emplace_back(reinterpret_cast<const char *>(ptr));
+    auto strings_it = strings.begin();
+    for (auto &str: reader.StringIds()) {
+        auto *str_ptr = reader.dataPtr<dex::u1>(str.string_data_off);
+        ReadULeb128(&str_ptr);
+        *strings_it++ = reinterpret_cast<const char *>(str_ptr);
     }
 
 
-    for (int type_idx = 0; type_idx < reader.TypeIds().size(); ++type_idx) {
-        auto &type_id = reader.TypeIds()[type_idx];
-        type_names[type_idx] = strings[type_id.descriptor_idx];
+    auto type_names_it = type_names.begin();
+    for (auto &type_id: reader.TypeIds()) {
+        *type_names_it++ = strings[type_id.descriptor_idx];
     }
 
-
-    for (int idx = 0; idx < reader.ClassDefs().size(); ++idx) {
-        auto &class_def = reader.ClassDefs()[idx];
+    for (auto &class_def: reader.ClassDefs()) {
         if (class_def.class_data_off == 0) {
             continue;
         }
@@ -217,7 +215,7 @@ void DexKit::InitCached(int dex_idx) {
         dex::u4 virtual_methods_count = ReadULeb128(&class_data);
 
         auto &methods = class_method_ids[class_def.class_idx];
-//        methods.resize(direct_methods_count + virtual_methods_count);
+        methods.resize(direct_methods_count + virtual_methods_count);
 
         for (int i = 0; i < static_fields_size; ++i) {
             ReadULeb128(&class_data);
@@ -237,7 +235,7 @@ void DexKit::InitCached(int dex_idx) {
                 continue;
             }
             method_codes[method_idx] = reader.dataPtr<const dex::Code>(code_off);
-            methods.push_back(method_idx);
+            methods.emplace_back(method_idx);
         }
         for (dex::u4 i = 0, method_idx = 0; i < virtual_methods_count; ++i) {
             method_idx += ReadULeb128(&class_data);
@@ -287,7 +285,7 @@ void DexKit::InitStartTime() {
     start_time_ = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 }
 
-long DexKit::GetUsedTime() {
+long DexKit::GetUsedTime() const {
     auto now = std::chrono::system_clock::now();
     auto now_time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     return now_time - start_time_;

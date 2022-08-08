@@ -9,6 +9,7 @@
 #include <zlib.h>
 #include <iostream>
 
+namespace dexkit {
 
 struct MemMap {
     MemMap() = default;
@@ -186,3 +187,5 @@ public:
 private:
     std::map<std::string_view, ZipLocalFile *> entries;
 };
+
+}
