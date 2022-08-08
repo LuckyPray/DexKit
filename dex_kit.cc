@@ -45,7 +45,10 @@ DexKit::DexKit(std::string_view apk_path) {
 }
 
 DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
-    InitStartTime();
+    dex_images_.resize(dex_images.size());
+    for (int i = 0; i < dex_images.size(); ++i) {
+        dex_images_[i] = dex_images[i];
+    }
     InitImages();
 }
 
