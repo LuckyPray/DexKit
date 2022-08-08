@@ -140,7 +140,7 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
 
 std::vector<std::string> DexKit::FindMethodInvoked(std::string_view method_descriptor) {
     ThreadPool pool(thread_num_);
-    std::vector<std::future<std::set<std::string>>> futures;
+    std::vector<std::future<std::vector<std::string>>> futures;
     for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
         futures.emplace_back(pool.enqueue([this, dex_idx, &method_descriptor]() {
             InitCached(dex_idx);
@@ -156,9 +156,9 @@ std::vector<std::string> DexKit::FindMethodInvoked(std::string_view method_descr
                 }
             }
             if (class_idx == dex::kNoIndex) {
-                return std::set<std::string>();
+                return std::vector<std::string>();
             }
-            std::set<std::string> result;
+            std::vector<std::string> result;
             for (auto method_idx: class_method_ids[class_idx]) {
                 auto &code = method_codes[method_idx];
                 if (code == nullptr) {
@@ -180,7 +180,8 @@ std::vector<std::string> DexKit::FindMethodInvoked(std::string_view method_descr
                             auto desc = GetMethodDescriptor(dex_idx, index);
                             if (desc == method_descriptor) {
                                 auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
-                                result.emplace(descriptor);
+                                result.emplace_back(descriptor);
+                                goto label;
                             }
                             break;
                         }
@@ -189,6 +190,7 @@ std::vector<std::string> DexKit::FindMethodInvoked(std::string_view method_descr
                     }
                     p += width;
                 }
+                label:;
             }
             return result;
         }));
