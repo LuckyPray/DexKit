@@ -387,19 +387,7 @@ std::string DexKit::GetMethodDescriptor(int dex_idx, uint32_t method_idx) {
     }
     descriptor += ')';
     descriptor += strings[reader.TypeIds()[proto_id.return_type_idx].descriptor_idx];
-    std::string_view ret(descriptor);
     return descriptor;
-}
-
-void DexKit::InitStartTime() {
-    auto now = std::chrono::system_clock::now();
-    start_time_ = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-}
-
-long DexKit::GetUsedTime() const {
-    auto now = std::chrono::system_clock::now();
-    auto now_time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-    return now_time - start_time_;
 }
 
 }

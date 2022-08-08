@@ -51,7 +51,6 @@ public:
 
 private:
     std::vector<bool> init_flags_;
-    long start_time_;
     std::vector<MemMap> maps_;
     std::vector<std::pair<const void *, size_t>> dex_images_;
 
@@ -73,10 +72,6 @@ private:
     std::string GetMethodDescriptor(int dex_idx, uint32_t method_idx);
 
     static std::string GetClassDescriptor(std::string class_name);
-
-    void InitStartTime();
-
-    long GetUsedTime() const;
 };
 
 }
