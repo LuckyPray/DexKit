@@ -4,7 +4,6 @@
 #include "thread_pool.h"
 #include "byte_code_util.h"
 #include "opcode_util.h"
-#include "slicer/dex_bytecode.h"
 #include <algorithm>
 
 namespace dexkit {
@@ -12,15 +11,11 @@ namespace dexkit {
 using namespace acdat;
 
 DexKit::DexKit(std::string_view apk_path) {
-    InitStartTime();
     auto map = MemMap(apk_path);
     if (!map.ok()) {
         return;
     }
     auto zip_file = ZipFile::Open(map);
-    std::cout << "Open zip file: " << apk_path << std::endl;
-    std::cout << "used time: " << GetUsedTime() << std::endl;
-    std::cout << "uncompress dex entry" << std::endl;
     if (zip_file) {
         std::vector<std::pair<int, ZipLocalFile *>> dexs;
         for (int idx = 1;; ++idx) {
@@ -45,7 +40,6 @@ DexKit::DexKit(std::string_view apk_path) {
             });
         }
     }
-    std::cout << "used time: " << GetUsedTime() << std::endl;
     InitImages();
     maps_.emplace_back(std::move(map));
 }
@@ -59,7 +53,6 @@ std::map<std::string_view, std::vector<std::string_view>>
 DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &location_map) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
-    std::map<std::string_view, std::vector<std::string_view>> result;
     for (auto &[name, str_set]: location_map) {
         for (auto &str: str_set) {
             buildMap[str.data()] = str;
@@ -88,7 +81,6 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
             }
 
             if (string_map.empty()) {
-                std::cout << "------ dex: " << dex_idx << " not found string\n";
                 return std::map<std::string_view, std::vector<std::string_view>>();
             }
             for (int i = 0; i < type_names.size(); ++i) {
@@ -104,10 +96,10 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
                     auto p = code->insns;
                     auto end_p = p + code->insns_size;
                     while (p < end_p) {
-                        auto instruction = dex::DecodeInstruction(p);
+                        auto op = *p & 0xff;
                         auto ptr = p;
                         auto width = GetBytecodeWidth(ptr++);
-                        switch (instruction.opcode) {
+                        switch (op) {
                             case 0x1a:
                             case 0x1b: {
                                 auto index = ReadShort(ptr);
@@ -134,6 +126,7 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
             return result;
         }));
     }
+    std::map<std::string_view, std::vector<std::string_view>> result;
     for (auto &f: futures) {
         auto r = f.get();
         for (auto &[key, value]: r) {
@@ -145,12 +138,124 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
     return result;
 }
 
-std::vector<std::string_view> DexKit::FindMethodInvoked(std::string_view method_descriptor) {
-    return std::vector<std::string_view>();
+std::vector<std::string> DexKit::FindMethodInvoked(std::string_view method_descriptor) {
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::set<std::string>>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue([this, dex_idx, &method_descriptor]() {
+            InitCached(dex_idx);
+            auto &method_codes = method_codes_[dex_idx];
+            auto &class_method_ids = class_method_ids_[dex_idx];
+            auto &type_names = type_names_[dex_idx];
+            auto class_name = method_descriptor.substr(0, method_descriptor.find("->"));
+            auto class_idx = dex::kNoIndex;
+            for (int i = 0; i < type_names.size(); ++i) {
+                if (class_name == type_names[i]) {
+                    class_idx = i;
+                    break;
+                }
+            }
+            if (class_idx == dex::kNoIndex) {
+                return std::set<std::string>();
+            }
+            std::set<std::string> result;
+            for (auto method_idx: class_method_ids[class_idx]) {
+                auto &code = method_codes[method_idx];
+                if (code == nullptr) {
+                    continue;
+                }
+                auto p = code->insns;
+                auto end_p = p + code->insns_size;
+                while (p < end_p) {
+                    auto op = *p & 0xff;
+                    auto ptr = p;
+                    auto width = GetBytecodeWidth(ptr++);
+                    switch (op) {
+                        case 0x6e:
+                        case 0x6f:
+                        case 0x70:
+                        case 0x71:
+                        case 0x72: {
+                            auto index = ReadShort(ptr);
+                            auto desc = GetMethodDescriptor(dex_idx, index);
+                            if (desc == method_descriptor) {
+                                auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
+                                result.emplace(descriptor);
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    p += width;
+                }
+            }
+            return result;
+        }));
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
 }
 
-std::vector<std::string_view> DexKit::FindSubClasses(std::string_view class_name) {
-    return std::vector<std::string_view>();
+std::vector<std::string> DexKit::FindSubClasses(std::string class_name) {
+    auto class_descriptor = GetClassDescriptor(std::move(class_name));
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue([this, dex_idx, &class_descriptor]() {
+            InitCached(dex_idx);
+            auto &reader = readers_[dex_idx];
+            auto &type_names = type_names_[dex_idx];
+
+            auto class_idx = dex::kNoIndex;
+            for (int i = 0; i < type_names.size(); ++i) {
+                if (type_names[i] == class_descriptor) {
+                    class_idx = i;
+                    break;
+                }
+            }
+            if (class_idx == dex::kNoIndex) {
+                return std::vector<std::string>();
+            }
+            auto &find_class = reader.ClassDefs()[class_idx];
+            auto is_interface = (find_class.access_flags & dex::kAccInterface) > 0;
+            std::vector<std::string> result;
+            for (auto &class_def: reader.ClassDefs()) {
+                if (is_interface) {
+                    if (class_def.interfaces_off == 0) {
+                        continue;
+                    }
+                    auto types = reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
+                    for (int i = 0; i < types->size; ++i) {
+                        auto type_idx = types->list[i].type_idx;
+                        if (type_idx == class_idx) {
+                            result.emplace_back(type_names[class_def.class_idx]);
+                            break;
+                        }
+                    }
+                } else {
+                    if (class_def.superclass_idx == class_idx) {
+                        result.emplace_back(type_names[class_def.class_idx]);
+                    }
+                }
+            }
+            return result;
+        }));
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
 }
 
 
@@ -277,6 +382,7 @@ std::string DexKit::GetMethodDescriptor(int dex_idx, uint32_t method_idx) {
     }
     descriptor += ')';
     descriptor += strings[reader.TypeIds()[proto_id.return_type_idx].descriptor_idx];
+    std::string_view ret(descriptor);
     return descriptor;
 }
 

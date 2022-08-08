@@ -39,7 +39,7 @@ public:
      * @return invoke methods descriptor list: <br/> eg.
      * ["Landroidx/activity/ComponentActivity;->onCreate(Landroid/os/Bundle;)V",]
      */
-    std::vector<std::string_view> FindMethodInvoked(std::string_view method_descriptor);
+    std::vector<std::string> FindMethodInvoked(std::string_view method_descriptor);
 
     /**
      *
@@ -47,7 +47,7 @@ public:
      * @return sub class descriptor list. <br/>
      * eg. ["Landroid/app/ActivityGroup;", "Landroid/app/AliasActivity;"]
      */
-    std::vector<std::string_view> FindSubClasses(std::string_view class_name);
+    std::vector<std::string> FindSubClasses(std::string class_name);
 
 private:
     std::vector<bool> init_flags_;
@@ -63,6 +63,8 @@ private:
     std::vector<std::vector<std::vector<std::uint32_t>>> class_method_ids_;
     std::vector<std::vector<const dex::Code *>> method_codes_;
     std::vector<std::vector<const dex::TypeList *>> proto_type_list_;
+
+    std::vector<std::string> cache_;
 
     void InitImages();
 

@@ -15,10 +15,10 @@ int main() {
             {"test",                                                             {"mark_uin_upload"}},
     };
 
+    dexkit::DexKit dexKit("../dex/qq-8.9.2/qq-8.9.2.apk");
+
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-
-    dexkit::DexKit dexKit("../dex/qq-8.9.2/qq-8.9.2.apk");
 
     // 返回混淆map中包含所有字符串的类
     auto res = dexKit.LocationClasses(obfuscate);
@@ -27,6 +27,18 @@ int main() {
         for (auto &v: value) {
             std::cout << "\t" << v << "\n";
         }
+    }
+
+    auto res1 =  dexKit.FindMethodInvoked("Landroid/arch/lifecycle/ClassesInfoCache;->getInfo(Ljava/lang/Class;)Landroid/arch/lifecycle/ClassesInfoCache$CallbackInfo;");
+    std::cout << "FindMethodInvoked -> \n";
+    for (auto &value: res1) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    auto res2 = dexKit.FindSubClasses("Landroid/app/Activity;");
+    std::cout << "FindSubClasses -> \n";
+    for (auto &value: res2) {
+        std::cout << "\t" << value << "\n";
     }
 
     auto now1 = std::chrono::system_clock::now();
