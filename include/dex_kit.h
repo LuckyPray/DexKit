@@ -50,6 +50,7 @@ public:
     std::vector<std::string> FindSubClasses(std::string class_name);
 
 private:
+    std::mutex mutex_;
     std::vector<bool> init_flags_;
     std::vector<MemMap> maps_;
     std::vector<std::pair<const void *, size_t>> dex_images_;

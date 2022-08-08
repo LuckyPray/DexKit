@@ -16,32 +16,23 @@ DexKit::DexKit(std::string_view apk_path) {
         return;
     }
     auto zip_file = ZipFile::Open(map);
+    maps_.emplace_back(std::move(map));
     if (zip_file) {
-        std::vector<std::pair<int, ZipLocalFile *>> dexs;
         for (int idx = 1;; ++idx) {
             auto entry_name = "classes" + (idx == 1 ? std::string() : std::to_string(idx)) + ".dex";
             auto entry = zip_file->Find(entry_name);
             if (!entry) {
                 break;
             }
-            dexs.emplace_back(idx, entry);
-        }
-        dex_images_.resize(dexs.size());
-        maps_.resize(dexs.size() + 1);
-        ThreadPool pool(thread_num_);
-        for (auto &dex_pair: dexs) {
-            pool.enqueue([&dex_pair, this]() {
-                auto dex_image = dex_pair.second->uncompress();
-                if (!dex_image.ok()) {
-                    return;
-                }
-                dex_images_[dex_pair.first - 1] = std::make_pair(dex_image.addr(), dex_image.len());
-                maps_[dex_pair.first] = std::move(dex_image);
-            });
+            auto dex_image = entry->uncompress();
+            if (!dex_image.ok()) {
+                continue;
+            }
+            dex_images_.emplace_back(dex_image.addr(), dex_image.len());
+            maps_.emplace_back(std::move(dex_image));
         }
     }
     InitImages();
-    maps_.emplace_back(std::move(map));
 }
 
 DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
@@ -295,11 +286,13 @@ void DexKit::InitCached(int dex_idx) {
     auto &method_codes = method_codes_[dex_idx];
     auto &proto_type_list = proto_type_list_[dex_idx];
 
+    mutex_.lock();
     strings.resize(reader.StringIds().size());
     type_names.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
     method_codes.resize(reader.MethodIds().size(), nullptr);
     proto_type_list.resize(reader.ProtoIds().size(), nullptr);
+    mutex_.unlock();
 
     auto strings_it = strings.begin();
     for (auto &str: reader.StringIds()) {
