@@ -380,9 +380,6 @@ std::string DexKit::GetMethodDescriptor(int dex_idx, uint32_t method_idx) {
     descriptor += strings[method_id.name_idx];
     descriptor += '(';
     for (int i = 0; i < type_list->size; ++i) {
-        if (i > 0) {
-            descriptor += ',';
-        }
         descriptor += strings[reader.TypeIds()[type_list->list[i].type_idx].descriptor_idx];
     }
     descriptor += ')';
