@@ -263,6 +263,54 @@ std::vector<std::string> DexKit::FindSubClasses(std::string class_name) {
     return result;
 }
 
+std::vector<std::string> DexKit::FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq) {
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue([this, dex_idx, &op_prefix_seq]() {
+            InitCached(dex_idx);
+            auto &method_codes = method_codes_[dex_idx];
+            auto &class_method_ids = class_method_ids_[dex_idx];
+            auto &type_names = type_names_[dex_idx];
+            std::vector<std::string> result;
+            for (auto &methods: class_method_ids) {
+                for (auto method_idx: methods) {
+                    auto &code = method_codes[method_idx];
+                    if (code == nullptr) {
+                        continue;
+                    }
+                    auto p = code->insns;
+                    auto end_p = p + code->insns_size;
+                    int op_index = 0;
+                    while (p < end_p) {
+                        auto op = *p & 0xff;
+                        auto ptr = p;
+                        auto width = GetBytecodeWidth(ptr++);
+                        if (op_prefix_seq[op_index++] != op) {
+                            break;
+                        }
+                        if (op_prefix_seq.size() == op_index) {
+                            auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
+                            result.emplace_back(descriptor);
+                            break;
+                        }
+                        p += width;
+                    }
+                }
+            }
+            return result;
+        }));
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
 
 void DexKit::InitImages() {
     for (auto &[image, size]: dex_images_) {

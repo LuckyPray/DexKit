@@ -41,6 +41,13 @@ int main() {
         std::cout << "\t" << value << "\n";
     }
 
+    std::vector<uint8_t> op_seq{0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e};
+    auto res3 = dexKit.FindMethodOpPrefixSeq(op_seq);
+    std::cout << "FindMethodOpPrefixSeq -> \n";
+    for (auto &value: res3) {
+        std::cout << "\t" << value << "\n";
+    }
+
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "used time: " << now_ms1.count() - now_ms.count() << " ms\n";

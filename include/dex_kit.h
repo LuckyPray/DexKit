@@ -49,6 +49,15 @@ public:
      */
     std::vector<std::string> FindSubClasses(std::string class_name);
 
+    /**
+     *
+     * @param op_prefix_seq [0x70, 0x22, 0x70, 0x5b] <br/>
+     * ["invoke-direct", "new-instance", "invoke-direct", "iput-object"]
+     * @return return the method descriptor has beginning of the sequence of OpCode. <br/>
+     * eg. ["Landroid/arch/lifecycle/ClassesInfoCache;-><init>()V"]
+     */
+    std::vector<std::string> FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq);
+
 private:
     std::vector<bool> init_flags_;
     std::vector<MemMap> maps_;
