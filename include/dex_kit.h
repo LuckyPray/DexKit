@@ -30,8 +30,8 @@ public:
      * @return map of possible classes name.
      * eg. {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> ["Lxadt;"]}
      */
-    std::map<std::string_view, std::vector<std::string_view>> LocationClasses(
-            std::map<std::string_view, std::set<std::string_view>> &location_map);
+    std::map<std::string, std::vector<std::string>> LocationClasses(
+            std::map<std::string, std::set<std::string>> &location_map);
 
     /**
      *

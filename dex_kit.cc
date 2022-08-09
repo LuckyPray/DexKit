@@ -52,8 +52,8 @@ DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
     InitImages();
 }
 
-std::map<std::string_view, std::vector<std::string_view>>
-DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &location_map) {
+std::map<std::string, std::vector<std::string>>
+DexKit::LocationClasses(std::map<std::string, std::set<std::string>> &location_map) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     for (auto &[name, str_set]: location_map) {
@@ -63,7 +63,7 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
     }
     Builder<std::string>().build(buildMap, &acdat);
     ThreadPool pool(thread_num_);
-    std::vector<std::future<std::map<std::string_view, std::vector<std::string_view>>>> futures;
+    std::vector<std::future<std::map<std::string, std::vector<std::string>>>> futures;
     for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
         futures.emplace_back(pool.enqueue([&acdat, &location_map, dex_idx, this]() {
             InitCached(dex_idx);
@@ -72,7 +72,7 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
             auto &type_names = type_names_[dex_idx];
             auto &strings = strings_[dex_idx];
 
-            std::map<std::string_view, std::vector<std::string_view>> result;
+            std::map<std::string, std::vector<std::string>> result;
 
             std::map<dex::u4, std::string> string_map;
             for (int index = 0; index < strings.size(); ++index) {
@@ -84,7 +84,7 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
             }
 
             if (string_map.empty()) {
-                return std::map<std::string_view, std::vector<std::string_view>>();
+                return std::map<std::string, std::vector<std::string>>();
             }
             for (int i = 0; i < type_names.size(); ++i) {
                 if (class_method_ids[i].empty()) {
@@ -129,7 +129,7 @@ DexKit::LocationClasses(std::map<std::string_view, std::set<std::string_view>> &
             return result;
         }));
     }
-    std::map<std::string_view, std::vector<std::string_view>> result;
+    std::map<std::string, std::vector<std::string>> result;
     for (auto &f: futures) {
         auto r = f.get();
         for (auto &[key, value]: r) {

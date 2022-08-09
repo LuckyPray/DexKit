@@ -8,7 +8,7 @@
 #include "dex_kit.h"
 
 int main() {
-    std::map<std::string_view, std::set<std::string_view>> obfuscate = {
+    std::map<std::string, std::set<std::string>> obfuscate = {
             {"Lcom/tencent/mobileqq/activity/ChatActivityFacade;",               {"reSendEmo"}},
             {"Lcooperation/qzone/PlatformInfor;",                                {"52b7f2", "qimei"}},
             {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;", {"TroopClockInHandler"}},
