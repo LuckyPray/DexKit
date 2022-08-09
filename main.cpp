@@ -29,7 +29,8 @@ int main() {
         }
     }
 
-    auto res1 =  dexKit.FindMethodInvoked("Landroid/arch/lifecycle/ClassesInfoCache;->getInfo(Ljava/lang/Class;)Landroid/arch/lifecycle/ClassesInfoCache$CallbackInfo;");
+    auto res1 = dexKit.FindMethodInvoked(
+            "Landroid/arch/lifecycle/ClassesInfoCache;->getInfo(Ljava/lang/Class;)Landroid/arch/lifecycle/ClassesInfoCache$CallbackInfo;");
     std::cout << "FindMethodInvoked -> \n";
     for (auto &value: res1) {
         std::cout << "\t" << value << "\n";

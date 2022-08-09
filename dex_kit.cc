@@ -141,7 +141,7 @@ DexKit::LocationClasses(std::map<std::string, std::set<std::string>> &location_m
     return result;
 }
 
-std::vector<std::string> DexKit::FindMethodInvoked(std::string_view method_descriptor) {
+std::vector<std::string> DexKit::FindMethodInvoked(std::string method_descriptor) {
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::vector<std::string>>> futures;
     for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {

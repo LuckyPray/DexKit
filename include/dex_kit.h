@@ -39,7 +39,7 @@ public:
      * @return invoke methods descriptor list: <br/> eg.
      * ["Landroidx/activity/ComponentActivity;->onCreate(Landroid/os/Bundle;)V",]
      */
-    std::vector<std::string> FindMethodInvoked(std::string_view method_descriptor);
+    std::vector<std::string> FindMethodInvoked(std::string method_descriptor);
 
     /**
      *
