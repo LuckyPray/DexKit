@@ -10,7 +10,7 @@ namespace dexkit {
 
 using namespace acdat;
 
-DexKit::DexKit(std::string_view apk_path) {
+DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
     auto map = MemMap(apk_path);
     if (!map.ok()) {
         return;
@@ -18,18 +18,27 @@ DexKit::DexKit(std::string_view apk_path) {
     auto zip_file = ZipFile::Open(map);
     maps_.emplace_back(std::move(map));
     if (zip_file) {
+        std::vector<std::pair<int, ZipLocalFile *>> dexs;
         for (int idx = 1;; ++idx) {
             auto entry_name = "classes" + (idx == 1 ? std::string() : std::to_string(idx)) + ".dex";
             auto entry = zip_file->Find(entry_name);
             if (!entry) {
                 break;
             }
-            auto dex_image = entry->uncompress();
-            if (!dex_image.ok()) {
-                continue;
-            }
-            dex_images_.emplace_back(dex_image.addr(), dex_image.len());
-            maps_.emplace_back(std::move(dex_image));
+            dexs.emplace_back(idx, entry);
+        }
+        dex_images_.resize(dexs.size());
+        maps_.resize(dexs.size() + 1);
+        ThreadPool pool(unzip_thread_num == -1 ? thread_num_ : unzip_thread_num);
+        for (auto &dex_pair: dexs) {
+            pool.enqueue([&dex_pair, this]() {
+                auto dex_image = dex_pair.second->uncompress();
+                if (!dex_image.ok()) {
+                    return;
+                }
+                dex_images_[dex_pair.first - 1] = std::make_pair(dex_image.addr(), dex_image.len());
+                maps_[dex_pair.first] = std::move(dex_image);
+            });
         }
     }
     InitImages();
@@ -260,11 +269,11 @@ void DexKit::InitImages() {
         auto reader = dex::Reader((const dex::u1 *) image, size);
         readers_.emplace_back(std::move(reader));
     }
-    strings_.reserve(readers_.size());
-    type_names_.reserve(readers_.size());
-    class_method_ids_.reserve(readers_.size());
-    method_codes_.reserve(readers_.size());
-    proto_type_list_.reserve(readers_.size());
+    strings_.resize(readers_.size());
+    type_names_.resize(readers_.size());
+    class_method_ids_.resize(readers_.size());
+    method_codes_.resize(readers_.size());
+    proto_type_list_.resize(readers_.size());
 
     init_flags_.resize(readers_.size(), false);
 }
@@ -286,13 +295,11 @@ void DexKit::InitCached(int dex_idx) {
     auto &method_codes = method_codes_[dex_idx];
     auto &proto_type_list = proto_type_list_[dex_idx];
 
-    mutex_.lock();
     strings.resize(reader.StringIds().size());
     type_names.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
     method_codes.resize(reader.MethodIds().size(), nullptr);
     proto_type_list.resize(reader.ProtoIds().size(), nullptr);
-    mutex_.unlock();
 
     auto strings_it = strings.begin();
     for (auto &str: reader.StringIds()) {
