@@ -4,7 +4,6 @@
 #include <stack>
 #include <map>
 #include <set>
-#include "byte_code_util.h"
 #include "dex_kit.h"
 
 int main() {
@@ -29,8 +28,8 @@ int main() {
         }
     }
 
-    auto res1 = dexKit.FindMethodInvoked(
-            "Landroid/arch/lifecycle/ClassesInfoCache;->getInfo(Ljava/lang/Class;)Landroid/arch/lifecycle/ClassesInfoCache$CallbackInfo;");
+    auto res1 = dexKit.FindMethodInvoked("Landroid/arch/lifecycle/ClassesInfoCache;->getInfo(Ljava/lang/Class;)"
+                                         "Landroid/arch/lifecycle/ClassesInfoCache$CallbackInfo;");
     std::cout << "FindMethodInvoked -> \n";
     for (auto &value: res1) {
         std::cout << "\t" << value << "\n";

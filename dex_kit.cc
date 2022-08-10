@@ -138,6 +138,11 @@ DexKit::LocationClasses(std::map<std::string, std::set<std::string>> &location_m
             }
         }
     }
+    for (auto &[key, value]: location_map) {
+        if (result.find(key) == result.end()) {
+            result[key] = std::vector<std::string>();
+        }
+    }
     return result;
 }
 
