@@ -78,6 +78,12 @@ private:
 
     void InitCached(int dex_idx);
 
+    std::tuple<std::string, std::string, std::vector<std::string>>
+    ConvertDescriptors(std::string &return_decl, std::vector<std::string> &param_decls);
+
+    bool IsMethodMatch(int dex_idx, uint32_t method_idx, const std::string &shorty_match,
+                       uint32_t return_type, const std::vector<uint32_t> &param_types);
+
     std::string GetMethodDescriptor(int dex_idx, uint32_t method_idx);
 
     static std::string GetClassDescriptor(std::string class_name);

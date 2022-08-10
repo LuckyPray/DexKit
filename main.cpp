@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include "dex_kit.h"
+#include "code_format.h"
 
 int main() {
     std::map<std::string, std::set<std::string>> obfuscate = {
@@ -21,6 +22,7 @@ int main() {
 
     // 返回混淆map中包含所有字符串的类
     auto res = dexKit.LocationClasses(obfuscate);
+//    dexKit.SetThreadNum(1);
     for (auto &[key, value]: res) {
         std::cout << key << " -> \n";
         for (auto &v: value) {

@@ -4,6 +4,7 @@
 #include "thread_pool.h"
 #include "byte_code_util.h"
 #include "opcode_util.h"
+#include "code_format.h"
 #include <algorithm>
 
 namespace dexkit {
@@ -276,7 +277,6 @@ std::vector<std::string> DexKit::FindMethodOpPrefixSeq(std::vector<uint8_t> &op_
             InitCached(dex_idx);
             auto &method_codes = method_codes_[dex_idx];
             auto &class_method_ids = class_method_ids_[dex_idx];
-            auto &type_names = type_names_[dex_idx];
             std::vector<std::string> result;
             for (auto &methods: class_method_ids) {
                 for (auto method_idx: methods) {
@@ -412,6 +412,49 @@ void DexKit::InitCached(int dex_idx) {
         }
     }
     init_flags_[dex_idx] = true;
+}
+
+std::tuple<std::string, std::string, std::vector<std::string>>
+DexKit::ConvertDescriptors(std::string &return_decl, std::vector<std::string> &param_decls) {
+    std::string return_type = DeclToMatchDescriptor(return_decl);
+    std::vector<std::string> param_types;
+    for (auto &param_decl: param_decls) {
+        param_types.emplace_back(DeclToMatchDescriptor(param_decl));
+    }
+    std::string shorty = DescriptorToMatchShorty(return_type, param_types);
+    return std::make_tuple(shorty, return_type, param_types);
+}
+
+bool DexKit::IsMethodMatch(int dex_idx, uint32_t method_idx, const std::string &shorty_match,
+                           uint32_t return_type, const std::vector<uint32_t> &param_types) {
+    auto &reader = readers_[dex_idx];
+    auto &strings = strings_[dex_idx];
+    auto &method_id = reader.MethodIds()[method_idx];
+    auto &proto_id = reader.ProtoIds()[method_id.proto_idx];
+    auto &shorty = strings[proto_id.shorty_idx];
+    if (!shorty.empty() && !ShortyDescriptorMatch(shorty_match, shorty)) {
+        return false;
+    }
+    if (return_type != dex::kNoIndex && return_type != proto_id.return_type_idx) {
+        return false;
+    }
+    auto &type_list = proto_type_list_[dex_idx][method_id.proto_idx];
+    if (type_list == nullptr) {
+        if (proto_id.parameters_off == 0) {
+            type_list = new dex::TypeList();
+        } else {
+            type_list = reader.dataPtr<dex::TypeList>(proto_id.parameters_off);
+        }
+    }
+    if (param_types.size() != type_list->size) {
+        return false;
+    }
+    for (int i = 0; i < type_list->size; ++i) {
+        if (param_types[i] != dex::kNoIndex && type_list->list[i].type_idx != param_types[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 std::string DexKit::GetMethodDescriptor(int dex_idx, uint32_t method_idx) {
