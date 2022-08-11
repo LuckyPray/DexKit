@@ -31,7 +31,7 @@ public:
      * eg. {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> ["Lxadt;"]}
      */
     std::map<std::string, std::vector<std::string>> LocationClasses(
-            std::map<std::string, std::set<std::string>> &location_map);
+            std::map<std::string, std::set<std::string>> &location_map, bool advanced_match = false);
 
     /**
      *
@@ -39,7 +39,22 @@ public:
      * @return invoke methods descriptor list: <br/> eg.
      * ["Landroidx/activity/ComponentActivity;->onCreate(Landroid/os/Bundle;)V",]
      */
-    std::vector<std::string> FindMethodInvoked(std::string method_descriptor);
+    std::vector<std::string> FindMethodInvoked(std::string method_descriptor,
+                                               std::string decl_class_name,
+                                               std::string method_name,
+                                               std::string result_class_decl,
+                                               const std::vector<std::string> &param_class_decls,
+                                               const std::vector<size_t> &dex_priority,
+                                               bool match_any_param = false);
+
+
+    std::vector<std::string> FindMethodUsedString(std::string str,
+                                                  std::string decl_class_name,
+                                                  std::string method_name,
+                                                  std::string result_class_decl,
+                                                  const std::vector<std::string> &param_class_decls,
+                                                  const std::vector<size_t> &dex_priority,
+                                                  bool match_any_param = false);
 
     /**
      *
@@ -57,6 +72,10 @@ public:
      * eg. ["Landroid/arch/lifecycle/ClassesInfoCache;-><init>()V"]
      */
     std::vector<std::string> FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq);
+
+    size_t GetDexNum() {
+        return dex_images_.size();
+    }
 
 private:
     std::vector<bool> init_flags_;
@@ -76,17 +95,23 @@ private:
 
     void InitImages();
 
-    void InitCached(int dex_idx);
+    void InitCached(size_t dex_idx);
 
     std::tuple<std::string, std::string, std::vector<std::string>>
     ConvertDescriptors(std::string &return_decl, std::vector<std::string> &param_decls);
 
-    bool IsMethodMatch(int dex_idx, uint32_t method_idx, const std::string &shorty_match,
-                       uint32_t return_type, const std::vector<uint32_t> &param_types);
+    uint32_t FindTypeIdx(size_t dex_idx, std::string &type_desc);
 
-    std::string GetMethodDescriptor(int dex_idx, uint32_t method_idx);
+    bool IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_class,
+                       const std::string &shorty_match, const std::string &method_name,
+                       uint32_t return_type, const std::vector<uint32_t> &param_types,
+                       bool match_any_param);
 
-    static std::string GetClassDescriptor(std::string class_name);
+    std::string GetMethodDescriptor(size_t dex_idx, uint32_t method_idx);
+
+    static std::string GetClassDescriptor(std::string &class_name);
+
+    std::vector<size_t> GetDexPriority(const std::vector<size_t> &dex_priority);
 };
 
 }

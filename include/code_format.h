@@ -32,35 +32,7 @@ constexpr std::string_view PrimitiveTypeName(char type_char) {
     }
 }
 
-// Converts a type descriptor to human-readable "dotted" form.  For
-// example, "Ljava/lang/String;" becomes "java.lang.String", and
-// "[I" becomes "int[]".
-static std::string DescriptorToDecl(const char *descriptor) {
-    std::stringstream ss;
-
-    int array_dimensions = 0;
-    while (*descriptor == '[') {
-        ++array_dimensions;
-        ++descriptor;
-    }
-
-    if (*descriptor == 'L') {
-        for (++descriptor; *descriptor != ';'; ++descriptor) {
-            ss << (*descriptor == '/' ? '.' : *descriptor);
-        }
-    } else {
-        ss << PrimitiveTypeName(*descriptor);
-    }
-
-    // add the array brackets
-    for (int i = 0; i < array_dimensions; ++i) {
-        ss << "[]";
-    }
-
-    return ss.str();
-}
-
-static std::vector<std::string> ExtractParamDescriptors(const std::string& descriptors) {
+static std::vector<std::string> ExtractParamDescriptors(const std::string &descriptors) {
     std::vector<std::string> params;
     const char *p = descriptors.c_str();
     std::stringstream ss;
@@ -98,7 +70,7 @@ static std::vector<std::string> ExtractParamDescriptors(const std::string& descr
 }
 
 static std::tuple<std::string, std::string, std::string, std::vector<std::string>>
-ExtractMethodDescriptor(std::string method_descriptor) {
+ExtractMethodDescriptor(std::string &method_descriptor) {
     std::string class_desc, method_name, return_desc;
     size_t pos = method_descriptor.find("->");
     if (pos != std::string::npos) {
@@ -114,25 +86,6 @@ ExtractMethodDescriptor(std::string method_descriptor) {
     }
     std::vector<std::string> param_descs = ExtractParamDescriptors(method_descriptor.substr(pos1 + 1, pos2 - pos1 - 1));
     return std::make_tuple(class_desc, method_name, return_desc, param_descs);
-}
-
-// Converts a type descriptor to a single "shorty" char
-// (ex. "LFoo;" and "[[I" become 'L', "I" stays 'I')
-static char DescriptorToShorty(const char *descriptor) {
-    // skip array dimensions
-    int array_dimensions = 0;
-    while (*descriptor == '[') {
-        ++array_dimensions;
-        ++descriptor;
-    }
-
-    char short_descriptor = *descriptor;
-    if (short_descriptor == 'L') {
-        // skip the full class name
-        for (; *descriptor && *descriptor != ';'; ++descriptor);
-    }
-
-    return array_dimensions > 0 ? 'L' : short_descriptor;
 }
 
 // Converts Declare java type to a type descriptor

@@ -9,10 +9,10 @@
 
 int main() {
     std::map<std::string, std::set<std::string>> obfuscate = {
-            {"Lcom/tencent/mobileqq/activity/ChatActivityFacade;",               {"reSendEmo"}},
+            {"Lcom/tencent/mobileqq/activity/ChatActivityFacade;",               {"^reSendEmo"}},
             {"Lcooperation/qzone/PlatformInfor;",                                {"52b7f2", "qimei"}},
             {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;", {"TroopClockInHandler"}},
-            {"test",                                                             {"mark_uin_upload"}},
+            {"com.tencent.widget.CustomWidgetUtil",                              {"^NEW$"}},
     };
 
     dexkit::DexKit dexKit("../dex/qq-8.9.2/qq-8.9.2.apk");
@@ -21,7 +21,7 @@ int main() {
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
 
     // 返回混淆map中包含所有字符串的类
-    auto res = dexKit.LocationClasses(obfuscate);
+    auto res = dexKit.LocationClasses(obfuscate, true);
 //    dexKit.SetThreadNum(1);
     for (auto &[key, value]: res) {
         std::cout << key << " -> \n";
@@ -30,8 +30,10 @@ int main() {
         }
     }
 
-    auto res1 = dexKit.FindMethodInvoked("Landroid/arch/lifecycle/ClassesInfoCache;->getInfo(Ljava/lang/Class;)"
-                                         "Landroid/arch/lifecycle/ClassesInfoCache$CallbackInfo;");
+    std::vector<std::string> v;
+    std::vector<size_t> p{1, 2, 3};
+    auto res1 = dexKit.FindMethodInvoked("Landroid/widget/TextView;->setCompoundDrawablesWithIntrinsicBounds(IIII)V",
+                                         "", "", "", v, p);
     std::cout << "FindMethodInvoked -> \n";
     for (auto &value: res1) {
         std::cout << "\t" << value << "\n";
