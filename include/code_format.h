@@ -97,22 +97,24 @@ static std::string DeclToDescriptor(const std::string &type) {
     for (int i = 0; i < arr_dimensions; ++i) {
         desc << '[';
     }
-    if (type.rfind("int") == 0) {
+    if (type.find("int") == 0) {
         desc << 'I';
-    } else if (type.rfind("long") == 0) {
+    } else if (type.find("long") == 0) {
         desc << 'J';
-    } else if (type.rfind("float") == 0) {
+    } else if (type.find("float") == 0) {
         desc << 'F';
-    } else if (type.rfind("double") == 0) {
+    } else if (type.find("double") == 0) {
         desc << 'D';
-    } else if (type.rfind("char") == 0) {
+    } else if (type.find("char") == 0) {
         desc << 'C';
-    } else if (type.rfind("byte") == 0) {
+    } else if (type.find("byte") == 0) {
         desc << 'B';
-    } else if (type.rfind("short") == 0) {
+    } else if (type.find("short") == 0) {
         desc << 'S';
-    } else if (type.rfind("boolean") == 0) {
+    } else if (type.find("boolean") == 0) {
         desc << 'Z';
+    } else if (type.find("void") == 0) {
+        desc << 'V';
     } else {
         desc << 'L';
         for (auto &c: type) {
