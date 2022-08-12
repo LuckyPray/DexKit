@@ -30,8 +30,9 @@ public:
      * @return map of possible classes name.
      * eg. {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> ["Lxadt;"]}
      */
-    std::map<std::string, std::vector<std::string>> LocationClasses(
-            std::map<std::string, std::set<std::string>> &location_map, bool advanced_match = false);
+    std::map<std::string, std::vector<std::string>>
+    LocationClasses(std::map<std::string, std::set<std::string>> &location_map,
+                    bool advanced_match = false);
 
     /**
      *
@@ -39,22 +40,34 @@ public:
      * @return invoke methods descriptor list: <br/> eg.
      * ["Landroidx/activity/ComponentActivity;->onCreate(Landroid/os/Bundle;)V",]
      */
-    std::vector<std::string> FindMethodInvoked(std::string method_descriptor,
-                                               std::string decl_class_name,
-                                               std::string method_name,
-                                               std::string result_class_decl,
-                                               const std::vector<std::string> &param_class_decls,
-                                               const std::vector<size_t> &dex_priority,
-                                               bool match_any_param = false);
+    std::vector<std::string>
+    FindMethodInvoked(std::string method_descriptor,
+                      std::string class_decl_name,
+                      std::string method_name,
+                      std::string result_class_decl,
+                      const std::vector<std::string> &param_class_decls,
+                      const std::vector<size_t> &dex_priority,
+                      bool match_any_param_if_param_vector_empty);
 
 
-    std::vector<std::string> FindMethodUsedString(std::string str,
-                                                  std::string decl_class_name,
-                                                  std::string method_name,
-                                                  std::string result_class_decl,
-                                                  const std::vector<std::string> &param_class_decls,
-                                                  const std::vector<size_t> &dex_priority,
-                                                  bool match_any_param = false);
+    std::vector<std::string>
+    FindMethodUsedString(std::string str,
+                         std::string class_decl_name,
+                         std::string method_name,
+                         std::string result_class_decl,
+                         const std::vector<std::string> &param_class_decls,
+                         const std::vector<size_t> &dex_priority,
+                         bool match_any_param_if_param_vector_empty,
+                         bool advanced_match = false);
+
+
+    std::vector<std::string>
+    FindMethod(std::string class_decl_name,
+               std::string method_name,
+               std::string result_class_decl,
+               const std::vector<std::string> &param_class_decls,
+               const std::vector<size_t> &dex_priority,
+               bool match_any_param_if_param_vector_empty);
 
     /**
      *
@@ -62,7 +75,8 @@ public:
      * @return sub class descriptor list. <br/>
      * eg. ["Landroid/app/ActivityGroup;", "Landroid/app/AliasActivity;"]
      */
-    std::vector<std::string> FindSubClasses(std::string class_name);
+    std::vector<std::string>
+    FindSubClasses(std::string class_name);
 
     /**
      *
@@ -71,7 +85,14 @@ public:
      * @return return the method descriptor has beginning of the sequence of OpCode. <br/>
      * eg. ["Landroid/arch/lifecycle/ClassesInfoCache;-><init>()V"]
      */
-    std::vector<std::string> FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq);
+    std::vector<std::string>
+    FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq,
+                          std::string class_decl_name,
+                          std::string method_name,
+                          std::string result_class_decl,
+                          const std::vector<std::string> &param_class_decls,
+                          const std::vector<size_t> &dex_priority,
+                          bool match_any_param_if_param_vector_empty);
 
     size_t GetDexNum() {
         return dex_images_.size();
@@ -105,7 +126,7 @@ private:
     bool IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_class,
                        const std::string &shorty_match, const std::string &method_name,
                        uint32_t return_type, const std::vector<uint32_t> &param_types,
-                       bool match_any_param);
+                       bool match_any_param_if_param_vector_empty);
 
     std::string GetMethodDescriptor(size_t dex_idx, uint32_t method_idx);
 
