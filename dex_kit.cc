@@ -473,7 +473,7 @@ DexKit::FindMethod(std::string class_decl_name,
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (IsMethodMatch(dex_idx, method_idx, class_idx, match_shorty, method_name,
-                                               return_type, param_types, match_any_param_if_param_vector_empty)) {
+                                              return_type, param_types, match_any_param_if_param_vector_empty)) {
                                 result.emplace_back(GetMethodDescriptor(dex_idx, method_idx));
                             }
                         }
@@ -504,36 +504,30 @@ DexKit::FindSubClasses(std::string class_name) {
                     auto &reader = readers_[dex_idx];
                     auto &type_names = type_names_[dex_idx];
 
-                    auto class_idx = dex::kNoIndex;
+                    auto class_type_idx = dex::kNoIndex;
                     for (int i = 0; i < type_names.size(); ++i) {
                         if (type_names[i] == class_descriptor) {
-                            class_idx = i;
+                            class_type_idx = i;
                             break;
                         }
                     }
-                    if (class_idx == dex::kNoIndex) {
+                    if (class_type_idx == dex::kNoIndex) {
                         return std::vector<std::string>();
                     }
-                    auto &find_class = reader.ClassDefs()[class_idx];
-                    auto is_interface = (find_class.access_flags & dex::kAccInterface) > 0;
                     std::vector<std::string> result;
                     for (auto &class_def: reader.ClassDefs()) {
-                        if (is_interface) {
-                            if (class_def.interfaces_off == 0) {
-                                continue;
-                            }
+                        if (class_def.interfaces_off > 0) {
                             auto types = reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
                             for (int i = 0; i < types->size; ++i) {
                                 auto type_idx = types->list[i].type_idx;
-                                if (type_idx == class_idx) {
+                                if (type_idx == class_type_idx) {
                                     result.emplace_back(type_names[class_def.class_idx]);
                                     break;
                                 }
                             }
-                        } else {
-                            if (class_def.superclass_idx == class_idx) {
-                                result.emplace_back(type_names[class_def.class_idx]);
-                            }
+                        }
+                        if (class_def.superclass_idx == class_type_idx) {
+                            result.emplace_back(type_names[class_def.class_idx]);
                         }
                     }
                     return result;
@@ -611,7 +605,7 @@ DexKit::FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq,
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (!IsMethodMatch(dex_idx, method_idx, class_idx, match_shorty, method_name,
-                                              return_type, param_types, match_any_param_if_param_vector_empty)) {
+                                               return_type, param_types, match_any_param_if_param_vector_empty)) {
                                 continue;
                             }
                             auto &code = method_codes[method_idx];
