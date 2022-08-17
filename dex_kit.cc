@@ -690,10 +690,18 @@ void DexKit::InitCached(size_t dex_idx) {
         *strings_it++ = reinterpret_cast<const char *>(str_ptr);
     }
 
-
     auto type_names_it = type_names.begin();
     for (auto &type_id: reader.TypeIds()) {
         *type_names_it++ = strings[type_id.descriptor_idx];
+    }
+
+    auto proto_it = proto_type_list.begin();
+    for (auto &proto: reader.ProtoIds()) {
+        if (proto.parameters_off != 0) {
+            auto *type_list_ptr = reader.dataPtr<dex::TypeList>(proto.parameters_off);
+            *proto_it = type_list_ptr;
+        }
+        ++proto_it;
     }
 
     for (auto &class_def: reader.ClassDefs()) {
@@ -776,20 +784,14 @@ bool DexKit::IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_cl
         return false;
     }
     auto &type_list = proto_type_list_[dex_idx][method_id.proto_idx];
-    if (type_list == nullptr) {
-        if (proto_id.parameters_off == 0) {
-            type_list = std::make_unique<dex::TypeList>();
-        } else {
-            type_list = std::make_unique<dex::TypeList>(*reader.dataPtr<dex::TypeList>(proto_id.parameters_off));
-        }
-    }
     if (match_any_param_if_param_vector_empty) {
         return true;
     }
     if (param_types.size() != type_list->size) {
         return false;
     }
-    for (int i = 0; i < type_list->size; ++i) {
+    auto len = type_list ? type_list->size : 0;
+    for (int i = 0; i < len; ++i) {
         if (param_types[i] != dex::kNoIndex && type_list->list[i].type_idx != param_types[i]) {
             return false;
         }
@@ -804,18 +806,12 @@ std::string DexKit::GetMethodDescriptor(size_t dex_idx, uint32_t method_idx) {
     auto &method_id = reader.MethodIds()[method_idx];
     auto &proto_id = reader.ProtoIds()[method_id.proto_idx];
     auto &type_list = proto_type_list_[dex_idx][method_id.proto_idx];
-    if (type_list == nullptr) {
-        if (proto_id.parameters_off == 0) {
-            type_list = std::make_unique<dex::TypeList>();
-        } else {
-            type_list = std::make_unique<dex::TypeList>(*reader.dataPtr<dex::TypeList>(proto_id.parameters_off));
-        }
-    }
     std::string descriptor(type_names[method_id.class_idx]);
     descriptor += "->";
     descriptor += strings[method_id.name_idx];
     descriptor += '(';
-    for (int i = 0; i < type_list->size; ++i) {
+    auto len = type_list ? type_list->size : 0;
+    for (int i = 0; i < len; ++i) {
         descriptor += strings[reader.TypeIds()[type_list->list[i].type_idx].descriptor_idx];
     }
     descriptor += ')';
