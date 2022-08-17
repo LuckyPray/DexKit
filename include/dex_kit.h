@@ -110,7 +110,7 @@ private:
     std::vector<std::vector<std::string_view>> type_names_;
     std::vector<std::vector<std::vector<std::uint32_t>>> class_method_ids_;
     std::vector<std::vector<const dex::Code *>> method_codes_;
-    std::vector<std::vector<const dex::TypeList *>> proto_type_list_;
+    std::vector<std::vector<std::unique_ptr<const dex::TypeList>>> proto_type_list_;
 
     std::vector<std::string> cache_;
 

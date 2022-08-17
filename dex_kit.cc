@@ -681,7 +681,7 @@ void DexKit::InitCached(size_t dex_idx) {
     type_names.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
     method_codes.resize(reader.MethodIds().size(), nullptr);
-    proto_type_list.resize(reader.ProtoIds().size(), nullptr);
+    proto_type_list.resize(reader.ProtoIds().size());
 
     auto strings_it = strings.begin();
     for (auto &str: reader.StringIds()) {
@@ -778,9 +778,9 @@ bool DexKit::IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_cl
     auto &type_list = proto_type_list_[dex_idx][method_id.proto_idx];
     if (type_list == nullptr) {
         if (proto_id.parameters_off == 0) {
-            type_list = new dex::TypeList();
+            type_list = std::make_unique<dex::TypeList>();
         } else {
-            type_list = reader.dataPtr<dex::TypeList>(proto_id.parameters_off);
+            type_list = std::make_unique<dex::TypeList>(*reader.dataPtr<dex::TypeList>(proto_id.parameters_off));
         }
     }
     if (match_any_param_if_param_vector_empty) {
@@ -806,9 +806,9 @@ std::string DexKit::GetMethodDescriptor(size_t dex_idx, uint32_t method_idx) {
     auto &type_list = proto_type_list_[dex_idx][method_id.proto_idx];
     if (type_list == nullptr) {
         if (proto_id.parameters_off == 0) {
-            type_list = new dex::TypeList();
+            type_list = std::make_unique<dex::TypeList>();
         } else {
-            type_list = reader.dataPtr<dex::TypeList>(proto_id.parameters_off);
+            type_list = std::make_unique<dex::TypeList>(*reader.dataPtr<dex::TypeList>(proto_id.parameters_off));
         }
     }
     std::string descriptor(type_names[method_id.class_idx]);
