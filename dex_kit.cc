@@ -125,9 +125,15 @@ DexKit::LocationClasses(std::map<std::string, std::set<std::string>> &location_m
                         auto ptr = p;
                         auto width = GetBytecodeWidth(ptr++);
                         switch (op) {
-                            case 0x1a:
-                            case 0x1b: {
+                            case 0x1a: {
                                 auto index = ReadShort(ptr);
+                                if (string_map.find(index) != string_map.end()) {
+                                    search_set.emplace(string_map[index]);
+                                }
+                                break;
+                            }
+                            case 0x1b: {
+                                auto index = ReadInt(ptr);
                                 if (string_map.find(index) != string_map.end()) {
                                     search_set.emplace(string_map[index]);
                                 }
@@ -381,9 +387,17 @@ DexKit::FindMethodUsedString(std::string str,
                                 auto ptr = p;
                                 auto width = GetBytecodeWidth(ptr++);
                                 switch (op) {
-                                    case 0x1a:
-                                    case 0x1b: {
+                                    case 0x1a: {
                                         auto index = ReadShort(ptr);
+                                        if (matched_strings.find(index) != matched_strings.end()) {
+                                            auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
+                                            result.emplace_back(descriptor);
+                                            goto label;
+                                        }
+                                        break;
+                                    }
+                                    case 0x1b: {
+                                        auto index = ReadInt(ptr);
                                         if (matched_strings.find(index) != matched_strings.end()) {
                                             auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
                                             result.emplace_back(descriptor);
