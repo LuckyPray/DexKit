@@ -34,6 +34,10 @@ public:
     LocationClasses(std::map<std::string, std::set<std::string>> &location_map,
                     bool advanced_match = false);
 
+    std::map<std::string, std::vector<std::string>>
+    LocationMethods(std::map<std::string, std::set<std::string>> &location_map,
+                    bool advanced_match = false);
+
     /**
      *
      * @param method_descriptor Like "Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V"

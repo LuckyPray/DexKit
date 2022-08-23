@@ -145,12 +145,135 @@ DexKit::LocationClasses(std::map<std::string, std::set<std::string>> &location_m
                         p += width;
                     }
                 }
+                if (search_set.empty()) continue;
                 for (auto &[real_class, value_set]: location_map) {
                     std::vector<std::string> vec;
                     std::set_intersection(search_set.begin(), search_set.end(), value_set.begin(), value_set.end(),
                                           std::inserter(vec, vec.begin()));
                     if (vec.size() == value_set.size()) {
                         result[real_class].emplace_back(type_names[i]);
+                    }
+                }
+            }
+            return result;
+        }));
+    }
+    std::map<std::string, std::vector<std::string>> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &[key, value]: r) {
+            for (auto &cls_name: value) {
+                result[key].emplace_back(cls_name);
+            }
+        }
+    }
+    for (auto &[key, value]: location_map) {
+        if (result.find(key) == result.end()) {
+            result[key] = std::vector<std::string>();
+        }
+    }
+    return result;
+}
+
+std::map<std::string, std::vector<std::string>>
+DexKit::LocationMethods(std::map<std::string, std::set<std::string>> &location_map, bool advanced_match) {
+    auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
+    std::map<std::string, std::string> buildMap;
+    std::map<std::string, uint8_t> flag_map;
+    for (auto &[name, str_set]: location_map) {
+        for (auto &str: str_set) {
+            uint32_t l = 0, r = str.size();
+            uint8_t flag = 0;
+            if (advanced_match) {
+                if (str[0] == '^') {
+                    l = 1;
+                    flag |= 1;
+                }
+                if (str[str.size() - 1] == '$') {
+                    r = str.size() - 1;
+                    flag |= 2;
+                }
+            }
+            auto origin_str = str.substr(l, r - l);
+            flag_map[origin_str] = flag;
+            buildMap[origin_str] = origin_str;
+        }
+    }
+    Builder<std::string>().build(buildMap, &acdat);
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::map<std::string, std::vector<std::string>>>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue([&acdat, &location_map, dex_idx, this, &flag_map]() {
+            InitCached(dex_idx);
+            auto &method_codes = method_codes_[dex_idx];
+            auto &class_method_ids = class_method_ids_[dex_idx];
+            auto &type_names = type_names_[dex_idx];
+            auto &strings = strings_[dex_idx];
+
+            std::map<std::string, std::vector<std::string>> result;
+
+            std::map<dex::u4, std::string> string_map;
+            for (int index = 0; index < strings.size(); ++index) {
+                auto string = strings[index];
+                std::function<void(int, int, std::string)> callback =
+                        [&string_map, index, &flag_map, &string](int begin, int end, const std::string &value) -> void {
+                            auto flag = flag_map[value];
+                            if ((flag & 1 && begin != 0) ||
+                                (flag >> 1 && end != string.size())) {
+                                return;
+                            }
+                            string_map[index] = ((flag & 1) ? "^" : "") + value + ((flag >> 1) ? "$" : "");
+                        };
+                acdat.parseText(string.data(), callback);
+            }
+
+            if (string_map.empty()) {
+                return std::map<std::string, std::vector<std::string>>();
+            }
+            for (int i = 0; i < type_names.size(); ++i) {
+                if (class_method_ids[i].empty()) {
+                    continue;
+                }
+                for (auto method_idx: class_method_ids[i]) {
+                    std::set<std::string> search_set;
+                    auto &code = method_codes[method_idx];
+                    if (code == nullptr) {
+                        continue;
+                    }
+                    auto p = code->insns;
+                    auto end_p = p + code->insns_size;
+                    while (p < end_p) {
+                        auto op = *p & 0xff;
+                        auto ptr = p;
+                        auto width = GetBytecodeWidth(ptr++);
+                        switch (op) {
+                            case 0x1a: {
+                                auto index = ReadShort(ptr);
+                                if (string_map.find(index) != string_map.end()) {
+                                    search_set.emplace(string_map[index]);
+                                }
+                                break;
+                            }
+                            case 0x1b: {
+                                auto index = ReadInt(ptr);
+                                if (string_map.find(index) != string_map.end()) {
+                                    search_set.emplace(string_map[index]);
+                                }
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        p += width;
+                    }
+                    if (search_set.empty()) continue;
+                    for (auto &[real_method, value_set]: location_map) {
+                        std::vector<std::string> vec;
+                        std::set_intersection(search_set.begin(), search_set.end(), value_set.begin(), value_set.end(),
+                                              std::inserter(vec, vec.begin()));
+                        if (vec.size() == value_set.size()) {
+                            result[real_method].emplace_back(GetMethodDescriptor(dex_idx, method_idx));
+                        }
                     }
                 }
             }
