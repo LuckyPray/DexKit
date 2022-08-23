@@ -7,4 +7,4 @@ The slicer directory is partially copied from [AOSP](https://cs.android.com/andr
 
 Modified parts are owed by LuckyPray Developers. If you would like to use it in an open source project, please submodule it.
 
-Please see main.cc for usage examples.
+Please see [main.cpp](https://github.com/LuckyPray/DexKit/blob/master/main.cpp) for usage examples.

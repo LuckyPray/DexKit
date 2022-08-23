@@ -15,7 +15,8 @@ int main() {
             {"com.tencent.widget.CustomWidgetUtil",                              {"^NEW$"}},
     };
 
-    dexkit::DexKit dexKit("../dex/qq-8.9.2/qq-8.9.2.apk");
+    dexkit::DexKit dexKit("../dex/qq-8.9.3.apk");
+    dexKit.SetThreadNum(1);
 
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
@@ -24,7 +25,7 @@ int main() {
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
     auto res = dexKit.LocationClasses(obfuscate, true);
-//    dexKit.SetThreadNum(1);
+
     for (auto &[key, value]: res) {
         std::cout << key << " -> \n";
         for (auto &v: value) {
@@ -39,8 +40,8 @@ int main() {
     // 如果不指定方法签名则可按参数模糊匹配，使用空串则代表模糊匹配
     // result ex.
     // {"Lcom/qzone/album/ui/widget/AlbumDialog;->n(I)V"}
-    auto res1 = dexKit.FindMethodInvoked("Landroid/widget/TextView;->setCompoundDrawablesWithIntrinsicBounds(IIII)V",
-                                         "", "", "", v, p, false);
+    auto res1 = dexKit.FindMethodInvoked("",//"Lcom/tencent/mobileqq/app/CardHandler;->X6(Lcom/tencent/qphone/base/remote/ToServiceMsg;Lcom/tencent/qphone/base/remote/FromServiceMsg;Ljava/lang/Object;Landroid/os/Bundle;)V",
+                                         "", "realHandleRequest", "", v, p, true);
     std::cout << "FindMethodInvoked -> \n";
     for (auto &value: res1) {
         std::cout << "\t" << value << "\n";
@@ -72,6 +73,12 @@ int main() {
     auto res4 = dexKit.FindMethodUsedString("^NEW$", {}, {}, {}, {}, p, true, true);
     std::cout << "FindMethodUsedString -> \n";
     for (auto &value: res4) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    auto res5 = dexKit.FindMethod("com.tencent.mobileqq.x.a", "i6", "", v, p, true);
+    std::cout << "FindMethod -> \n";
+    for (auto &value: res5) {
         std::cout << "\t" << value << "\n";
     }
 
