@@ -18,8 +18,8 @@ DexKit应该是目前最快的反混淆工具。
 在正常情况下使用 **`DexKit::LocationClasses`**、 **`DexKit::LocationMethods`** 这两个方法即可满足日常的反混淆定位需求。
 
 目前支持以下API:
-- **`DexKit::LocationClasses`**: 多字符串综和定位类
-- **`DexKit::LocationMethods`**: 多字符串综和定位方法
+- **`DexKit::LocationClasses`**: 多字符串综合定位类
+- **`DexKit::LocationMethods`**: 多字符串综合定位方法
 - `DexKit::FindMethodInvoked`: 查找所有调用指定方法的方法(invoke-kind类别的opcode)
 - `DexKit::FindMethodUsedString`: 查找调用了指定字符串的方法(`const-string`、`const-string/jumbo`)
 - `DexKit::FindMethod`: 多条件查找方法
