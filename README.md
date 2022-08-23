@@ -1,5 +1,8 @@
  DexKit
 --
+目前仅有中文文档包含较为粗略的API说明。
+
+[README](https://github.com/LuckyPray/DexKit/blob/master/README.md)|[中文文档](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
 
 A dex parsing tool dedicated to better use.
 
