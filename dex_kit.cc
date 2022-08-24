@@ -11,14 +11,6 @@ namespace dexkit {
 
 using namespace acdat;
 
-[[maybe_unused]] DexKit *DexKit::CreateDexKit(std::string_view apk_path, int unzip_thread_num) {
-    return new DexKit(apk_path, unzip_thread_num);
-}
-
-[[maybe_unused]] DexKit *DexKit::CreateDexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
-    return new DexKit(dex_images);
-}
-
 DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
     auto map = MemMap(apk_path);
     if (!map.ok()) {

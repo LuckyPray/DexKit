@@ -92,7 +92,7 @@ int main() {
 
     // 使用 new 创建DexKit对象，但是得手动释放，否则会造成内存泄漏
     // 可以将指针强转为 jlong 回传给java层保存，然后后续再使用相同对象重复调用，避免重复初始化缓存
-    auto dexKit = dexkit::DexKit::CreateDexKit("../dex/qq-8.8.80.apk");
+    auto dexKit = new dexkit::DexKit("../dex/qq-8.8.80.apk");
 
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());

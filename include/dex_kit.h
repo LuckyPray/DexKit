@@ -13,9 +13,6 @@ namespace dexkit {
 
 class DexKit {
 public:
-    [[maybe_unused]] static DexKit *CreateDexKit(std::string_view apk_path, int unzip_thread_num = -1);
-
-    static DexKit *CreateDexKit(std::vector<std::pair<const void *, size_t>> &dex_images);
 
     explicit DexKit(std::string_view apk_path, int unzip_thread_num = -1);
 
