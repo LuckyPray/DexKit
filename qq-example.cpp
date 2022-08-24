@@ -90,14 +90,17 @@ int main() {
             {"N_ContactUtils_getBuddyName",                     {"getBuddyName()"}},
     };
 
-    dexkit::DexKit dexKit("../dex/qq-8.8.80.apk");
+    // 使用 new 创建DexKit对象，但是得手动释放，否则会造成内存泄漏
+    // 可以将指针强转为 jlong 回传给java层保存，然后后续再使用相同对象重复调用，避免重复初始化缓存
+    auto dexKit = dexkit::DexKit::CreateDexKit("../dex/qq-8.8.80.apk");
+
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
 
     // 返回混淆map中包含所有字符串的类, 高级搜索可以使用 '^'与'$'限制字符串匹配，与正则表达式语义一致
     // result ex.
     // {"C_ABS_GAL_SCENE" -> {"Lcom/tencent/common/galleryactivity/AbstractGalleryScene;"}}
-    auto res = dexKit.LocationClasses(obfuscate_class, true);
+    auto res = dexKit->LocationClasses(obfuscate_class, true);
     std::cout << "---------------LocationClasses---------------\n";
     for (auto &[key, value]: res) {
         std::cout << key << " -> \n";
@@ -109,7 +112,7 @@ int main() {
     // 返回混淆map中包含所有字符串的方法描述, 高级搜索可以使用 '^'与'$'限制字符串匹配，与正则表达式语义一致
     // result ex.
     // {"N_WebSecurityPluginV2_callback" -> {"Lcom/tencent/mobileqq/webview/WebSecurityPluginV2$1;->callback(Landroid/os/Bundle;)V"}}
-    auto res_m = dexKit.LocationMethods(obfuscate_method, true);
+    auto res_m = dexKit->LocationMethods(obfuscate_method, true);
     std::cout << "---------------LocationMethods---------------\n";
     for (auto &[key, value]: res_m) {
         std::cout << key << " -> \n";
@@ -134,6 +137,9 @@ int main() {
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "used time: " << now_ms1.count() - now_ms.count() << " ms\n";
+
+    // 释放资源
+    delete dexKit;
 
     return 0;
 }
