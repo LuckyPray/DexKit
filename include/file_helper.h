@@ -167,7 +167,8 @@ struct [[gnu::packed]] ZipLocalFile {
 class ZipFile {
 public:
     static std::unique_ptr<ZipFile> Open(const MemMap &map) {
-        static auto *local_file = ZipLocalFile::from(map.addr());
+        static ZipLocalFile *local_file;
+        local_file = ZipLocalFile::from(map.addr());
         if (!local_file) return nullptr;
         auto r = std::make_unique<ZipFile>();
         while (local_file) {
