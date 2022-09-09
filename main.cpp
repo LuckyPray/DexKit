@@ -16,75 +16,117 @@ int main() {
     };
 
     dexkit::DexKit dexKit("../dex/qq-8.9.3.apk");
-    dexKit.SetThreadNum(1);
+
+    // default threadNum used std::thread::hardware_concurrency()
+    // dexKit.SetThreadNum(1);
 
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
 
-    // 返回混淆map中包含所有字符串的类, 高级搜索可以使用 '^'与'$'限制字符串匹配，与正则表达式语义一致
+    // find classes that use all strings in all methods of this class
+    // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
+    // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
-    auto res = dexKit.LocationClasses(obfuscate, true);
-
-    for (auto &[key, value]: res) {
+    auto classes = dexKit.LocationClasses(obfuscate, true);
+    std::cout << "\nLocationClasses -> \n";
+    for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
         for (auto &v: value) {
             std::cout << "\t" << v << "\n";
         }
     }
 
-    std::vector<std::string> v;
-    std::vector<size_t> p{};
-    // 返回所有通过invoke-kind指令调用指定的方法的方法描述符
-    // 指定了方法签名后会自动填充后面的参数
-    // 如果不指定方法签名则可按参数模糊匹配，使用空串则代表模糊匹配
+    // Find methods that use all strings in all method of dex.
+    // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
+    // which is consistent with regular expression semantics.
+    // result ex.
+    // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
+    auto methods = dexKit.LocationMethods(obfuscate, true);
+    std::cout << "\nLocationMethods -> \n";
+    for (auto &[key, value]: classes) {
+        std::cout << key << " -> \n";
+        for (auto &v: value) {
+            std::cout << "\t" << v << "\n";
+        }
+    }
+
+
+    // Find caller for specified method.
+    // after specifying method_descriptor, the subsequent parameters are automatically filled in,
+    // If the method_descriptor is not specified, fuzzy matching can be performed by parameters, and an empty string is used to represent fuzzy matching.
     // result ex.
     // {"Lcom/qzone/album/ui/widget/AlbumDialog;->n(I)V"}
-    auto res1 = dexKit.FindMethodInvoked("",//"Lcom/tencent/mobileqq/app/CardHandler;->X6(Lcom/tencent/qphone/base/remote/ToServiceMsg;Lcom/tencent/qphone/base/remote/FromServiceMsg;Ljava/lang/Object;Landroid/os/Bundle;)V",
-                                         "", "realHandleRequest", "", v, p, true);
-    std::cout << "FindMethodInvoked -> \n";
-    for (auto &value: res1) {
+    auto invokedMethod = dexKit.FindMethodInvoked(
+            "Lcom/tencent/mobileqq/app/CardHandler;->X6(Lcom/tencent/qphone/base/remote/ToServiceMsg;Lcom/tencent/qphone/base/remote/FromServiceMsg;Ljava/lang/Object;Landroid/os/Bundle;)V",
+            {},
+            {},
+            {},
+            {},
+            {},
+            false);
+    std::cout << "\nFindMethodInvoked -> \n";
+    for (auto &value: invokedMethod) {
         std::cout << "\t" << value << "\n";
     }
 
-    // 返回所有指定类的子类，自动判断该类是否是接口或抽象类
+    // returns all subclasses of the specified class
     // result ex.
     // {"Landroidx/core/app/ComponentActivity;"}
-    auto res2 = dexKit.FindSubClasses("Landroid/app/Activity;");
-    std::cout << "FindSubClasses -> \n";
-    for (auto &value: res2) {
+    auto subClasses = dexKit.FindSubClasses("Landroid/app/Activity;");
+    std::cout << "\nFindSubClasses -> \n";
+    for (auto &value: subClasses) {
         std::cout << "\t" << value << "\n";
     }
 
-    std::vector<uint8_t> op_seq{0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e};
-    // 返回所有符合字节码op序列前缀的方法描述符
+    // returns all method descriptors matching the prefix of a sequence of bytecode operations
     // result ex.
     // {"Lcom/bumptech/glide/d/c;-><init>()V"}
-    auto res3 = dexKit.FindMethodOpPrefixSeq(op_seq, "Lcom/bumptech/glide/d/c;", "<init>", "void", {}, p, false);
-    std::cout << "FindMethodOpPrefixSeq -> \n";
-    for (auto &value: res3) {
+    auto usedOpPrefixMethods = dexKit.FindMethodOpPrefixSeq(
+            {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
+            "Lcom/bumptech/glide/d/c;",
+            "<init>",
+            "void",
+            {},
+            {},
+            false);
+    std::cout << "\nFindMethodOpPrefixSeq -> \n";
+    for (auto &value: usedOpPrefixMethods) {
         std::cout << "\t" << value << "\n";
     }
 
-    // 返回所有使用了匹配字符串的方法描述符
-    // 高级搜索可以使用 '^'与'$'限制字符串匹配，与正则表达式语义一致
+    // find all used matching string's method
+    // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
     // result ex.
     // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
-    auto res4 = dexKit.FindMethodUsedString("^NEW$", {}, {}, {}, {}, p, true, true);
-    std::cout << "FindMethodUsedString -> \n";
-    for (auto &value: res4) {
+    auto usedStringMethods = dexKit.FindMethodUsedString(
+            "^NEW$", {},
+            {},
+            {},
+            {},
+            {},
+            true,
+            true);
+    std::cout << "\nFindMethodUsedString -> \n";
+    for (auto &value: usedStringMethods) {
         std::cout << "\t" << value << "\n";
     }
 
-    auto res5 = dexKit.FindMethod("com.tencent.mobileqq.x.a", "i6", "", v, p, true);
-    std::cout << "FindMethod -> \n";
-    for (auto &value: res5) {
+    auto findMethods = dexKit.FindMethod(
+            "com.tencent.mobileqq.x.a",
+            "i6",
+            "",
+            {},
+            {},
+            true);
+    std::cout << "\nFindMethod -> \n";
+    for (auto &value: findMethods) {
         std::cout << "\t" << value << "\n";
     }
 
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "used time: " << now_ms1.count() - now_ms.count() << " ms\n";
-//    while (true) sleep(1);
+
     return 0;
 }
