@@ -15,7 +15,7 @@ int main() {
             {"com.tencent.widget.CustomWidgetUtil",                              {"^NEW$"}},
     };
 
-    dexkit::DexKit dexKit("../dex/qq-8.9.3.apk");
+    dexkit::DexKit dexKit("../dex/qq-8.9.2.apk");
 
     // default threadNum used std::thread::hardware_concurrency()
     // dexKit.SetThreadNum(1);
