@@ -5,6 +5,8 @@
 
 A high performance dex deobfuscator library.
 
+This is the CMAKE version of the DexKit project, if you need the NDK version please use [DexKit-Android](https://github.com/LuckyPray/DexKit-Android).
+
 ## API introduction
 
 These two APIs can meet most of your usage scenarios:

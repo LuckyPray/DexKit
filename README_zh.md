@@ -5,6 +5,8 @@ DexKit
 
 一个高性能的 dex 反混淆工具。
 
+这是DexKit项目的CMAKE版本，NDK版本请移步[DexKit-Android](https://github.com/LuckyPray/DexKit-Android)。
+
 ## API说明
 
 这两个 API 可以满足你大部分的使用场景：
