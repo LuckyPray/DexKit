@@ -52,3 +52,5 @@ cmake-build*/
 
 *.dex
 *.apk
+
+local.properties
