@@ -572,8 +572,6 @@ DexKit::FindMethod(std::string class_decl_name,
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &class_desc, &return_desc, &param_descs, &match_shorty, &method_name, &match_any_param_if_param_vector_empty]() {
                     InitCached(dex_idx);
-                    auto &strings = strings_[dex_idx];
-                    auto &method_codes = method_codes_[dex_idx];
                     auto &class_method_ids = class_method_ids_[dex_idx];
                     auto &type_names = type_names_[dex_idx];
                     auto class_idx = dex::kNoIndex;
@@ -751,15 +749,15 @@ DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                             }
                             auto p = code->insns;
                             auto end_p = p + code->insns_size;
-                            int op_index = 0;
-                            while (p < end_p) {
+                            uint32_t op_index = 0, prefix_seq_size = op_prefix_seq.size();
+                            while (p < end_p && op_index < prefix_seq_size) {
                                 auto op = *p & 0xff;
                                 auto ptr = p;
                                 auto width = GetBytecodeWidth(ptr++);
                                 if (op_prefix_seq[op_index++] != op) {
                                     break;
                                 }
-                                if (op_prefix_seq.size() == op_index) {
+                                if (op_index == prefix_seq_size) {
                                     auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
                                     result.emplace_back(descriptor);
                                     break;
@@ -852,7 +850,6 @@ void DexKit::InitCached(size_t dex_idx) {
         dex::u4 virtual_methods_count = ReadULeb128(&class_data);
 
         auto &methods = class_method_ids[class_def.class_idx];
-        methods.resize(direct_methods_count + virtual_methods_count);
 
         for (int i = 0; i < static_fields_size; ++i) {
             ReadULeb128(&class_data);
@@ -924,11 +921,11 @@ bool DexKit::IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_cl
     if (match_any_param_if_param_vector_empty) {
         return true;
     }
-    if (param_types.size() != type_list->size) {
+    auto type_list_size = type_list ? type_list->size : 0;
+    if (param_types.size() != type_list_size) {
         return false;
     }
-    auto len = type_list ? type_list->size : 0;
-    for (int i = 0; i < len; ++i) {
+    for (int i = 0; i < type_list_size; ++i) {
         if (param_types[i] != dex::kNoIndex && type_list->list[i].type_idx != param_types[i]) {
             return false;
         }
