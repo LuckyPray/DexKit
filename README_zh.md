@@ -26,6 +26,36 @@ DexKit应该是目前最快的反混淆工具。
 - `DexKit::FindSubClasses`: 查找直系子类
 - `DexKit::FindMethodOpPrefixSeq`: 查找满足特定op前缀序列的方法(使用`0x00`-`0xff`)
 
+## 集成
+
+Gradle:
+
+`implementation: io.github.LuckyPray:DexKit:<version>`
+
+这个库使用了 [prefab](https://google.github.io/prefab/)，你需要在 gradle (Android Gradle Plugin 4.1+ 版本以上才支持)中开启此特性：
+
+```
+android {
+    buildFeatures {
+        prefab true
+    }
+}
+```
+
+## 使用
+
+### CMake
+
+你可以直接在 `CMakeLists.txt` 中使用 `find_package` 来使用 DexKit:
+
+```
+# 假设你的 library 名字为 mylib
+add_library(mylib SHARED main.cpp)
+
+# 添加如下两行，注意必须添加 libz，如果你有其他依赖可以放在后面
+find_package(dexkit REQUIRED CONFIG)
+target_link_libraries(app dexkit::dex_kit_static z)
+```
 
 ## 使用示例
 
