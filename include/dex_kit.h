@@ -91,7 +91,7 @@ public:
      * eg. ["Landroid/arch/lifecycle/ClassesInfoCache;-><init>()V"]
      */
     std::vector<std::string>
-    FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq,
+    FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                           std::string class_decl_name,
                           std::string method_name,
                           std::string result_class_decl,

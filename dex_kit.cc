@@ -682,7 +682,7 @@ DexKit::FindSubClasses(std::string class_name) {
 }
 
 std::vector<std::string>
-DexKit::FindMethodOpPrefixSeq(std::vector<uint8_t> &op_prefix_seq,
+DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                               std::string class_decl_name,
                               std::string method_name,
                               std::string result_class_decl,
