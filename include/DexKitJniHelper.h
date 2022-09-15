@@ -13,48 +13,46 @@ std::vector<size_t> JIntArr2IntVec(JNIEnv *env, jintArray &jIntArr);
 
 std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, jintArray &jIntArr);
 
-#define EXPORT extern "C" __attribute__((visibility("default")))
-
-EXPORT jlong CreateDexKitInstance(JNIEnv *env, jstring apkPath) {
+jlong CreateDexKitInstance(JNIEnv *env, jstring apkPath) {
     auto path = env->GetStringUTFChars(apkPath, nullptr);
     auto dexKit = new dexkit::DexKit(path);
     return reinterpret_cast<jlong>(dexKit);
 }
 
-EXPORT void ReleaseDexKitInstance(JNIEnv *env, jlong dexKitPtr) {
-    delete (dexkit::DexKit *) dexKitPtr;
+void ReleaseDexKitInstance(JNIEnv *env, jlong dexKit) {
+    delete reinterpret_cast<dexkit::DexKit *>(dexKit);
 }
 
-EXPORT jobject LocationClasses(JNIEnv *env,
-                               jlong dexKit,
-                               jobject jMap,
-                               jboolean advanced_match) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobject LocationClasses(JNIEnv *env,
+                        jlong dexKit,
+                        jobject jMap,
+                        jboolean advanced_match) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto map = JMap2CMap(env, jMap);
     auto res = dexKitPtr->LocationClasses(map, advanced_match);
     return CMap2JMap(env, res);
 }
 
-EXPORT jobject LocationMethods(JNIEnv *env,
-                               jlong dexKit,
-                               jobject jMap,
-                               jboolean advanced_match) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobject LocationMethods(JNIEnv *env,
+                        jlong dexKit,
+                        jobject jMap,
+                        jboolean advanced_match) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto map = JMap2CMap(env, jMap);
     auto res = dexKitPtr->LocationMethods(map, advanced_match);
     return CMap2JMap(env, res);
 }
 
-EXPORT jobjectArray FindMethodInvoked(JNIEnv *env,
-                                      jlong dexKit,
-                                      jstring method_descriptor,
-                                      jstring class_decl_name,
-                                      jstring method_name,
-                                      jstring result_class_decl,
-                                      jobjectArray &param_class_decls,
-                                      jintArray &dex_priority,
-                                      jboolean match_any_param_if_param_vector_empty) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobjectArray FindMethodInvoked(JNIEnv *env,
+                               jlong dexKit,
+                               jstring method_descriptor,
+                               jstring class_decl_name,
+                               jstring method_name,
+                               jstring result_class_decl,
+                               jobjectArray &param_class_decls,
+                               jintArray &dex_priority,
+                               jboolean match_any_param_if_param_vector_empty) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto methodDescriptor = env->GetStringUTFChars(method_descriptor, nullptr);
     auto classDeclName = env->GetStringUTFChars(class_decl_name, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
@@ -75,17 +73,17 @@ EXPORT jobjectArray FindMethodInvoked(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
-EXPORT jobjectArray FindMethodUsedString(JNIEnv *env,
-                                         jlong dexKit,
-                                         jstring &jstr,
-                                         jstring &class_decl_name,
-                                         jstring &method_name,
-                                         jstring &result_class_decl,
-                                         jobjectArray &param_class_decls,
-                                         jintArray &dex_priority,
-                                         jboolean match_any_param_if_param_vector_empty,
-                                         jboolean advanced_match) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobjectArray FindMethodUsedString(JNIEnv *env,
+                                  jlong dexKit,
+                                  jstring &jstr,
+                                  jstring &class_decl_name,
+                                  jstring &method_name,
+                                  jstring &result_class_decl,
+                                  jobjectArray &param_class_decls,
+                                  jintArray &dex_priority,
+                                  jboolean match_any_param_if_param_vector_empty,
+                                  jboolean advanced_match) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto str = env->GetStringUTFChars(jstr, nullptr);
     auto classDeclName = env->GetStringUTFChars(class_decl_name, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
@@ -107,15 +105,15 @@ EXPORT jobjectArray FindMethodUsedString(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
-EXPORT jobjectArray FindMethod(JNIEnv *env,
-                               jlong dexKit,
-                               jstring class_decl_name,
-                               jstring method_name,
-                               jstring result_class_decl,
-                               jobjectArray &param_class_decls,
-                               jintArray &dex_priority,
-                               jboolean match_any_param_if_param_vector_empty) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobjectArray FindMethod(JNIEnv *env,
+                        jlong dexKit,
+                        jstring class_decl_name,
+                        jstring method_name,
+                        jstring result_class_decl,
+                        jobjectArray &param_class_decls,
+                        jintArray &dex_priority,
+                        jboolean match_any_param_if_param_vector_empty) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto classDeclName = env->GetStringUTFChars(class_decl_name, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
     auto resultClassDecl = env->GetStringUTFChars(result_class_decl, nullptr);
@@ -133,26 +131,26 @@ EXPORT jobjectArray FindMethod(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
-EXPORT jobjectArray FindSubClasses(JNIEnv *env,
-                                   jlong dexKit,
-                                   jstring class_decl_name) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobjectArray FindSubClasses(JNIEnv *env,
+                            jlong dexKit,
+                            jstring class_decl_name) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto classDeclName = env->GetStringUTFChars(class_decl_name, nullptr);
     auto res = dexKitPtr->FindSubClasses(classDeclName);
     env->ReleaseStringUTFChars(class_decl_name, classDeclName);
     return StrVec2JStrArr(env, res);
 }
 
-EXPORT jobjectArray FindMethodOpPrefixSeq(JNIEnv *env,
-                                          jlong dexKit,
-                                          jintArray &op_prefix_seq,
-                                          jstring &class_decl_name,
-                                          jstring &method_name,
-                                          jstring &result_class_decl,
-                                          jobjectArray &param_class_decls,
-                                          jintArray &dex_priority,
-                                          jboolean match_any_param_if_param_vector_empty) {
-    auto dexKitPtr = (dexkit::DexKit *) dexKit;
+jobjectArray FindMethodOpPrefixSeq(JNIEnv *env,
+                                   jlong dexKit,
+                                   jintArray &op_prefix_seq,
+                                   jstring &class_decl_name,
+                                   jstring &method_name,
+                                   jstring &result_class_decl,
+                                   jobjectArray &param_class_decls,
+                                   jintArray &dex_priority,
+                                   jboolean match_any_param_if_param_vector_empty) {
+    auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);;
     auto classDeclName = env->GetStringUTFChars(class_decl_name, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
     auto resultClassDecl = env->GetStringUTFChars(result_class_decl, nullptr);
@@ -261,5 +259,3 @@ std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, jintArray &jIntArr) {
     env->ReleaseIntArrayElements(jIntArr, ptr, 0);
     return result;
 }
-
-#undef EXPORT
