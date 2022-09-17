@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <string_view>
+#include "slicer/reader.h"
 
 namespace dexkit {
 
@@ -69,29 +70,42 @@ static std::vector<std::string> ExtractParamDescriptors(const std::string &descr
     return params;
 }
 
-static std::tuple<std::string, std::string, std::string, std::vector<std::string>>
-ExtractMethodDescriptor(std::string &method_descriptor) {
-    std::string class_desc, method_name, return_desc;
-    size_t pos = method_descriptor.find("->");
-    if (pos != std::string::npos) {
-        class_desc = method_descriptor.substr(0, pos);
+static bool CheckIsDescriptor(const std::string &type) {
+    if (type.empty()) {
+        return false;
     }
-    size_t pos1 = method_descriptor.find('(');
-    if (pos1 != std::string::npos) {
-        method_name = method_descriptor.substr(pos + 2, pos1 - pos - 2);
+    if (type.find(']') != std::string::npos) {
+        return false;
     }
-    size_t pos2 = method_descriptor.find(')');
-    if (pos2 != std::string::npos) {
-        return_desc = method_descriptor.substr(pos2 + 1, method_descriptor.size() - pos2 - 1);
+    if (type.front() == 'L' && type.back() == ';') {
+        return true;
     }
-    std::vector<std::string> param_descs = ExtractParamDescriptors(method_descriptor.substr(pos1 + 1, pos2 - pos1 - 1));
-    return std::make_tuple(class_desc, method_name, return_desc, param_descs);
+    if (type.size() == 1) {
+        switch (type.front()) {
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'F':
+            case 'I':
+            case 'J':
+            case 'S':
+            case 'V':
+            case 'Z':
+                return true;
+            default:
+                return false;
+        }
+    }
+    return false;
 }
 
 // Converts Declare java type to a type descriptor
 // ex. "java.lang.String" becomes "Ljava/lang/String;"
 // ex. "int[]" becomes "[I"
 static std::string DeclToDescriptor(const std::string &type) {
+    if (CheckIsDescriptor(type)) {
+        return type;
+    }
     std::stringstream desc;
     auto arr_dimensions = std::count(type.begin(), type.end(), '[');
     for (int i = 0; i < arr_dimensions; ++i) {
@@ -125,6 +139,14 @@ static std::string DeclToDescriptor(const std::string &type) {
     return desc.str();
 }
 
+static std::string GetClassDescriptor(std::string class_name) {
+    std::replace(class_name.begin(), class_name.end(), '.', '/');
+    if (class_name.length() > 0 && class_name[0] != 'L') {
+        class_name = "L" + class_name + ";";
+    }
+    return class_name;
+}
+
 static std::string DeclToMatchDescriptor(const std::string &type) {
     if (type.empty()) {
         return "";
@@ -135,7 +157,8 @@ static std::string DeclToMatchDescriptor(const std::string &type) {
 // Converts parameter and return types to match shorty string, '*' match any type
 // ex. "void", {"int", "int[]", "*"} -> "VIL"
 // ps: all reference types are represented by a single 'L' character.
-static std::string DescriptorToMatchShorty(const std::string &return_type, const std::vector<std::string> &parameter_types) {
+static std::string
+DescriptorToMatchShorty(const std::string &return_type, const std::vector<std::string> &parameter_types) {
     std::stringstream ss;
     if (return_type.empty()) {
         ss << '*';
@@ -167,4 +190,62 @@ static bool ShortyDescriptorMatch(const std::string &match_shorty, const std::st
     return true;
 }
 
+static std::tuple<std::string, std::string, std::string, std::vector<std::string>>
+ExtractMethodDescriptor(const std::string &input_method_descriptor,
+                        const std::string &input_method_class,
+                        const std::string &input_method_name,
+                        const std::string &input_method_return_class,
+                        const std::optional<std::vector<std::string>> &input_method_param_classes) {
+    std::string declared_class_descriptor, method_name, return_class_descriptor;
+    std::vector<std::string> param_descs;
+    if (!input_method_descriptor.empty()) {
+        size_t pos = input_method_descriptor.find("->");
+        if (pos != std::string::npos) {
+            declared_class_descriptor = input_method_descriptor.substr(0, pos);
+        }
+        size_t pos1 = input_method_descriptor.find('(');
+        if (pos1 != std::string::npos) {
+            method_name = input_method_descriptor.substr(pos + 2, pos1 - pos - 2);
+        }
+        size_t pos2 = input_method_descriptor.find(')');
+        if (pos2 != std::string::npos) {
+            return_class_descriptor = input_method_descriptor.substr(pos2 + 1,
+                                                                     input_method_descriptor.size() - pos2 - 1);
+        }
+        param_descs = ExtractParamDescriptors(input_method_descriptor.substr(pos1 + 1, pos2 - pos1 - 1));
+    } else {
+        declared_class_descriptor = GetClassDescriptor(input_method_class);
+        method_name = input_method_name;
+        return_class_descriptor = DeclToMatchDescriptor(input_method_return_class);
+        for (auto &param_decl: input_method_param_classes.value_or(std::vector<std::string>())) {
+            param_descs.emplace_back(DeclToMatchDescriptor(param_decl));
+        }
+    }
+    return std::make_tuple(declared_class_descriptor, method_name, return_class_descriptor, param_descs);
 }
+
+static std::tuple<std::string, std::string, std::string>
+ExtractFieldDescriptor(const std::string &input_field_descriptor,
+                       const std::string &input_field_class,
+                       const std::string &input_field_name,
+                       const std::string &input_field_type) {
+    std::string declared_class_descriptor, field_name, field_type_descriptor;
+    if (!input_field_descriptor.empty()) {
+        size_t pos = input_field_descriptor.find("->");
+        if (pos != std::string::npos) {
+            declared_class_descriptor = input_field_descriptor.substr(0, pos);
+        }
+        size_t pos1 = input_field_descriptor.find(':');
+        if (pos1 != std::string::npos) {
+            field_name = input_field_descriptor.substr(pos + 2, pos1 - pos - 2);
+        }
+        field_type_descriptor = input_field_descriptor.substr(pos1 + 1, input_field_descriptor.size() - pos1 - 1);
+    } else {
+        declared_class_descriptor = GetClassDescriptor(input_field_class);
+        field_name = input_field_name;
+        field_type_descriptor = DeclToMatchDescriptor(input_field_type);
+    }
+    return std::make_tuple(declared_class_descriptor, field_name, field_type_descriptor);
+}
+
+} // namespace dexkit
