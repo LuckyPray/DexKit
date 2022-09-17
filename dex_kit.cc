@@ -782,11 +782,11 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
 
 std::vector<std::string>
 DexKit::FindMethodUsedString(const std::string &used_utf8_string,
+                             bool advanced_match,
                              const std::string &method_declare_class,
                              const std::string &method_declare_name,
                              const std::string &method_return_class,
                              const std::optional<std::vector<std::string>> &method_param_classes,
-                             bool advanced_match,
                              const std::vector<size_t> &dex_priority) {
     // caller method
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,

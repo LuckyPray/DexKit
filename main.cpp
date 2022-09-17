@@ -58,10 +58,10 @@ int main() {
     // result ex.
     // {"Lcom/qzone/album/ui/widget/AlbumDialog;->n(I)V"}
     auto beInvokedMethod = dexKit.FindMethodBeInvoked(
-            {},
+            "",
             "com.tencent.qphone.base.remote.ToServiceMsg",
             "<init>",
-            {},
+            "",
             dexkit::null_param,
             "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
             "getRegQueryAccountMsg",
@@ -73,10 +73,10 @@ int main() {
     }
 
     auto invokingMethods = dexKit.FindMethodInvoking(
-            {},
+            "",
             "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
             "syncGetServerConfig",
-            {},
+            "",
             dexkit::null_param,
             "",
             "",
@@ -91,15 +91,15 @@ int main() {
     }
 
     auto usedFieldMethods = dexKit.FindFieldBeUsed(
-            {},
             "",
-            {},
+            "",
+            "",
             "Landroid/widget/TextView;",
             dexkit::fGetting,
             "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
-            {},
+            "",
             "void",
-            std::vector<std::string>{"Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder$d;", "Lcom/tencent/mobileqq/data/ChatMessage;"});
+            std::vector<std::string>{"", "Lcom/tencent/mobileqq/data/ChatMessage;"});
     std::cout << "\nFindFieldBeUsed -> \n";
     for (auto &value: usedFieldMethods) {
         std::cout << "\t" << value << "\n";
@@ -111,11 +111,11 @@ int main() {
     // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
     auto usedStringMethods = dexKit.FindMethodUsedString(
             "^NEW$",
-            {},
-            {},
-            {},
-            {},
-            true);
+            true,
+            "",
+            "",
+            "",
+            dexkit::null_param);
     std::cout << "\nFindMethodUsedString -> \n";
     for (auto &value: usedStringMethods) {
         std::cout << "\t" << value << "\n";
