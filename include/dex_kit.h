@@ -57,7 +57,7 @@ public:
      * then again "word", so "key_word" only marks "word". <br/>
      * While there are ways to deal with it, in the worst case there can be a performance gap of tens or even hundreds of times.
      * So I finally decided not to handle this situation. <br/>
-     * but for the previous example, if keywords = {"word", "^key_word$"}, "key_word" matches "^key_word$" but not "word".
+     * but for the previous example, if keywords = {"^word$", "^key_word$"}, "key_word" matches "^key_word$" but not "^word$".
      * This avoids the problem to some extent
      */
     std::map<std::string, std::vector<std::string>>
