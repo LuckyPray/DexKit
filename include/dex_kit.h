@@ -162,7 +162,7 @@ public:
                     const std::string &field_declare_class,
                     const std::string &field_declare_name,
                     const std::string &field_type,
-                    const std::uint32_t &be_used_flags,
+                    uint32_t be_used_flags,
                     const std::string &caller_method_declare_class,
                     const std::string &caller_method_declare_name,
                     const std::string &caller_method_return_type,

@@ -642,7 +642,7 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
                         const std::string &field_declare_class,
                         const std::string &field_declare_name,
                         const std::string &field_type,
-                        const std::uint32_t &be_used_flags,
+                        uint32_t be_used_flags,
                         const std::string &caller_method_declare_class,
                         const std::string &caller_method_declare_name,
                         const std::string &caller_method_return_type,
@@ -653,6 +653,7 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
     std::string field_declare_class_desc = std::get<0>(extract_tuple);
     std::string field_name = std::get<1>(extract_tuple);
     std::string field_type_desc = std::get<2>(extract_tuple);
+    if (be_used_flags == 0) be_used_flags = fGetting | fSetting;
 
     // caller method
     auto caller_extract_tuple = ExtractMethodDescriptor({}, caller_method_declare_class,
