@@ -82,17 +82,17 @@ public:
 
     /**
      * @brief find caller for specified method.
-     * @param method_descriptor method descriptor, after specifying method_descriptor, the subsequent parameters are automatically filled in [method_declare_class], [method_declare_name], [method_return_class], [method_param_classes]
+     * @param method_descriptor method descriptor, after specifying method_descriptor, the subsequent parameters are automatically filled in [method_declare_class], [method_declare_name], [method_return_type], [method_param_types]
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
-     * @param method_return_class if empty, match any return type;
-     * @param method_param_classes if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param method_return_type if empty, match any return type;
+     * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param caller_method_declare_class if empty, match any class;
-     * @param caller_method_declare_name if empty, match any method name;
-     * @param caller_method_return_class if empty, match any return type;
-     * @param caller_method_param_classes refer to [method_param_classes]
+     * @param caller_method_name if empty, match any method name;
+     * @param caller_method_return_type if empty, match any return type;
+     * @param caller_method_param_types refer to [method_param_types]
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return method descriptor
      */
@@ -100,32 +100,32 @@ public:
     FindMethodBeInvoked(const std::string &method_descriptor,
                         const std::string &method_declare_class,
                         const std::string &method_declare_name,
-                        const std::string &method_return_class,
-                        const std::optional<std::vector<std::string>> &method_param_classes,
+                        const std::string &method_return_type,
+                        const std::optional<std::vector<std::string>> &method_param_types,
                         const std::string &caller_method_declare_class,
-                        const std::string &caller_method_declare_name,
-                        const std::string &caller_method_return_class,
-                        const std::optional<std::vector<std::string>> &caller_method_param_classes,
+                        const std::string &caller_method_name,
+                        const std::string &caller_method_return_type,
+                        const std::optional<std::vector<std::string>> &caller_method_param_types,
                         const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find the called method
      * @param method_descriptor be called method descriptor <br/>
      * eg: "Lxadt;->a()V" <br>
-     * after specifying method_descriptor, the subsequent parameters are automatically filled in [method_declare_class], [method_declare_name], [method_return_class], [method_param_classes]
+     * after specifying method_descriptor, the subsequent parameters are automatically filled in [method_declare_class], [method_declare_name], [method_return_type], [method_param_types]
      * @param method_declare_class if empty, match any class; <br/>
      * eg: "Lme/teble/MainActivity$InnerClass;" or "me.teble.MainActivity$InnerClass"
      * @param method_declare_name if empty, match any method name; <br/>
      * eg: "onCreate"
-     * @param method_return_class if empty, match any return type; <br/>
+     * @param method_return_type if empty, match any return type; <br/>
      * eg: "V" or "void"
-     * @param method_param_classes if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param be_called_method_declare_class refer to [method_declare_class]
      * @param be_called_method_declare_name refer to [method_declare_name]
-     * @param be_called_method_return_class refer to [method_return_class]
-     * @param be_called_method_param_classes refer to [method_param_classes]
+     * @param be_called_method_return_type refer to [method_return_type]
+     * @param be_called_method_param_types refer to [method_param_types]
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return {"method descriptor" -> {"be caller method descriptor"}}
      */
@@ -133,12 +133,12 @@ public:
     FindMethodInvoking(const std::string &method_descriptor,
                        const std::string &method_declare_class,
                        const std::string &method_declare_name,
-                       const std::string &method_return_class,
-                       const std::optional<std::vector<std::string>> &method_param_classes,
+                       const std::string &method_return_type,
+                       const std::optional<std::vector<std::string>> &method_param_types,
                        const std::string &be_called_method_declare_class,
                        const std::string &be_called_method_declare_name,
-                       const std::string &be_called_method_return_class,
-                       const std::optional<std::vector<std::string>> &be_called_method_param_classes,
+                       const std::string &be_called_method_return_type,
+                       const std::optional<std::vector<std::string>> &be_called_method_param_types,
                        const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -150,8 +150,8 @@ public:
      * @param be_used_flags used flags, eg: 'fGetting' or 'fSetting' or 'fGetting | fSetting'
      * @param caller_method_declare_class if empty, match any class;
      * @param caller_method_declare_name if empty, match any method name;
-     * @param caller_method_return_class if empty, match any return type;
-     * @param caller_method_param_classes if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param caller_method_return_type if empty, match any return type;
+     * @param caller_method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
@@ -165,8 +165,8 @@ public:
                     const std::uint32_t &be_used_flags,
                     const std::string &caller_method_declare_class,
                     const std::string &caller_method_declare_name,
-                    const std::string &caller_method_return_class,
-                    const std::optional<std::vector<std::string>> &caller_method_param_classes,
+                    const std::string &caller_method_return_type,
+                    const std::optional<std::vector<std::string>> &caller_method_param_types,
                     const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -175,8 +175,8 @@ public:
      * @param advanced_match If true, '^' and '$' can be used to restrict matches, like regular expressions
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
-     * @param method_return_class if empty, match any return type;
-     * @param method_param_classes if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param method_return_type if empty, match any return type;
+     * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
@@ -187,16 +187,16 @@ public:
                          bool advanced_match,
                          const std::string &method_declare_class,
                          const std::string &method_declare_name,
-                         const std::string &method_return_class,
-                         const std::optional<std::vector<std::string>> &method_param_classes,
+                         const std::string &method_return_type,
+                         const std::optional<std::vector<std::string>> &method_param_types,
                          const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find method by multiple conditions
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
-     * @param method_return_class if empty, match any return type;
-     * @param method_param_classes if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param method_return_type if empty, match any return type;
+     * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
@@ -205,8 +205,8 @@ public:
     std::vector<std::string>
     FindMethod(const std::string &method_declare_class,
                const std::string &method_declare_name,
-               const std::string &method_return_class,
-               const std::optional<std::vector<std::string>> &method_param_classes,
+               const std::string &method_return_type,
+               const std::optional<std::vector<std::string>> &method_param_types,
                const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -224,8 +224,8 @@ public:
      * @param op_prefix_seq opcode prefix sequence. eg. [0x70, 0x22, 0x70, 0x5b] -> ["invoke-direct", "new-instance", "invoke-direct", "iput-object"]
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
-     * @param method_return_class if empty, match any return type;
-     * @param method_param_classes if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param method_return_type if empty, match any return type;
+     * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
@@ -235,8 +235,8 @@ public:
     FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                           const std::string &method_declare_class,
                           const std::string &method_declare_name,
-                          const std::string &method_return_class,
-                          const std::optional<std::vector<std::string>> &method_param_classes,
+                          const std::string &method_return_type,
+                          const std::optional<std::vector<std::string>> &method_param_types,
                           const std::vector<size_t> &dex_priority = {});
 
     size_t GetDexNum() {
@@ -281,8 +281,8 @@ private:
     inline bool NeedMethodMatch(const std::string &method_descriptor,
                                 const std::string &caller_method_declare_class,
                                 const std::string &caller_method_declare_name,
-                                const std::string &caller_method_return_class,
-                                const std::optional<std::vector<std::string>> &caller_method_param_classes);
+                                const std::string &caller_method_return_type,
+                                const std::optional<std::vector<std::string>> &caller_method_param_types);
 
     std::string GetMethodDescriptor(size_t dex_idx, uint32_t method_idx);
 

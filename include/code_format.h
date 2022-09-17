@@ -194,9 +194,9 @@ static std::tuple<std::string, std::string, std::string, std::vector<std::string
 ExtractMethodDescriptor(const std::string &input_method_descriptor,
                         const std::string &input_method_class,
                         const std::string &input_method_name,
-                        const std::string &input_method_return_class,
-                        const std::optional<std::vector<std::string>> &input_method_param_classes) {
-    std::string declared_class_descriptor, method_name, return_class_descriptor;
+                        const std::string &input_method_return_type,
+                        const std::optional<std::vector<std::string>> &input_method_param_types) {
+    std::string declared_class_descriptor, method_name, return_type_descriptor;
     std::vector<std::string> param_descs;
     if (!input_method_descriptor.empty()) {
         size_t pos = input_method_descriptor.find("->");
@@ -209,19 +209,19 @@ ExtractMethodDescriptor(const std::string &input_method_descriptor,
         }
         size_t pos2 = input_method_descriptor.find(')');
         if (pos2 != std::string::npos) {
-            return_class_descriptor = input_method_descriptor.substr(pos2 + 1,
+            return_type_descriptor = input_method_descriptor.substr(pos2 + 1,
                                                                      input_method_descriptor.size() - pos2 - 1);
         }
         param_descs = ExtractParamDescriptors(input_method_descriptor.substr(pos1 + 1, pos2 - pos1 - 1));
     } else {
         declared_class_descriptor = GetClassDescriptor(input_method_class);
         method_name = input_method_name;
-        return_class_descriptor = DeclToMatchDescriptor(input_method_return_class);
-        for (auto &param_decl: input_method_param_classes.value_or(std::vector<std::string>())) {
+        return_type_descriptor = DeclToMatchDescriptor(input_method_return_type);
+        for (auto &param_decl: input_method_param_types.value_or(std::vector<std::string>())) {
             param_descs.emplace_back(DeclToMatchDescriptor(param_decl));
         }
     }
-    return std::make_tuple(declared_class_descriptor, method_name, return_class_descriptor, param_descs);
+    return std::make_tuple(declared_class_descriptor, method_name, return_type_descriptor, param_descs);
 }
 
 static std::tuple<std::string, std::string, std::string>

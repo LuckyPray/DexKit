@@ -305,35 +305,35 @@ std::vector<std::string>
 DexKit::FindMethodBeInvoked(const std::string &method_descriptor,
                             const std::string &method_declare_class,
                             const std::string &method_declare_name,
-                            const std::string &method_return_class,
-                            const std::optional<std::vector<std::string>> &method_param_classes,
+                            const std::string &method_return_type,
+                            const std::optional<std::vector<std::string>> &method_param_types,
                             const std::string &caller_method_declare_class,
                             const std::string &caller_method_declare_name,
-                            const std::string &caller_method_return_class,
-                            const std::optional<std::vector<std::string>> &caller_method_param_classes,
+                            const std::string &caller_method_return_type,
+                            const std::optional<std::vector<std::string>> &caller_method_param_types,
                             const std::vector<size_t> &dex_priority) {
     // be invoked method
     auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class, method_declare_name,
-                                                 method_return_class, method_param_classes);
+                                                 method_return_type, method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
     std::vector<std::string> param_descs = std::get<3>(extract_tuple);
     std::string match_shorty = DescriptorToMatchShorty(return_desc, param_descs);
-    bool match_any_param = method_param_classes == null_param;
+    bool match_any_param = method_param_types == null_param;
 
     // caller method
     auto caller_extract_tuple = ExtractMethodDescriptor({}, caller_method_declare_class,
-                                                        caller_method_declare_name, caller_method_return_class,
-                                                        caller_method_param_classes);
+                                                        caller_method_declare_name, caller_method_return_type,
+                                                        caller_method_param_types);
     std::string caller_class_desc = std::get<0>(caller_extract_tuple);
     std::string caller_method_name = std::get<1>(caller_extract_tuple);
     std::string caller_return_desc = std::get<2>(caller_extract_tuple);
     std::vector<std::string> caller_param_descs = std::get<3>(caller_extract_tuple);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_return_desc, caller_param_descs);
-    bool caller_match_any_param = caller_method_param_classes == null_param;
-    bool need_caller_match = NeedMethodMatch({}, caller_method_declare_class, caller_method_declare_name,
-                                             caller_method_return_class, caller_method_param_classes);
+    bool caller_match_any_param = caller_method_param_types == null_param;
+    bool need_caller_match = NeedMethodMatch({}, caller_method_declare_class, caller_method_name,
+                                             caller_method_return_type, caller_method_param_types);
 
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::vector<std::string>>> futures;
@@ -470,35 +470,35 @@ std::map<std::string, std::vector<std::string>>
 DexKit::FindMethodInvoking(const std::string &method_descriptor,
                            const std::string &method_declare_class,
                            const std::string &method_declare_name,
-                           const std::string &method_return_class,
-                           const std::optional<std::vector<std::string>> &method_param_classes,
+                           const std::string &method_return_type,
+                           const std::optional<std::vector<std::string>> &method_param_types,
                            const std::string &be_called_method_declare_class,
                            const std::string &be_called_method_declare_name,
-                           const std::string &be_called_method_return_class,
-                           const std::optional<std::vector<std::string>> &invoking_method_param_classes,
+                           const std::string &be_called_method_return_type,
+                           const std::optional<std::vector<std::string>> &invoking_method_param_types,
                            const std::vector<size_t> &dex_priority) {
 
     // caller method
     auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class, method_declare_name,
-                                                 method_return_class, method_param_classes);
+                                                 method_return_type, method_param_types);
     std::string caller_class_desc = std::get<0>(extract_tuple);
     std::string caller_method_name = std::get<1>(extract_tuple);
     std::string caller_return_desc = std::get<2>(extract_tuple);
     std::vector<std::string> caller_param_descs = std::get<3>(extract_tuple);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_return_desc, caller_param_descs);
-    bool caller_match_any_param = method_param_classes == null_param;
+    bool caller_match_any_param = method_param_types == null_param;
 
     // be called method
     auto be_called_extract_tuple = ExtractMethodDescriptor({}, be_called_method_declare_class,
                                                            be_called_method_declare_name,
-                                                           be_called_method_return_class,
-                                                           invoking_method_param_classes);
+                                                           be_called_method_return_type,
+                                                           invoking_method_param_types);
     std::string be_called_class_desc = std::get<0>(be_called_extract_tuple);
     std::string be_called_method_name = std::get<1>(be_called_extract_tuple);
     std::string be_called_return_desc = std::get<2>(be_called_extract_tuple);
     std::vector<std::string> be_called_param_descs = std::get<3>(be_called_extract_tuple);
     std::string be_called_match_shorty = DescriptorToMatchShorty(be_called_return_desc, be_called_param_descs);
-    bool be_called_match_any_param = invoking_method_param_classes == null_param;
+    bool be_called_match_any_param = invoking_method_param_types == null_param;
 
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::map<std::string, std::vector<std::string>>>> futures;
@@ -645,8 +645,8 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
                         const std::uint32_t &be_used_flags,
                         const std::string &caller_method_declare_class,
                         const std::string &caller_method_declare_name,
-                        const std::string &caller_method_return_class,
-                        const std::optional<std::vector<std::string>> &caller_method_param_classes,
+                        const std::string &caller_method_return_type,
+                        const std::optional<std::vector<std::string>> &caller_method_param_types,
                         const std::vector<size_t> &dex_priority) {
     // be getter field
     auto extract_tuple = ExtractFieldDescriptor(field_descriptor, field_declare_class, field_declare_name, field_type);
@@ -656,16 +656,16 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
 
     // caller method
     auto caller_extract_tuple = ExtractMethodDescriptor({}, caller_method_declare_class,
-                                                        caller_method_declare_name, caller_method_return_class,
-                                                        caller_method_param_classes);
+                                                        caller_method_declare_name, caller_method_return_type,
+                                                        caller_method_param_types);
     std::string caller_class_desc = std::get<0>(caller_extract_tuple);
     std::string caller_method_name = std::get<1>(caller_extract_tuple);
     std::string caller_return_desc = std::get<2>(caller_extract_tuple);
     std::vector<std::string> caller_param_descs = std::get<3>(caller_extract_tuple);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_return_desc, caller_param_descs);
-    bool caller_match_any_param = caller_method_param_classes == null_param;
+    bool caller_match_any_param = caller_method_param_types == null_param;
     bool need_caller_match = NeedMethodMatch({}, caller_method_declare_class, caller_method_declare_name,
-                                             caller_method_return_class, caller_method_param_classes);
+                                             caller_method_return_type, caller_method_param_types);
 
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::vector<std::string>>> futures;
@@ -785,18 +785,18 @@ DexKit::FindMethodUsedString(const std::string &used_utf8_string,
                              bool advanced_match,
                              const std::string &method_declare_class,
                              const std::string &method_declare_name,
-                             const std::string &method_return_class,
-                             const std::optional<std::vector<std::string>> &method_param_classes,
+                             const std::string &method_return_type,
+                             const std::optional<std::vector<std::string>> &method_param_types,
                              const std::vector<size_t> &dex_priority) {
     // caller method
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_class, method_param_classes);
+                                                 method_return_type, method_param_types);
     std::string caller_class_desc = std::get<0>(extract_tuple);
     std::string caller_method_name = std::get<1>(extract_tuple);
     std::string caller_return_desc = std::get<2>(extract_tuple);
     std::vector<std::string> caller_param_descs = std::get<3>(extract_tuple);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_return_desc, caller_param_descs);
-    bool caller_match_any_param = method_param_classes == null_param;
+    bool caller_match_any_param = method_param_types == null_param;
 
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::vector<std::string>>> futures;
@@ -926,18 +926,18 @@ DexKit::FindMethodUsedString(const std::string &used_utf8_string,
 std::vector<std::string>
 DexKit::FindMethod(const std::string &method_declare_class,
                    const std::string &method_declare_name,
-                   const std::string &method_return_class,
-                   const std::optional<std::vector<std::string>> &method_param_classes,
+                   const std::string &method_return_type,
+                   const std::optional<std::vector<std::string>> &method_param_types,
                    const std::vector<size_t> &dex_priority) {
 
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_class, method_param_classes);
+                                                 method_return_type, method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
     std::vector<std::string> param_descs = std::get<3>(extract_tuple);
     std::string match_shorty = DescriptorToMatchShorty(return_desc, param_descs);
-    bool match_any_param = method_param_classes == null_param;
+    bool match_any_param = method_param_types == null_param;
 
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::vector<std::string>>> futures;
@@ -1057,18 +1057,18 @@ std::vector<std::string>
 DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                               const std::string &method_declare_class,
                               const std::string &method_declare_name,
-                              const std::string &method_return_class,
-                              const std::optional<std::vector<std::string>> &method_param_classes,
+                              const std::string &method_return_type,
+                              const std::optional<std::vector<std::string>> &method_param_types,
                               const std::vector<size_t> &dex_priority) {
 
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_class, method_param_classes);
+                                                 method_return_type, method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
     std::vector<std::string> param_descs = std::get<3>(extract_tuple);
     std::string match_shorty = DescriptorToMatchShorty(return_desc, param_descs);
-    bool match_any_param = method_param_classes == null_param;
+    bool match_any_param = method_param_types == null_param;
 
     ThreadPool pool(thread_num_);
     std::vector<std::future<std::vector<std::string>>> futures;
@@ -1407,11 +1407,11 @@ std::vector<size_t> DexKit::GetDexPriority(const std::vector<size_t> &dex_priori
 inline bool DexKit::NeedMethodMatch(const std::string &method_descriptor,
                                     const std::string &caller_method_declare_class,
                                     const std::string &caller_method_declare_name,
-                                    const std::string &caller_method_return_class,
-                                    const std::optional<std::vector<std::string>> &caller_method_param_classes) {
+                                    const std::string &caller_method_return_type,
+                                    const std::optional<std::vector<std::string>> &caller_method_param_types) {
     return !method_descriptor.empty() || !caller_method_declare_class.empty() ||
-           !caller_method_declare_name.empty() || !caller_method_return_class.empty() ||
-           caller_method_param_classes != std::nullopt;
+           !caller_method_declare_name.empty() || !caller_method_return_type.empty() ||
+           caller_method_param_types != std::nullopt;
 }
 
 }  // namespace dexkit
