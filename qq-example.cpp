@@ -100,7 +100,7 @@ int main() {
     // 返回混淆map中包含所有字符串的类, 高级搜索可以使用 '^'与'$'限制字符串匹配，与正则表达式语义一致
     // result ex.
     // {"C_ABS_GAL_SCENE" -> {"Lcom/tencent/common/galleryactivity/AbstractGalleryScene;"}}
-    auto res = dexKit->LocationClasses(obfuscate_class, true);
+    auto res = dexKit->BatchFindClassesUsedStrings(obfuscate_class, true);
     std::cout << "---------------LocationClasses---------------\n";
     for (auto &[key, value]: res) {
         std::cout << key << " -> \n";
@@ -112,7 +112,7 @@ int main() {
     // 返回混淆map中包含所有字符串的方法描述, 高级搜索可以使用 '^'与'$'限制字符串匹配，与正则表达式语义一致
     // result ex.
     // {"N_WebSecurityPluginV2_callback" -> {"Lcom/tencent/mobileqq/webview/WebSecurityPluginV2$1;->callback(Landroid/os/Bundle;)V"}}
-    auto res_m = dexKit->LocationMethods(obfuscate_method, true);
+    auto res_m = dexKit->BatchFindMethodsUsedStrings(obfuscate_method, true);
     std::cout << "---------------LocationMethods---------------\n";
     for (auto &[key, value]: res_m) {
         std::cout << key << " -> \n";

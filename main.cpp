@@ -28,8 +28,8 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
-    auto classes = dexKit.LocationClasses(obfuscate, true);
-    std::cout << "\nLocationClasses -> \n";
+    auto classes = dexKit.BatchFindClassesUsedStrings(obfuscate, true);
+    std::cout << "\nBatchFindClassesUsedStrings -> \n";
     for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
         for (auto &v: value) {
@@ -42,8 +42,8 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
-    auto methods = dexKit.LocationMethods(obfuscate, true);
-    std::cout << "\nLocationMethods -> \n";
+    auto methods = dexKit.BatchFindMethodsUsedStrings(obfuscate, true);
+    std::cout << "\nBatchFindMethodsUsedStrings -> \n";
     for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
         for (auto &v: value) {
@@ -57,23 +57,84 @@ int main() {
     // If the method_descriptor is not specified, fuzzy matching can be performed by parameters, and an empty string is used to represent fuzzy matching.
     // result ex.
     // {"Lcom/qzone/album/ui/widget/AlbumDialog;->n(I)V"}
-    auto invokedMethod = dexKit.FindMethodInvoked(
-            "Lcom/tencent/mobileqq/app/CardHandler;->X6(Lcom/tencent/qphone/base/remote/ToServiceMsg;Lcom/tencent/qphone/base/remote/FromServiceMsg;Ljava/lang/Object;Landroid/os/Bundle;)V",
-            {},
-            {},
-            {},
-            {},
-            {},
-            false);
-    std::cout << "\nFindMethodInvoked -> \n";
-    for (auto &value: invokedMethod) {
+    auto beInvokedMethod = dexKit.FindMethodBeInvoked(
+            "",
+            "com.tencent.qphone.base.remote.ToServiceMsg",
+            "<init>",
+            "",
+            dexkit::null_param,
+            "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
+            "getRegQueryAccountMsg",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodBeInvoked -> \n";
+    for (auto &value: beInvokedMethod) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    auto invokingMethods = dexKit.FindMethodInvoking(
+            "",
+            "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
+            "syncGetServerConfig",
+            "",
+            dexkit::null_param,
+            "",
+            "",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodInvoking -> \n";
+    for (auto &[key, value]: invokingMethods) {
+        std::cout << key << " -> \n";
+        for (auto &v: value) {
+            std::cout << "\t" << v << "\n";
+        }
+    }
+
+    auto usedFieldMethods = dexKit.FindFieldBeUsed(
+            "",
+            "",
+            "",
+            "Landroid/widget/TextView;",
+            dexkit::fGetting,
+            "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
+            "",
+            "void",
+            std::vector<std::string>{"", "Lcom/tencent/mobileqq/data/ChatMessage;"});
+    std::cout << "\nFindFieldBeUsed -> \n";
+    for (auto &value: usedFieldMethods) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    // find all used matching string's method
+    // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
+    // result ex.
+    // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
+    auto usedStringMethods = dexKit.FindMethodUsedString(
+            "^NEW$",
+            true,
+            "",
+            "",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodUsedString -> \n";
+    for (auto &value: usedStringMethods) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    auto findMethods = dexKit.FindMethod(
+            "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
+            "",
+            "int",
+            dexkit::empty_param);
+    std::cout << "\nFindMethod -> \n";
+    for (auto &value: findMethods) {
         std::cout << "\t" << value << "\n";
     }
 
     // returns all subclasses of the specified class
     // result ex.
     // {"Landroidx/core/app/ComponentActivity;"}
-    auto subClasses = dexKit.FindSubClasses("Landroid/app/Activity;");
+    auto subClasses = dexKit.FindSubClasses("Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder$d;");
     std::cout << "\nFindSubClasses -> \n";
     for (auto &value: subClasses) {
         std::cout << "\t" << value << "\n";
@@ -84,43 +145,12 @@ int main() {
     // {"Lcom/bumptech/glide/d/c;-><init>()V"}
     auto usedOpPrefixMethods = dexKit.FindMethodOpPrefixSeq(
             {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
-            "Lcom/bumptech/glide/d/c;",
+            "",
             "<init>",
-            "void",
-            {},
-            {},
-            false);
+            "V",
+            dexkit::empty_param);
     std::cout << "\nFindMethodOpPrefixSeq -> \n";
     for (auto &value: usedOpPrefixMethods) {
-        std::cout << "\t" << value << "\n";
-    }
-
-    // find all used matching string's method
-    // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
-    // result ex.
-    // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
-    auto usedStringMethods = dexKit.FindMethodUsedString(
-            "^NEW$", {},
-            {},
-            {},
-            {},
-            {},
-            true,
-            true);
-    std::cout << "\nFindMethodUsedString -> \n";
-    for (auto &value: usedStringMethods) {
-        std::cout << "\t" << value << "\n";
-    }
-
-    auto findMethods = dexKit.FindMethod(
-            "com.tencent.mobileqq.x.a",
-            "i6",
-            "",
-            {},
-            {},
-            true);
-    std::cout << "\nFindMethod -> \n";
-    for (auto &value: findMethods) {
         std::cout << "\t" << value << "\n";
     }
 
