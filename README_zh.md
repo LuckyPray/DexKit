@@ -5,7 +5,7 @@ DexKit
 
 一个高性能的 dex 反混淆工具。
 
-> **警告**: 当前项目已经进行重构，以往的API全被弃用，请参考最新的文档进行使用。
+> **Warning**: 当前项目已经进行重构，以往的API全被弃用，请参考最新的文档进行使用。
 
 这是DexKit项目的CMAKE版本，NDK版本请移步[DexKit-Android](https://github.com/LuckyPray/DexKit-Android)。
 
@@ -16,7 +16,7 @@ DexKit
 - **`DexKit::BatchFindClassesUsedStrings`**
 - **`DexKit::BatchFindMethodsUsedStrings`**
 
-> **注意**：无论什么情况都应当避免搜索关键词包含重复内容， 例如：{"key_word", "word"}，因为这样会导致标记被覆盖，从而导致搜索结果不准确。
+> **Note**：无论什么情况都应当避免搜索关键词包含重复内容， 例如：{"key_word", "word"}，因为这样会导致标记被覆盖，从而导致搜索结果不准确。
 > 如果真的有这样的需求，尽可能打开高级搜索模式，同时使用字符串完全匹配内容，例如修改成这样：{"^key_word$", "^word$"}
 
 以及其他 API：
