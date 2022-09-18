@@ -30,7 +30,10 @@ jobject BatchFindClassesUsedStrings(JNIEnv *env,
                                     jintArray &dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto map = JMap2CMap(env, jMap);
-    auto dexPriority = JIntArr2IntVec(env, dex_priority);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
     auto res = dexKitPtr->BatchFindClassesUsedStrings(map, advanced_match, dexPriority);
     return CMap2JMap(env, res);
 }
@@ -42,7 +45,10 @@ jobject BatchFindMethodsUsedStrings(JNIEnv *env,
                                     jintArray &dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto map = JMap2CMap(env, jMap);
-    auto dexPriority = JIntArr2IntVec(env, dex_priority);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
     auto res = dexKitPtr->BatchFindMethodsUsedStrings(map, advanced_match, dexPriority);
     return CMap2JMap(env, res);
 }
@@ -75,7 +81,10 @@ jobjectArray FindMethodBeInvoked(JNIEnv *env,
     if (caller_method_param_types != NULL) {
         callerParamTypes = JStrArr2StrVec(env, caller_method_param_types);
     }
-    auto dexPriority = JIntArr2IntVec(env, dex_priority);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
     auto res = dexKitPtr->FindMethodBeInvoked(methodDescriptor,
                                               methodDeclareClass,
                                               methodName,
