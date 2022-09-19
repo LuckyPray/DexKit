@@ -79,16 +79,30 @@ static void myfree([[maybe_unused]] void *q, void *p) {
 struct [[gnu::packed]] ZipLocalFile {
     static ZipLocalFile *from(uint8_t *begin) {
         auto *file = reinterpret_cast<ZipLocalFile *>(begin);
-        if (file->signature == 0x4034b50u) {
+        if (file->signature == 0x04034b50u) {
             return file;
         } else {
             return nullptr;
         }
     }
 
+    uint32_t getDataDescriptorSize() {
+        if (this->flags & 0x8u) {
+            auto nextPtr = reinterpret_cast<uint8_t *>(this) + sizeof(ZipLocalFile) +
+                    this->file_name_length + this->extra_length + this->compress_size;
+            auto descSign = reinterpret_cast<uint32_t *>(nextPtr);
+            if (*descSign == 0x08074b50u) {
+                return 16;
+            } else {
+                return 12;
+            }
+        }
+        return 0;
+    }
+
     ZipLocalFile *next() {
         return from(reinterpret_cast<uint8_t *>(this) +
-                    sizeof(ZipLocalFile) + file_name_length + extra_length + compress_size);
+                    sizeof(ZipLocalFile) + file_name_length + extra_length + compress_size + getDataDescriptorSize());
     }
 
     MemMap uncompress() {
