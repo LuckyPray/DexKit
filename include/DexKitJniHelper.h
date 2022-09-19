@@ -158,25 +158,25 @@ jobject FindMethodInvoking(JNIEnv *env,
     return CMap2JMap(env, res);
 }
 
-jobjectArray FindFieldBeUsed(JNIEnv *env,
-                             jlong dexKit,
-                             jstring &field_descriptor,
-                             jstring &field_declare_class,
-                             jstring &field_name,
-                             jstring &field_type,
-                             jint be_used_flags,
-                             jstring &caller_method_declare_class,
-                             jstring &caller_method_name,
-                             jstring &caller_method_return_type,
-                             jobjectArray &caller_method_param_types,
-                             jintArray &dex_priority) {
+jobjectArray FindMethodUsedField(JNIEnv *env,
+                                 jlong dexKit,
+                                 jstring &field_descriptor,
+                                 jstring &field_declare_class,
+                                 jstring &field_name,
+                                 jstring &field_type,
+                                 jint used_flags,
+                                 jstring &caller_method_declare_class,
+                                 jstring &caller_method_name,
+                                 jstring &caller_method_return_type,
+                                 jobjectArray &caller_method_param_types,
+                                 jintArray &dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto fieldDescriptor = env->GetStringUTFChars(field_descriptor, nullptr);
     auto fieldDeclareClass = env->GetStringUTFChars(field_declare_class, nullptr);
     auto fieldName = env->GetStringUTFChars(field_name, nullptr);
     auto fieldType = env->GetStringUTFChars(field_type, nullptr);
-    if (be_used_flags == 0) {
-        be_used_flags = dexkit::fGetting | dexkit::fSetting;
+    if (used_flags == 0) {
+        used_flags = dexkit::fGetting | dexkit::fSetting;
     }
     auto callerMethodClass = env->GetStringUTFChars(caller_method_declare_class, nullptr);
     auto callerMethodName = env->GetStringUTFChars(caller_method_name, nullptr);
@@ -189,16 +189,16 @@ jobjectArray FindFieldBeUsed(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKitPtr->FindFieldBeUsed(fieldDescriptor,
-                                          fieldDeclareClass,
-                                          fieldName,
-                                          fieldType,
-                                          be_used_flags,
-                                          callerMethodClass,
-                                          callerMethodName,
-                                          callerMethodReturnType,
-                                          callerParamTypes,
-                                          dexPriority);
+    auto res = dexKitPtr->FindMethodUsedField(fieldDescriptor,
+                                              fieldDeclareClass,
+                                              fieldName,
+                                              fieldType,
+                                              used_flags,
+                                              callerMethodClass,
+                                              callerMethodName,
+                                              callerMethodReturnType,
+                                              callerParamTypes,
+                                              dexPriority);
     env->ReleaseStringUTFChars(field_descriptor, fieldDescriptor);
     env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
     env->ReleaseStringUTFChars(field_name, fieldName);

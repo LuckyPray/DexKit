@@ -23,7 +23,7 @@ DexKit
 
 - `DexKit::FindMethodBeInvoked`: 查找指定方法的调用者
 - `DexKit::FindMethodInvoking`: 查找指定方法调用的方法
-- `DexKit::FindFieldBeUsed`: 查找指定的属性被什么方法调用，可通过参数 `be_used_flags` 限制访问类型(put/get)
+- `DexKit::FindMethodUsedField`: 查找指定的属性被什么方法调用，可通过参数 `be_used_flags` 限制访问类型(put/get)
 - `DexKit::FindMethodUsedString`: 查找指定字符串的调用者
 - `DexKit::FindMethod`: 多条件查找方法
 - `DexKit::FindSubClasses`: 查找直系子类

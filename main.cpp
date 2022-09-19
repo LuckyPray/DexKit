@@ -90,7 +90,7 @@ int main() {
         }
     }
 
-    auto usedFieldMethods = dexKit.FindFieldBeUsed(
+    auto usedFieldMethods = dexKit.FindMethodUsedField(
             "",
             "",
             "",

@@ -23,7 +23,7 @@ And there are many other APIs:
 
 - `DexKit::FindMethodBeInvoked`: find caller for specified method.
 - `DexKit::FindMethodInvoking`: find the called method
-- `DexKit::FindFieldBeUsed`: find method getting specified field, access types(put/get) can be limited by setting `be_used_flags`
+- `DexKit::FindMethodUsedField`: find method getting specified field, access types(put/get) can be limited by setting `be_used_flags`
 - `DexKit::FindMethodUsedString`: find method used utf8 string
 - `DexKit::FindMethod`: find method by multiple conditions
 - `DexKit::FindSubClasses`: find all direct subclasses of the specified class

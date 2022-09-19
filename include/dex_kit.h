@@ -147,7 +147,7 @@ public:
      * @param field_declare_class if empty, match any class;
      * @param field_declare_name if empty, match any field name;
      * @param field_type if empty, match any field type;
-     * @param be_used_flags used flags, eg: 'fGetting' or 'fSetting' or 'fGetting | fSetting'
+     * @param used_flags used flags, eg: 'fGetting' or 'fSetting' or 'fGetting | fSetting'
      * @param caller_method_declare_class if empty, match any class;
      * @param caller_method_declare_name if empty, match any method name;
      * @param caller_method_return_type if empty, match any return type;
@@ -158,16 +158,16 @@ public:
      * @return method descriptor
      */
     std::vector<std::string>
-    FindFieldBeUsed(const std::string &field_descriptor,
-                    const std::string &field_declare_class,
-                    const std::string &field_declare_name,
-                    const std::string &field_type,
-                    uint32_t be_used_flags,
-                    const std::string &caller_method_declare_class,
-                    const std::string &caller_method_declare_name,
-                    const std::string &caller_method_return_type,
-                    const std::optional<std::vector<std::string>> &caller_method_param_types,
-                    const std::vector<size_t> &dex_priority = {});
+    FindMethodUsedField(const std::string &field_descriptor,
+                        const std::string &field_declare_class,
+                        const std::string &field_declare_name,
+                        const std::string &field_type,
+                        uint32_t used_flags,
+                        const std::string &caller_method_declare_class,
+                        const std::string &caller_method_declare_name,
+                        const std::string &caller_method_return_type,
+                        const std::optional<std::vector<std::string>> &caller_method_param_types,
+                        const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find method used utf8 string

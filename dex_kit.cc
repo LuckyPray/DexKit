@@ -638,22 +638,22 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
 }
 
 std::vector<std::string>
-DexKit::FindFieldBeUsed(const std::string &field_descriptor,
-                        const std::string &field_declare_class,
-                        const std::string &field_declare_name,
-                        const std::string &field_type,
-                        uint32_t be_used_flags,
-                        const std::string &caller_method_declare_class,
-                        const std::string &caller_method_declare_name,
-                        const std::string &caller_method_return_type,
-                        const std::optional<std::vector<std::string>> &caller_method_param_types,
-                        const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodUsedField(const std::string &field_descriptor,
+                            const std::string &field_declare_class,
+                            const std::string &field_declare_name,
+                            const std::string &field_type,
+                            uint32_t used_flags,
+                            const std::string &caller_method_declare_class,
+                            const std::string &caller_method_declare_name,
+                            const std::string &caller_method_return_type,
+                            const std::optional<std::vector<std::string>> &caller_method_param_types,
+                            const std::vector<size_t> &dex_priority) {
     // be getter field
     auto extract_tuple = ExtractFieldDescriptor(field_descriptor, field_declare_class, field_declare_name, field_type);
     std::string field_declare_class_desc = std::get<0>(extract_tuple);
     std::string field_name = std::get<1>(extract_tuple);
     std::string field_type_desc = std::get<2>(extract_tuple);
-    if (be_used_flags == 0) be_used_flags = fGetting | fSetting;
+    if (used_flags == 0) used_flags = fGetting | fSetting;
 
     // caller method
     auto caller_extract_tuple = ExtractMethodDescriptor({}, caller_method_declare_class,
@@ -672,7 +672,7 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
     std::vector<std::future<std::vector<std::string>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
-                [this, dex_idx, &field_declare_class_desc, &field_name, &field_type_desc, &be_used_flags,
+                [this, dex_idx, &field_declare_class_desc, &field_name, &field_type_desc, &used_flags,
                         &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty,
                         &caller_match_any_param, &need_caller_match]() {
                     InitCached(dex_idx, fDefault);
@@ -752,8 +752,8 @@ DexKit::FindFieldBeUsed(const std::string &field_descriptor,
                                 // iput, iput-wide, iput-object, iput-boolean, iput-byte, iput-char, iput-short
                                 // sput, sput-wide, sput-object, sput-boolean, sput-byte, sput-char, sput-short
                                 auto is_setter = ((op >= 0x59 && op <= 0x5f) || (op >= 0x67 && op <= 0x6d));
-                                if ((is_getter && (be_used_flags & fGetting)) ||
-                                    (is_setter && (be_used_flags & fSetting))) {
+                                if ((is_getter && (used_flags & fGetting)) ||
+                                    (is_setter && (used_flags & fSetting))) {
                                     auto index = ReadShort(ptr);
                                     if (IsFieldMatch(dex_idx, index, declared_class_idx, field_name,
                                                      field_type_idx)) {
