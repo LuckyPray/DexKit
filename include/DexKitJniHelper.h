@@ -1,17 +1,17 @@
 #include <jni.h>
 #include "dex_kit.h"
 
-std::map<std::string, std::set<std::string>> JMap2CMap(JNIEnv *env, const jobject &jMap);
+std::map<std::string, std::set<std::string>> JMap2CMap(JNIEnv *env, const jobject jMap);
 
 jobject CMap2JMap(JNIEnv *env, const std::map<std::string, std::vector<std::string>> &map);
 
 jobjectArray StrVec2JStrArr(JNIEnv *env, const std::vector<std::string> &vector);
 
-std::vector<std::string> JStrArr2StrVec(JNIEnv *env, const jobjectArray &jStrArr);
+std::vector<std::string> JStrArr2StrVec(JNIEnv *env, const jobjectArray jStrArr);
 
-std::vector<size_t> JIntArr2IntVec(JNIEnv *env, const jintArray &jIntArr);
+std::vector<size_t> JIntArr2IntVec(JNIEnv *env, const jintArray jIntArr);
 
-std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, const jintArray &jIntArr);
+std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, const jintArray jIntArr);
 
 jlong CreateDexKitInstance(JNIEnv *env, jstring apkPath) {
     auto path = env->GetStringUTFChars(apkPath, nullptr);
@@ -27,7 +27,7 @@ jobject BatchFindClassesUsedStrings(JNIEnv *env,
                                     jlong dexKit,
                                     jobject jMap,
                                     jboolean advanced_match,
-                                    jintArray &dex_priority) {
+                                    jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto map = JMap2CMap(env, jMap);
     std::vector<size_t> dexPriority;
@@ -42,7 +42,7 @@ jobject BatchFindMethodsUsedStrings(JNIEnv *env,
                                     jlong dexKit,
                                     jobject jMap,
                                     jboolean advanced_match,
-                                    jintArray &dex_priority) {
+                                    jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto map = JMap2CMap(env, jMap);
     std::vector<size_t> dexPriority;
@@ -55,16 +55,16 @@ jobject BatchFindMethodsUsedStrings(JNIEnv *env,
 
 jobjectArray FindMethodBeInvoked(JNIEnv *env,
                                  const jlong dexKit,
-                                 const jstring &method_descriptor,
-                                 const jstring &method_declare_class,
-                                 const jstring &method_name,
-                                 const jstring &method_return_type,
-                                 const jobjectArray &method_param_types,
-                                 const jstring &caller_method_declare_class,
-                                 const jstring &caller_method_name,
-                                 const jstring &caller_method_return_type,
-                                 const jobjectArray &caller_method_param_types,
-                                 const jintArray &dex_priority) {
+                                 const jstring method_descriptor,
+                                 const jstring method_declare_class,
+                                 const jstring method_name,
+                                 const jstring method_return_type,
+                                 const jobjectArray method_param_types,
+                                 const jstring caller_method_declare_class,
+                                 const jstring caller_method_name,
+                                 const jstring caller_method_return_type,
+                                 const jobjectArray caller_method_param_types,
+                                 const jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto methodDescriptor = env->GetStringUTFChars(method_descriptor, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
@@ -107,16 +107,16 @@ jobjectArray FindMethodBeInvoked(JNIEnv *env,
 
 jobject FindMethodInvoking(JNIEnv *env,
                            const jlong dexKit,
-                           const jstring &method_descriptor,
-                           const jstring &method_declare_class,
-                           const jstring &method_name,
-                           const jstring &method_return_type,
-                           const jobjectArray &method_param_types,
-                           const jstring &be_called_method_declare_class,
-                           const jstring &be_called_method_name,
-                           const jstring &be_called_method_return_type,
-                           const jobjectArray &be_called_method_param_types,
-                           const jintArray &dex_priority) {
+                           const jstring method_descriptor,
+                           const jstring method_declare_class,
+                           const jstring method_name,
+                           const jstring method_return_type,
+                           const jobjectArray method_param_types,
+                           const jstring be_called_method_declare_class,
+                           const jstring be_called_method_name,
+                           const jstring be_called_method_return_type,
+                           const jobjectArray be_called_method_param_types,
+                           const jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto methodDescriptor = env->GetStringUTFChars(method_descriptor, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
@@ -160,16 +160,16 @@ jobject FindMethodInvoking(JNIEnv *env,
 
 jobjectArray FindMethodUsedField(JNIEnv *env,
                                  jlong dexKit,
-                                 jstring &field_descriptor,
-                                 jstring &field_declare_class,
-                                 jstring &field_name,
-                                 jstring &field_type,
+                                 jstring field_descriptor,
+                                 jstring field_declare_class,
+                                 jstring field_name,
+                                 jstring field_type,
                                  jint used_flags,
-                                 jstring &caller_method_declare_class,
-                                 jstring &caller_method_name,
-                                 jstring &caller_method_return_type,
-                                 jobjectArray &caller_method_param_types,
-                                 jintArray &dex_priority) {
+                                 jstring caller_method_declare_class,
+                                 jstring caller_method_name,
+                                 jstring caller_method_return_type,
+                                 jobjectArray caller_method_param_types,
+                                 jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto fieldDescriptor = env->GetStringUTFChars(field_descriptor, nullptr);
     auto fieldDeclareClass = env->GetStringUTFChars(field_declare_class, nullptr);
@@ -211,13 +211,13 @@ jobjectArray FindMethodUsedField(JNIEnv *env,
 
 jobjectArray FindMethodUsedString(JNIEnv *env,
                                   jlong dexKit,
-                                  jstring &used_utf8_string,
+                                  jstring used_utf8_string,
                                   jboolean advanced_match,
-                                  jstring &method_declare_class,
-                                  jstring &method_name,
-                                  jstring &method_return_type,
-                                  jobjectArray &method_param_types,
-                                  jintArray &dex_priority) {
+                                  jstring method_declare_class,
+                                  jstring method_name,
+                                  jstring method_return_type,
+                                  jobjectArray method_param_types,
+                                  jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto usedUtf8String = env->GetStringUTFChars(used_utf8_string, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
@@ -250,8 +250,8 @@ jobjectArray FindMethod(JNIEnv *env,
                         jstring method_declare_class,
                         jstring method_name,
                         jstring method_return_type,
-                        jobjectArray &method_param_types,
-                        jintArray &dex_priority) {
+                        jobjectArray method_param_types,
+                        jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
@@ -277,8 +277,8 @@ jobjectArray FindMethod(JNIEnv *env,
 
 jobjectArray FindSubClasses(JNIEnv *env,
                             jlong dexKit,
-                            jstring &parent_class,
-                            jintArray &dex_priority) {
+                            jstring parent_class,
+                            jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto parentClass = env->GetStringUTFChars(parent_class, nullptr);
     std::vector<size_t> dexPriority;
@@ -292,12 +292,12 @@ jobjectArray FindSubClasses(JNIEnv *env,
 
 jobjectArray FindMethodOpPrefixSeq(JNIEnv *env,
                                    jlong dexKit,
-                                   jintArray &op_prefix_seq,
-                                   jstring &method_declare_class,
-                                   jstring &method_name,
-                                   jstring &method_return_type,
-                                   jobjectArray &method_param_types,
-                                   jintArray &dex_priority) {
+                                   jintArray op_prefix_seq,
+                                   jstring method_declare_class,
+                                   jstring method_name,
+                                   jstring method_return_type,
+                                   jobjectArray method_param_types,
+                                   jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto opPrefixSeq = JIntArr2u8Vec(env, op_prefix_seq);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
@@ -324,7 +324,7 @@ jobjectArray FindMethodOpPrefixSeq(JNIEnv *env,
 }
 
 
-std::map<std::string, std::set<std::string>> JMap2CMap(JNIEnv *env, const jobject &jMap) {
+std::map<std::string, std::set<std::string>> JMap2CMap(JNIEnv *env, const jobject jMap) {
     jclass cMap = env->GetObjectClass(jMap);
     jmethodID mKeySet = env->GetMethodID(cMap, "keySet", "()Ljava/util/Set;");
     jobject keySet = env->CallObjectMethod(jMap, mKeySet);
@@ -343,7 +343,11 @@ std::map<std::string, std::set<std::string>> JMap2CMap(JNIEnv *env, const jobjec
         auto key = (jstring) env->CallObjectMethod(keySetIterator, mNext);
         const char *keyStr = env->GetStringUTFChars(key, nullptr);
         jobject valueSet = env->CallObjectMethod(jMap, mGet, key);
-        jobject setIterator = env->CallObjectMethod(valueSet, mIterator);
+
+        jclass cValueSet = env->GetObjectClass(valueSet);
+        jmethodID mValueIterator = env->GetMethodID(cValueSet, "iterator", "()Ljava/util/Iterator;");
+        jobject setIterator = env->CallObjectMethod(valueSet, mValueIterator);
+
         jclass cSetIterator = env->GetObjectClass(setIterator);
         jmethodID mSetHasNext = env->GetMethodID(cSetIterator, "hasNext", "()Z");
         jmethodID mSetNext = env->GetMethodID(cSetIterator, "next", "()Ljava/lang/Object;");
@@ -383,7 +387,7 @@ jobjectArray StrVec2JStrArr(JNIEnv *env, const std::vector<std::string> &vector)
     return result;
 }
 
-std::vector<std::string> JStrArr2StrVec(JNIEnv *env, const jobjectArray &jStrArr) {
+std::vector<std::string> JStrArr2StrVec(JNIEnv *env, const jobjectArray jStrArr) {
     std::vector<std::string> result;
     for (int i = 0; i < env->GetArrayLength(jStrArr); ++i) {
         auto jStr = (jstring) env->GetObjectArrayElement(jStrArr, i);
@@ -394,7 +398,7 @@ std::vector<std::string> JStrArr2StrVec(JNIEnv *env, const jobjectArray &jStrArr
     return result;
 }
 
-std::vector<size_t> JIntArr2IntVec(JNIEnv *env, const jintArray &jIntArr) {
+std::vector<size_t> JIntArr2IntVec(JNIEnv *env, const jintArray jIntArr) {
     std::vector<size_t> result;
     jint *ptr = env->GetIntArrayElements(jIntArr, nullptr);
     for (int i = 0; i < env->GetArrayLength(jIntArr); ++i) {
@@ -404,7 +408,7 @@ std::vector<size_t> JIntArr2IntVec(JNIEnv *env, const jintArray &jIntArr) {
     return result;
 }
 
-std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, const jintArray &jIntArr) {
+std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, const jintArray jIntArr) {
     std::vector<uint8_t> result;
     jint *ptr = env->GetIntArrayElements(jIntArr, nullptr);
     for (int i = 0; i < env->GetArrayLength(jIntArr); ++i) {
