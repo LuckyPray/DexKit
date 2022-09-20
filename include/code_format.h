@@ -77,6 +77,9 @@ static bool CheckIsDescriptor(const std::string &type) {
     if (type.find(']') != std::string::npos) {
         return false;
     }
+    if (type[0] == '[') {
+        return true;
+    }
     if (type.front() == 'L' && type.back() == ';') {
         return true;
     }
