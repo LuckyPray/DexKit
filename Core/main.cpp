@@ -8,6 +8,22 @@
 #include "code_format.h"
 
 int main() {
+//    char sss[8];
+//    sss[0] = '1';
+//    sss[1] = '2';
+//    sss[2] = '3';
+//    sss[3] = '\0';
+//    sss[4] = ' ';
+//    sss[5] = '4';
+//    sss[6] = '5';
+//    sss[7] = '6';
+//    auto &str = sss;
+//    std::string s(std::begin(str), std::end(str));
+//    std::cout << s << std::endl;
+//    auto v = std::vector<std::string>();
+//    if (&null_param == &v) {
+//
+//    }
     std::map<std::string, std::set<std::string>> obfuscate = {
             {"Lcom/tencent/mobileqq/activity/ChatActivityFacade;",               {"^reSendEmo"}},
             {"Lcooperation/qzone/PlatformInfor;",                                {"52b7f2", "qimei"}},

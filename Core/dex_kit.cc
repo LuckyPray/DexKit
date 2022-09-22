@@ -1154,6 +1154,27 @@ DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
     }
     return result;
 }
+//
+//std::vector<std::string>
+//DexKit::FindMethodUsedOpCodeSeq(const std::vector<uint8_t> &op_seq,
+//                                const std::string &method_declare_class,
+//                                const std::string &method_declare_name,
+//                                const std::string &method_return_type,
+//                                const std::optional<std::vector<std::string>> &method_param_types,
+//                                const std::vector<size_t> &dex_priority) {
+//    return {};
+//}
+//
+//
+//std::map<std::string, std::vector<uint8_t>>
+//DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
+//                           const std::string &method_declare_class,
+//                           const std::string &method_declare_name,
+//                           const std::string &method_return_type,
+//                           const std::optional<std::vector<std::string>> &method_param_types,
+//                           const std::vector<size_t> &dex_priority) {
+//    return {};
+//}
 
 
 void DexKit::InitImages() {
