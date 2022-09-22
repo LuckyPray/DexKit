@@ -8,22 +8,6 @@
 #include "code_format.h"
 
 int main() {
-//    char sss[8];
-//    sss[0] = '1';
-//    sss[1] = '2';
-//    sss[2] = '3';
-//    sss[3] = '\0';
-//    sss[4] = ' ';
-//    sss[5] = '4';
-//    sss[6] = '5';
-//    sss[7] = '6';
-//    auto &str = sss;
-//    std::string s(std::begin(str), std::end(str));
-//    std::cout << s << std::endl;
-//    auto v = std::vector<std::string>();
-//    if (&null_param == &v) {
-//
-//    }
     std::map<std::string, std::set<std::string>> obfuscate = {
             {"Lcom/tencent/mobileqq/activity/ChatActivityFacade;",               {"^reSendEmo"}},
             {"Lcooperation/qzone/PlatformInfor;",                                {"52b7f2", "qimei"}},
@@ -44,7 +28,7 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
-    auto classes = dexKit.BatchFindClassesUsedStrings(obfuscate, true);
+    auto classes = dexKit.BatchFindClassesUsingStrings(obfuscate, true);
     std::cout << "\nBatchFindClassesUsedStrings -> \n";
     for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
@@ -58,7 +42,7 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
-    auto methods = dexKit.BatchFindMethodsUsedStrings(obfuscate, true);
+    auto methods = dexKit.BatchFindMethodsUsingStrings(obfuscate, true);
     std::cout << "\nBatchFindMethodsUsedStrings -> \n";
     for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
@@ -106,7 +90,7 @@ int main() {
         }
     }
 
-    auto usedFieldMethods = dexKit.FindMethodUsedField(
+    auto usingFieldMethods = dexKit.FindMethodUsingField(
             "",
             "",
             "",
@@ -117,7 +101,7 @@ int main() {
             "void",
             std::vector<std::string>{"", "Lcom/tencent/mobileqq/data/ChatMessage;"});
     std::cout << "\nFindFieldBeUsed -> \n";
-    for (auto &value: usedFieldMethods) {
+    for (auto &value: usingFieldMethods) {
         std::cout << "\t" << value << "\n";
     }
 
@@ -125,7 +109,7 @@ int main() {
     // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
     // result ex.
     // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
-    auto usedStringMethods = dexKit.FindMethodUsedString(
+    auto usedStringMethods = dexKit.FindMethodUsingString(
             "^NEW$",
             true,
             "",

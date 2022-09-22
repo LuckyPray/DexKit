@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
-
 project(dexkit)
 
 add_subdirectory(../../../../../Core Core)
 
-add_library(${PROJECT_NAME}
-        SHARED
+add_library(${PROJECT_NAME} SHARED
         native-bridge.cpp)
 
 find_library(log-lib log)

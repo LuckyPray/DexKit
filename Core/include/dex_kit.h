@@ -61,9 +61,9 @@ public:
      * This avoids the problem to some extent
      */
     std::map<std::string, std::vector<std::string>>
-    BatchFindClassesUsedStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                bool advanced_match,
-                                const std::vector<size_t> &dex_priority = {});
+    BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
+                                 bool advanced_match,
+                                 const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find used all matched keywords in method.
@@ -73,12 +73,12 @@ public:
      * @param advanced_match If true, '^' and '$' can be used to restrict matches, like regular expressions
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return like: {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
-     * @see BatchFindClassesUsedStrings()
+     * @see BatchFindClassesUsingStrings()
      */
     std::map<std::string, std::vector<std::string>>
-    BatchFindMethodsUsedStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                bool advanced_match,
-                                const std::vector<size_t> &dex_priority = {});
+    BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
+                                 bool advanced_match,
+                                 const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find caller for specified method.
@@ -158,16 +158,16 @@ public:
      * @return method descriptor
      */
     std::vector<std::string>
-    FindMethodUsedField(const std::string &field_descriptor,
-                        const std::string &field_declare_class,
-                        const std::string &field_declare_name,
-                        const std::string &field_type,
-                        uint32_t used_flags,
-                        const std::string &caller_method_declare_class,
-                        const std::string &caller_method_declare_name,
-                        const std::string &caller_method_return_type,
-                        const std::optional<std::vector<std::string>> &caller_method_param_types,
-                        const std::vector<size_t> &dex_priority = {});
+    FindMethodUsingField(const std::string &field_descriptor,
+                         const std::string &field_declare_class,
+                         const std::string &field_declare_name,
+                         const std::string &field_type,
+                         uint32_t used_flags,
+                         const std::string &caller_method_declare_class,
+                         const std::string &caller_method_declare_name,
+                         const std::string &caller_method_return_type,
+                         const std::optional<std::vector<std::string>> &caller_method_param_types,
+                         const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find method used utf8 string
@@ -183,13 +183,13 @@ public:
      * @return
      */
     std::vector<std::string>
-    FindMethodUsedString(const std::string &used_utf8_string,
-                         bool advanced_match,
-                         const std::string &method_declare_class,
-                         const std::string &method_declare_name,
-                         const std::string &method_return_type,
-                         const std::optional<std::vector<std::string>> &method_param_types,
-                         const std::vector<size_t> &dex_priority = {});
+    FindMethodUsingString(const std::string &used_utf8_string,
+                          bool advanced_match,
+                          const std::string &method_declare_class,
+                          const std::string &method_declare_name,
+                          const std::string &method_return_type,
+                          const std::optional<std::vector<std::string>> &method_param_types,
+                          const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find method by multiple conditions

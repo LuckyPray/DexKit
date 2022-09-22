@@ -23,33 +23,33 @@ void ReleaseDexKitInstance(JNIEnv *env, jlong dexKit) {
     delete reinterpret_cast<dexkit::DexKit *>(dexKit);
 }
 
-jobject BatchFindClassesUsedStrings(JNIEnv *env,
-                                    jlong dexKit,
-                                    jobject jMap,
-                                    jboolean advanced_match,
-                                    jintArray dex_priority) {
+jobject BatchFindClassesUsingStrings(JNIEnv *env,
+                                     jlong dexKit,
+                                     jobject jMap,
+                                     jboolean advanced_match,
+                                     jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto map = JMap2CMap(env, jMap);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKitPtr->BatchFindClassesUsedStrings(map, advanced_match, dexPriority);
+    auto res = dexKitPtr->BatchFindClassesUsingStrings(map, advanced_match, dexPriority);
     return CMap2JMap(env, res);
 }
 
-jobject BatchFindMethodsUsedStrings(JNIEnv *env,
-                                    jlong dexKit,
-                                    jobject jMap,
-                                    jboolean advanced_match,
-                                    jintArray dex_priority) {
+jobject BatchFindMethodsUsingStrings(JNIEnv *env,
+                                     jlong dexKit,
+                                     jobject jMap,
+                                     jboolean advanced_match,
+                                     jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto map = JMap2CMap(env, jMap);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKitPtr->BatchFindMethodsUsedStrings(map, advanced_match, dexPriority);
+    auto res = dexKitPtr->BatchFindMethodsUsingStrings(map, advanced_match, dexPriority);
     return CMap2JMap(env, res);
 }
 
@@ -158,18 +158,18 @@ jobject FindMethodInvoking(JNIEnv *env,
     return CMap2JMap(env, res);
 }
 
-jobjectArray FindMethodUsedField(JNIEnv *env,
-                                 jlong dexKit,
-                                 jstring field_descriptor,
-                                 jstring field_declare_class,
-                                 jstring field_name,
-                                 jstring field_type,
-                                 jint used_flags,
-                                 jstring caller_method_declare_class,
-                                 jstring caller_method_name,
-                                 jstring caller_method_return_type,
-                                 jobjectArray caller_method_param_types,
-                                 jintArray dex_priority) {
+jobjectArray FindMethodUsingField(JNIEnv *env,
+                                  jlong dexKit,
+                                  jstring field_descriptor,
+                                  jstring field_declare_class,
+                                  jstring field_name,
+                                  jstring field_type,
+                                  jint used_flags,
+                                  jstring caller_method_declare_class,
+                                  jstring caller_method_name,
+                                  jstring caller_method_return_type,
+                                  jobjectArray caller_method_param_types,
+                                  jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto fieldDescriptor = env->GetStringUTFChars(field_descriptor, nullptr);
     auto fieldDeclareClass = env->GetStringUTFChars(field_declare_class, nullptr);
@@ -189,16 +189,16 @@ jobjectArray FindMethodUsedField(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKitPtr->FindMethodUsedField(fieldDescriptor,
-                                              fieldDeclareClass,
-                                              fieldName,
-                                              fieldType,
-                                              used_flags,
-                                              callerMethodClass,
-                                              callerMethodName,
-                                              callerMethodReturnType,
-                                              callerParamTypes,
-                                              dexPriority);
+    auto res = dexKitPtr->FindMethodUsingField(fieldDescriptor,
+                                               fieldDeclareClass,
+                                               fieldName,
+                                               fieldType,
+                                               used_flags,
+                                               callerMethodClass,
+                                               callerMethodName,
+                                               callerMethodReturnType,
+                                               callerParamTypes,
+                                               dexPriority);
     env->ReleaseStringUTFChars(field_descriptor, fieldDescriptor);
     env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
     env->ReleaseStringUTFChars(field_name, fieldName);
@@ -209,15 +209,15 @@ jobjectArray FindMethodUsedField(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
-jobjectArray FindMethodUsedString(JNIEnv *env,
-                                  jlong dexKit,
-                                  jstring used_utf8_string,
-                                  jboolean advanced_match,
-                                  jstring method_declare_class,
-                                  jstring method_name,
-                                  jstring method_return_type,
-                                  jobjectArray method_param_types,
-                                  jintArray dex_priority) {
+jobjectArray FindMethodUsingString(JNIEnv *env,
+                                   jlong dexKit,
+                                   jstring used_utf8_string,
+                                   jboolean advanced_match,
+                                   jstring method_declare_class,
+                                   jstring method_name,
+                                   jstring method_return_type,
+                                   jobjectArray method_param_types,
+                                   jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto usedUtf8String = env->GetStringUTFChars(used_utf8_string, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
@@ -231,13 +231,13 @@ jobjectArray FindMethodUsedString(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKitPtr->FindMethodUsedString(usedUtf8String,
-                                               advanced_match,
-                                               methodDeclareClass,
-                                               methodName,
-                                               methodReturnType,
-                                               ParamTypes,
-                                               dexPriority);
+    auto res = dexKitPtr->FindMethodUsingString(usedUtf8String,
+                                                advanced_match,
+                                                methodDeclareClass,
+                                                methodName,
+                                                methodReturnType,
+                                                ParamTypes,
+                                                dexPriority);
     env->ReleaseStringUTFChars(used_utf8_string, usedUtf8String);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
@@ -345,13 +345,14 @@ std::map<std::string, std::set<std::string>> JMap2CMap(JNIEnv *env, const jobjec
         jobject valueSet = env->CallObjectMethod(jMap, mGet, key);
 
         jclass cValueSet = env->GetObjectClass(valueSet);
-        jmethodID mValueIterator = env->GetMethodID(cValueSet, "iterator", "()Ljava/util/Iterator;");
+        jmethodID mValueIterator = env->GetMethodID(cValueSet, "iterator",
+                                                    "()Ljava/util/Iterator;");
         jobject setIterator = env->CallObjectMethod(valueSet, mValueIterator);
 
         jclass cSetIterator = env->GetObjectClass(setIterator);
         jmethodID mSetHasNext = env->GetMethodID(cSetIterator, "hasNext", "()Z");
         jmethodID mSetNext = env->GetMethodID(cSetIterator, "next", "()Ljava/lang/Object;");
-        std::set<std::string> set;
+        std::set < std::string > set;
         while (env->CallBooleanMethod(setIterator, mSetHasNext)) {
             auto value = (jstring) env->CallObjectMethod(setIterator, mSetNext);
             const char *valueStr = env->GetStringUTFChars(value, nullptr);

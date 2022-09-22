@@ -54,9 +54,9 @@ DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
 }
 
 std::map<std::string, std::vector<std::string>>
-DexKit::BatchFindClassesUsedStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                    bool advanced_match,
-                                    const std::vector<size_t> &dex_priority) {
+DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
+                                     bool advanced_match,
+                                     const std::vector<size_t> &dex_priority) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
@@ -178,9 +178,9 @@ DexKit::BatchFindClassesUsedStrings(std::map<std::string, std::set<std::string>>
 }
 
 std::map<std::string, std::vector<std::string>>
-DexKit::BatchFindMethodsUsedStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                    bool advanced_match,
-                                    const std::vector<size_t> &dex_priority) {
+DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
+                                     bool advanced_match,
+                                     const std::vector<size_t> &dex_priority) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
@@ -638,16 +638,16 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
 }
 
 std::vector<std::string>
-DexKit::FindMethodUsedField(const std::string &field_descriptor,
-                            const std::string &field_declare_class,
-                            const std::string &field_declare_name,
-                            const std::string &field_type,
-                            uint32_t used_flags,
-                            const std::string &caller_method_declare_class,
-                            const std::string &caller_method_declare_name,
-                            const std::string &caller_method_return_type,
-                            const std::optional<std::vector<std::string>> &caller_method_param_types,
-                            const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodUsingField(const std::string &field_descriptor,
+                             const std::string &field_declare_class,
+                             const std::string &field_declare_name,
+                             const std::string &field_type,
+                             uint32_t used_flags,
+                             const std::string &caller_method_declare_class,
+                             const std::string &caller_method_declare_name,
+                             const std::string &caller_method_return_type,
+                             const std::optional<std::vector<std::string>> &caller_method_param_types,
+                             const std::vector<size_t> &dex_priority) {
     // be getter field
     auto extract_tuple = ExtractFieldDescriptor(field_descriptor, field_declare_class, field_declare_name, field_type);
     std::string field_declare_class_desc = std::get<0>(extract_tuple);
@@ -782,13 +782,13 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
 }
 
 std::vector<std::string>
-DexKit::FindMethodUsedString(const std::string &used_utf8_string,
-                             bool advanced_match,
-                             const std::string &method_declare_class,
-                             const std::string &method_declare_name,
-                             const std::string &method_return_type,
-                             const std::optional<std::vector<std::string>> &method_param_types,
-                             const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodUsingString(const std::string &used_utf8_string,
+                              bool advanced_match,
+                              const std::string &method_declare_class,
+                              const std::string &method_declare_name,
+                              const std::string &method_return_type,
+                              const std::optional<std::vector<std::string>> &method_param_types,
+                              const std::vector<size_t> &dex_priority) {
     // caller method
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);

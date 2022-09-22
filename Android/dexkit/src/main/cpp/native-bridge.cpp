@@ -11,11 +11,11 @@
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
 
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT void JNICALL
 Java_io_luckypray_dexkit_DexKitHelper_initDexKit(JNIEnv *env, jobject thiz,
                                                  jobject class_loader) {
     if (!class_loader) {
-        return 0;
+        return;
     }
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
@@ -34,14 +34,13 @@ Java_io_luckypray_dexkit_DexKitHelper_initDexKit(JNIEnv *env, jobject thiz,
     auto dexkit = new dexkit::DexKit(hostApkPath);
     env->ReleaseStringUTFChars(file, cStr);
     env->SetLongField(thiz, fToken, (jlong) dexkit);
-    return (jlong) dexkit;
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_initDexByPath(JNIEnv *env, jobject thiz, jstring apk_path) {
+JNIEXPORT void JNICALL
+Java_io_luckypray_dexkit_DexKitHelper_initDexKitByPath(JNIEnv *env, jobject thiz, jstring apk_path) {
     if (!apk_path) {
-        return 0;
+        return;
     }
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
@@ -50,12 +49,11 @@ Java_io_luckypray_dexkit_DexKitHelper_initDexByPath(JNIEnv *env, jobject thiz, j
     auto dexkit = new dexkit::DexKit(filePathStr);
     env->ReleaseStringUTFChars(apk_path, cStr);
     env->SetLongField(thiz, fToken, (jlong) dexkit);
-    return (jlong) dexkit;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_release(JNIEnv *env, jobject thiz) {
+Java_io_luckypray_dexkit_DexKitHelper_close(JNIEnv *env, jobject thiz) {
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
     jlong token = env->GetLongField(thiz, fToken);
@@ -64,20 +62,20 @@ Java_io_luckypray_dexkit_DexKitHelper_release(JNIEnv *env, jobject thiz) {
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_batchFindClassesUsedStrings(JNIEnv *env,
-                                                                  jobject thiz,
-                                                                  jobject map,
-                                                                  jboolean advanced_match,
-                                                                  jintArray dex_priority) {
+Java_io_luckypray_dexkit_DexKitHelper_batchFindClassesUsingStrings(JNIEnv *env,
+                                                                   jobject thiz,
+                                                                   jobject map,
+                                                                   jboolean advanced_match,
+                                                                   jintArray dex_priority) {
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
     jlong token = env->GetLongField(thiz, fToken);
-    return BatchFindClassesUsedStrings(env, token, map, advanced_match, dex_priority);
+    return BatchFindClassesUsingStrings(env, token, map, advanced_match, dex_priority);
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_batchFindMethodsUsedStrings(JNIEnv *env,
+Java_io_luckypray_dexkit_DexKitHelper_batchFindMethodsUsingStrings(JNIEnv *env,
                                                                   jobject thiz,
                                                                   jobject map,
                                                                   jboolean advanced_match,
@@ -85,7 +83,7 @@ Java_io_luckypray_dexkit_DexKitHelper_batchFindMethodsUsedStrings(JNIEnv *env,
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
     jlong token = env->GetLongField(thiz, fToken);
-    return BatchFindMethodsUsedStrings(env, token, map, advanced_match, dex_priority);
+    return BatchFindMethodsUsingStrings(env, token, map, advanced_match, dex_priority);
 }
 
 extern "C"
@@ -135,21 +133,21 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethodInvoking(JNIEnv *env, jobject th
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodUsedField(JNIEnv *env, jobject thiz,
-                                                          jstring field_descriptor,
-                                                          jstring field_declare_class,
-                                                          jstring field_name,
-                                                          jstring field_type,
-                                                          jint used_flags,
-                                                          jstring caller_method_declare_class,
-                                                          jstring caller_method_name,
-                                                          jstring caller_method_return_type,
-                                                          jobjectArray caller_method_param_types,
-                                                          jintArray dex_priority) {
+Java_io_luckypray_dexkit_DexKitHelper_findMethodUsingField(JNIEnv *env, jobject thiz,
+                                                           jstring field_descriptor,
+                                                           jstring field_declare_class,
+                                                           jstring field_name,
+                                                           jstring field_type,
+                                                           jint used_flags,
+                                                           jstring caller_method_declare_class,
+                                                           jstring caller_method_name,
+                                                           jstring caller_method_return_type,
+                                                           jobjectArray caller_method_param_types,
+                                                           jintArray dex_priority) {
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
     jlong token = env->GetLongField(thiz, fToken);
-    return FindMethodUsedField(env, token, field_descriptor, field_declare_class, field_name,
+    return FindMethodUsingField(env, token, field_descriptor, field_declare_class, field_name,
                                field_type, used_flags, caller_method_declare_class,
                                caller_method_name, caller_method_return_type,
                                caller_method_param_types, dex_priority);
@@ -157,18 +155,18 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethodUsedField(JNIEnv *env, jobject t
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodUsedString(JNIEnv *env, jobject thiz,
-                                                           jstring used_string,
-                                                           jboolean advanced_match,
-                                                           jstring method_declare_class,
-                                                           jstring method_name,
-                                                           jstring method_return_type,
-                                                           jobjectArray method_param_types,
-                                                           jintArray dex_priority) {
+Java_io_luckypray_dexkit_DexKitHelper_findMethodUsingString(JNIEnv *env, jobject thiz,
+                                                            jstring used_string,
+                                                            jboolean advanced_match,
+                                                            jstring method_declare_class,
+                                                            jstring method_name,
+                                                            jstring method_return_type,
+                                                            jobjectArray method_param_types,
+                                                            jintArray dex_priority) {
     jclass cHelper = env->GetObjectClass(thiz);
     jfieldID fToken = env->GetFieldID(cHelper, "token", "J");
     jlong token = env->GetLongField(thiz, fToken);
-    return FindMethodUsedString(env, token, used_string, advanced_match, method_declare_class,
+    return FindMethodUsingString(env, token, used_string, advanced_match, method_declare_class,
                                 method_name, method_return_type, method_param_types, dex_priority);
 }
 

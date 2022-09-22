@@ -1,7 +1,6 @@
 plugins {
     id "com.android.library"
     id "maven-publish"
-    id "org.jetbrains.kotlin.android"
 }
 
 android {
@@ -19,6 +18,20 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_static"
+                def flags = [
+                        "-funwind-tables",
+                        "-fasynchronous-unwind-tables",
+                        "-Qunused-arguments",
+                        "-fno-rtti",
+                        "-fno-exceptions",
+                        "-fvisibility=hidden",
+                        "-fvisibility-inlines-hidden",
+                        "-Wno-unused-value",
+                        "-Wno-unused-variable",
+                        "-Wno-unused-command-line-argument",
+                ]
+                cppFlags = ["-std=c++17"] + flags
+                cFlags = ["-std=c18"] + flags
             }
         }
     }
@@ -28,34 +41,32 @@ android {
             minifyEnabled false
             externalNativeBuild {
                 cmake {
-                    cppFlags "-std=c++17",
-                            "-funwind-tables",
-                            "-fasynchronous-unwind-tables",
-                            "-Qunused-arguments",
-                            "-fno-rtti",
-                            "-fno-exceptions",
-                            "-fvisibility=hidden",
-                            "-fvisibility-inlines-hidden",
-                            "-Wno-unused-value",
-                            "-Wno-unused-variable",
-                            "-Wno-unused-command-line-argument",
-                            "-flto=full",
+                    def releaseFlags = [
                             "-ffunction-sections",
                             "-fdata-sections",
                             "-Wl,--gc-sections",
+                            "-Wl,--exclude-libs,ALL",
                             "-Oz",
-                            "-Wl,--exclude-libs,ALL"
+                            "-flto=full",
+                    ]
+                    def configFlags = [
+                            "-Oz",
+                            "-flto=full",
+                            "-DNDEBUG"
+                    ].join(" ")
+                    cppFlags += releaseFlags
+                    cFlags += releaseFlags
+                    arguments += [
+                            "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCMAKE_CXX_FLAGS_RELEASE=$configFlags",
+                            "-DCMAKE_C_FLAGS_RELEASE=$configFlags",
+                    ]
                 }
             }
             consumerProguardFiles "proguard-rules.pro"
         }
 
         debug {
-            externalNativeBuild {
-                cmake {
-                    cppFlags "-std=c++17"
-                }
-            }
             jniDebuggable true
         }
 
@@ -67,12 +78,8 @@ android {
     externalNativeBuild {
         cmake {
             path file("src/main/cpp/CMakeLists.txt")
-            version "3.18.1"
+            version "3.22.1+"
         }
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 }
 
@@ -81,7 +88,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:1.1.3"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
 
-//    implementation 'dev.rikka.ndk.thirdparty:cxx:1.2.0'
+    api "com.android.support:support-annotations:28.0.0"
 }
 
 // Because the components are created only during the afterEvaluate phase, you must
@@ -92,7 +99,7 @@ afterEvaluate {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
                 // Applies the component for the release build variant.
-                from components.release
+                from components.debug
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = "io.luckypray"
