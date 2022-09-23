@@ -19,6 +19,11 @@ jlong CreateDexKitInstance(JNIEnv *env, jstring apkPath) {
     return reinterpret_cast<jlong>(dexKit);
 }
 
+jint GetDexNum(JNIEnv *env, jlong dexKitPtr) {
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    return dexKit->GetDexNum();
+}
+
 void ReleaseDexKitInstance(JNIEnv *env, jlong dexKit) {
     delete reinterpret_cast<dexkit::DexKit *>(dexKit);
 }
