@@ -3,7 +3,7 @@ package io.luckypray.dexkit
 import java.io.Closeable
 import java.net.URL
 
-class DexKitBridge(apkPath: String) : Closeable {
+class DexKitBridge private constructor(apkPath: String) : Closeable {
 
     companion object {
         const val FLAG_GETTING = 0x00000001
