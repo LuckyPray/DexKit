@@ -3,7 +3,6 @@ package io.luckypray.dexkit
 import java.lang.reflect.Constructor
 import java.lang.reflect.Member
 import java.lang.reflect.Method
-import kotlin.Int
 
 class DexMethodDescriptor {
 
@@ -31,15 +30,15 @@ class DexMethodDescriptor {
     }
 
     constructor(method: Method) {
-        declaringClassSig = getClassSig(method.declaringClass)
+        declaringClassSig = getTypeSig(method.declaringClass)
         name = method.name
         parameterTypesSig = method.parameterTypes.joinToString("") { getTypeSig(it) }
-        returnTypeSig = getClassSig(method.returnType)
+        returnTypeSig = getTypeSig(method.returnType)
         methodTypeSig = "($parameterTypesSig)$returnTypeSig"
     }
 
     constructor(constructor: Constructor<*>) {
-        declaringClassSig = getClassSig(constructor.declaringClass)
+        declaringClassSig = getTypeSig(constructor.declaringClass)
         name = "<init>"
         parameterTypesSig = constructor.parameterTypes.joinToString("") { getTypeSig(it) }
         returnTypeSig = "V"
@@ -60,7 +59,7 @@ class DexMethodDescriptor {
             throw IllegalArgumentException("$this not a constructor")
         }
         try {
-            var clz = classLoader.loadClass(getClassName(declaringClassSig))
+            var clz = classLoader.loadClass(getDeclareClassName())
             do {
                 for (constructor in clz.declaredConstructors) {
                     if (methodTypeSig == getConstructorTypeSig(constructor)) {
@@ -79,7 +78,7 @@ class DexMethodDescriptor {
             throw IllegalArgumentException("$this not a method")
         }
         try {
-            var clz = classLoader.loadClass(getClassName(declaringClassSig))
+            var clz = classLoader.loadClass(getDeclareClassName())
             do {
                 for (method in clz.declaredMethods) {
                     if (method.name == name && methodTypeSig == getMethodTypeSig(method)) {
@@ -104,7 +103,7 @@ class DexMethodDescriptor {
         }
     }
 
-    fun getClassName(): String {
+    fun getDeclareClassName(): String {
         return getClassName(declaringClassSig)
     }
 
@@ -112,59 +111,4 @@ class DexMethodDescriptor {
         return "$declaringClassSig->$name$methodTypeSig"
     }
 
-    companion object {
-
-        @JvmStatic
-        fun getClassName(classDesc: String): String {
-            if (classDesc.startsWith("L") && classDesc.endsWith(";")) {
-                return classDesc.substring(1, classDesc.length - 1).replace('/', '.')
-            }
-            return classDesc.replace('/', '.')
-        }
-
-        @JvmStatic
-        fun getClassSig(clazz: Class<*>): String {
-            return "L" + clazz.name.replace('.', '/') + ";"
-        }
-
-        @JvmStatic
-        fun getTypeSig(type: Class<*>): String {
-            if (type.isPrimitive) {
-                return when (type) {
-                    Boolean::class.javaObjectType -> "Z"
-                    Char::class.javaObjectType -> "C"
-                    Short::class.javaObjectType -> "S"
-                    Int::class.javaObjectType -> "I"
-                    Float::class.javaObjectType -> "F"
-                    Long::class.javaObjectType -> "J"
-                    Double::class.javaObjectType -> "D"
-                    Void.TYPE -> "V"
-                    else -> throw IllegalStateException("Unknown primitive type: $type")
-                }
-            }
-            return if (type.isArray) {
-                "[" + getTypeSig(type.componentType!!)
-            } else getClassSig(type)
-        }
-
-        @JvmStatic
-        fun getMethodTypeSig(parameterTypes: Array<Class<*>>, returnType: Class<*>): String {
-            return "(" + parameterTypes.joinToString("") { getTypeSig(it) } + ")" + getTypeSig(
-                returnType
-            )
-        }
-
-        @JvmStatic
-        fun getMethodTypeSig(method: Method): String {
-            return "(" + method.parameterTypes.joinToString("") { getTypeSig(it) } + ")" + getTypeSig(
-                method.returnType
-            )
-        }
-
-        @JvmStatic
-        fun getConstructorTypeSig(constructor: Constructor<*>): String {
-            return "(" + constructor.parameterTypes.joinToString("") { getTypeSig(it) } + ")V"
-        }
-
-    }
 }
