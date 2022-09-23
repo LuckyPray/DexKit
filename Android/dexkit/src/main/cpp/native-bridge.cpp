@@ -125,7 +125,7 @@ Java_io_luckypray_dexkit_DexKitBridge_findMethodInvoking(JNIEnv *env, jobject th
 }
 
 extern "C"
-JNIEXPORT jobjectArray JNICALL
+JNIEXPORT jobject JNICALL
 Java_io_luckypray_dexkit_DexKitBridge_findMethodUsingField(JNIEnv *env, jobject thiz,
                                                            jstring field_descriptor,
                                                            jstring field_declare_class,

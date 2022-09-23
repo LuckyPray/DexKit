@@ -95,7 +95,7 @@ class DexKitBridge(apkPath: String) : Closeable {
         callerMethodReturnType: String = "",
         callerMethodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
-    ): Array<String>
+    ): Map<String, Array<String>>
 
     external fun findMethodUsingString(
         usingString: String,
