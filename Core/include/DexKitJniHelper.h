@@ -163,7 +163,7 @@ jobject FindMethodInvoking(JNIEnv *env,
     return CMap2JMap(env, res);
 }
 
-jobjectArray FindMethodUsingField(JNIEnv *env,
+jobject FindMethodUsingField(JNIEnv *env,
                                   jlong dexKit,
                                   jstring field_descriptor,
                                   jstring field_declare_class,
@@ -211,7 +211,7 @@ jobjectArray FindMethodUsingField(JNIEnv *env,
     env->ReleaseStringUTFChars(caller_method_declare_class, callerMethodClass);
     env->ReleaseStringUTFChars(caller_method_name, callerMethodName);
     env->ReleaseStringUTFChars(caller_method_return_type, callerMethodReturnType);
-    return StrVec2JStrArr(env, res);
+    return CMap2JMap(env, res);
 }
 
 jobjectArray FindMethodUsingString(JNIEnv *env,

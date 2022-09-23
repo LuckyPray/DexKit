@@ -44,7 +44,7 @@ int main() {
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
     auto methods = dexKit.BatchFindMethodsUsingStrings(obfuscate, true);
     std::cout << "\nBatchFindMethodsUsedStrings -> \n";
-    for (auto &[key, value]: classes) {
+    for (auto &[key, value]: methods) {
         std::cout << key << " -> \n";
         for (auto &v: value) {
             std::cout << "\t" << v << "\n";
@@ -100,9 +100,12 @@ int main() {
             "",
             "void",
             std::vector<std::string>{"", "Lcom/tencent/mobileqq/data/ChatMessage;"});
-    std::cout << "\nFindFieldBeUsed -> \n";
-    for (auto &value: usingFieldMethods) {
-        std::cout << "\t" << value << "\n";
+    std::cout << "\nFindMethodUsingField -> \n";
+    for (auto &[key, value]: usingFieldMethods) {
+        std::cout << key << " -> \n";
+        for (auto &v: value) {
+            std::cout << "\t" << v << "\n";
+        }
     }
 
     // find all used matching string's method

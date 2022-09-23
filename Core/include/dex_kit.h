@@ -155,9 +155,9 @@ public:
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
-     * @return method descriptor
+     * @return {"method descriptor" -> {"be used field descriptor"}}
      */
-    std::vector<std::string>
+    std::map<std::string, std::vector<std::string>>
     FindMethodUsingField(const std::string &field_descriptor,
                          const std::string &field_declare_class,
                          const std::string &field_declare_name,
@@ -180,7 +180,7 @@ public:
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
-     * @return
+     * @return method descriptor
      */
     std::vector<std::string>
     FindMethodUsingString(const std::string &used_utf8_string,

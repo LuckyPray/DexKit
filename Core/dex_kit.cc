@@ -637,7 +637,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
     return result;
 }
 
-std::vector<std::string>
+std::map<std::string, std::vector<std::string>>
 DexKit::FindMethodUsingField(const std::string &field_descriptor,
                              const std::string &field_declare_class,
                              const std::string &field_declare_name,
@@ -669,7 +669,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                                              caller_method_return_type, caller_method_param_types);
 
     ThreadPool pool(thread_num_);
-    std::vector<std::future<std::vector<std::string>>> futures;
+    std::vector<std::future<std::map<std::string, std::vector<std::string>>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &field_declare_class_desc, &field_name, &field_type_desc, &used_flags,
@@ -687,13 +687,13 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                     if (!field_declare_class_desc.empty()) {
                         declared_class_idx = FindTypeIdx(dex_idx, field_declare_class_desc);
                         if (declared_class_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     if (!field_type_desc.empty()) {
                         field_type_idx = FindTypeIdx(dex_idx, field_type_desc);
                         if (field_type_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
 
@@ -704,7 +704,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                     if (!caller_class_desc.empty()) {
                         caller_class_idx = FindTypeIdx(dex_idx, caller_class_desc);
                         if (caller_class_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                         lower = caller_class_idx;
                         upper = caller_class_idx + 1;
@@ -712,7 +712,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                     if (!caller_return_desc.empty()) {
                         caller_return_type = FindTypeIdx(dex_idx, caller_return_desc);
                         if (caller_return_type == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     for (auto &v: caller_param_descs) {
@@ -720,13 +720,13 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                         if (!v.empty()) {
                             type = FindTypeIdx(dex_idx, v);
                             if (type == dex::kNoIndex) {
-                                return std::vector<std::string>();
+                                return std::map<std::string, std::vector<std::string>>();
                             }
                         }
                         caller_param_types.emplace_back(type);
                     }
 
-                    std::vector<std::string> result;
+                    std::map<dex::u2, std::set<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (need_caller_match) {
@@ -757,8 +757,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                                     auto index = ReadShort(ptr);
                                     if (IsFieldMatch(dex_idx, index, declared_class_idx, field_name,
                                                      field_type_idx)) {
-                                        auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
-                                        result.emplace_back(descriptor);
+                                        index_map[method_idx].emplace(index);
                                         goto label;
                                     }
                                 }
@@ -767,16 +766,24 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                             label:;
                         }
                     }
+                    std::map<std::string, std::vector<std::string>> result;
+                    for (auto &[key, value]: index_map) {
+                        auto caller_descriptor = GetMethodDescriptor(dex_idx, key);
+                        std::vector<std::string> be_called_descriptors;
+                        for (auto v: value) {
+                            auto using_field_descriptor = GetFieldDescriptor(dex_idx, v);
+                            be_called_descriptors.emplace_back(using_field_descriptor);
+                        }
+                        result.emplace(caller_descriptor, be_called_descriptors);
+                    }
                     return result;
                 }
         ));
     }
-    std::vector<std::string> result;
+    std::map<std::string, std::vector<std::string>> result;
     for (auto &f: futures) {
         auto r = f.get();
-        for (auto &desc: r) {
-            result.emplace_back(desc);
-        }
+        result.insert(r.begin(), r.end());
     }
     return result;
 }
