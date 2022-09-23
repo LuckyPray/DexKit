@@ -15,7 +15,7 @@ jfieldID token_field = nullptr;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_initDexKit(JNIEnv *env, jobject thiz, jstring apk_path) {
+Java_io_luckypray_dexkit_DexKitBridge_initDexKit(JNIEnv *env, jobject thiz, jstring apk_path) {
     if (!apk_path) {
         return;
     }
@@ -31,7 +31,7 @@ Java_io_luckypray_dexkit_DexKitHelper_initDexKit(JNIEnv *env, jobject thiz, jstr
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_getDexNum(JNIEnv *env, jobject thiz) {
+Java_io_luckypray_dexkit_DexKitBridge_getDexNum(JNIEnv *env, jobject thiz) {
     jlong token = env->GetLongField(thiz, token_field);
     if (token == 0) {
         return 0;
@@ -41,7 +41,7 @@ Java_io_luckypray_dexkit_DexKitHelper_getDexNum(JNIEnv *env, jobject thiz) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_close(JNIEnv *env, jobject thiz) {
+Java_io_luckypray_dexkit_DexKitBridge_close(JNIEnv *env, jobject thiz) {
     jlong token = env->GetLongField(thiz, token_field);
     if (token == 0) {
         return;
@@ -51,7 +51,7 @@ Java_io_luckypray_dexkit_DexKitHelper_close(JNIEnv *env, jobject thiz) {
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_batchFindClassesUsingStrings(JNIEnv *env,
+Java_io_luckypray_dexkit_DexKitBridge_batchFindClassesUsingStrings(JNIEnv *env,
                                                                    jobject thiz,
                                                                    jobject map,
                                                                    jboolean advanced_match,
@@ -65,11 +65,11 @@ Java_io_luckypray_dexkit_DexKitHelper_batchFindClassesUsingStrings(JNIEnv *env,
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_batchFindMethodsUsingStrings(JNIEnv *env,
-                                                                  jobject thiz,
-                                                                  jobject map,
-                                                                  jboolean advanced_match,
-                                                                  jintArray dex_priority) {
+Java_io_luckypray_dexkit_DexKitBridge_batchFindMethodsUsingStrings(JNIEnv *env,
+                                                                   jobject thiz,
+                                                                   jobject map,
+                                                                   jboolean advanced_match,
+                                                                   jintArray dex_priority) {
     jlong token = env->GetLongField(thiz, token_field);
     if (token == 0) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
@@ -79,7 +79,7 @@ Java_io_luckypray_dexkit_DexKitHelper_batchFindMethodsUsingStrings(JNIEnv *env,
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodBeInvoked(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findMethodBeInvoked(JNIEnv *env, jobject thiz,
                                                           jstring method_descriptor,
                                                           jstring method_declare_class,
                                                           jstring method_declare_name,
@@ -102,7 +102,7 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethodBeInvoked(JNIEnv *env, jobject t
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodInvoking(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findMethodInvoking(JNIEnv *env, jobject thiz,
                                                          jstring method_descriptor,
                                                          jstring method_declare_class,
                                                          jstring method_declare_name,
@@ -126,7 +126,7 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethodInvoking(JNIEnv *env, jobject th
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodUsingField(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findMethodUsingField(JNIEnv *env, jobject thiz,
                                                            jstring field_descriptor,
                                                            jstring field_declare_class,
                                                            jstring field_name,
@@ -149,7 +149,7 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethodUsingField(JNIEnv *env, jobject 
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodUsingString(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findMethodUsingString(JNIEnv *env, jobject thiz,
                                                             jstring used_string,
                                                             jboolean advanced_match,
                                                             jstring method_declare_class,
@@ -167,7 +167,7 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethodUsingString(JNIEnv *env, jobject
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethod(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findMethod(JNIEnv *env, jobject thiz,
                                                  jstring method_declare_class,
                                                  jstring method_name,
                                                  jstring method_return_type,
@@ -183,7 +183,7 @@ Java_io_luckypray_dexkit_DexKitHelper_findMethod(JNIEnv *env, jobject thiz,
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findSubClasses(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findSubClasses(JNIEnv *env, jobject thiz,
                                                      jstring parent_class,
                                                      jintArray dex_priority) {
     jlong token = env->GetLongField(thiz, token_field);
@@ -195,7 +195,7 @@ Java_io_luckypray_dexkit_DexKitHelper_findSubClasses(JNIEnv *env, jobject thiz,
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_io_luckypray_dexkit_DexKitHelper_findMethodOpPrefixSeq(JNIEnv *env, jobject thiz,
+Java_io_luckypray_dexkit_DexKitBridge_findMethodOpPrefixSeq(JNIEnv *env, jobject thiz,
                                                             jintArray op_prefix_seq,
                                                             jstring method_declare_class,
                                                             jstring method_name,

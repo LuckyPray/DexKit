@@ -3,20 +3,21 @@ package io.luckypray.dexkit
 import java.io.Closeable
 import java.net.URL
 
-class DexKitHelper(apkPath: String) : Closeable {
+class DexKitBridge(apkPath: String) : Closeable {
+
     companion object {
         const val FLAG_GETTING = 0x00000001
         const val FLAG_SETTING = 0x00000002
         const val FLAG_USING = FLAG_GETTING or FLAG_SETTING
 
         @JvmStatic
-        fun create(apkPath: String): DexKitHelper? {
-            val helper = DexKitHelper(apkPath)
+        fun create(apkPath: String): DexKitBridge? {
+            val helper = DexKitBridge(apkPath)
             return if (helper.valid()) helper else null
         }
 
         @JvmStatic
-        fun create(loader: ClassLoader): DexKitHelper? {
+        fun create(loader: ClassLoader): DexKitBridge? {
             loader.loadClass("java/lang/ClassLoader").declaredMethods.first {
                 it.name == "findResource"
                     && it.parameterTypes.size == 1
@@ -26,7 +27,7 @@ class DexKitHelper(apkPath: String) : Closeable {
                 method.isAccessible = true
                 val url = method.invoke(loader, "AndroidManifest.xml") as URL
                 url.path.substring(5, url.path.length - 21).let {
-                    val helper = DexKitHelper(it)
+                    val helper = DexKitBridge(it)
                     return if (helper.valid()) helper else null
                 }
             }
@@ -35,11 +36,11 @@ class DexKitHelper(apkPath: String) : Closeable {
 
     private val token: Long = 0
 
-    private external fun initDexKit(apkPath: String)
-
     fun valid(): Boolean {
         return token != 0L
     }
+
+    private external fun initDexKit(apkPath: String)
 
     external fun getDexNum(): Int
 
