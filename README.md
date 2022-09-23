@@ -13,8 +13,8 @@ This is the CMAKE version of the DexKit project, if you need the NDK version ple
 
 These two APIs can meet most of your usage scenarios:
 
-- **`DexKit::BatchFindClassesUsedStrings`**
-- **`DexKit::BatchFindMethodsUsedStrings`**
+- **`DexKit::BatchFindClassesUsingStrings`**
+- **`DexKit::BatchFindMethodsUsingStrings`**
 
 > **Note**: In all cases you should avoid searching for keywords that contain duplicate content, eg: {"key_word", "word"}, as this will cause tags to be overwritten, resulting in inaccurate search results.
 > If there is such a need, open the advanced search mode as much as possible, and use the string to match the content exactly, for example, modify it to this: {"^key_word$", "^word$"}
@@ -23,8 +23,8 @@ And there are many other APIs:
 
 - `DexKit::FindMethodBeInvoked`: find caller for specified method.
 - `DexKit::FindMethodInvoking`: find the called method
-- `DexKit::FindMethodUsedField`: find method getting specified field, access types(put/get) can be limited by setting `used_flags`
-- `DexKit::FindMethodUsedString`: find method used utf8 string
+- `DexKit::FindMethodUsingField`: find method getting specified field, access types(put/get) can be limited by setting `used_flags`
+- `DexKit::FindMethodUsingString`: find method used utf8 string
 - `DexKit::FindMethod`: find method by multiple conditions
 - `DexKit::FindSubClasses`: find all direct subclasses of the specified class
 - `DexKit::FindMethodOpPrefixSeq`:  find all method used opcode prefix sequence
