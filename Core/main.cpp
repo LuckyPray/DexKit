@@ -6,6 +6,7 @@
 #include <set>
 #include "dex_kit.h"
 #include "code_format.h"
+#include "kmp.h"
 
 int main() {
     std::map<std::string, std::set<std::string>> obfuscate = {
@@ -149,12 +150,38 @@ int main() {
     auto usedOpPrefixMethods = dexKit.FindMethodOpPrefixSeq(
             {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
             "",
-            "<init>",
-            "V",
-            dexkit::empty_param);
-    std::cout << "\nFindMethodOpPrefixSeq -> \n";
+            "",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodOpPrefixSeq(" << usedOpPrefixMethods.size() << ") -> \n";
     for (auto &value: usedOpPrefixMethods) {
         std::cout << "\t" << value << "\n";
+    }
+
+    auto usedOpSeqMethods = dexKit.FindMethodUsingOpCodeSeq(
+            {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
+            "",
+            "",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodUsingOpCodeSeq(" << usedOpSeqMethods.size() << ") -> \n";
+    for (auto &value: usedOpSeqMethods) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    auto methodsOpSeq = dexKit.GetMethodOpCodeSeq(
+            "",
+            "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
+            "syncGetServerConfig",
+            "",
+            dexkit::null_param);
+    std::cout << "\nGetMethodOpCodeSeq -> \n";
+    for (auto &[key, value]: methodsOpSeq) {
+        std::cout << "\t" << key << "\n\t\t";
+        for (auto &v: value) {
+            std::cout << (int) v << " ";
+        }
+        std::cout << "\n";
     }
 
     auto now1 = std::chrono::system_clock::now();
