@@ -1,7 +1,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include <dex_kit.h>
-#include "DexKitJniHelper.h"
+#include "dex_kit_jni_helper.h"
 
 #define TAG "DexKit"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
