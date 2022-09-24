@@ -218,7 +218,7 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
         ).map { DexMethodDescriptor(it) }
     }
 
-    private companion object {
+    companion object {
         const val FLAG_GETTING = 0x00000001
         const val FLAG_SETTING = 0x00000002
         const val FLAG_USING = FLAG_GETTING or FLAG_SETTING
