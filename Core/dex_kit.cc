@@ -834,8 +834,8 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
                     std::set<uint32_t> matched_strings;
                     for (int str_idx = 0; str_idx < strings.size(); ++str_idx) {
                         auto &string = strings[str_idx];
-                        auto find_idx = string.find(real_str);
-                        if (find_idx == std::string::npos ||
+                        auto find_idx = kmp::FindIndex(string, real_str);
+                        if (find_idx == -1 ||
                             (flag & 1 && find_idx != 0) ||
                             (flag & 2 && find_idx != string.size() - real_str.size())) {
                             continue;

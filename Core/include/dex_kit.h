@@ -315,7 +315,7 @@ private:
     bool IsFieldMatch(size_t dex_idx, uint32_t field_idx, uint32_t decl_class,
                       const std::string &field_declare_name, uint32_t field_type);
 
-    inline bool NeedMethodMatch(const std::string &method_descriptor,
+    static inline bool NeedMethodMatch(const std::string &method_descriptor,
                                 const std::string &caller_method_declare_class,
                                 const std::string &caller_method_declare_name,
                                 const std::string &caller_method_return_type,
