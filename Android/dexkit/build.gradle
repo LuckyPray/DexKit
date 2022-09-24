@@ -71,15 +71,24 @@ android {
             jniDebuggable true
         }
 
-        buildFeatures {
-            prefab true
-        }
     }
 
     externalNativeBuild {
         cmake {
             path file("src/main/cpp/CMakeLists.txt")
             version "3.22.1+"
+        }
+    }
+
+
+    buildFeatures {
+        prefab true
+        prefabPublishing true
+    }
+
+    prefab {
+        dex_kit_static {
+            headers "../src/main/DexKit/include"
         }
     }
 }
