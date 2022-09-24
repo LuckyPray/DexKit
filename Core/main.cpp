@@ -6,6 +6,7 @@
 #include <set>
 #include "dex_kit.h"
 #include "code_format.h"
+#include "kmp.h"
 
 int main() {
     std::map<std::string, std::set<std::string>> obfuscate = {
@@ -28,7 +29,7 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
-    auto classes = dexKit.BatchFindClassesUsedStrings(obfuscate, true);
+    auto classes = dexKit.BatchFindClassesUsingStrings(obfuscate, true);
     std::cout << "\nBatchFindClassesUsedStrings -> \n";
     for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
@@ -42,9 +43,9 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
-    auto methods = dexKit.BatchFindMethodsUsedStrings(obfuscate, true);
+    auto methods = dexKit.BatchFindMethodsUsingStrings(obfuscate, true);
     std::cout << "\nBatchFindMethodsUsedStrings -> \n";
-    for (auto &[key, value]: classes) {
+    for (auto &[key, value]: methods) {
         std::cout << key << " -> \n";
         for (auto &v: value) {
             std::cout << "\t" << v << "\n";
@@ -57,7 +58,7 @@ int main() {
     // If the method_descriptor is not specified, fuzzy matching can be performed by parameters, and an empty string is used to represent fuzzy matching.
     // result ex.
     // {"Lcom/qzone/album/ui/widget/AlbumDialog;->n(I)V"}
-    auto beInvokedMethod = dexKit.FindMethodBeInvoked(
+    auto beInvokedMethod = dexKit.FindMethodCaller(
             "",
             "com.tencent.qphone.base.remote.ToServiceMsg",
             "<init>",
@@ -67,7 +68,7 @@ int main() {
             "getRegQueryAccountMsg",
             "",
             dexkit::null_param);
-    std::cout << "\nFindMethodBeInvoked -> \n";
+    std::cout << "\nFindMethodCaller -> \n";
     for (auto &value: beInvokedMethod) {
         std::cout << "\t" << value << "\n";
     }
@@ -90,7 +91,7 @@ int main() {
         }
     }
 
-    auto usedFieldMethods = dexKit.FindMethodUsedField(
+    auto usingFieldMethods = dexKit.FindMethodUsingField(
             "",
             "",
             "",
@@ -100,16 +101,19 @@ int main() {
             "",
             "void",
             std::vector<std::string>{"", "Lcom/tencent/mobileqq/data/ChatMessage;"});
-    std::cout << "\nFindFieldBeUsed -> \n";
-    for (auto &value: usedFieldMethods) {
-        std::cout << "\t" << value << "\n";
+    std::cout << "\nFindMethodUsingField -> \n";
+    for (auto &[key, value]: usingFieldMethods) {
+        std::cout << key << " -> \n";
+        for (auto &v: value) {
+            std::cout << "\t" << v << "\n";
+        }
     }
 
     // find all used matching string's method
     // if `advanced_match = true` you can use '^' and '$' to restrict string matching,
     // result ex.
     // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
-    auto usedStringMethods = dexKit.FindMethodUsedString(
+    auto usedStringMethods = dexKit.FindMethodUsingString(
             "^NEW$",
             true,
             "",
@@ -146,12 +150,38 @@ int main() {
     auto usedOpPrefixMethods = dexKit.FindMethodOpPrefixSeq(
             {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
             "",
-            "<init>",
-            "V",
-            dexkit::empty_param);
-    std::cout << "\nFindMethodOpPrefixSeq -> \n";
+            "",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodOpPrefixSeq(" << usedOpPrefixMethods.size() << ") -> \n";
     for (auto &value: usedOpPrefixMethods) {
         std::cout << "\t" << value << "\n";
+    }
+
+    auto usedOpSeqMethods = dexKit.FindMethodUsingOpCodeSeq(
+            {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
+            "",
+            "",
+            "",
+            dexkit::null_param);
+    std::cout << "\nFindMethodUsingOpCodeSeq(" << usedOpSeqMethods.size() << ") -> \n";
+    for (auto &value: usedOpSeqMethods) {
+        std::cout << "\t" << value << "\n";
+    }
+
+    auto methodsOpSeq = dexKit.GetMethodOpCodeSeq(
+            "",
+            "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
+            "syncGetServerConfig",
+            "",
+            dexkit::null_param);
+    std::cout << "\nGetMethodOpCodeSeq -> \n";
+    for (auto &[key, value]: methodsOpSeq) {
+        std::cout << "\t" << key << "\n\t\t";
+        for (auto &v: value) {
+            std::cout << (int) v << " ";
+        }
+        std::cout << "\n";
     }
 
     auto now1 = std::chrono::system_clock::now();

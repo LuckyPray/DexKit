@@ -5,6 +5,7 @@
 #include "byte_code_util.h"
 #include "opcode_util.h"
 #include "code_format.h"
+#include "kmp.h"
 #include <algorithm>
 
 namespace dexkit {
@@ -54,9 +55,9 @@ DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
 }
 
 std::map<std::string, std::vector<std::string>>
-DexKit::BatchFindClassesUsedStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                    bool advanced_match,
-                                    const std::vector<size_t> &dex_priority) {
+DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
+                                     bool advanced_match,
+                                     const std::vector<size_t> &dex_priority) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
@@ -178,9 +179,9 @@ DexKit::BatchFindClassesUsedStrings(std::map<std::string, std::set<std::string>>
 }
 
 std::map<std::string, std::vector<std::string>>
-DexKit::BatchFindMethodsUsedStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                    bool advanced_match,
-                                    const std::vector<size_t> &dex_priority) {
+DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
+                                     bool advanced_match,
+                                     const std::vector<size_t> &dex_priority) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
@@ -302,16 +303,16 @@ DexKit::BatchFindMethodsUsedStrings(std::map<std::string, std::set<std::string>>
 }
 
 std::vector<std::string>
-DexKit::FindMethodBeInvoked(const std::string &method_descriptor,
-                            const std::string &method_declare_class,
-                            const std::string &method_declare_name,
-                            const std::string &method_return_type,
-                            const std::optional<std::vector<std::string>> &method_param_types,
-                            const std::string &caller_method_declare_class,
-                            const std::string &caller_method_declare_name,
-                            const std::string &caller_method_return_type,
-                            const std::optional<std::vector<std::string>> &caller_method_param_types,
-                            const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodCaller(const std::string &method_descriptor,
+                         const std::string &method_declare_class,
+                         const std::string &method_declare_name,
+                         const std::string &method_return_type,
+                         const std::optional<std::vector<std::string>> &method_param_types,
+                         const std::string &caller_method_declare_class,
+                         const std::string &caller_method_declare_name,
+                         const std::string &caller_method_return_type,
+                         const std::optional<std::vector<std::string>> &caller_method_param_types,
+                         const std::vector<size_t> &dex_priority) {
     // be invoked method
     auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);
@@ -637,17 +638,17 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
     return result;
 }
 
-std::vector<std::string>
-DexKit::FindMethodUsedField(const std::string &field_descriptor,
-                            const std::string &field_declare_class,
-                            const std::string &field_declare_name,
-                            const std::string &field_type,
-                            uint32_t used_flags,
-                            const std::string &caller_method_declare_class,
-                            const std::string &caller_method_declare_name,
-                            const std::string &caller_method_return_type,
-                            const std::optional<std::vector<std::string>> &caller_method_param_types,
-                            const std::vector<size_t> &dex_priority) {
+std::map<std::string, std::vector<std::string>>
+DexKit::FindMethodUsingField(const std::string &field_descriptor,
+                             const std::string &field_declare_class,
+                             const std::string &field_declare_name,
+                             const std::string &field_type,
+                             uint32_t used_flags,
+                             const std::string &caller_method_declare_class,
+                             const std::string &caller_method_declare_name,
+                             const std::string &caller_method_return_type,
+                             const std::optional<std::vector<std::string>> &caller_method_param_types,
+                             const std::vector<size_t> &dex_priority) {
     // be getter field
     auto extract_tuple = ExtractFieldDescriptor(field_descriptor, field_declare_class, field_declare_name, field_type);
     std::string field_declare_class_desc = std::get<0>(extract_tuple);
@@ -669,7 +670,7 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                                              caller_method_return_type, caller_method_param_types);
 
     ThreadPool pool(thread_num_);
-    std::vector<std::future<std::vector<std::string>>> futures;
+    std::vector<std::future<std::map<std::string, std::vector<std::string>>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &field_declare_class_desc, &field_name, &field_type_desc, &used_flags,
@@ -687,13 +688,13 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                     if (!field_declare_class_desc.empty()) {
                         declared_class_idx = FindTypeIdx(dex_idx, field_declare_class_desc);
                         if (declared_class_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     if (!field_type_desc.empty()) {
                         field_type_idx = FindTypeIdx(dex_idx, field_type_desc);
                         if (field_type_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
 
@@ -704,7 +705,7 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                     if (!caller_class_desc.empty()) {
                         caller_class_idx = FindTypeIdx(dex_idx, caller_class_desc);
                         if (caller_class_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                         lower = caller_class_idx;
                         upper = caller_class_idx + 1;
@@ -712,7 +713,7 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                     if (!caller_return_desc.empty()) {
                         caller_return_type = FindTypeIdx(dex_idx, caller_return_desc);
                         if (caller_return_type == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     for (auto &v: caller_param_descs) {
@@ -720,13 +721,13 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                         if (!v.empty()) {
                             type = FindTypeIdx(dex_idx, v);
                             if (type == dex::kNoIndex) {
-                                return std::vector<std::string>();
+                                return std::map<std::string, std::vector<std::string>>();
                             }
                         }
                         caller_param_types.emplace_back(type);
                     }
 
-                    std::vector<std::string> result;
+                    std::map<dex::u2, std::set<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (need_caller_match) {
@@ -757,8 +758,7 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                                     auto index = ReadShort(ptr);
                                     if (IsFieldMatch(dex_idx, index, declared_class_idx, field_name,
                                                      field_type_idx)) {
-                                        auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
-                                        result.emplace_back(descriptor);
+                                        index_map[method_idx].emplace(index);
                                         goto label;
                                     }
                                 }
@@ -767,28 +767,36 @@ DexKit::FindMethodUsedField(const std::string &field_descriptor,
                             label:;
                         }
                     }
+                    std::map<std::string, std::vector<std::string>> result;
+                    for (auto &[key, value]: index_map) {
+                        auto caller_descriptor = GetMethodDescriptor(dex_idx, key);
+                        std::vector<std::string> be_called_descriptors;
+                        for (auto v: value) {
+                            auto using_field_descriptor = GetFieldDescriptor(dex_idx, v);
+                            be_called_descriptors.emplace_back(using_field_descriptor);
+                        }
+                        result.emplace(caller_descriptor, be_called_descriptors);
+                    }
                     return result;
                 }
         ));
     }
-    std::vector<std::string> result;
+    std::map<std::string, std::vector<std::string>> result;
     for (auto &f: futures) {
         auto r = f.get();
-        for (auto &desc: r) {
-            result.emplace_back(desc);
-        }
+        result.insert(r.begin(), r.end());
     }
     return result;
 }
 
 std::vector<std::string>
-DexKit::FindMethodUsedString(const std::string &used_utf8_string,
-                             bool advanced_match,
-                             const std::string &method_declare_class,
-                             const std::string &method_declare_name,
-                             const std::string &method_return_type,
-                             const std::optional<std::vector<std::string>> &method_param_types,
-                             const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodUsingString(const std::string &used_utf8_string,
+                              bool advanced_match,
+                              const std::string &method_declare_class,
+                              const std::string &method_declare_name,
+                              const std::string &method_return_type,
+                              const std::optional<std::vector<std::string>> &method_param_types,
+                              const std::vector<size_t> &dex_priority) {
     // caller method
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);
@@ -826,8 +834,8 @@ DexKit::FindMethodUsedString(const std::string &used_utf8_string,
                     std::set<uint32_t> matched_strings;
                     for (int str_idx = 0; str_idx < strings.size(); ++str_idx) {
                         auto &string = strings[str_idx];
-                        auto find_idx = string.find(real_str);
-                        if (find_idx == std::string::npos ||
+                        auto find_idx = kmp::FindIndex(string, real_str);
+                        if (find_idx == -1 ||
                             (flag & 1 && find_idx != 0) ||
                             (flag & 2 && find_idx != string.size() - real_str.size())) {
                             continue;
@@ -1061,7 +1069,6 @@ DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                               const std::string &method_return_type,
                               const std::optional<std::vector<std::string>> &method_param_types,
                               const std::vector<size_t> &dex_priority) {
-
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
@@ -1155,6 +1162,181 @@ DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
     return result;
 }
 
+std::vector<std::string>
+DexKit::FindMethodUsingOpCodeSeq(const std::vector<uint8_t> &op_seq,
+                                 const std::string &method_declare_class,
+                                 const std::string &method_declare_name,
+                                 const std::string &method_return_type,
+                                 const std::optional<std::vector<std::string>> &method_param_types,
+                                 const std::vector<size_t> &dex_priority) {
+    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
+                                                 method_return_type, method_param_types);
+    std::string class_desc = std::get<0>(extract_tuple);
+    std::string method_name = std::get<1>(extract_tuple);
+    std::string return_desc = std::get<2>(extract_tuple);
+    std::vector<std::string> param_descs = std::get<3>(extract_tuple);
+    std::string match_shorty = DescriptorToMatchShorty(return_desc, param_descs);
+    bool match_any_param = method_param_types == null_param;
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &op_seq, &class_desc, &return_desc, &param_descs, &match_shorty, &method_name, &match_any_param]() {
+                    InitCached(dex_idx, fDefault | fOpCodeSeq);
+                    auto &class_method_ids = class_method_ids_[dex_idx];
+                    auto &type_names = type_names_[dex_idx];
+                    auto &method_opcode_seq = method_opcode_seq_[dex_idx];
+
+                    auto class_idx = dex::kNoIndex;
+                    if (!class_desc.empty()) {
+                        class_idx = FindTypeIdx(dex_idx, class_desc);
+                        if (class_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+                    uint32_t lower = 0, upper = type_names.size();
+                    if (class_idx != dex::kNoIndex) {
+                        lower = class_idx;
+                        upper = class_idx + 1;
+                    }
+                    uint32_t return_type = dex::kNoIndex;
+                    std::vector<uint32_t> param_types;
+                    if (!return_desc.empty()) {
+                        return_type = FindTypeIdx(dex_idx, return_desc);
+                        if (return_type == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+                    for (auto &v: param_descs) {
+                        uint32_t type = dex::kNoIndex;
+                        if (!v.empty()) {
+                            type = FindTypeIdx(dex_idx, v);
+                            if (type == dex::kNoIndex) {
+                                return std::vector<std::string>();
+                            }
+                        }
+                        param_types.emplace_back(type);
+                    }
+                    std::vector<std::string> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        for (auto method_idx: class_method_ids[c_idx]) {
+                            if (!IsMethodMatch(dex_idx, method_idx, class_idx, match_shorty, method_name,
+                                               return_type, param_types, match_any_param)) {
+                                continue;
+                            }
+                            if (!IsInitMethodOpCodeSeq(dex_idx, method_idx)) {
+                                InitMethodOpCodeSeq(dex_idx, method_idx);
+                            }
+                            auto &opcode_seq = method_opcode_seq[method_idx];
+                            if (opcode_seq.size() < op_seq.size()) {
+                                continue;
+                            }
+                            int ret = kmp::FindIndex(opcode_seq, op_seq);
+                            if (ret != -1) {
+                                auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
+                                result.push_back(descriptor);
+                            }
+                        }
+                    }
+                    return result;
+                })
+        );
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
+
+std::map<std::string, std::vector<uint8_t>>
+DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
+                           const std::string &method_declare_class,
+                           const std::string &method_declare_name,
+                           const std::string &method_return_type,
+                           const std::optional<std::vector<std::string>> &method_param_types,
+                           const std::vector<size_t> &dex_priority) {
+    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
+                                                 method_return_type, method_param_types);
+    std::string class_desc = std::get<0>(extract_tuple);
+    std::string method_name = std::get<1>(extract_tuple);
+    std::string return_desc = std::get<2>(extract_tuple);
+    std::vector<std::string> param_descs = std::get<3>(extract_tuple);
+    std::string match_shorty = DescriptorToMatchShorty(return_desc, param_descs);
+    bool match_any_param = method_param_types == null_param;
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::map<std::string, std::vector<uint8_t>>>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &class_desc, &return_desc, &param_descs, &match_shorty, &method_name, &match_any_param]() {
+                    InitCached(dex_idx, fDefault | fOpCodeSeq);
+                    auto &class_method_ids = class_method_ids_[dex_idx];
+                    auto &type_names = type_names_[dex_idx];
+                    auto &method_opcode_seq = method_opcode_seq_[dex_idx];
+
+                    auto class_idx = dex::kNoIndex;
+                    if (!class_desc.empty()) {
+                        class_idx = FindTypeIdx(dex_idx, class_desc);
+                        if (class_idx == dex::kNoIndex) {
+                            return std::map<std::string, std::vector<uint8_t>>();
+                        }
+                    }
+                    uint32_t lower = 0, upper = type_names.size();
+                    if (class_idx != dex::kNoIndex) {
+                        lower = class_idx;
+                        upper = class_idx + 1;
+                    }
+                    uint32_t return_type = dex::kNoIndex;
+                    std::vector<uint32_t> param_types;
+                    if (!return_desc.empty()) {
+                        return_type = FindTypeIdx(dex_idx, return_desc);
+                        if (return_type == dex::kNoIndex) {
+                            return std::map<std::string, std::vector<uint8_t>>();
+                        }
+                    }
+                    for (auto &v: param_descs) {
+                        uint32_t type = dex::kNoIndex;
+                        if (!v.empty()) {
+                            type = FindTypeIdx(dex_idx, v);
+                            if (type == dex::kNoIndex) {
+                                return std::map<std::string, std::vector<uint8_t>>();
+                            }
+                        }
+                        param_types.emplace_back(type);
+                    }
+                    std::map<std::string, std::vector<uint8_t>> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        for (auto method_idx: class_method_ids[c_idx]) {
+                            if (!IsMethodMatch(dex_idx, method_idx, class_idx, match_shorty, method_name,
+                                               return_type, param_types, match_any_param)) {
+                                continue;
+                            }
+                            if (!IsInitMethodOpCodeSeq(dex_idx, method_idx)) {
+                                InitMethodOpCodeSeq(dex_idx, method_idx);
+                            }
+                            auto method_desc = GetMethodDescriptor(dex_idx, method_idx);
+                            auto &opcode_seq = method_opcode_seq[method_idx];
+                            result[method_desc] = opcode_seq;
+                        }
+                    }
+                    return result;
+                })
+        );
+    }
+    std::map<std::string, std::vector<uint8_t>> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        result.insert(r.begin(), r.end());
+    }
+    return result;
+}
+
 
 void DexKit::InitImages() {
     for (auto &[image, size]: dex_images_) {
@@ -1167,7 +1349,8 @@ void DexKit::InitImages() {
     class_field_ids_.resize(dex_images_.size());
     method_codes_.resize(dex_images_.size());
     proto_type_list_.resize(dex_images_.size());
-    method_op_code_seq_.resize(dex_images_.size());
+    method_opcode_seq_.resize(dex_images_.size());
+    method_opcode_seq_init_flag_.resize(dex_images_.size());
 
     init_flags_.resize(dex_images_.size(), fHeader);
 }
@@ -1176,6 +1359,13 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     auto &dex_flag = init_flags_[dex_idx];
     if (((dex_flag & flag) ^ flag) == 0) return;
 
+    bool need_init_strings = (flag & fString) && ((dex_flag & fString) == 0);
+    bool need_init_type_names = (flag & fType) && ((dex_flag & fType) == 0);
+    bool need_init_proto_type_list = (flag & fProto) && ((dex_flag & fProto) == 0);
+    bool need_init_class_field_ids = (flag & fField) && ((dex_flag & fField) == 0);
+    bool need_init_class_method_ids = (flag & fMethod) && ((dex_flag & fMethod) == 0);
+    bool need_init_method_op_code_seq = (flag & fOpCodeSeq) && ((dex_flag & fOpCodeSeq) == 0);
+
     auto &reader = readers_[dex_idx];
     auto &strings = strings_[dex_idx];
     auto &type_names = type_names_[dex_idx];
@@ -1183,9 +1373,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     auto &class_field_ids = class_field_ids_[dex_idx];
     auto &method_codes = method_codes_[dex_idx];
     auto &proto_type_list = proto_type_list_[dex_idx];
-    auto &method_op_code_seq = method_op_code_seq_[dex_idx];
+    auto &method_opcode_seq = method_opcode_seq_[dex_idx];
+    auto &method_opcode_seq_init_flag = method_opcode_seq_init_flag_[dex_idx];
 
-    if (dex_flag ^ (dex_flag & fString)) {
+    if (need_init_strings) {
         strings.resize(reader.StringIds().size());
         auto strings_it = strings.begin();
         for (auto &str: reader.StringIds()) {
@@ -1196,7 +1387,7 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         dex_flag |= fString;
     }
 
-    if (dex_flag ^ (dex_flag & fType)) {
+    if (need_init_type_names) {
         type_names.resize(reader.TypeIds().size());
         auto type_names_it = type_names.begin();
         for (auto &type_id: reader.TypeIds()) {
@@ -1205,7 +1396,7 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         dex_flag |= fType;
     }
 
-    if (dex_flag ^ (dex_flag & fProto)) {
+    if (need_init_proto_type_list) {
         proto_type_list.resize(reader.ProtoIds().size());
         auto proto_it = proto_type_list.begin();
         for (auto &proto: reader.ProtoIds()) {
@@ -1218,7 +1409,7 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         dex_flag |= fProto;
     }
 
-    if (dex_flag ^ (dex_flag & fField)) {
+    if (need_init_class_field_ids) {
         class_field_ids.resize(reader.TypeIds().size());
         int field_idx = 0;
         for (auto &field: reader.FieldIds()) {
@@ -1228,9 +1419,13 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         dex_flag |= fField;
     }
 
-    if (dex_flag ^ (dex_flag & fMethod)) {
+    if (need_init_class_method_ids || (need_init_method_op_code_seq && !(dex_flag & fMethod))) {
         class_method_ids.resize(reader.TypeIds().size());
         method_codes.resize(reader.MethodIds().size(), nullptr);
+
+        method_opcode_seq.resize(reader.MethodIds().size());
+        method_opcode_seq_init_flag.resize(reader.MethodIds().size(), false);
+
         for (auto &class_def: reader.ClassDefs()) {
             if (class_def.class_data_off == 0) {
                 continue;
@@ -1277,21 +1472,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         dex_flag |= fMethod;
     }
 
-    if (dex_flag ^ (dex_flag & fOpCodeSeq)) {
-        // TODO: init op code seq
+    if (need_init_method_op_code_seq) {
+        // lazy init in find opcode method
         dex_flag |= fOpCodeSeq;
     }
-}
-
-std::tuple<std::string, std::string, std::vector<std::string>>
-DexKit::ConvertDescriptors(std::string &return_decl, std::vector<std::string> &param_decls) {
-    std::string return_type = DeclToMatchDescriptor(return_decl);
-    std::vector<std::string> param_types;
-    for (auto &param_decl: param_decls) {
-        param_types.emplace_back(DeclToMatchDescriptor(param_decl));
-    }
-    std::string shorty = DescriptorToMatchShorty(return_type, param_types);
-    return std::make_tuple(shorty, return_type, param_types);
 }
 
 bool DexKit::IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_class,
@@ -1303,13 +1487,13 @@ bool DexKit::IsMethodMatch(size_t dex_idx, uint32_t method_idx, uint32_t decl_cl
     auto &method_id = reader.MethodIds()[method_idx];
     auto &proto_id = reader.ProtoIds()[method_id.proto_idx];
     auto &shorty = strings[proto_id.shorty_idx];
-    if (!match_any_param && !shorty.empty() && !ShortyDescriptorMatch(shorty_match, shorty)) {
-        return false;
-    }
     if (decl_class != dex::kNoIndex && decl_class != method_id.class_idx) {
         return false;
     }
     if (return_type != dex::kNoIndex && return_type != proto_id.return_type_idx) {
+        return false;
+    }
+    if (!match_any_param && !shorty.empty() && !ShortyDescriptorMatch(shorty_match, shorty)) {
         return false;
     }
     if (!method_name.empty() && method_name != strings[method_id.name_idx]) {
@@ -1389,6 +1573,26 @@ uint32_t DexKit::FindTypeIdx(size_t dex_idx, std::string &type_desc) {
         }
     }
     return dex::kNoIndex;
+}
+
+void DexKit::InitMethodOpCodeSeq(size_t dex_idx, uint32_t method_idx) {
+    auto &code = method_codes_[dex_idx][method_idx];
+    method_opcode_seq_init_flag_[dex_idx][method_idx] = true;
+    if (code) {
+        auto p = code->insns;
+        auto end_p = p + code->insns_size;
+        auto &opcode_seq = method_opcode_seq_[dex_idx][method_idx];
+
+        while (p < end_p) {
+            uint8_t op = *p & 0xff;
+            opcode_seq.emplace_back(op);
+            p += GetBytecodeWidth(p);
+        }
+    }
+}
+
+bool DexKit::IsInitMethodOpCodeSeq(size_t dex_idx, uint32_t method_idx) {
+    return method_opcode_seq_init_flag_[dex_idx][method_idx];
 }
 
 std::vector<size_t> DexKit::GetDexPriority(const std::vector<size_t> &dex_priority) {

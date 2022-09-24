@@ -36,7 +36,11 @@ add_library(${PROJECT_NAME}_static STATIC ${DB_SOURCES})
 target_include_directories(${PROJECT_NAME}_static PUBLIC include)
 target_link_libraries(${PROJECT_NAME}_static PUBLIC z)
 
-#link_libraries(z ${PROJECT_NAME}_static)
-#add_executable(${PROJECT_NAME}
-#        main.cpp
-#        )
+option(EXECUTABLE_TEST "execute test cpp" OFF)
+if (EXECUTABLE_TEST)
+    link_libraries(z ${PROJECT_NAME}_static)
+    add_executable(${PROJECT_NAME}
+            main.cpp
+#            qq-example.cpp
+            )
+endif ()
