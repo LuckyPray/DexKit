@@ -1581,7 +1581,6 @@ void DexKit::InitMethodOpCodeSeq(size_t dex_idx, uint32_t method_idx) {
     if (code) {
         auto p = code->insns;
         auto end_p = p + code->insns_size;
-
         auto &opcode_seq = method_opcode_seq_[dex_idx][method_idx];
 
         while (p < end_p) {

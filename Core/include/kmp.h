@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <bits/stdint-uintn.h>
+#include <cstdint>
 
 namespace kmp {
 
@@ -19,7 +19,7 @@ static void FindNext(const std::vector<uint8_t> &data, const std::vector<uint8_t
 }
 
 static int FindIndex(const std::vector<uint8_t> &data, const std::vector<uint8_t> &find) {
-    std::vector<int> next(find.size());
+    std::vector<int> next(find.size() + 5);
     FindNext(data, find, next);
     int i = 0, j = 0;
     int data_len = (int) data.size();
@@ -51,7 +51,7 @@ static void FindNext(const std::string_view &data, const std::string &find, std:
 }
 
 static int FindIndex(const std::string_view &data, const std::string &find) {
-    std::vector<int> next(find.size());
+    std::vector<int> next(find.size() + 5);
     FindNext(data, find, next);
     int i = 0, j = 0;
     int data_len = (int) data.size();

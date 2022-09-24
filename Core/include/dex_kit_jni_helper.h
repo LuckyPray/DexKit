@@ -13,7 +13,7 @@ std::vector<size_t> JIntArr2IntVec(JNIEnv *env, const jintArray jIntArr);
 
 std::vector<uint8_t> JIntArr2u8Vec(JNIEnv *env, const jintArray jIntArr);
 
-jintArray U8Vec2JIntArr(JNIEnv *env, std::vector<uint8_t> &vector);
+jintArray U8Vec2JIntArr(JNIEnv *env, const std::vector<uint8_t> &vector);
 
 jobject EmptyJmap(JNIEnv *env);
 
