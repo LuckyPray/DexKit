@@ -4,24 +4,24 @@ import io.luckypray.dexkit.descriptor.DexDescriptor
 
 class DexClassDescriptor: DexDescriptor {
 
-    val classSig: String
+    val signature: String
 
     override val descriptor: String
-        get() = classSig
-    val className: String
-        get() = classSig.substring(1, classSig.length - 1).replace('/', '.')
+        get() = signature
+    val name: String
+        get() = signature.substring(1, signature.length - 1).replace('/', '.')
     val simpleName: String
-        get() = className.substring(className.lastIndexOf('.') + 1)
+        get() = name.substring(name.lastIndexOf('.') + 1)
 
     constructor(descriptor: String) {
-        classSig = descriptor
+        signature = descriptor
     }
 
     constructor(clazz: Class<*>) {
-        classSig = "L${clazz.name.replace(".", "/")};"
+        signature = "L${clazz.name.replace(".", "/")};"
     }
 
     fun getClassInstance(classLoader: ClassLoader): Class<*> {
-        return classLoader.loadClass(className)
+        return classLoader.loadClass(name)
     }
 }
