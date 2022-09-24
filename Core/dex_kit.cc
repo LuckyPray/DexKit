@@ -302,16 +302,16 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
 }
 
 std::vector<std::string>
-DexKit::FindMethodBeInvoked(const std::string &method_descriptor,
-                            const std::string &method_declare_class,
-                            const std::string &method_declare_name,
-                            const std::string &method_return_type,
-                            const std::optional<std::vector<std::string>> &method_param_types,
-                            const std::string &caller_method_declare_class,
-                            const std::string &caller_method_declare_name,
-                            const std::string &caller_method_return_type,
-                            const std::optional<std::vector<std::string>> &caller_method_param_types,
-                            const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodCaller(const std::string &method_descriptor,
+                         const std::string &method_declare_class,
+                         const std::string &method_declare_name,
+                         const std::string &method_return_type,
+                         const std::optional<std::vector<std::string>> &method_param_types,
+                         const std::string &caller_method_declare_class,
+                         const std::string &caller_method_declare_name,
+                         const std::string &caller_method_return_type,
+                         const std::optional<std::vector<std::string>> &caller_method_param_types,
+                         const std::vector<size_t> &dex_priority) {
     // be invoked method
     auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);

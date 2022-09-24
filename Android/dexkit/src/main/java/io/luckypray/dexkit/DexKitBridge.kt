@@ -41,16 +41,18 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
             .mapValues { it.value.map { DexClassDescriptor(it) } }
     }
 
-    fun batchFindClassesUsingArrayStrings(
+    @JvmName("batchFindClassesUsingArrayStrings")
+    fun batchFindClassesUsingStrings(
         map: Map<String, Array<String>>,
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<String, List<DexClassDescriptor>> {
-        return batchFindClassesUsingStrings(
+        return nativeBatchFindClassesUsingStrings(
+            token,
             map.mapValues { it.value.toList() },
             advancedMatch,
             dexPriority
-        )
+        ).mapValues { it.value.map { DexClassDescriptor(it) } }
     }
 
     fun batchFindMethodsUsingStrings(
@@ -62,19 +64,21 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
             .mapValues { it.value.map { DexMethodDescriptor(it) } }
     }
 
-    fun batchFindMethodsUsingArrayStrings(
+    @JvmName("batchFindMethodsUsingArrayStrings")
+    fun batchFindMethodsUsingStrings(
         map: Map<String, Array<String>>,
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<String, List<DexMethodDescriptor>> {
-        return batchFindMethodsUsingStrings(
+        return nativeBatchFindMethodsUsingStrings(
+            token,
             map.mapValues { it.value.toList() },
             advancedMatch,
             dexPriority
-        )
+        ).mapValues { it.value.map { DexMethodDescriptor(it) } }
     }
 
-    fun findMethodBeInvoked(
+    fun findMethodCaller(
         methodDescriptor: String,
         methodDeclareClass: String,
         methodName: String,
@@ -86,7 +90,7 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
         callerMethodParameterTypes: Array<String>? = null,
         dexPriority: IntArray? = null
     ): List<DexMethodDescriptor> {
-        return nativeFindMethodBeInvoked(
+        return nativeFindMethodCaller(
             token,
             methodDescriptor,
             methodDeclareClass,
@@ -276,7 +280,7 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
         ): Map<String, Array<String>>
 
         @JvmStatic
-        private external fun nativeFindMethodBeInvoked(
+        private external fun nativeFindMethodCaller(
             nativePtr: Long,
             methodDescriptor: String,
             methodDeclareClass: String,

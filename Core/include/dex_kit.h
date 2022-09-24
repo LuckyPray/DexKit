@@ -90,23 +90,23 @@ public:
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
      * @param caller_method_declare_class if empty, match any class;
-     * @param caller_method_name if empty, match any method name;
+     * @param caller_method_declare_name if empty, match any method name;
      * @param caller_method_return_type if empty, match any return type;
      * @param caller_method_param_types refer to [method_param_types]
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return method descriptor
      */
     std::vector<std::string>
-    FindMethodBeInvoked(const std::string &method_descriptor,
-                        const std::string &method_declare_class,
-                        const std::string &method_declare_name,
-                        const std::string &method_return_type,
-                        const std::optional<std::vector<std::string>> &method_param_types,
-                        const std::string &caller_method_declare_class,
-                        const std::string &caller_method_name,
-                        const std::string &caller_method_return_type,
-                        const std::optional<std::vector<std::string>> &caller_method_param_types,
-                        const std::vector<size_t> &dex_priority = {});
+    FindMethodCaller(const std::string &method_descriptor,
+                     const std::string &method_declare_class,
+                     const std::string &method_declare_name,
+                     const std::string &method_return_type,
+                     const std::optional<std::vector<std::string>> &method_param_types,
+                     const std::string &caller_method_declare_class,
+                     const std::string &caller_method_declare_name,
+                     const std::string &caller_method_return_type,
+                     const std::optional<std::vector<std::string>> &caller_method_param_types,
+                     const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find the called method

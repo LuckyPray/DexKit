@@ -57,7 +57,7 @@ int main() {
     // If the method_descriptor is not specified, fuzzy matching can be performed by parameters, and an empty string is used to represent fuzzy matching.
     // result ex.
     // {"Lcom/qzone/album/ui/widget/AlbumDialog;->n(I)V"}
-    auto beInvokedMethod = dexKit.FindMethodBeInvoked(
+    auto beInvokedMethod = dexKit.FindMethodCaller(
             "",
             "com.tencent.qphone.base.remote.ToServiceMsg",
             "<init>",
@@ -67,7 +67,7 @@ int main() {
             "getRegQueryAccountMsg",
             "",
             dexkit::null_param);
-    std::cout << "\nFindMethodBeInvoked -> \n";
+    std::cout << "\nFindMethodCaller -> \n";
     for (auto &value: beInvokedMethod) {
         std::cout << "\t" << value << "\n";
     }

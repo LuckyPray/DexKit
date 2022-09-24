@@ -58,18 +58,18 @@ jobject BatchFindMethodsUsingStrings(JNIEnv *env,
     return CMap2JMap(env, res);
 }
 
-jobjectArray FindMethodBeInvoked(JNIEnv *env,
-                                 const jlong dexKit,
-                                 const jstring method_descriptor,
-                                 const jstring method_declare_class,
-                                 const jstring method_name,
-                                 const jstring method_return_type,
-                                 const jobjectArray method_param_types,
-                                 const jstring caller_method_declare_class,
-                                 const jstring caller_method_name,
-                                 const jstring caller_method_return_type,
-                                 const jobjectArray caller_method_param_types,
-                                 const jintArray dex_priority) {
+jobjectArray FindMethodCaller(JNIEnv *env,
+                              const jlong dexKit,
+                              const jstring method_descriptor,
+                              const jstring method_declare_class,
+                              const jstring method_name,
+                              const jstring method_return_type,
+                              const jobjectArray method_param_types,
+                              const jstring caller_method_declare_class,
+                              const jstring caller_method_name,
+                              const jstring caller_method_return_type,
+                              const jobjectArray caller_method_param_types,
+                              const jintArray dex_priority) {
     auto dexKitPtr = reinterpret_cast<dexkit::DexKit *>(dexKit);
     auto methodDescriptor = env->GetStringUTFChars(method_descriptor, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
@@ -90,16 +90,16 @@ jobjectArray FindMethodBeInvoked(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKitPtr->FindMethodBeInvoked(methodDescriptor,
-                                              methodDeclareClass,
-                                              methodName,
-                                              methodReturnType,
-                                              ParamTypes,
-                                              callerMethodClass,
-                                              callerMethodName,
-                                              callerMethodReturnType,
-                                              callerParamTypes,
-                                              dexPriority);
+    auto res = dexKitPtr->FindMethodCaller(methodDescriptor,
+                                           methodDeclareClass,
+                                           methodName,
+                                           methodReturnType,
+                                           ParamTypes,
+                                           callerMethodClass,
+                                           callerMethodName,
+                                           callerMethodReturnType,
+                                           callerParamTypes,
+                                           dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);

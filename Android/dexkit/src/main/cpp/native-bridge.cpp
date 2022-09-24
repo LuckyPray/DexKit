@@ -71,25 +71,25 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv 
 }
 
 DEXKIT_JNI jobjectArray
-Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodBeInvoked(JNIEnv *env, jclass clazz,
-                                                                jlong nativePtr,
-                                                                jstring method_descriptor,
-                                                                jstring method_declare_class,
-                                                                jstring method_declare_name,
-                                                                jstring method_return_type,
-                                                                jobjectArray method_param_types,
-                                                                jstring caller_method_declare_class,
-                                                                jstring caller_method_declare_name,
-                                                                jstring caller_method_return_type,
-                                                                jobjectArray caller_method_param_types,
-                                                                jintArray dex_priority) {
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass clazz,
+                                                             jlong nativePtr,
+                                                             jstring method_descriptor,
+                                                             jstring method_declare_class,
+                                                             jstring method_declare_name,
+                                                             jstring method_return_type,
+                                                             jobjectArray method_param_types,
+                                                             jstring caller_method_declare_class,
+                                                             jstring caller_method_declare_name,
+                                                             jstring caller_method_return_type,
+                                                             jobjectArray caller_method_param_types,
+                                                             jintArray dex_priority) {
     if (!nativePtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindMethodBeInvoked(env, nativePtr, method_descriptor, method_declare_class,
-                               method_declare_name, method_return_type, method_param_types,
-                               caller_method_declare_class, caller_method_declare_name,
-                               caller_method_return_type, caller_method_param_types, dex_priority);
+    return FindMethodCaller(env, nativePtr, method_descriptor, method_declare_class,
+                            method_declare_name, method_return_type, method_param_types,
+                            caller_method_declare_class, caller_method_declare_name,
+                            caller_method_return_type, caller_method_param_types, dex_priority);
 }
 
 DEXKIT_JNI jobject
