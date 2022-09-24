@@ -1,16 +1,20 @@
-package io.luckypray.dexkit
+package io.luckypray.dexkit.descriptor.member
 
+import io.luckypray.dexkit.descriptor.*
 import java.lang.reflect.Constructor
 import java.lang.reflect.Member
 import java.lang.reflect.Method
 
-class DexMethodDescriptor {
+class DexMethodDescriptor: DexDescriptor {
 
     val declaringClassSig: String
     val name: String
     val parameterTypesSig: String
     val returnTypeSig: String
     val methodTypeSig: String
+
+    override val descriptor: String
+        get() = "$declaringClassSig->$name$methodTypeSig"
 
     val isConstructor
         get() = name == "<init>"
@@ -105,10 +109,6 @@ class DexMethodDescriptor {
 
     fun getDeclareClassName(): String {
         return getClassName(declaringClassSig)
-    }
-
-    override fun toString(): String {
-        return "$declaringClassSig->$name$methodTypeSig"
     }
 
 }

@@ -1,13 +1,19 @@
-package io.luckypray.dexkit
+package io.luckypray.dexkit.descriptor.member
 
+import io.luckypray.dexkit.descriptor.DexDescriptor
+import io.luckypray.dexkit.descriptor.getClassName
+import io.luckypray.dexkit.descriptor.getTypeSig
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 
-class DexFieldDescriptor {
+class DexFieldDescriptor : DexDescriptor {
 
     val declaringClassSig: String
     val name: String
     val typeSig: String
+
+    override val descriptor: String
+        get() = "$declaringClassSig.$name:$typeSig"
 
     constructor(descriptor: String) {
         val idx1 = descriptor.indexOf("->")
@@ -41,17 +47,13 @@ class DexFieldDescriptor {
                 }
             } while (clz.superclass.also { clz = it } != null)
             throw NoSuchFieldException("Field $this not found in $declaringClassSig")
-        } catch(e: ClassNotFoundException) {
+        } catch (e: ClassNotFoundException) {
             throw NoSuchFieldException("No such field: $this").initCause(e)
         }
     }
 
     fun getDeclareClassName(): String {
         return getClassName(declaringClassSig)
-    }
-
-    override fun toString(): String {
-        return "$declaringClassSig->$name:$typeSig"
     }
 
 }

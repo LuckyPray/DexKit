@@ -1,5 +1,5 @@
 @file:JvmName("DexDescriptorUtil")
-package io.luckypray.dexkit
+package io.luckypray.dexkit.descriptor
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
