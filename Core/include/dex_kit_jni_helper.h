@@ -23,6 +23,11 @@ jlong CreateDexKitInstance(JNIEnv *env, jstring apkPath) {
     return reinterpret_cast<jlong>(dexKit);
 }
 
+void SetThreadNum(JNIEnv *env, jlong dexKitPtr, jint threadNum) {
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    dexKit->SetThreadNum(threadNum);
+}
+
 jint GetDexNum(JNIEnv *env, jlong dexKitPtr) {
     auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
     return dexKit->GetDexNum();

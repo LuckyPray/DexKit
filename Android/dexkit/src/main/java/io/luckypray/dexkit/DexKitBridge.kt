@@ -25,6 +25,10 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
         }
     }
 
+    fun setThreadNum(num: Int) {
+        nativeSetThreadNum(token, num)
+    }
+
     /**
      * Get all parsed dex counts.
      */
@@ -294,6 +298,9 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
 
         @JvmStatic
         private external fun nativeInitDexKit(apkPath: String): Long
+
+        @JvmStatic
+        private external fun nativeSetThreadNum(nativePtr: Long, threadNum: Int)
 
         @JvmStatic
         private external fun nativeGetDexNum(nativePtr: Long): Int

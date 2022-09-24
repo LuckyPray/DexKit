@@ -26,6 +26,16 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz
     return (jlong) dexkit;
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_luckypray_dexkit_DexKitBridge_nativeSetThreadNum(JNIEnv *env, jclass clazz,
+                                                         jlong native_ptr, jint thread_num) {
+    if (!native_ptr) {
+        return;
+    }
+    SetThreadNum(env, native_ptr, thread_num);
+}
+
 DEXKIT_JNI jint
 Java_io_luckypray_dexkit_DexKitBridge_nativeGetDexNum(JNIEnv *env, jclass clazz,
                                                       jlong native_ptr) {
