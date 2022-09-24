@@ -28,51 +28,51 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz
 
 DEXKIT_JNI jint
 Java_io_luckypray_dexkit_DexKitBridge_nativeGetDexNum(JNIEnv *env, jclass clazz,
-                                                      jlong nativePtr) {
-    if (!nativePtr) {
+                                                      jlong native_ptr) {
+    if (!native_ptr) {
         return 0;
     }
-    return GetDexNum(env, nativePtr);
+    return GetDexNum(env, native_ptr);
 }
 
 DEXKIT_JNI void
 Java_io_luckypray_dexkit_DexKitBridge_nativeRelease(JNIEnv *env, jclass clazz,
-                                                    jlong nativePtr) {
-    if (!nativePtr) {
+                                                    jlong native_ptr) {
+    if (!native_ptr) {
         return;
     }
-    ReleaseDexKitInstance(env, nativePtr);
+    ReleaseDexKitInstance(env, native_ptr);
 }
 
 DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv *env,
                                                                          jclass clazz,
-                                                                         jlong nativePtr,
+                                                                         jlong native_ptr,
                                                                          jobject map,
                                                                          jboolean advanced_match,
                                                                          jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
     }
-    return BatchFindClassesUsingStrings(env, nativePtr, map, advanced_match, dex_priority);
+    return BatchFindClassesUsingStrings(env, native_ptr, map, advanced_match, dex_priority);
 }
 
 DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv *env,
                                                                          jclass clazz,
-                                                                         jlong nativePtr,
+                                                                         jlong native_ptr,
                                                                          jobject map,
                                                                          jboolean advanced_match,
                                                                          jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
     }
-    return BatchFindMethodsUsingStrings(env, nativePtr, map, advanced_match, dex_priority);
+    return BatchFindMethodsUsingStrings(env, native_ptr, map, advanced_match, dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass clazz,
-                                                             jlong nativePtr,
+                                                             jlong native_ptr,
                                                              jstring method_descriptor,
                                                              jstring method_declare_class,
                                                              jstring method_declare_name,
@@ -83,10 +83,10 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass
                                                              jstring caller_method_return_type,
                                                              jobjectArray caller_method_param_types,
                                                              jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindMethodCaller(env, nativePtr, method_descriptor, method_declare_class,
+    return FindMethodCaller(env, native_ptr, method_descriptor, method_declare_class,
                             method_declare_name, method_return_type, method_param_types,
                             caller_method_declare_class, caller_method_declare_name,
                             caller_method_return_type, caller_method_param_types, dex_priority);
@@ -94,7 +94,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass
 
 DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jclass clazz,
-                                                               jlong nativePtr,
+                                                               jlong native_ptr,
                                                                jstring method_descriptor,
                                                                jstring method_declare_class,
                                                                jstring method_declare_name,
@@ -105,10 +105,10 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jcla
                                                                jstring be_called_method_return_type,
                                                                jobjectArray be_called_method_param_types,
                                                                jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
     }
-    return FindMethodInvoking(env, nativePtr, method_descriptor, method_declare_class,
+    return FindMethodInvoking(env, native_ptr, method_descriptor, method_declare_class,
                               method_declare_name, method_return_type, method_param_types,
                               be_called_method_declare_class, be_called_method_declare_name,
                               be_called_method_return_type, be_called_method_param_types,
@@ -117,7 +117,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jcla
 
 DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jclass clazz,
-                                                                 jlong nativePtr,
+                                                                 jlong native_ptr,
                                                                  jstring field_descriptor,
                                                                  jstring field_declare_class,
                                                                  jstring field_name,
@@ -128,10 +128,10 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jc
                                                                  jstring caller_method_return_type,
                                                                  jobjectArray caller_method_param_types,
                                                                  jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindMethodUsingField(env, nativePtr, field_descriptor, field_declare_class, field_name,
+    return FindMethodUsingField(env, native_ptr, field_descriptor, field_declare_class, field_name,
                                 field_type, used_flags, caller_method_declare_class,
                                 caller_method_name, caller_method_return_type,
                                 caller_method_param_types, dex_priority);
@@ -139,7 +139,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jc
 
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, jclass clazz,
-                                                                  jlong nativePtr,
+                                                                  jlong native_ptr,
                                                                   jstring used_string,
                                                                   jboolean advanced_match,
                                                                   jstring method_declare_class,
@@ -147,52 +147,52 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                                                   jstring method_return_type,
                                                                   jobjectArray method_param_types,
                                                                   jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindMethodUsingString(env, nativePtr, used_string, advanced_match, method_declare_class,
+    return FindMethodUsingString(env, native_ptr, used_string, advanced_match, method_declare_class,
                                  method_name, method_return_type, method_param_types, dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz,
-                                                       jlong nativePtr,
+                                                       jlong native_ptr,
                                                        jstring method_declare_class,
                                                        jstring method_name,
                                                        jstring method_return_type,
                                                        jobjectArray method_param_types,
                                                        jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindMethod(env, nativePtr, method_declare_class, method_name, method_return_type,
+    return FindMethod(env, native_ptr, method_declare_class, method_name, method_return_type,
                       method_param_types, dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass clazz,
-                                                           jlong nativePtr,
+                                                           jlong native_ptr,
                                                            jstring parent_class,
                                                            jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindSubClasses(env, nativePtr, parent_class, dex_priority);
+    return FindSubClasses(env, native_ptr, parent_class, dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodOpPrefixSeq(JNIEnv *env, jclass clazz,
-                                                                  jlong nativePtr,
+                                                                  jlong native_ptr,
                                                                   jintArray op_prefix_seq,
                                                                   jstring method_declare_class,
                                                                   jstring method_name,
                                                                   jstring method_return_type,
                                                                   jobjectArray method_param_types,
                                                                   jintArray dex_priority) {
-    if (!nativePtr) {
+    if (!native_ptr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
-    return FindMethodOpPrefixSeq(env, nativePtr, op_prefix_seq, method_declare_class, method_name,
+    return FindMethodOpPrefixSeq(env, native_ptr, op_prefix_seq, method_declare_class, method_name,
                                  method_return_type, method_param_types, dex_priority);
 }
 
