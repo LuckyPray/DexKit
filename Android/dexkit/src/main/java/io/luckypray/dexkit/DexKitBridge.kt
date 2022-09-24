@@ -17,8 +17,12 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
     val isValid
         get() = token != 0L
 
+    @Synchronized
     override fun close() {
-        nativeRelease(token)
+        if (isValid) {
+            nativeRelease(token)
+            token = 0L
+        }
     }
 
     /**
