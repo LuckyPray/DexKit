@@ -7,8 +7,6 @@ DexKit
 
 > **Warning**: 当前项目已经进行重构，以往的API全被弃用，请参考最新的文档进行使用。
 
-这是DexKit项目的CMAKE版本，NDK版本请移步[DexKit-Android](https://github.com/LuckyPray/DexKit-Android)。
-
 ## API说明
 
 这两个 API 可以满足你大部分的使用场景：
@@ -21,20 +19,22 @@ DexKit
 
 以及其他 API：
 
-- `DexKit::FindMethodBeInvoked`: 查找指定方法的调用者
+- `DexKit::FindMethodCaller`: 查找指定方法的调用者
 - `DexKit::FindMethodInvoking`: 查找指定方法调用的方法
-- `DexKit::FindMethodUsingField`: 查找指定的属性被什么方法调用，可通过参数 `used_flags` 限制访问类型(put/get)
+- `DexKit::FindMethodUsingField`: 查找获取/设置指定字段的方法
 - `DexKit::FindMethodUsingString`: 查找指定字符串的调用者
 - `DexKit::FindMethod`: 多条件查找方法
 - `DexKit::FindSubClasses`: 查找直系子类
-- `DexKit::FindMethodOpPrefixSeq`: 查找满足特定op前缀序列的方法(使用`0x00`-`0xff`)
+- `DexKit::FindMethodOpPrefixSeq`: 查找满足特定op前缀序列的方法(op范围: `0x00`-`0xFF`)
+- `DexKit::FindMethodUsingOpCodeSeq`: 查找使用了特定op序列的方法(op范围: `0x00`-`0xFF`)
+- `DexKit::GetMethodOpCodeSeq`: 获取方法op序列(op范围: `0x00`-`0xFF`)
 
-更详细的API说明请参考 [dex_kit.h](https://github.com/LuckyPray/DexKit/blob/master/include/dex_kit.h).
+更详细的API说明请参考 [dex_kit.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit.h).
 
 ## 使用示例
 
-- [main.cpp](https://github.com/LuckyPray/DexKit/blob/master/main.cpp)
-- [qq-example.cpp](https://github.com/LuckyPray/DexKit/blob/master/qq-example.cpp)
+- [main.cpp](https://github.com/LuckyPray/DexKit/blob/master/Core/main.cpp)
+- [qq-example.cpp](https://github.com/LuckyPray/DexKit/blob/master/Core/qq-example.cpp)
 
 ## 基准测试
 qq-example.cpp 在MacPro M1环境下对 `qq-8.9.3.apk` 执行结果如下所示:

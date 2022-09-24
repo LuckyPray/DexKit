@@ -7,8 +7,6 @@ A high performance dex deobfuscator library.
 
 > **Warning**: The current project has been refactored, and all previous APIs have been deprecated. Please refer to the latest documentation for use.
 
-This is the CMAKE version of the DexKit project, if you need the NDK version please use [DexKit-Android](https://github.com/LuckyPray/DexKit-Android).
-
 ## API introduction
 
 These two APIs can meet most of your usage scenarios:
@@ -21,20 +19,22 @@ These two APIs can meet most of your usage scenarios:
 
 And there are many other APIs:
 
-- `DexKit::FindMethodBeInvoked`: find caller for specified method.
+- `DexKit::FindMethodCaller`: find caller for specified method.
 - `DexKit::FindMethodInvoking`: find the called method
-- `DexKit::FindMethodUsingField`: find method getting specified field, access types(put/get) can be limited by setting `used_flags`
+- `DexKit::FindMethodUsingField`: Find method to get/set specified field
 - `DexKit::FindMethodUsingString`: find method used utf8 string
 - `DexKit::FindMethod`: find method by multiple conditions
 - `DexKit::FindSubClasses`: find all direct subclasses of the specified class
-- `DexKit::FindMethodOpPrefixSeq`:  find all method used opcode prefix sequence
+- `DexKit::FindMethodOpPrefixSeq`:  find all method using opcode prefix sequence(op range: `0x00`-`0xFF`)
+- `DexKit::FindMethodUsingOpCodeSeq`: find all method using opcode sequence(op range: `0x00`-`0xFF`)
+- `DexKit::GetMethodOpCodeSeq`: get method opcode sequence(op range: `0x00`-`0xFF`)
 
-For more detailed instructions, please refer to [dex_kit.h](https://github.com/LuckyPray/DexKit/blob/master/include/dex_kit.h).
+For more detailed instructions, please refer to [dex_kit.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit.h).
 
 ## Example
 
-- [main.cpp](https://github.com/LuckyPray/DexKit/blob/master/main.cpp)
-- [qq-example.cpp](https://github.com/LuckyPray/DexKit/blob/master/qq-example.cpp)
+- [main.cpp](https://github.com/LuckyPray/DexKit/blob/master/Core/main.cpp)
+- [qq-example.cpp](https://github.com/LuckyPray/DexKit/blob/master/Core/qq-example.cpp)
 
 ## Benchmark
 
