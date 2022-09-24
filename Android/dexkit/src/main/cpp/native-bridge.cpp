@@ -10,8 +10,9 @@
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, TAG ,__VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
 
-extern "C"
-JNIEXPORT jlong JNICALL
+#define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
+
+DEXKIT_JNI jlong
 Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
                                                        jstring apk_path) {
     if (!apk_path) {
@@ -25,8 +26,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz
     return (jlong) dexkit;
 }
 
-extern "C"
-JNIEXPORT jint JNICALL
+DEXKIT_JNI jint
 Java_io_luckypray_dexkit_DexKitBridge_nativeGetDexNum(JNIEnv *env, jclass clazz,
                                                       jlong nativePtr) {
     if (!nativePtr) {
@@ -35,8 +35,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeGetDexNum(JNIEnv *env, jclass clazz,
     return GetDexNum(env, nativePtr);
 }
 
-extern "C"
-JNIEXPORT void JNICALL
+DEXKIT_JNI void
 Java_io_luckypray_dexkit_DexKitBridge_nativeRelease(JNIEnv *env, jclass clazz,
                                                     jlong nativePtr) {
     if (!nativePtr) {
@@ -45,8 +44,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeRelease(JNIEnv *env, jclass clazz,
     ReleaseDexKitInstance(env, nativePtr);
 }
 
-extern "C"
-JNIEXPORT jobject JNICALL
+DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv *env,
                                                                          jclass clazz,
                                                                          jlong nativePtr,
@@ -59,8 +57,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv 
     return BatchFindClassesUsingStrings(env, nativePtr, map, advanced_match, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobject JNICALL
+DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv *env,
                                                                          jclass clazz,
                                                                          jlong nativePtr,
@@ -73,8 +70,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv 
     return BatchFindMethodsUsingStrings(env, nativePtr, map, advanced_match, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodBeInvoked(JNIEnv *env, jclass clazz,
                                                                 jlong nativePtr,
                                                                 jstring method_descriptor,
@@ -96,8 +92,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodBeInvoked(JNIEnv *env, jcl
                                caller_method_return_type, caller_method_param_types, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobject JNICALL
+DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jclass clazz,
                                                                jlong nativePtr,
                                                                jstring method_descriptor,
@@ -120,8 +115,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jcla
                               dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobject JNICALL
+DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jclass clazz,
                                                                  jlong nativePtr,
                                                                  jstring field_descriptor,
@@ -143,8 +137,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jc
                                 caller_method_param_types, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, jclass clazz,
                                                                   jlong nativePtr,
                                                                   jstring used_string,
@@ -161,8 +154,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                  method_name, method_return_type, method_param_types, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz,
                                                        jlong nativePtr,
                                                        jstring method_declare_class,
@@ -177,8 +169,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz
                       method_param_types, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass clazz,
                                                            jlong nativePtr,
                                                            jstring parent_class,
@@ -189,8 +180,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass c
     return FindSubClasses(env, nativePtr, parent_class, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodOpPrefixSeq(JNIEnv *env, jclass clazz,
                                                                   jlong nativePtr,
                                                                   jintArray op_prefix_seq,
