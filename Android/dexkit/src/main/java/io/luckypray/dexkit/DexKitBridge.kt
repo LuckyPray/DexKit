@@ -226,6 +226,44 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
         ).map { DexMethodDescriptor(it) }
     }
 
+    fun findMethodUsingOpCodeSeq(
+        opSeq: IntArray,
+        methodDeclareClass: String = "",
+        methodName: String = "",
+        methodReturnType: String = "",
+        methodParamTypes: Array<String>? = null,
+        dexPriority: IntArray? = null
+    ): List<DexMethodDescriptor> {
+        return nativeFindMethodUsingOpCodeSeq(
+            token,
+            opSeq,
+            methodDeclareClass,
+            methodName,
+            methodReturnType,
+            methodParamTypes,
+            dexPriority
+        ).map { DexMethodDescriptor(it) }
+    }
+
+    fun getMethodOpCodeSeq(
+        methodDescriptor: String,
+        methodDeclareClass: String = "",
+        methodName: String = "",
+        methodReturnType: String = "",
+        methodParamTypes: Array<String>? = null,
+        dexPriority: IntArray? = null
+    ): Map<DexMethodDescriptor, IntArray> {
+        return nativeGetMethodOpCodeSeq(
+            token,
+            methodDescriptor,
+            methodDeclareClass,
+            methodName,
+            methodReturnType,
+            methodParamTypes,
+            dexPriority
+        ).mapKeys { DexMethodDescriptor(it.key) }
+    }
+
     companion object {
         const val FLAG_GETTING = 0x00000001
         const val FLAG_SETTING = 0x00000002
@@ -363,6 +401,28 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
             methodParamTypes: Array<String>?,
             dexPriority: IntArray?
         ): Array<String>
+
+        @JvmStatic
+        private external fun nativeFindMethodUsingOpCodeSeq(
+            nativePtr: Long,
+            opSeq: IntArray,
+            methodDeclareClass: String,
+            methodName: String,
+            methodReturnType: String,
+            methodParamTypes: Array<String>?,
+            dexPriority: IntArray?
+        ): Array<String>
+
+        @JvmStatic
+        private external fun nativeGetMethodOpCodeSeq(
+            nativePtr: Long,
+            methodDescriptor: String,
+            methodDeclareClass: String,
+            methodName: String,
+            methodReturnType: String,
+            methodParamTypes: Array<String>?,
+            dexPriority: IntArray?
+        ): Map<String, IntArray>
     }
 
     protected fun finalize() {

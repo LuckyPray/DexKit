@@ -195,3 +195,37 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodOpPrefixSeq(JNIEnv *env, j
     return FindMethodOpPrefixSeq(env, nativePtr, op_prefix_seq, method_declare_class, method_name,
                                  method_return_type, method_param_types, dex_priority);
 }
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpCodeSeq(JNIEnv *env, jclass clazz,
+                                                                     jlong native_ptr,
+                                                                     jintArray op_seq,
+                                                                     jstring method_declare_class,
+                                                                     jstring method_name,
+                                                                     jstring method_return_type,
+                                                                     jobjectArray method_param_types,
+                                                                     jintArray dex_priority) {
+    if (!native_ptr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    return FindMethodUsingOpCodeSeq(env, native_ptr, op_seq, method_declare_class, method_name,
+                                    method_return_type, method_param_types, dex_priority);
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodeSeq(JNIEnv *env, jclass clazz,
+                                                               jlong native_ptr,
+                                                               jstring method_descriptor,
+                                                               jstring method_declare_class,
+                                                               jstring method_name,
+                                                               jstring method_return_type,
+                                                               jobjectArray method_param_types,
+                                                               jintArray dex_priority) {
+    if (!native_ptr) {
+        return EmptyJMap(env);
+    }
+    return GetMethodOpCodeSeq(env, native_ptr, method_descriptor, method_declare_class, method_name,
+                              method_return_type, method_param_types, dex_priority);
+}
