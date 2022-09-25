@@ -69,7 +69,8 @@ public class DexUtil {
     }
 
     public static void findMethod() {
-        // try-with-resources
+        // try-with-resources, auto close DexKitBridge, no need to call DexKitBridge.close()
+        // if you don't use try-with-resources, be sure to manually call DexKitBridge.close() to release the jni memory
         try (DexKitBridge dexKitBridge = DexKitBridge.create(hostClassLoader)) {
             if (dexKitBridge == null) {
                 Log.e("DexUtil", "DexKitBridge create failed");
@@ -148,9 +149,6 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                                                   jstring method_return_type,
                                                                   jobjectArray method_param_types,
                                                                   jintArray dex_priority) {
-    if (!native_ptr) {
-        return StrVec2JStrArr(env, std::vector<std::string>());
-    }
     return FindMethodUsingString(env, native_ptr, used_string, advanced_match, method_declare_class,
                                  method_name, method_return_type, method_param_types, dex_priority);
 }
