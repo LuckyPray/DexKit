@@ -108,6 +108,16 @@ android {
 android.prefabVersion=2.0.0
 ```
 
+同时为了避免`libdexkit.so`被添加到apk中，你可以在`app/build.gradle`添加以下配置：
+
+```groovy
+android {
+    packagingOptions {
+        jniLibs.excludes.add("lib/**/libdexkit.so")
+    }
+}
+```
+
 CMake:
 
 你可以直接在 `CMakeLists.txt` 中使用 `find_package` 来使用 DexKit:

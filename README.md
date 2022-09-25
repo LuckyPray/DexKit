@@ -108,6 +108,15 @@ If you are using Android Gradle Plugin earlier than 7.1.0, please add the follow
 android.prefabVersion=2.0.0
 ```
 
+Also avoid `libdexkit.so` being added to the apk, you can add the following configuration to `app/build.gradle`:
+```groovy
+android {
+    packagingOptions {
+        jniLibs.excludes.add("lib/**/libdexkit.so")
+    }
+}
+```
+
 CMake:
 
 You can use `find_package` in `CMakeLists.txt`:
