@@ -2,3 +2,5 @@ jdk:
   - openjdk11
 before_install:
  - cd Android
+install:
+ - gradle ./gradlew clean :dexkit:publishToMavenLocal
