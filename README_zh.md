@@ -1,11 +1,9 @@
 DexKit
 --
 
-[README](https://github.com/LuckyPray/DexKit/blob/master/README.md)|[中文文档](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
+[README](https://github.com/LuckyPray/DexKit/blob/master/README.md)|[中文说明](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
 
-一个高性能的 dex 反混淆工具。
-
-> **Warning**: 当前项目已经进行重构，以往的API全被弃用，请参考最新的文档进行使用。
+一个简单易用、高性能的dex反混淆库。能轻松接入你的 CMAKE/Android 项目。
 
 ## API说明
 
@@ -29,15 +27,135 @@ DexKit
 - `DexKit::FindMethodUsingOpCodeSeq`: 查找使用了特定op序列的方法(op范围: `0x00`-`0xFF`)
 - `DexKit::GetMethodOpCodeSeq`: 获取方法op序列(op范围: `0x00`-`0xFF`)
 
-更详细的API说明请参考 [dex_kit.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit.h).
+目前更详细的API说明请参考 [dex_kit.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit.h).
 
-## 使用示例
+## 快速上手
+
+### 方式一：直接引入（推荐）
+
+但是该方式会额外引入一个so文件，如果你有洁癖需要all in one的话，可以使用方式二或者三。
+
+${project}/build.gradle:
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+${project}/app/build.gradle:
+```groovy
+dependencies {
+    implementation 'com.github.LuckyPray:DexKit:<version>'
+}
+```
+
+java:
+```java 
+import io.luckypry.dexkit.DexKitBridge;
+// ...
+
+public class DexUtil {
+
+    static {
+        System.loadLibrary("dexkit");
+    }
+
+    public static void findMethod() {
+        // try-with-resources
+        try (DexKitBridge dexKitBridge = DexKitBridge.create(hostClassLoader)) {
+            if (dexKitBridge == null) {
+                Log.e("DexUtil", "DexKitBridge create failed");
+                return;
+            }
+            List<DexClassDescriptor> classes = dexKitBridge.findSubClasses("android.app.Activity", null);
+            for (DexClassDescriptor clazz : classes) {
+                String name = clazz.getName();
+                String simpleName = clazz.getSimpleName();
+                Class<?> clz = clazz.getClassInstance(hostClassLoader);
+                Log.i("DexUtil", "findSubClasses: " + clz);
+            }
+        } catch (Throwable e) {
+            Log.e("DexUtil", Log.getStackTraceString(e));
+        }
+    }
+}
+```
+
+### 方式二：google prefab
+${project}/app/build.gradle
+
+```groovy
+android {
+    buildFeatures {
+        prefab true
+    }
+}
+```
+
+> **Note**：DexKit-Android 使用 [prefab package schema v2](https://github.com/google/prefab/releases/tag/v2.0.0)，
+它是从 [Android Gradle Plugin 7.1.0](https://developer.android.com/studio/releases/gradle-plugin?buildsystem=cmake#7-1-0) 开始作为默认配置的。
+如果你使用的是 Android Gradle Plugin 7.1.0 之前的版本，请在 `gradle.properties` 中加入以下配置：
+
+```
+android.prefabVersion=2.0.0
+```
+
+CMake:
+
+你可以直接在 `CMakeLists.txt` 中使用 `find_package` 来使用 DexKit:
+```cmake
+add_library(my_lib SHARED native.cpp)
+
+# 添加如下三行，注意必须添加 libz！！如果你有其他依赖可以放在后面
+find_package(dexkit REQUIRED CONFIG)
+find_library(log-lib log)
+target_link_libraries(my_lib dexkit::dex_kit_static z ${log-lib})
+```
+
+同时，我们提供了头文件 [dex_kit_jni_helper.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit_jni_helper.h)
+便捷转换java/c++数据对象的互转：
+```c++
+#include <jni.h>
+#include <dex_kit.h>
+#include "dex_kit_jni_helper.h"
+
+#define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
+
+DEXKIT_JNI jobjectArray
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, jclass clazz,
+                                                                  jlong native_ptr,
+                                                                  jstring used_string,
+                                                                  jboolean advanced_match,
+                                                                  jstring method_declare_class,
+                                                                  jstring method_name,
+                                                                  jstring method_return_type,
+                                                                  jobjectArray method_param_types,
+                                                                  jintArray dex_priority) {
+    if (!native_ptr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    return FindMethodUsingString(env, native_ptr, used_string, advanced_match, method_declare_class,
+                                 method_name, method_return_type, method_param_types, dex_priority);
+}
+```
+
+### 方式三：使用Git子模块
+
+较为复杂，参考：https://github.com/LuckyPray/XAutoDaily/tree/master/dexkit
+
+
+## c++使用示例
 
 - [main.cpp](https://github.com/LuckyPray/DexKit/blob/master/Core/main.cpp)
 - [qq-example.cpp](https://github.com/LuckyPray/DexKit/blob/master/Core/qq-example.cpp)
 
 ## 基准测试
+
 qq-example.cpp 在MacPro M1环境下对 `qq-8.9.3.apk` 执行结果如下所示:
+
 ```text
 findClass count: 47
 findMethod count: 29
@@ -46,7 +164,8 @@ used time: 207 ms
 
 ## License
 
-slicer目录下内容是从 [AOSP](https://cs.android.com/android/platform/superproject/+/master:frameworks/base/startop/view_compiler) 拷贝的.
+slicer目录下内容是从 [AOSP](https://cs.android.com/android/platform/superproject/+/master:frameworks/base/startop/view_compiler)
+拷贝的.
 
 修改部分归 LuckyPray 所有。如果您想在开源项目中使用，请将其子模块化。
 
