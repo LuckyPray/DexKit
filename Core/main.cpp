@@ -1,12 +1,8 @@
 #include <iostream>
-#include <fstream>
 #include <chrono>
-#include <stack>
 #include <map>
 #include <set>
 #include "dex_kit.h"
-#include "code_format.h"
-#include "kmp.h"
 
 int main() {
     std::map<std::string, std::set<std::string>> obfuscate = {
