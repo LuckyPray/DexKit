@@ -1,9 +1,14 @@
-DexKit
---
+<div align="center">
+    <h1> DexKit </h1>
+
+[![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
+[![](https://jitpack.io/v/LuckyPray/DexKit.svg)](https://jitpack.io/#LuckyPray/DexKit)
 
 [README](https://github.com/LuckyPray/DexKit/blob/master/README.md)|[中文说明](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
 
-一个简单易用、高性能的dex反混淆库。能轻松接入你的 CMAKE/Android 项目。
+</div>
+
+一个简单易用、高性能的dex反混淆库。轻松接入你的 CMAKE/Android 项目。
 
 ## API说明
 

@@ -1,7 +1,12 @@
-DexKit
---
+<div align="center">
+    <h1> DexKit </h1>
+
+[![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
+[![](https://jitpack.io/v/LuckyPray/DexKit.svg)](https://jitpack.io/#LuckyPray/DexKit)
 
 [README](https://github.com/LuckyPray/DexKit/blob/master/README.md)|[中文说明](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
+
+</div>
 
 An easy-to-use, high-performance dex deobfuscation library. Easy to use your CMAKE/Android projects.
 
