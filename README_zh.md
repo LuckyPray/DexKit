@@ -125,10 +125,9 @@ CMake:
 ```cmake
 add_library(my_lib SHARED native.cpp)
 
-# 添加如下三行，注意必须添加 libz！！如果你有其他依赖可以放在后面
+# 添加如下两行，注意必须添加 libz！！如果你有其他依赖可以放在后面
 find_package(dexkit REQUIRED CONFIG)
-find_library(log-lib log)
-target_link_libraries(my_lib dexkit::dex_kit_static z ${log-lib})
+target_link_libraries(my_lib dexkit::dex_kit_static z)
 ```
 
 同时，我们提供了头文件 [dex_kit_jni_helper.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit_jni_helper.h)
