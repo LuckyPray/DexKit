@@ -124,10 +124,9 @@ You can use `find_package` in `CMakeLists.txt`:
 ```cmake
 add_library(my_lib SHARED native.cpp)
 
-# Add three lines below, must contain libz!!
+# Add two lines below, must contain libz!!
 find_package(dexkit REQUIRED CONFIG)
-find_library(log-lib log)
-target_link_libraries(my_lib dexkit::dex_kit_static z ${log-lib})
+target_link_libraries(my_lib dexkit::dex_kit_static z)
 ```
 
 At the same time, we also provide [dex_kit_jni_helper.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit_jni_helper.h),
