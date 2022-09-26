@@ -759,12 +759,10 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                                     if (IsFieldMatch(dex_idx, index, declared_class_idx, field_name,
                                                      field_type_idx)) {
                                         index_map[method_idx].emplace(index);
-                                        goto label;
                                     }
                                 }
                                 p += width;
                             }
-                            label:;
                         }
                     }
                     std::map<std::string, std::vector<std::string>> result;
