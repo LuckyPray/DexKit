@@ -13,7 +13,7 @@ class DexFieldDescriptor : DexDescriptor {
     val typeSig: String
 
     val declaringClassName: String
-        get() =getClassName(declaringClassSig)
+        get() = getClassName(declaringClassSig)
 
     override val descriptor: String
         get() = "$declaringClassSig->$name:$typeSig"

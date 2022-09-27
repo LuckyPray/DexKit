@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Member
 import java.lang.reflect.Method
 
-class DexMethodDescriptor: DexDescriptor {
+class DexMethodDescriptor : DexDescriptor {
 
     val declaringClassSig: String
     val name: String
