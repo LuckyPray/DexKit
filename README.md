@@ -12,7 +12,7 @@ An easy-to-use, high-performance dex deobfuscation library. Easy to use your CMA
 
 ## API introduction
 
-These two APIs can meet most of your usage scenarios:
+There are two APIs can meet most of your usage scenarios:
 
 - **`DexKit::BatchFindClassesUsingStrings`**
 - **`DexKit::BatchFindMethodsUsingStrings`**
@@ -38,9 +38,9 @@ For more detailed instructions, please refer to [dex_kit.h](https://github.com/L
 
 ### Method 1: Direct introduction (recommended)
 
-However, this approach introduces an extra so file. If you don't want to introduce an extra so file, you can use the second/third method.
+However, this approach will import an extra `so` file. If you don't want to import an extra `so` file, please use the second/third method.
 
-${project}/build.gradle:
+`build.gradle`:
 ```groovy
 allprojects {
     repositories {
@@ -50,7 +50,7 @@ allprojects {
 }
 ```
 
-${project}/app/build.gradle:
+`app/build.gradle`:
 ```groovy
 dependencies {
     implementation 'com.github.LuckyPray:DexKit:<version>'
@@ -91,7 +91,7 @@ public class DexUtil {
 ```
 
 ### Method 2：google prefab
-${project}/app/build.gradle
+`app/build.gradle`:
 
 ```groovy
 android {
@@ -120,7 +120,7 @@ android {
 
 CMake:
 
-You can use `find_package` in `CMakeLists.txt`:
+You can use `find_package` in `CMakeLists.txt` to use DexKit:
 ```cmake
 add_library(my_lib SHARED native.cpp)
 
@@ -129,8 +129,9 @@ find_package(dexkit REQUIRED CONFIG)
 target_link_libraries(my_lib dexkit::dex_kit_static z)
 ```
 
-At the same time, we also provide [dex_kit_jni_helper.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit_jni_helper.h),
-Convenient conversion between java/c++ data objects:
+
+At the same time, we also provide [dex_kit_jni_helper.h](https://github.com/LuckyPray/DexKit/blob/master/Core/include/dex_kit_jni_helper.h) 
+to transition java to c++ / c++ to java data objects.
 ```c++
 #include <jni.h>
 #include <dex_kit.h>
