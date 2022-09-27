@@ -40,7 +40,7 @@
 
 但是该方式会额外引入一个so文件，如果你有洁癖需要all in one的话，可以使用方式二或者三。
 
-${project}/build.gradle:
+`build.gradle`:
 ```groovy
 allprojects {
     repositories {
@@ -50,7 +50,7 @@ allprojects {
 }
 ```
 
-${project}/app/build.gradle:
+`app/build.gradle`:
 ```groovy
 dependencies {
     implementation 'com.github.LuckyPray:DexKit:<version>'
@@ -91,7 +91,7 @@ public class DexUtil {
 ```
 
 ### 方式二：google prefab
-${project}/app/build.gradle
+`app/build.gradle`:
 
 ```groovy
 android {
