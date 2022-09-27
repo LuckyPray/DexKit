@@ -11,10 +11,14 @@ class DexMethodDescriptor: DexDescriptor {
     val name: String
     val parameterTypesSig: String
     val returnTypeSig: String
-    val methodTypeSig: String
+
+    val declaringClassName: String
+        get() = getClassName(declaringClassSig)
 
     override val descriptor: String
-        get() = "$declaringClassSig->$name$methodTypeSig"
+        get() = "$declaringClassSig->$name$signature"
+    override val signature: String
+        get() = "($parameterTypesSig)$returnTypeSig"
 
     val isConstructor
         get() = name == "<init>"
@@ -26,9 +30,12 @@ class DexMethodDescriptor: DexDescriptor {
         val idx2 = descriptor.indexOf('(')
         val idx3 = descriptor.indexOf(')')
 
+        if (idx1 == -1 || idx2 == -1 || idx3 == -1) {
+            throw IllegalArgumentException("Invalid method descriptor: $descriptor")
+        }
+
         declaringClassSig = descriptor.substring(0, idx1)
         name = descriptor.substring(idx1 + 2, idx2)
-        methodTypeSig = descriptor.substring(idx2)
         parameterTypesSig = descriptor.substring(idx2 + 1, idx3)
         returnTypeSig = descriptor.substring(idx2 + 1)
     }
@@ -38,7 +45,6 @@ class DexMethodDescriptor: DexDescriptor {
         name = method.name
         parameterTypesSig = method.parameterTypes.joinToString("") { getTypeSig(it) }
         returnTypeSig = getTypeSig(method.returnType)
-        methodTypeSig = "($parameterTypesSig)$returnTypeSig"
     }
 
     constructor(constructor: Constructor<*>) {
@@ -46,27 +52,26 @@ class DexMethodDescriptor: DexDescriptor {
         name = "<init>"
         parameterTypesSig = constructor.parameterTypes.joinToString("") { getTypeSig(it) }
         returnTypeSig = "V"
-        methodTypeSig = "($parameterTypesSig)$returnTypeSig"
     }
 
     constructor(clz: String, name: String, methodTypeSig: String) {
         declaringClassSig = clz
         this.name = name
-        this.methodTypeSig = methodTypeSig
         val idx = methodTypeSig.indexOf(')')
         parameterTypesSig = methodTypeSig.substring(1, idx)
         returnTypeSig = methodTypeSig.substring(idx + 1)
     }
 
-    fun getConstructor(classLoader: ClassLoader): Constructor<*> {
+    @Throws(NoSuchMethodException::class)
+    fun getConstructorInstance(classLoader: ClassLoader): Constructor<*> {
         if (!isConstructor) {
             throw IllegalArgumentException("$this not a constructor")
         }
         try {
-            var clz = classLoader.loadClass(getDeclareClassName())
+            var clz = classLoader.loadClass(declaringClassName)
             do {
                 for (constructor in clz.declaredConstructors) {
-                    if (methodTypeSig == getConstructorTypeSig(constructor)) {
+                    if (signature == getConstructorTypeSig(constructor)) {
                         return constructor
                     }
                 }
@@ -77,15 +82,16 @@ class DexMethodDescriptor: DexDescriptor {
         }
     }
 
-    fun getMethod(classLoader: ClassLoader): Method {
+    @Throws(NoSuchMethodException::class)
+    fun getMethodInstance(classLoader: ClassLoader): Method {
         if (!isMethod) {
             throw IllegalArgumentException("$this not a method")
         }
         try {
-            var clz = classLoader.loadClass(getDeclareClassName())
+            var clz = classLoader.loadClass(declaringClassName)
             do {
                 for (method in clz.declaredMethods) {
-                    if (method.name == name && methodTypeSig == getMethodTypeSig(method)) {
+                    if (method.name == name && signature == getMethodTypeSig(method)) {
                         return method
                     }
                 }
@@ -96,19 +102,35 @@ class DexMethodDescriptor: DexDescriptor {
         }
     }
 
+    @Throws(NoSuchMethodError::class)
     fun getMemberInstance(classLoader: ClassLoader): Member {
         if (name == "<clinit>") {
-            throw NoSuchMethodException("<clinit> method cannot be instantiated: $this")
+            throw NoSuchMethodError("<clinit> method cannot be instantiated: $this")
         }
         return if (isConstructor) {
-            getConstructor(classLoader)
+            getConstructorInstance(classLoader)
         } else {
-            getMethod(classLoader)
+            getMethodInstance(classLoader)
         }
     }
 
-    fun getDeclareClassName(): String {
-        return getClassName(declaringClassSig)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DexMethodDescriptor) return false
+
+        if (declaringClassSig != other.declaringClassSig) return false
+        if (name != other.name) return false
+        if (parameterTypesSig != other.parameterTypesSig) return false
+        if (returnTypeSig != other.returnTypeSig) return false
+
+        return true
     }
 
+    override fun hashCode(): Int {
+        var result = declaringClassSig.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + parameterTypesSig.hashCode()
+        result = 31 * result + returnTypeSig.hashCode()
+        return result
+    }
 }

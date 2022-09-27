@@ -12,12 +12,21 @@ class DexFieldDescriptor : DexDescriptor {
     val name: String
     val typeSig: String
 
+    val declaringClassName: String
+        get() =getClassName(declaringClassSig)
+
     override val descriptor: String
-        get() = "$declaringClassSig.$name:$typeSig"
+        get() = "$declaringClassSig->$name:$typeSig"
+    override val signature: String
+        get() = typeSig
 
     constructor(descriptor: String) {
         val idx1 = descriptor.indexOf("->")
         val idx2 = descriptor.indexOf(':')
+
+        if (idx1 == -1 || idx2 == -1) {
+            throw IllegalArgumentException("Invalid field descriptor: $descriptor")
+        }
 
         declaringClassSig = descriptor.substring(0, idx1)
         name = descriptor.substring(idx1 + 2, idx2)
@@ -36,9 +45,10 @@ class DexFieldDescriptor : DexDescriptor {
         this.typeSig = getTypeSig(field.type)
     }
 
+    @Throws(NoSuchFieldException::class)
     fun getFieldInstance(classLoader: ClassLoader): Member {
         try {
-            var clz = classLoader.loadClass(getDeclareClassName())
+            var clz = classLoader.loadClass(declaringClassName)
             do {
                 for (field in clz.declaredFields) {
                     if (field.name == name && typeSig == getTypeSig(field.type)) {
@@ -52,8 +62,21 @@ class DexFieldDescriptor : DexDescriptor {
         }
     }
 
-    fun getDeclareClassName(): String {
-        return getClassName(declaringClassSig)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DexFieldDescriptor) return false
+
+        if (declaringClassSig != other.declaringClassSig) return false
+        if (name != other.name) return false
+        if (typeSig != other.typeSig) return false
+
+        return true
     }
 
+    override fun hashCode(): Int {
+        var result = declaringClassSig.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + typeSig.hashCode()
+        return result
+    }
 }
