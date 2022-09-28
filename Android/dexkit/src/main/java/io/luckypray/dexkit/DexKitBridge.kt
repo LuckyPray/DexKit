@@ -84,9 +84,9 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
 
     fun findMethodCaller(
         methodDescriptor: String,
-        methodDeclareClass: String,
-        methodName: String,
-        methodReturnType: String,
+        methodDeclareClass: String = "",
+        methodName: String = "",
+        methodReturnType: String = "",
         methodParameterTypes: Array<String>? = null,
         callerMethodDeclareClass: String = "",
         callerMethodName: String = "",
@@ -139,9 +139,9 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
 
     fun findMethodUsingField(
         fieldDescriptor: String,
-        fieldDeclareClass: String,
-        fieldName: String,
-        fieldType: String,
+        fieldDeclareClass: String = "",
+        fieldName: String = "",
+        fieldType: String = "",
         usedFlags: Int = FLAG_USING,
         callerMethodDeclareClass: String = "",
         callerMethodName: String = "",
@@ -188,8 +188,8 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
 
     fun findMethod(
         methodDeclareClass: String,
-        methodName: String,
-        methodReturnType: String,
+        methodName: String = "",
+        methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
     ): List<DexMethodDescriptor> {
