@@ -4,7 +4,6 @@ package io.luckypray.dexkit.descriptor.util
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
-
 fun getClassName(classDesc: String): String {
     if (classDesc.startsWith("L") && classDesc.endsWith(";")) {
         return classDesc.substring(1, classDesc.length - 1).replace('/', '.')

@@ -1,6 +1,5 @@
 package io.luckypray.dexkit.descriptor.member
 
-import android.util.Log
 import io.luckypray.dexkit.descriptor.*
 import io.luckypray.dexkit.descriptor.util.getClassName
 import io.luckypray.dexkit.descriptor.util.getConstructorSignature
