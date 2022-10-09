@@ -6,6 +6,7 @@
 #include <list>
 #include <set>
 #include <unordered_map>
+#include <optional>
 #include "slicer/reader.h"
 #include "file_helper.h"
 
