@@ -4,14 +4,17 @@ import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import java.io.Closeable
-import java.net.URL
 
-class DexKitBridge private constructor(apkPath: String) : Closeable {
+class DexKitBridge : Closeable {
 
     private var token: Long = 0L
 
-    init {
+    private constructor(apkPath: String) {
         token = nativeInitDexKit(apkPath)
+    }
+
+    private constructor(classLoader: ClassLoader) {
+        token = nativeInitDexKitByClassLoader(classLoader)
     }
 
     val isValid
@@ -281,23 +284,15 @@ class DexKitBridge private constructor(apkPath: String) : Closeable {
 
         @JvmStatic
         fun create(loader: ClassLoader): DexKitBridge? {
-            loader.loadClass("java.lang.ClassLoader").declaredMethods.first {
-                it.name == "findResource"
-                    && it.parameterTypes.size == 1
-                    && it.parameterTypes[0] == String::class.java
-                    && it.returnType == URL::class.java
-            }.let { method ->
-                method.isAccessible = true
-                val url = method.invoke(loader, "AndroidManifest.xml") as URL
-                url.path.substring(5, url.path.length - 21).let {
-                    val helper = DexKitBridge(it)
-                    return if (helper.isValid) helper else null
-                }
-            }
+            val helper = DexKitBridge(loader)
+            return if (helper.isValid) helper else null
         }
 
         @JvmStatic
         private external fun nativeInitDexKit(apkPath: String): Long
+
+        @JvmStatic
+        private external fun nativeInitDexKitByClassLoader(loader: ClassLoader): Long
 
         @JvmStatic
         private external fun nativeSetThreadNum(nativePtr: Long, threadNum: Int)

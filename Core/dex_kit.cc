@@ -49,7 +49,12 @@ DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
 DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
     dex_images_.resize(dex_images.size());
     for (int i = 0; i < dex_images.size(); ++i) {
-        dex_images_[i] = dex_images[i];
+        auto &image = dex_images[i];
+        MemMap mmap(image.second);
+        memcpy(mmap.addr(), image.first, image.second);
+        mprotect(mmap.addr(), mmap.len(), PROT_READ);
+        maps_.emplace_back(std::move(mmap));
+        dex_images_[i] = std::make_pair(maps_[i].addr(), maps_[i].len());
     }
     InitImages();
 }
