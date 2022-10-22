@@ -13,7 +13,7 @@ namespace dexkit {
 
 class ThreadPool {
 public:
-    ThreadPool(size_t);
+    explicit ThreadPool(size_t);
 
     template<class F, class... Args>
     auto enqueue(F &&f, Args &&... args)

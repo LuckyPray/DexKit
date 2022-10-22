@@ -13,50 +13,61 @@ namespace dexkit {
 using namespace acdat;
 
 DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
+    AddPath(apk_path, unzip_thread_num);
+}
+
+void DexKit::AddImages(std::vector<std::unique_ptr<MemMap>> dex_images) {
+    int ort_size = (int) dex_images_.size();
+    int new_size = (int) (ort_size + dex_images.size());
+    dex_images_.resize(new_size);
+    for (int i = ort_size; i < new_size; ++i) {
+        auto &image = *dex_images[i - ort_size];
+        dex_images_[i] = std::make_pair(image.addr(), image.len());
+        maps_.emplace_back(std::move(dex_images[i - ort_size]));
+    }
+    InitImages(ort_size, new_size);
+}
+
+void DexKit::AddPath(std::string_view apk_path, int unzip_thread_num) {
     auto map = MemMap(apk_path);
     if (!map.ok()) {
         return;
     }
     auto zip_file = ZipFile::Open(map);
-    maps_.emplace_back(std::move(map));
-    if (zip_file) {
-        std::vector<std::pair<int, ZipLocalFile *>> dexs;
-        for (int idx = 1;; ++idx) {
-            auto entry_name = "classes" + (idx == 1 ? std::string() : std::to_string(idx)) + ".dex";
-            auto entry = zip_file->Find(entry_name);
-            if (!entry) {
-                break;
+    if (!zip_file) return;
+    std::vector<std::pair<int, ZipLocalFile *>> dexs;
+    for (int idx = 1;; ++idx) {
+        auto entry_name = "classes" + (idx == 1 ? std::string() : std::to_string(idx)) + ".dex";
+        auto entry = zip_file->Find(entry_name);
+        if (!entry) {
+            break;
+        }
+        dexs.emplace_back(idx, entry);
+    }
+    int ort_size = (int) dex_images_.size();
+    int new_size = (int) (ort_size + dexs.size());
+    dex_images_.resize(new_size);
+    int maps_org_size = (int) maps_.size();
+    maps_.resize(maps_.size() + dexs.size());
+    ThreadPool pool(unzip_thread_num == -1 ? thread_num_ : unzip_thread_num);
+    std::vector<std::future<void>> futures;
+    for (auto &dex_pair: dexs) {
+        auto v = pool.enqueue([this, &dex_pair, ort_size, maps_org_size]() {
+            auto dex_image = dex_pair.second->uncompress();
+            if (!dex_image.ok()) {
+                return;
             }
-            dexs.emplace_back(idx, entry);
-        }
-        dex_images_.resize(dexs.size());
-        maps_.resize(dexs.size() + 1);
-        ThreadPool pool(unzip_thread_num == -1 ? thread_num_ : unzip_thread_num);
-        for (auto &dex_pair: dexs) {
-            pool.enqueue([&dex_pair, this]() {
-                auto dex_image = dex_pair.second->uncompress();
-                if (!dex_image.ok()) {
-                    return;
-                }
-                dex_images_[dex_pair.first - 1] = std::make_pair(dex_image.addr(), dex_image.len());
-                maps_[dex_pair.first] = std::move(dex_image);
-            });
-        }
+            int idx = dex_pair.first - 1;
+            dex_images_[ort_size + idx] = std::make_pair(dex_image.addr(), dex_image.len());
+            maps_[maps_org_size + idx] = std::make_unique<MemMap>(std::move(dex_image));
+        });
+        futures.emplace_back(std::move(v));
     }
-    InitImages();
-}
-
-DexKit::DexKit(std::vector<std::pair<const void *, size_t>> &dex_images) {
-    dex_images_.resize(dex_images.size());
-    for (int i = 0; i < dex_images.size(); ++i) {
-        auto &image = dex_images[i];
-        MemMap mmap(image.second);
-        memcpy(mmap.addr(), image.first, image.second);
-        mprotect(mmap.addr(), mmap.len(), PROT_READ);
-        maps_.emplace_back(std::move(mmap));
-        dex_images_[i] = std::make_pair(maps_[i].addr(), maps_[i].len());
+    for (auto &f: futures) {
+        f.get();
     }
-    InitImages();
+    maps_.emplace_back(std::make_unique<MemMap>(std::move(map)));
+    InitImages(ort_size, new_size);
 }
 
 std::map<std::string, std::vector<std::string>>
@@ -1341,8 +1352,9 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
 }
 
 
-void DexKit::InitImages() {
-    for (auto &[image, size]: dex_images_) {
+void DexKit::InitImages(int begin, int end) {
+    for (int i = begin; i < end; ++i) {
+        auto &[image, size] = dex_images_[i];
         auto reader = dex::Reader((const dex::u1 *) image, size);
         readers_.emplace_back(std::move(reader));
     }
