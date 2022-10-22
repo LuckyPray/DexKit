@@ -103,8 +103,6 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
                 LOGD("Skip empty dex file");
                 continue;
             }
-            LOGD("dex_file -> %p", dex_file);
-            LOGD("dex_file->begin_ -> %p", dex_file->begin_);
             auto magic = reinterpret_cast<const uint32_t *>(dex_file->begin_);
             if ((((*magic >> 0) & 0xff) == 'P') &&
                 (((*magic >> 8) & 0xff) == 'K')) {
