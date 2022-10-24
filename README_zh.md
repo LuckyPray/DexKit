@@ -57,7 +57,16 @@ dependencies {
 }
 ```
 
-java:
+#### JAVA Example
+
+`DexKitBridge` 提供了2个工厂方法创建 `Dexkit` 对象:
+
+- `DexKitBridge.create(apkPath)`: 正常情况使用此方法。
+- `DexKitBridge.create(classLoader)`: 对于加固 APP 使用 classLoader 创建。
+
+> **Note**: 对于正常APP使用 `DexKitBridge.create(classLoader)` 创建可能存在问题.
+> 因为cookies中可能包含odex优化指令集, DexKit 无法处理诸如 `invoke-virtual-quick` 之类的指令.
+
 ```java 
 import io.luckypry.dexkit.DexKitBridge;
 // ...
@@ -69,9 +78,12 @@ public class DexUtil {
     }
 
     public static void findMethod() {
+        // 对于非加固 app 请使用 apk_path 加载，因为存在 dex2oat 以及 CompactDex(cdex)，
+        // dexkit 目前只能处理 StandardDex。
+        String apkPath = application.applicationInfo.sourceDir
         // try-with-resources, 结束时自动调用 DexKitBridge.close() 释放资源
         // 如果你不想使用 try-with-resources，请务必手动调用 DexKitBridge.close() 释放jni占用的内存
-        try (DexKitBridge dexKitBridge = DexKitBridge.create(hostClassLoader)) {
+        try (DexKitBridge dexKitBridge = DexKitBridge.create(apkPath)) {
             if (dexKitBridge == null) {
                 Log.e("DexUtil", "DexKitBridge create failed");
                 return;

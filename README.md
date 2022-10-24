@@ -57,7 +57,16 @@ dependencies {
 }
 ```
 
-java:
+#### JAVA Example
+
+`DexKitBridge` provides 2 factory methods to create `Dexkit` instances:
+
+- `DexKitBridge.create(apkPath)`: normally, please use it.
+- `DexKitBridge.create(classLoader)`: for reinforced apps, used classLoader create.
+
+> **Note**: for normally apps, there is a problem with using `DexKitBridge.create(classLoader)` may be a problem.
+> Because cookies may have odex instructions, DexKit cannot process directives like `invoke-virtual-quick`.
+
 ```java 
 import io.luckypry.dexkit.DexKitBridge;
 // ...
@@ -69,9 +78,12 @@ public class DexUtil {
     }
 
     public static void findMethod() {
+        // for no-reinforced apps please use apkpath to load, because of the exist of dex2oat and CompactDex(cdex),
+        // dexkit currently only handles StandardDex.
+        String apkPath = application.applicationInfo.sourceDir
         // try-with-resources, auto close DexKitBridge, no need to call DexKitBridge.close()
         // if you don't use try-with-resources, be sure to manually call DexKitBridge.close() to release the jni memory
-        try (DexKitBridge dexKitBridge = DexKitBridge.create(hostClassLoader)) {
+        try (DexKitBridge dexKitBridge = DexKitBridge.create(apkPath)) {
             if (dexKitBridge == null) {
                 Log.e("DexUtil", "DexKitBridge create failed");
                 return;
