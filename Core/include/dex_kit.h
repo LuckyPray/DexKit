@@ -237,12 +237,12 @@ public:
      * @return method descriptor
      */
     std::vector<std::string>
-    FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
-                          const std::string &method_declare_class,
-                          const std::string &method_declare_name,
-                          const std::string &method_return_type,
-                          const std::optional<std::vector<std::string>> &method_param_types,
-                          const std::vector<size_t> &dex_priority = {});
+    FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
+                               const std::string &method_declare_class,
+                               const std::string &method_declare_name,
+                               const std::string &method_return_type,
+                               const std::optional<std::vector<std::string>> &method_param_types,
+                               const std::vector<size_t> &dex_priority = {});
 
     /**
      *

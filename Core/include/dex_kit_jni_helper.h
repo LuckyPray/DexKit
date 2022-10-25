@@ -331,14 +331,14 @@ jobjectArray FindSubClasses(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
-jobjectArray FindMethodOpPrefixSeq(JNIEnv *env,
-                                   jlong dexKitPtr,
-                                   jintArray op_prefix_seq,
-                                   jstring method_declare_class,
-                                   jstring method_name,
-                                   jstring method_return_type,
-                                   jobjectArray method_param_types,
-                                   jintArray dex_priority) {
+jobjectArray FindMethodUsingOpPrefixSeq(JNIEnv *env,
+                                        jlong dexKitPtr,
+                                        jintArray op_prefix_seq,
+                                        jstring method_declare_class,
+                                        jstring method_name,
+                                        jstring method_return_type,
+                                        jobjectArray method_param_types,
+                                        jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }

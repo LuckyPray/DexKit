@@ -277,16 +277,17 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass c
 }
 
 DEXKIT_JNI jobjectArray
-Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodOpPrefixSeq(JNIEnv *env, jclass clazz,
-                                                                  jlong native_ptr,
-                                                                  jintArray op_prefix_seq,
-                                                                  jstring method_declare_class,
-                                                                  jstring method_name,
-                                                                  jstring method_return_type,
-                                                                  jobjectArray method_param_types,
-                                                                  jintArray dex_priority) {
-    return FindMethodOpPrefixSeq(env, native_ptr, op_prefix_seq, method_declare_class, method_name,
-                                 method_return_type, method_param_types, dex_priority);
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindUsingMethodOpPrefixSeq(JNIEnv *env, jclass clazz,
+                                                                       jlong native_ptr,
+                                                                       jintArray op_prefix_seq,
+                                                                       jstring method_declare_class,
+                                                                       jstring method_name,
+                                                                       jstring method_return_type,
+                                                                       jobjectArray method_param_types,
+                                                                       jintArray dex_priority) {
+    return FindMethodUsingOpPrefixSeq(env, native_ptr, op_prefix_seq, method_declare_class,
+                                      method_name,
+                                      method_return_type, method_param_types, dex_priority);
 }
 
 extern "C"

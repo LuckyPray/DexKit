@@ -1077,12 +1077,12 @@ DexKit::FindSubClasses(const std::string &parent_class,
 }
 
 std::vector<std::string>
-DexKit::FindMethodOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
-                              const std::string &method_declare_class,
-                              const std::string &method_declare_name,
-                              const std::string &method_return_type,
-                              const std::optional<std::vector<std::string>> &method_param_types,
-                              const std::vector<size_t> &dex_priority) {
+DexKit::FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
+                                   const std::string &method_declare_class,
+                                   const std::string &method_declare_name,
+                                   const std::string &method_return_type,
+                                   const std::optional<std::vector<std::string>> &method_param_types,
+                                   const std::vector<size_t> &dex_priority) {
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);

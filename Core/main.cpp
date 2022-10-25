@@ -143,7 +143,7 @@ int main() {
     // returns all method descriptors matching the prefix of a sequence of bytecode operations
     // result ex.
     // {"Lcom/bumptech/glide/d/c;-><init>()V"}
-    auto usedOpPrefixMethods = dexKit.FindMethodOpPrefixSeq(
+    auto usedOpPrefixMethods = dexKit.FindMethodUsingOpPrefixSeq(
             {0x70, 0x22, 0x70, 0x5b, 0x22, 0x70, 0x5b, 0x0e},
             "",
             "",
