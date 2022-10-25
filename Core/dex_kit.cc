@@ -328,6 +328,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                          const std::string &caller_method_declare_name,
                          const std::string &caller_method_return_type,
                          const std::optional<std::vector<std::string>> &caller_method_param_types,
+                         bool unique_result,
                          const std::vector<size_t> &dex_priority) {
     // be invoked method
     auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class, method_declare_name,
@@ -358,7 +359,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &class_desc, &method_name, &return_desc, &param_descs, &match_shorty, &match_any_param,
                         &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty,
-                        &caller_match_any_param, &need_caller_match]() {
+                        &caller_match_any_param, &need_caller_match, unique_result]() {
                     InitCached(dex_idx, fDefault);
                     auto &method_codes = method_codes_[dex_idx];
                     auto &class_method_ids = class_method_ids_[dex_idx];
@@ -457,7 +458,9 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                                                           return_type, param_types, match_any_param)) {
                                             auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
                                             result.emplace_back(descriptor);
-                                            goto label;
+                                            if (unique_result) {
+                                                goto label;
+                                            }
                                         }
                                         break;
                                     }
@@ -493,6 +496,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                            const std::string &be_called_method_declare_name,
                            const std::string &be_called_method_return_type,
                            const std::optional<std::vector<std::string>> &invoking_method_param_types,
+                           bool unique_result,
                            const std::vector<size_t> &dex_priority) {
 
     // caller method
@@ -523,7 +527,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty, &caller_match_any_param,
                         &be_called_class_desc, &be_called_method_name, &be_called_return_desc, &be_called_param_descs,
-                        &be_called_match_shorty, &be_called_match_any_param]() {
+                        &be_called_match_shorty, &be_called_match_any_param, unique_result]() {
                     InitCached(dex_idx, fDefault);
                     auto &method_codes = method_codes_[dex_idx];
                     auto &class_method_ids = class_method_ids_[dex_idx];
@@ -586,7 +590,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                         be_called_param_types.emplace_back(type);
                     }
 
-                    std::map<dex::u2, std::set<dex::u2>> index_map;
+                    std::map<dex::u2, std::vector<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (!IsMethodMatch(dex_idx, method_idx, caller_class_idx, caller_match_shorty,
@@ -621,7 +625,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                                                           be_called_method_name,
                                                           be_called_return_type, be_called_param_types,
                                                           be_called_match_any_param)) {
-                                            index_map[method_idx].emplace(index);
+                                            index_map[method_idx].emplace_back(index);
                                         }
                                         break;
                                     }
@@ -634,6 +638,10 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                     }
                     std::map<std::string, std::vector<std::string>> result;
                     for (auto &[key, value]: index_map) {
+                        if (unique_result) {
+                            std::sort(value.begin(), value.end());
+                            value.erase(std::unique(value.begin(), value.end()), value.end());
+                        }
                         auto caller_descriptor = GetMethodDescriptor(dex_idx, key);
                         std::vector<std::string> be_called_descriptors;
                         for (auto v: value) {
@@ -664,6 +672,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                              const std::string &caller_method_declare_name,
                              const std::string &caller_method_return_type,
                              const std::optional<std::vector<std::string>> &caller_method_param_types,
+                             bool unique_result,
                              const std::vector<size_t> &dex_priority) {
     // be getter field
     auto extract_tuple = ExtractFieldDescriptor(field_descriptor, field_declare_class, field_declare_name, field_type);
@@ -691,7 +700,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &field_declare_class_desc, &field_name, &field_type_desc, &used_flags,
                         &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty,
-                        &caller_match_any_param, &need_caller_match]() {
+                        &caller_match_any_param, &need_caller_match, unique_result]() {
                     InitCached(dex_idx, fDefault);
                     auto &method_codes = method_codes_[dex_idx];
                     auto &class_method_ids = class_method_ids_[dex_idx];
@@ -743,7 +752,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                         caller_param_types.emplace_back(type);
                     }
 
-                    std::map<dex::u2, std::set<dex::u2>> index_map;
+                    std::map<dex::u2, std::vector<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (need_caller_match) {
@@ -774,7 +783,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                                     auto index = ReadShort(ptr);
                                     if (IsFieldMatch(dex_idx, index, declared_class_idx, field_name,
                                                      field_type_idx)) {
-                                        index_map[method_idx].emplace(index);
+                                        index_map[method_idx].emplace_back(index);
                                     }
                                 }
                                 p += width;
@@ -783,6 +792,10 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                     }
                     std::map<std::string, std::vector<std::string>> result;
                     for (auto &[key, value]: index_map) {
+                        if (unique_result) {
+                            std::sort(value.begin(), value.end());
+                            value.erase(std::unique(value.begin(), value.end()), value.end());
+                        }
                         auto caller_descriptor = GetMethodDescriptor(dex_idx, key);
                         std::vector<std::string> be_called_descriptors;
                         for (auto v: value) {
@@ -810,6 +823,7 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
                               const std::string &method_declare_name,
                               const std::string &method_return_type,
                               const std::optional<std::vector<std::string>> &method_param_types,
+                              bool unique_result,
                               const std::vector<size_t> &dex_priority) {
     // caller method
     auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
@@ -826,7 +840,7 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &used_utf8_string, &advanced_match,
-                        &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty, caller_match_any_param]() {
+                        &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty, caller_match_any_param, unique_result]() {
                     InitCached(dex_idx, fDefault);
                     auto &strings = strings_[dex_idx];
                     auto &method_codes = method_codes_[dex_idx];
@@ -920,7 +934,9 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
                                         if (matched_strings.find(index) != matched_strings.end()) {
                                             auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
                                             result.emplace_back(descriptor);
-                                            goto label;
+                                            if (unique_result) {
+                                                goto label;
+                                            }
                                         }
                                         break;
                                     }

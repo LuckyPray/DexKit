@@ -196,11 +196,13 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass
                                                              jstring caller_method_declare_name,
                                                              jstring caller_method_return_type,
                                                              jobjectArray caller_method_param_types,
+                                                             jboolean unique_result,
                                                              jintArray dex_priority) {
     return FindMethodCaller(env, native_ptr, method_descriptor, method_declare_class,
                             method_declare_name, method_return_type, method_param_types,
                             caller_method_declare_class, caller_method_declare_name,
-                            caller_method_return_type, caller_method_param_types, dex_priority);
+                            caller_method_return_type, caller_method_param_types, unique_result,
+                            didex_priority);
 }
 
 DEXKIT_JNI jobject
@@ -215,12 +217,13 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jcla
                                                                jstring be_called_method_declare_name,
                                                                jstring be_called_method_return_type,
                                                                jobjectArray be_called_method_param_types,
+                                                               jboolean unique_result,
                                                                jintArray dex_priority) {
     return FindMethodInvoking(env, native_ptr, method_descriptor, method_declare_class,
                               method_declare_name, method_return_type, method_param_types,
                               be_called_method_declare_class, be_called_method_declare_name,
                               be_called_method_return_type, be_called_method_param_types,
-                              dex_priority);
+                              unique_result, dex_priority);
 }
 
 DEXKIT_JNI jobject
@@ -235,11 +238,12 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jc
                                                                  jstring caller_method_name,
                                                                  jstring caller_method_return_type,
                                                                  jobjectArray caller_method_param_types,
+                                                                 jboolean unique_result,
                                                                  jintArray dex_priority) {
     return FindMethodUsingField(env, native_ptr, field_descriptor, field_declare_class, field_name,
                                 field_type, used_flags, caller_method_declare_class,
                                 caller_method_name, caller_method_return_type,
-                                caller_method_param_types, dex_priority);
+                                caller_method_param_types, unique_result, dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
@@ -251,9 +255,11 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                                                   jstring method_name,
                                                                   jstring method_return_type,
                                                                   jobjectArray method_param_types,
+                                                                  jboolean unique_result,
                                                                   jintArray dex_priority) {
     return FindMethodUsingString(env, native_ptr, used_string, advanced_match, method_declare_class,
-                                 method_name, method_return_type, method_param_types, dex_priority);
+                                 method_name, method_return_type, method_param_types, unique_result,
+                                 dex_priority);
 }
 
 DEXKIT_JNI jobjectArray

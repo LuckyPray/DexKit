@@ -87,6 +87,7 @@ jobjectArray FindMethodCaller(JNIEnv *env,
                               jstring caller_method_name,
                               jstring caller_method_return_type,
                               jobjectArray caller_method_param_types,
+                              jboolean unique_result,
                               jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -120,6 +121,7 @@ jobjectArray FindMethodCaller(JNIEnv *env,
                                         callerMethodName,
                                         callerMethodReturnType,
                                         callerParamTypes,
+                                        unique_result,
                                         dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
@@ -142,6 +144,7 @@ jobject FindMethodInvoking(JNIEnv *env,
                            jstring be_called_method_name,
                            jstring be_called_method_return_type,
                            jobjectArray be_called_method_param_types,
+                           jboolean unique_result,
                            jintArray dex_priority) {
     if (!dexKitPtr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
@@ -176,6 +179,7 @@ jobject FindMethodInvoking(JNIEnv *env,
                                           beCalledMethodDeclareName,
                                           beCalledMethodReturnType,
                                           beCalledMethodParamTypes,
+                                          unique_result,
                                           dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
@@ -198,6 +202,7 @@ jobject FindMethodUsingField(JNIEnv *env,
                              jstring caller_method_name,
                              jstring caller_method_return_type,
                              jobjectArray caller_method_param_types,
+                             jboolean unique_result,
                              jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -230,6 +235,7 @@ jobject FindMethodUsingField(JNIEnv *env,
                                             callerMethodName,
                                             callerMethodReturnType,
                                             callerParamTypes,
+                                            unique_result,
                                             dexPriority);
     env->ReleaseStringUTFChars(field_descriptor, fieldDescriptor);
     env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
@@ -249,6 +255,7 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
                                    jstring method_name,
                                    jstring method_return_type,
                                    jobjectArray method_param_types,
+                                   jboolean unique_result,
                                    jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -272,6 +279,7 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
                                              methodName,
                                              methodReturnType,
                                              ParamTypes,
+                                             unique_result,
                                              dexPriority);
     env->ReleaseStringUTFChars(used_utf8_string, usedUtf8String);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);

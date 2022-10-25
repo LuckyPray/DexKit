@@ -111,6 +111,7 @@ public:
                      const std::string &caller_method_declare_name,
                      const std::string &caller_method_return_type,
                      const std::optional<std::vector<std::string>> &caller_method_param_types,
+                     bool unique_result = true,
                      const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -144,6 +145,7 @@ public:
                        const std::string &be_called_method_declare_name,
                        const std::string &be_called_method_return_type,
                        const std::optional<std::vector<std::string>> &be_called_method_param_types,
+                       bool unique_result = true,
                        const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -172,6 +174,7 @@ public:
                          const std::string &caller_method_declare_name,
                          const std::string &caller_method_return_type,
                          const std::optional<std::vector<std::string>> &caller_method_param_types,
+                         bool unique_result = true,
                          const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -194,6 +197,7 @@ public:
                           const std::string &method_declare_name,
                           const std::string &method_return_type,
                           const std::optional<std::vector<std::string>> &method_param_types,
+                          bool unique_result = true,
                           const std::vector<size_t> &dex_priority = {});
 
     /**

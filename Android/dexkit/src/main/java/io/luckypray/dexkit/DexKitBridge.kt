@@ -95,6 +95,7 @@ class DexKitBridge : Closeable {
         callerMethodName: String = "",
         callerMethodReturnType: String = "",
         callerMethodParameterTypes: Array<String>? = null,
+        uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
     ): List<DexMethodDescriptor> {
         return nativeFindMethodCaller(
@@ -108,6 +109,7 @@ class DexKitBridge : Closeable {
             callerMethodName,
             callerMethodReturnType,
             callerMethodParameterTypes,
+            uniqueResult,
             dexPriority
         ).map { DexMethodDescriptor(it) }
     }
@@ -122,6 +124,7 @@ class DexKitBridge : Closeable {
         beCalledMethodName: String = "",
         beCalledMethodReturnType: String = "",
         beCalledMethodParamTypes: Array<String>? = null,
+        uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<DexMethodDescriptor, List<DexMethodDescriptor>> {
         return nativeFindMethodInvoking(
@@ -135,6 +138,7 @@ class DexKitBridge : Closeable {
             beCalledMethodName,
             beCalledMethodReturnType,
             beCalledMethodParamTypes,
+            uniqueResult,
             dexPriority
         ).mapKeys { DexMethodDescriptor(it.key) }
             .mapValues { it.value.map { DexMethodDescriptor(it) } }
@@ -150,6 +154,7 @@ class DexKitBridge : Closeable {
         callerMethodName: String = "",
         callerMethodReturnType: String = "",
         callerMethodParamTypes: Array<String>? = null,
+        uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<DexMethodDescriptor, List<DexFieldDescriptor>> {
         return nativeFindMethodUsingField(
@@ -163,6 +168,7 @@ class DexKitBridge : Closeable {
             callerMethodName,
             callerMethodReturnType,
             callerMethodParamTypes,
+            uniqueResult,
             dexPriority
         ).mapKeys { DexMethodDescriptor(it.key) }
             .mapValues { it.value.map { DexFieldDescriptor(it) } }
@@ -175,6 +181,7 @@ class DexKitBridge : Closeable {
         methodName: String = "",
         methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
+        uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
     ): List<DexMethodDescriptor> {
         return nativeFindMethodUsingString(
@@ -185,6 +192,7 @@ class DexKitBridge : Closeable {
             methodName,
             methodReturnType,
             methodParamTypes,
+            uniqueResult,
             dexPriority
         ).map { DexMethodDescriptor(it) }
     }
@@ -339,6 +347,7 @@ class DexKitBridge : Closeable {
             callerMethodName: String,
             callerMethodReturnType: String,
             callerMethodParameterTypes: Array<String>?,
+            uniqueResult: Boolean,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -354,6 +363,7 @@ class DexKitBridge : Closeable {
             beCalledMethodName: String,
             beCalledMethodReturnType: String,
             beCalledMethodParamTypes: Array<String>?,
+            uniqueResult: Boolean,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -369,6 +379,7 @@ class DexKitBridge : Closeable {
             callerMethodName: String,
             callerMethodReturnType: String,
             callerMethodParamTypes: Array<String>?,
+            uniqueResult: Boolean,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -381,6 +392,7 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            uniqueResult: Boolean,
             dexPriority: IntArray?
         ): Array<String>
 
