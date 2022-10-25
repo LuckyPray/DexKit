@@ -64,8 +64,8 @@ dependencies {
 - `DexKitBridge.create(apkPath)`: normally, please use it.
 - `DexKitBridge.create(classLoader)`: for reinforced apps, used classLoader create.
 
-> **Note**: for normally apps, there is a problem with using `DexKitBridge.create(classLoader)` may be a problem.
-> Because cookies may have odex instructions, DexKit cannot process directives like `invoke-virtual-quick`.
+> **Note**: for normally apps, using `DexKitBridge.create(classLoader, true)` may be a problem.
+> Because the dexfile in cookies may be modified (dex2oat), currently DexKit cannot be parsed odex's `quick` instruction.
 
 ```java 
 import io.luckypry.dexkit.DexKitBridge;
