@@ -13,8 +13,8 @@ class DexKitBridge : Closeable {
         token = nativeInitDexKit(apkPath)
     }
 
-    private constructor(classLoader: ClassLoader) {
-        token = nativeInitDexKitByClassLoader(classLoader)
+    private constructor(classLoader: ClassLoader, useCookieDexFile: Boolean) {
+        token = nativeInitDexKitByClassLoader(classLoader, useCookieDexFile)
     }
 
     val isValid
@@ -282,9 +282,17 @@ class DexKitBridge : Closeable {
             return if (helper.isValid) helper else null
         }
 
+        /**
+         *
+         * @param loader class loader
+         * @param useCookieDexFile
+         * if true, will try to use cookie to load dex file. else will use dex file path.
+         * if cookies file contains CompactDex, will use apkPath to load dex.
+         * if contains OatDex, Some functions may not work properly.
+         */
         @JvmStatic
-        fun create(loader: ClassLoader): DexKitBridge? {
-            val helper = DexKitBridge(loader)
+        fun create(loader: ClassLoader, useCookieDexFile: Boolean): DexKitBridge? {
+            val helper = DexKitBridge(loader, useCookieDexFile)
             return if (helper.isValid) helper else null
         }
 
@@ -292,7 +300,7 @@ class DexKitBridge : Closeable {
         private external fun nativeInitDexKit(apkPath: String): Long
 
         @JvmStatic
-        private external fun nativeInitDexKitByClassLoader(loader: ClassLoader): Long
+        private external fun nativeInitDexKitByClassLoader(loader: ClassLoader, useCookieDexFile: Boolean): Long
 
         @JvmStatic
         private external fun nativeSetThreadNum(nativePtr: Long, threadNum: Int)

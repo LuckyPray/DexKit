@@ -81,7 +81,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz
 
 DEXKIT_JNI jlong
 Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env, jclass clazz,
-                                                                    jobject class_loader) {
+                                                                    jobject class_loader,
+                                                                    jboolean use_cookie_dex_file) {
     if (!class_loader) {
         return 0;
     }
@@ -106,21 +107,23 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
                 env->GetLongArrayElements(cookie, nullptr));
         LOGI("dex_file_length -> %d", dex_file_length);
         std::vector<const DexFile *> dex_images;
-        for (int j = 0; j < dex_file_length; ++j) {
-            const auto *dex_file = dex_files[j];
-            if (!CheckPoint((void *) dex_file) ||
-                    !CheckPoint((void *) dex_file->begin_) ||
-                    dex_file->size_ < sizeof(dex::Header)) {
-                LOGD("dex_file %d is invalid", j);
-                continue;
-            }
-            if (IsCompactDexFile(dex_file->begin_)) {
-                LOGD("skip compact dex");
-                dex_images.clear();
-                break;
-            } else {
-                LOGD("push standard dex file %d, image size: %zu", j, dex_file->size_);
-                dex_images.emplace_back(dex_file);
+        if (use_cookie_dex_file) {
+            for (int j = 0; j < dex_file_length; ++j) {
+                const auto *dex_file = dex_files[j];
+                if (!CheckPoint((void *) dex_file) ||
+                        !CheckPoint((void *) dex_file->begin_) ||
+                        dex_file->size_ < sizeof(dex::Header)) {
+                    LOGD("dex_file %d is invalid", j);
+                    continue;
+                }
+                if (IsCompactDexFile(dex_file->begin_)) {
+                    LOGD("skip compact dex");
+                    dex_images.clear();
+                    break;
+                } else {
+                    LOGD("push standard dex file %d, image size: %zu", j, dex_file->size_);
+                    dex_images.emplace_back(dex_file);
+                }
             }
         }
         if (dex_images.empty()) {
