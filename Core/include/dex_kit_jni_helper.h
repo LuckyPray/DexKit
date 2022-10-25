@@ -363,12 +363,12 @@ jobjectArray FindMethodUsingOpPrefixSeq(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKit->FindMethodOpPrefixSeq(opPrefixSeq,
-                                             methodDeclareClass,
-                                             methodName,
-                                             methodReturnType,
-                                             ParamTypes,
-                                             dexPriority);
+    auto res = dexKit->FindMethodUsingOpCodeSeq(opPrefixSeq,
+                                                methodDeclareClass,
+                                                methodName,
+                                                methodReturnType,
+                                                ParamTypes,
+                                                dexPriority);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
