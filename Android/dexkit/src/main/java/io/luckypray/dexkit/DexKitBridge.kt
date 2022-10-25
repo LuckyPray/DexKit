@@ -230,7 +230,7 @@ class DexKitBridge : Closeable {
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
     ): List<DexMethodDescriptor> {
-        return nativeFindUsingMethodOpPrefixSeq(
+        return nativeFindMethodUsingOpPrefixSeq(
             token,
             opPrefixSeq,
             methodDeclareClass,
@@ -414,7 +414,7 @@ class DexKitBridge : Closeable {
         ): Array<String>
 
         @JvmStatic
-        private external fun nativeFindUsingMethodOpPrefixSeq(
+        private external fun nativeFindMethodUsingOpPrefixSeq(
             nativePtr: Long,
             opPrefixSeq: IntArray,
             methodDeclareClass: String,
