@@ -17,12 +17,6 @@ jintArray U8Vec2JIntArr(JNIEnv *env, const std::vector<uint8_t> &vector);
 
 jobject EmptyJMap(JNIEnv *env);
 
-jlong CreateDexKitInstance(JNIEnv *env, jstring apkPath) {
-    auto path = env->GetStringUTFChars(apkPath, nullptr);
-    auto dexKit = new dexkit::DexKit(path);
-    return reinterpret_cast<jlong>(dexKit);
-}
-
 void SetThreadNum(JNIEnv *env, jlong dexKitPtr, jint threadNum) {
     if (!dexKitPtr) {
         return;
