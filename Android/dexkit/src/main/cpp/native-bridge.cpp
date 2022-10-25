@@ -202,7 +202,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass
                             method_declare_name, method_return_type, method_param_types,
                             caller_method_declare_class, caller_method_declare_name,
                             caller_method_return_type, caller_method_param_types, unique_result,
-                            didex_priority);
+                            dex_priority);
 }
 
 DEXKIT_JNI jobject
