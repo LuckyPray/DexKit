@@ -283,7 +283,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass c
 }
 
 DEXKIT_JNI jobjectArray
-Java_io_luckypray_dexkit_DexKitBridge_nativeFindUsingMethodOpPrefixSeq(JNIEnv *env, jclass clazz,
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpPrefixSeq(JNIEnv *env, jclass clazz,
                                                                        jlong native_ptr,
                                                                        jintArray op_prefix_seq,
                                                                        jstring method_declare_class,
