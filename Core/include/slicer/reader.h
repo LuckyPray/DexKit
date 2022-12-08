@@ -108,6 +108,7 @@ private:
     ir::String *GetString(dex::u4 index);
 
     // Parsing annotations
+public:
     ir::AnnotationsDirectory *ExtractAnnotations(dex::u4 offset);
 
     ir::Annotation *ExtractAnnotationItem(dex::u4 offset);
@@ -132,7 +133,7 @@ private:
     ir::EncodedArray *ParseEncodedArray(const dex::u1 **pptr);
 
     ir::EncodedArray *ExtractEncodedArray(dex::u4 offset);
-
+private:
     // Parse root .dex structures
     ir::Class *ParseClass(dex::u4 index);
 

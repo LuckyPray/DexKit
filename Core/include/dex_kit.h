@@ -23,6 +23,7 @@ constexpr dex::u4 fType = 0x0004;
 constexpr dex::u4 fProto = 0x0008;
 constexpr dex::u4 fField = 0x0010;
 constexpr dex::u4 fMethod = 0x0020;
+constexpr dex::u4 fAnnotation = 0x0040;
 constexpr dex::u4 fOpCodeSeq = 0x1000;
 constexpr dex::u4 fDefault = fHeader | fString | fType | fProto | fMethod;
 
@@ -179,7 +180,7 @@ public:
 
     /**
      * @brief find method used utf8 string
-     * @param used_utf8_string used utf8 string
+     * @param using_utf8_string used utf8 string
      * @param advanced_match If true, '^' and '$' can be used to restrict matches, like regular expressions
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
@@ -191,7 +192,7 @@ public:
      * @return method descriptor
      */
     std::vector<std::string>
-    FindMethodUsingString(const std::string &used_utf8_string,
+    FindMethodUsingString(const std::string &using_utf8_string,
                           bool advanced_match,
                           const std::string &method_declare_class,
                           const std::string &method_declare_name,
@@ -199,6 +200,28 @@ public:
                           const std::optional<std::vector<std::string>> &method_param_types,
                           bool unique_result = true,
                           const std::vector<size_t> &dex_priority = {});
+
+    std::vector<std::string>
+    FindClassUsingAnnotation(const std::string &annotation_class,
+                             const std::string &annotation_using_string,
+                             const std::vector<size_t> &dex_priority = {});
+
+    std::vector<std::string>
+    FindFieldUsingAnnotation(const std::string &annotation_class,
+                             const std::string &annotation_using_string,
+                             const std::string &field_declare_class,
+                             const std::string &field_declare_name,
+                             const std::string &field_type,
+                             const std::vector<size_t> &dex_priority = {});
+
+    std::vector<std::string>
+    FindMethodUsingAnnotation(const std::string &annotation_class,
+                              const std::string &annotation_using_string,
+                              const std::string &method_declare_class,
+                              const std::string &method_declare_name,
+                              const std::string &method_return_type,
+                              const std::optional<std::vector<std::string>> &method_param_types,
+                              const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find method by multiple conditions
@@ -287,6 +310,7 @@ public:
                        const std::string &method_return_type,
                        const std::optional<std::vector<std::string>> &method_param_types,
                        const std::vector<size_t> &dex_priority = {});
+
     size_t GetDexNum() {
         return dex_images_.size();
     }
@@ -307,6 +331,7 @@ private:
     std::vector<std::vector<const dex::TypeList *>> proto_type_list_;
     std::vector<std::vector<std::vector<uint8_t>>> method_opcode_seq_;
     std::vector<std::vector<bool>> method_opcode_seq_init_flag_;
+    std::vector<std::vector<const ir::AnnotationsDirectory *>> class_annotations_;
 
     std::vector<std::string> cache_;
 

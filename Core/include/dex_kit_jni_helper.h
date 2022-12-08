@@ -249,7 +249,7 @@ jobject FindMethodUsingField(JNIEnv *env,
 
 jobjectArray FindMethodUsingString(JNIEnv *env,
                                    jlong dexKitPtr,
-                                   jstring used_utf8_string,
+                                   jstring using_string,
                                    jboolean advanced_match,
                                    jstring method_declare_class,
                                    jstring method_name,
@@ -261,7 +261,7 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
     auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
-    auto usedUtf8String = env->GetStringUTFChars(used_utf8_string, nullptr);
+    auto usedUtf8String = env->GetStringUTFChars(using_string, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
     auto methodReturnType = env->GetStringUTFChars(method_return_type, nullptr);
@@ -281,7 +281,106 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
                                              ParamTypes,
                                              unique_result,
                                              dexPriority);
-    env->ReleaseStringUTFChars(used_utf8_string, usedUtf8String);
+    env->ReleaseStringUTFChars(using_string, usedUtf8String);
+    env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
+    env->ReleaseStringUTFChars(method_name, methodName);
+    env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    return StrVec2JStrArr(env, res);
+}
+
+jobjectArray FindClassUsingAnnotation(JNIEnv *env,
+                                      jlong dexKitPtr,
+                                      jstring annotation_class,
+                                      jstring annotation_using_string,
+                                      jintArray dex_priority) {
+    if (!dexKitPtr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    auto annotationClass = env->GetStringUTFChars(annotation_class, nullptr);
+    auto annotationUsingString = env->GetStringUTFChars(annotation_using_string, nullptr);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
+    auto res = dexKit->FindClassUsingAnnotation(annotationClass,
+                                                annotationUsingString,
+                                                dexPriority);
+    env->ReleaseStringUTFChars(annotation_class, annotationClass);
+    env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
+    return StrVec2JStrArr(env, res);
+}
+
+jobjectArray FindFieldUsingAnnotation(JNIEnv *env,
+                                      jlong dexKitPtr,
+                                      jstring annotation_class,
+                                      jstring annotation_using_string,
+                                      jstring field_declare_class,
+                                      jstring field_name,
+                                      jstring field_type,
+                                      jintArray dex_priority) {
+    if (!dexKitPtr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    auto annotationClass = env->GetStringUTFChars(annotation_class, nullptr);
+    auto annotationUsingString = env->GetStringUTFChars(annotation_using_string, nullptr);
+    auto fieldDeclareClass = env->GetStringUTFChars(field_declare_class, nullptr);
+    auto fieldName = env->GetStringUTFChars(field_name, nullptr);
+    auto fieldType = env->GetStringUTFChars(field_type, nullptr);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
+    auto res = dexKit->FindFieldUsingAnnotation(annotationClass,
+                                                annotationUsingString,
+                                                fieldDeclareClass,
+                                                fieldName,
+                                                fieldType,
+                                                dexPriority);
+    env->ReleaseStringUTFChars(annotation_class, annotationClass);
+    env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
+    env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
+    env->ReleaseStringUTFChars(field_name, fieldName);
+    env->ReleaseStringUTFChars(field_type, fieldType);
+    return StrVec2JStrArr(env, res);
+}
+
+jobjectArray FindMethodUsingAnnotation(JNIEnv *env,
+                                       jlong dexKitPtr,
+                                       jstring annotation_class,
+                                       jstring annotation_using_string,
+                                       jstring method_declare_class,
+                                       jstring method_name,
+                                       jstring method_return_type,
+                                       jobjectArray method_param_types,
+                                       jintArray dex_priority) {
+    if (!dexKitPtr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    auto annotationClass = env->GetStringUTFChars(annotation_class, nullptr);
+    auto annotationUsingString = env->GetStringUTFChars(annotation_using_string, nullptr);
+    auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
+    auto methodName = env->GetStringUTFChars(method_name, nullptr);
+    auto methodReturnType = env->GetStringUTFChars(method_return_type, nullptr);
+    auto ParamTypes = dexkit::null_param;
+    if (method_param_types != NULL) {
+        ParamTypes = JStrArr2StrVec(env, method_param_types);
+    }
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
+    auto res = dexKit->FindMethodUsingAnnotation(annotationClass,
+                                                 annotationUsingString,
+                                                 methodDeclareClass,
+                                                 methodName,
+                                                 methodReturnType,
+                                                 ParamTypes,
+                                                 dexPriority);
+    env->ReleaseStringUTFChars(annotation_class, annotationClass);
+    env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);

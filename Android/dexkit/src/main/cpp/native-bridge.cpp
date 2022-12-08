@@ -29,7 +29,7 @@ struct DexFile {
 static bool IsCompactDexFile(const void *image) {
     const auto *header = reinterpret_cast<const struct dex::Header *>(image);
     if (header->magic[0] == 'c' && header->magic[1] == 'd' &&
-            header->magic[2] == 'e' && header->magic[3] == 'x') {
+        header->magic[2] == 'e' && header->magic[3] == 'x') {
         return true;
     }
     return false;
@@ -111,8 +111,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
             for (int j = 0; j < dex_file_length; ++j) {
                 const auto *dex_file = dex_files[j];
                 if (!CheckPoint((void *) dex_file) ||
-                        !CheckPoint((void *) dex_file->begin_) ||
-                        dex_file->size_ < sizeof(dex::Header)) {
+                    !CheckPoint((void *) dex_file->begin_) ||
+                    dex_file->size_ < sizeof(dex::Header)) {
                     LOGD("dex_file %d is invalid", j);
                     continue;
                 }
@@ -262,6 +262,45 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                  dex_priority);
 }
 
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindClassUsingAnnotation(JNIEnv *env, jclass clazz,
+                                                                     jlong native_ptr,
+                                                                     jstring annotation_class,
+                                                                     jstring annotation_using_string,
+                                                                     jintArray dex_priority) {
+    return FindClassUsingAnnotation(env, native_ptr, annotation_class, annotation_using_string,
+                                    dex_priority);
+}
+
+DEXKIT_JNI jobjectArray
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindFieldUsingAnnotation(JNIEnv *env, jclass clazz,
+                                                                     jlong native_ptr,
+                                                                     jstring annotation_class,
+                                                                     jstring annotation_using_string,
+                                                                     jstring field_declare_class,
+                                                                     jstring field_name,
+                                                                     jstring field_type,
+                                                                     jintArray dex_priority) {
+    return FindFieldUsingAnnotation(env, native_ptr, annotation_class, annotation_using_string,
+                                    field_declare_class, field_name, field_type, dex_priority);
+}
+
+DEXKIT_JNI jobjectArray
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingAnnotation(JNIEnv *env, jclass clazz,
+                                                                      jlong native_ptr,
+                                                                      jstring annotation_class,
+                                                                      jstring annotation_using_string,
+                                                                      jstring method_declare_class,
+                                                                      jstring method_name,
+                                                                      jstring method_return_type,
+                                                                      jobjectArray method_param_types,
+                                                                      jintArray dex_priority) {
+    return FindMethodUsingAnnotation(env, native_ptr, annotation_class, annotation_using_string,
+                                     method_declare_class, method_name, method_return_type,
+                                     method_param_types, dex_priority);
+}
+
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz,
                                                        jlong native_ptr,
@@ -296,8 +335,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpPrefixSeq(JNIEnv *e
                                       method_return_type, method_param_types, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpCodeSeq(JNIEnv *env, jclass clazz,
                                                                      jlong native_ptr,
                                                                      jintArray op_seq,
@@ -310,8 +348,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpCodeSeq(JNIEnv *env
                                     method_return_type, method_param_types, dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobject JNICALL
+DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodeSeq(JNIEnv *env, jclass clazz,
                                                                jlong native_ptr,
                                                                jstring method_descriptor,

@@ -6,6 +6,7 @@
 #include "opcode_util.h"
 #include "code_format.h"
 #include "kmp.h"
+#include "annotation_util.h"
 #include <algorithm>
 
 namespace dexkit {
@@ -699,8 +700,8 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &field_declare_class_desc, &field_name, &field_type_desc, &used_flags,
-                        &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty,
-                        &caller_match_any_param, &need_caller_match, unique_result]() {
+                        &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs,
+                        &caller_match_shorty, &caller_match_any_param, &need_caller_match, unique_result]() {
                     InitCached(dex_idx, fDefault);
                     auto &method_codes = method_codes_[dex_idx];
                     auto &class_method_ids = class_method_ids_[dex_idx];
@@ -817,7 +818,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
 }
 
 std::vector<std::string>
-DexKit::FindMethodUsingString(const std::string &used_utf8_string,
+DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                               bool advanced_match,
                               const std::string &method_declare_class,
                               const std::string &method_declare_name,
@@ -839,8 +840,9 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
     std::vector<std::future<std::vector<std::string>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
-                [this, dex_idx, &used_utf8_string, &advanced_match,
-                        &caller_class_desc, &caller_method_name, &caller_return_desc, &caller_param_descs, &caller_match_shorty, caller_match_any_param, unique_result]() {
+                [this, dex_idx, &using_utf8_string, &advanced_match, &caller_class_desc, &caller_method_name,
+                        &caller_return_desc, &caller_param_descs, &caller_match_shorty, caller_match_any_param,
+                        unique_result]() {
                     InitCached(dex_idx, fDefault);
                     auto &strings = strings_[dex_idx];
                     auto &method_codes = method_codes_[dex_idx];
@@ -850,15 +852,15 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
 
                     uint8_t flag = 0;
                     if (advanced_match) {
-                        if (used_utf8_string[0] == '^') {
+                        if (using_utf8_string[0] == '^') {
                             flag |= 1;
                         }
-                        if (used_utf8_string[used_utf8_string.size() - 1] == '$') {
+                        if (using_utf8_string[using_utf8_string.size() - 1] == '$') {
                             flag |= 2;
                         }
                     }
-                    auto real_str = used_utf8_string.substr(flag & 1,
-                                                            used_utf8_string.size() - ((flag >> 1) + (flag & 1)));
+                    auto real_str = using_utf8_string.substr(flag & 1,
+                                                             using_utf8_string.size() - ((flag >> 1) + (flag & 1)));
                     std::set<uint32_t> matched_strings;
                     for (int str_idx = 0; str_idx < strings.size(); ++str_idx) {
                         auto &string = strings[str_idx];
@@ -951,6 +953,254 @@ DexKit::FindMethodUsingString(const std::string &used_utf8_string,
                     return result;
                 })
         );
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
+std::vector<std::string>
+DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
+                                 const std::string &annotation_using_string,
+                                 const std::vector<size_t> &dex_priority) {
+    std::string annotation_class_desc = GetClassDescriptor(annotation_class);
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+
+    for (auto &dex_idx: GetDexPriority(dex_priority)) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &annotation_class_desc, &annotation_using_string]() {
+                    InitCached(dex_idx, fDefault | fAnnotation);
+                    auto &strings = strings_[dex_idx];
+                    auto &type_names = type_names_[dex_idx];
+                    auto &class_annotations = class_annotations_[dex_idx];
+                    uint32_t lower = 0, upper = type_names.size();
+
+                    auto annotation_class_idx = dex::kNoIndex;
+                    if (!annotation_class_desc.empty()) {
+                        annotation_class_idx = FindTypeIdx(dex_idx, annotation_class_desc);
+                        if (annotation_class_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+
+                    std::vector<std::string> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        auto &annotations = class_annotations[c_idx];
+                        if (annotations == nullptr || annotations->class_annotation == nullptr) {
+                            continue;
+                        }
+                        bool find = FindAnnotationSetUsingString(annotations->class_annotation,
+                                                                 annotation_class_idx,
+                                                                 annotation_using_string);
+                        if (find) {
+                            auto descriptor = type_names[c_idx];
+                            result.emplace_back(descriptor);
+                        }
+                    }
+                    return result;
+                }
+        ));
+    }
+
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
+std::vector<std::string>
+DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
+                                 const std::string &annotation_using_string,
+                                 const std::string &field_declare_class,
+                                 const std::string &field_declare_name,
+                                 const std::string &field_type,
+                                 const std::vector<size_t> &dex_priority) {
+    std::string annotation_class_desc = GetClassDescriptor(annotation_class);
+
+    // be getter field
+    auto extract_tuple = ExtractFieldDescriptor({}, field_declare_class, field_declare_name, field_type);
+    std::string field_declare_class_desc = std::get<0>(extract_tuple);
+    std::string field_name = std::get<1>(extract_tuple);
+    std::string field_type_desc = std::get<2>(extract_tuple);
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+
+    for (auto &dex_idx: GetDexPriority(dex_priority)) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &annotation_class_desc, &annotation_using_string, &field_declare_class_desc,
+                        &field_name, &field_type_desc] {
+                    InitCached(dex_idx, fDefault | fAnnotation);
+                    auto &strings = strings_[dex_idx];
+                    auto &type_names = type_names_[dex_idx];
+                    auto &class_annotations = class_annotations_[dex_idx];
+                    uint32_t lower = 0, upper = type_names.size();
+
+                    auto annotation_class_idx = dex::kNoIndex;
+                    if (!annotation_class_desc.empty()) {
+                        annotation_class_idx = FindTypeIdx(dex_idx, annotation_class_desc);
+                        if (annotation_class_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+
+                    auto declared_class_idx = dex::kNoIndex;
+                    auto field_type_idx = dex::kNoIndex;
+                    if (!field_declare_class_desc.empty()) {
+                        declared_class_idx = FindTypeIdx(dex_idx, field_declare_class_desc);
+                        if (declared_class_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                        lower = declared_class_idx;
+                        upper = declared_class_idx + 1;
+                    }
+                    if (!field_type_desc.empty()) {
+                        field_type_idx = FindTypeIdx(dex_idx, field_type_desc);
+                        if (field_type_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+
+                    std::vector<std::string> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        auto &annotations = class_annotations[c_idx];
+                        if (annotations == nullptr) {
+                            continue;
+                        }
+                        for (auto &field_annotation: annotations->field_annotations) {
+                            auto field_idx = field_annotation->field_decl->orig_index;
+                            if (!IsFieldMatch(dex_idx, field_idx, declared_class_idx, field_name, field_type_idx)) {
+                                continue;
+                            }
+                            bool find = FindAnnotationSetUsingString(field_annotation->annotations,
+                                                                     annotation_class_idx,
+                                                                     annotation_using_string);
+                            if (find) {
+                                auto descriptor = GetFieldDescriptor(dex_idx, field_idx);
+                                result.emplace_back(descriptor);
+                            }
+                        }
+
+                    }
+                    return result;
+                }
+        ));
+    }
+
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
+std::vector<std::string>
+DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
+                                  const std::string &annotation_using_string,
+                                  const std::string &method_declare_class,
+                                  const std::string &method_declare_name,
+                                  const std::string &method_return_type,
+                                  const std::optional<std::vector<std::string>> &method_param_types,
+                                  const std::vector<size_t> &dex_priority) {
+    std::string annotation_class_desc = GetClassDescriptor(annotation_class);
+    // using annotation's method
+    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
+                                                 method_return_type, method_param_types);
+    std::string caller_class_desc = std::get<0>(extract_tuple);
+    std::string caller_method_name = std::get<1>(extract_tuple);
+    std::string caller_return_desc = std::get<2>(extract_tuple);
+    std::vector<std::string> caller_param_descs = std::get<3>(extract_tuple);
+    std::string caller_match_shorty = DescriptorToMatchShorty(caller_return_desc, caller_param_descs);
+    bool caller_match_any_param = method_param_types == null_param;
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+    for (auto &dex_idx: GetDexPriority(dex_priority)) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &annotation_class_desc, &annotation_using_string, &caller_class_desc, &caller_method_name,
+                        &caller_return_desc, &caller_param_descs, &caller_match_shorty, &caller_match_any_param]() {
+                    InitCached(dex_idx, fDefault | fAnnotation);
+                    auto &strings = strings_[dex_idx];
+                    auto &type_names = type_names_[dex_idx];
+                    auto &class_annotations = class_annotations_[dex_idx];
+                    uint32_t lower = 0, upper = type_names.size();
+
+                    auto annotation_class_idx = dex::kNoIndex;
+                    if (!annotation_class_desc.empty()) {
+                        annotation_class_idx = FindTypeIdx(dex_idx, annotation_class_desc);
+                        if (annotation_class_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+
+                    auto caller_class_idx = dex::kNoIndex;
+                    uint32_t caller_return_type = dex::kNoIndex;
+                    std::vector<uint32_t> caller_param_types;
+                    if (!caller_class_desc.empty()) {
+                        caller_class_idx = FindTypeIdx(dex_idx, caller_class_desc);
+                        if (caller_class_idx == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+                    if (caller_class_idx != dex::kNoIndex) {
+                        lower = caller_class_idx;
+                        upper = caller_class_idx + 1;
+                    }
+                    if (!caller_return_desc.empty()) {
+                        caller_return_type = FindTypeIdx(dex_idx, caller_return_desc);
+                        if (caller_return_type == dex::kNoIndex) {
+                            return std::vector<std::string>();
+                        }
+                    }
+                    for (auto &v: caller_param_descs) {
+                        uint32_t type = dex::kNoIndex;
+                        if (!v.empty()) {
+                            type = FindTypeIdx(dex_idx, v);
+                            if (type == dex::kNoIndex) {
+                                return std::vector<std::string>();
+                            }
+                        }
+                        caller_param_types.emplace_back(type);
+                    }
+
+                    std::vector<std::string> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        auto &annotations = class_annotations[c_idx];
+                        if (annotations == nullptr) {
+                            continue;
+                        }
+                        for (auto &method_annotation: annotations->method_annotations) {
+                            auto method_idx = method_annotation->method_decl->orig_index;
+                            if (!IsMethodMatch(dex_idx, method_idx, caller_class_idx, caller_match_shorty,
+                                               caller_method_name,
+                                               caller_return_type, caller_param_types, caller_match_any_param)) {
+                                continue;
+                            }
+                            bool find = FindAnnotationSetUsingString(method_annotation->annotations,
+                                                                     annotation_class_idx, annotation_using_string);
+                            if (find) {
+                                auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
+                                result.emplace_back(descriptor);
+                            }
+                        }
+                    }
+                    return result;
+                }
+        ));
     }
     std::vector<std::string> result;
     for (auto &f: futures) {
@@ -1382,6 +1632,7 @@ void DexKit::InitImages(int begin, int end) {
     proto_type_list_.resize(dex_images_.size());
     method_opcode_seq_.resize(dex_images_.size());
     method_opcode_seq_init_flag_.resize(dex_images_.size());
+    class_annotations_.resize(dex_images_.size());
 
     init_flags_.resize(dex_images_.size(), fHeader);
 }
@@ -1396,6 +1647,7 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     bool need_init_class_field_ids = (flag & fField) && ((dex_flag & fField) == 0);
     bool need_init_class_method_ids = (flag & fMethod) && ((dex_flag & fMethod) == 0);
     bool need_init_method_op_code_seq = (flag & fOpCodeSeq) && ((dex_flag & fOpCodeSeq) == 0);
+    bool need_init_annotations = (flag & fAnnotation) && ((dex_flag & fAnnotation) == 0);
 
     auto &reader = readers_[dex_idx];
     auto &strings = strings_[dex_idx];
@@ -1406,6 +1658,7 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     auto &proto_type_list = proto_type_list_[dex_idx];
     auto &method_opcode_seq = method_opcode_seq_[dex_idx];
     auto &method_opcode_seq_init_flag = method_opcode_seq_init_flag_[dex_idx];
+    auto &class_annotations = class_annotations_[dex_idx];
 
     if (need_init_strings) {
         strings.resize(reader.StringIds().size());
@@ -1450,7 +1703,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         dex_flag |= fField;
     }
 
-    if (need_init_class_method_ids || (need_init_method_op_code_seq && !(dex_flag & fMethod))) {
+    if (need_init_class_method_ids
+        || (need_init_annotations && (dex_flag & fMethod) == 0)
+        || (need_init_method_op_code_seq && (dex_flag & fMethod) == 0)) {
+
         class_method_ids.resize(reader.TypeIds().size());
         method_codes.resize(reader.MethodIds().size(), nullptr);
 
@@ -1501,6 +1757,75 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
             }
         }
         dex_flag |= fMethod;
+    }
+
+    if (need_init_annotations) {
+        class_annotations.resize(reader.TypeIds().size(), nullptr);
+
+        for (auto &class_def: reader.ClassDefs()) {
+            if (class_def.annotations_off == 0) {
+                continue;
+            }
+            auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
+            class_annotations[class_def.class_idx] = annotations;
+//            std::string findName = "BugHook";
+//            if (kmp::FindIndex(type_names[class_def.class_idx], findName) == -1) {
+//                continue;
+//            }
+//            std::cout << "class: " << type_names[class_def.class_idx] << std::endl;
+//            if (annotations->field_annotations.size() > 0) {
+//                std::cout << "field annotations: " << std::endl;
+//                for (auto &field_annotation: annotations->field_annotations) {
+//                    std::cout << "field: " << GetFieldDescriptor(dex_idx, field_annotation->field_decl->index) << std::endl;
+//                    for (auto &annotation: field_annotation->annotations->annotations) {
+//                        std::cout << "annotation: " << annotation->type->descriptor->c_str() << std::endl;
+//                        for (auto &element: annotation->elements) {
+//                            std::cout << "element: " << element->name->c_str() << std::endl;
+//
+//                            switch (element->value->type) {
+//                                case dex::kEncodedByte:
+//                                    std::cout << "value: " << element->value->u.byte_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedShort:
+//                                    std::cout << "value: " << element->value->u.short_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedChar:
+//                                    std::cout << "value: " << element->value->u.char_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedInt:
+//                                    std::cout << "value: " << element->value->u.int_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedLong:
+//                                    std::cout << "value: " << element->value->u.long_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedFloat:
+//                                    std::cout << "value: " << element->value->u.float_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedDouble:
+//                                    std::cout << "value: " << element->value->u.double_value << std::endl;
+//                                    break;
+//
+//                                case dex::kEncodedString: {
+//                                    std::cout << "value: " << element->value->u.string_value->c_str() << std::endl;
+//                                    break;
+//                                }
+//
+//                                default:
+//                                    break;
+//                            }
+//                        }
+//                    }
+//                }
+//
+//            }
+        }
+        dex_flag |= fAnnotation;
     }
 
     if (need_init_method_op_code_seq) {
