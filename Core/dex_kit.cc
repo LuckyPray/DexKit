@@ -1768,62 +1768,6 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
             }
             auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
             class_annotations[class_def.class_idx] = annotations;
-//            std::string findName = "BugHook";
-//            if (kmp::FindIndex(type_names[class_def.class_idx], findName) == -1) {
-//                continue;
-//            }
-//            std::cout << "class: " << type_names[class_def.class_idx] << std::endl;
-//            if (annotations->field_annotations.size() > 0) {
-//                std::cout << "field annotations: " << std::endl;
-//                for (auto &field_annotation: annotations->field_annotations) {
-//                    std::cout << "field: " << GetFieldDescriptor(dex_idx, field_annotation->field_decl->index) << std::endl;
-//                    for (auto &annotation: field_annotation->annotations->annotations) {
-//                        std::cout << "annotation: " << annotation->type->descriptor->c_str() << std::endl;
-//                        for (auto &element: annotation->elements) {
-//                            std::cout << "element: " << element->name->c_str() << std::endl;
-//
-//                            switch (element->value->type) {
-//                                case dex::kEncodedByte:
-//                                    std::cout << "value: " << element->value->u.byte_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedShort:
-//                                    std::cout << "value: " << element->value->u.short_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedChar:
-//                                    std::cout << "value: " << element->value->u.char_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedInt:
-//                                    std::cout << "value: " << element->value->u.int_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedLong:
-//                                    std::cout << "value: " << element->value->u.long_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedFloat:
-//                                    std::cout << "value: " << element->value->u.float_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedDouble:
-//                                    std::cout << "value: " << element->value->u.double_value << std::endl;
-//                                    break;
-//
-//                                case dex::kEncodedString: {
-//                                    std::cout << "value: " << element->value->u.string_value->c_str() << std::endl;
-//                                    break;
-//                                }
-//
-//                                default:
-//                                    break;
-//                            }
-//                        }
-//                    }
-//                }
-//
-//            }
         }
         dex_flag |= fAnnotation;
     }
