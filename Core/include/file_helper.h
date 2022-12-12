@@ -7,9 +7,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <zlib.h>
-#include <iostream>
+#include <sstream>
+#include "file_helper.h"
 
 namespace dexkit {
+
+#define CHUNK 512
 
 struct MemMap {
     MemMap() = default;
@@ -89,7 +92,7 @@ struct [[gnu::packed]] ZipLocalFile {
     uint32_t getDataDescriptorSize() {
         if (this->flags & 0x8u) {
             auto nextPtr = reinterpret_cast<uint8_t *>(this) + sizeof(ZipLocalFile) +
-                    this->file_name_length + this->extra_length + this->compress_size;
+                    this->file_name_length + this->extra_length + this->getRealCompressSize();
             auto descSign = reinterpret_cast<uint32_t *>(nextPtr);
             if (*descSign == 0x08074b50u) {
                 return 16;
@@ -101,51 +104,113 @@ struct [[gnu::packed]] ZipLocalFile {
     }
 
     ZipLocalFile *next() {
-        return from(reinterpret_cast<uint8_t *>(this) +
-                    sizeof(ZipLocalFile) + file_name_length + extra_length + compress_size + getDataDescriptorSize());
+        auto size = compress_size;
+        if ((compress & 0x8u) && compress_size == 0) {
+            size = getRealCompressSize();
+        }
+        auto p = from(reinterpret_cast<uint8_t *>(this) +
+                    sizeof(ZipLocalFile) + file_name_length + extra_length + size + getDataDescriptorSize());
+        return p;
+    }
+
+    // fuck apk compress_size | uncompress_size = 0
+    size_t getRealCompressSize() {
+        if (compress_size) {
+            return compress_size;
+        }
+        z_stream stream{};
+        auto ret = inflateInit2(&stream, -MAX_WBITS);
+        if (ret != Z_OK) {
+            return 0;
+        }
+        size_t total_used = 0;
+        char buf[CHUNK];
+        stream.zalloc = myalloc;
+        stream.zfree = myfree;
+        stream.opaque = nullptr;
+        stream.next_in = this->data();
+        stream.avail_in = CHUNK;
+        size_t input_pos = 0;
+        do {
+            if (input_pos == CHUNK) {
+                stream.next_in = this->data() + total_used;
+                stream.avail_in = CHUNK;
+                input_pos = 0;
+            }
+            stream.next_out = (u_char *)buf;
+            stream.avail_out = CHUNK;
+            ret = inflate(&stream, Z_PARTIAL_FLUSH);
+            switch (ret) {
+                case Z_OK: {
+                    size_t input_used = (CHUNK - input_pos) - stream.avail_in;
+                    input_pos += input_used;
+                    total_used += input_used;
+                    break;
+                }
+                case Z_BUF_ERROR:
+                    break;
+                case Z_DATA_ERROR:
+                case Z_MEM_ERROR:  {
+                    inflateEnd(&stream);
+                    return 0;
+                }
+                default:
+                    break;
+            }
+        } while (ret != Z_STREAM_END);
+        total_used += (CHUNK - input_pos) - stream.avail_in;
+        return total_used;
     }
 
     MemMap uncompress() {
         if (compress == 0x8) {
-            MemMap out(uncompress_size);
-            if (!out.ok()) {
+            std::stringstream ss;
+            z_stream stream{};
+            auto ret = inflateInit2(&stream, -MAX_WBITS);
+            if (ret != Z_OK) {
                 return {};
             }
-            int err;
-            z_stream d_stream; /* decompression stream */
-
-            d_stream.zalloc = myalloc;
-            d_stream.zfree = myfree;
-            d_stream.opaque = nullptr;
-
-            d_stream.next_in = data();
-            d_stream.avail_in = compress_size;
-            d_stream.next_out = out.addr();            /* discard the output */
-            d_stream.avail_out = out.len();
-
-            err = inflateInit2(&d_stream, -MAX_WBITS);
-            if (err != Z_OK) {
-                return {};
-            }
-
-            for (int c = 0;; ++c) {
-                err = inflate(&d_stream, Z_NO_FLUSH);
-                if (err == Z_STREAM_END) break;
-                if (err != Z_OK) {
-                    return {};
+            size_t total_used = 0;
+            char buf[CHUNK];
+            stream.zalloc = myalloc;
+            stream.zfree = myfree;
+            stream.opaque = nullptr;
+            stream.next_in = this->data();
+            stream.avail_in = CHUNK;
+            size_t input_pos = 0;
+            do {
+                if (input_pos == CHUNK) {
+                    stream.next_in = this->data() + total_used;
+                    stream.avail_in = CHUNK;
+                    input_pos = 0;
                 }
-            }
-
-            err = inflateEnd(&d_stream);
-            if (err != Z_OK) {
-                return {};
-            }
-
-            if (d_stream.total_out != uncompress_size) {
-                return {};
-            }
-            mprotect(out.addr(), out.len(), PROT_READ);
-            return out;
+                stream.next_out = (u_char *)buf;
+                stream.avail_out = CHUNK;
+                ret = inflate(&stream, Z_PARTIAL_FLUSH);
+                switch (ret) {
+                    case Z_OK: {
+                        size_t input_used = (CHUNK - input_pos) - stream.avail_in;
+                        size_t output_used = CHUNK - stream.avail_out;
+                        ss.write(buf, (int) output_used);
+                        input_pos += input_used;
+                        total_used += input_used;
+                        break;
+                    }
+                    case Z_BUF_ERROR:
+                        break;
+                    case Z_DATA_ERROR:
+                    case Z_MEM_ERROR:  {
+                        inflateEnd(&stream);
+                        return {};
+                    }
+                    default:
+                        break;
+                }
+            } while (ret != Z_STREAM_END);
+            ss.write(buf, (int) (CHUNK - stream.avail_out));
+            MemMap map(ss.str().size());
+            memcpy(map.addr(), ss.str().data(), ss.str().size());
+            return map;
         } else if (compress == 0 && compress_size == uncompress_size) {
             MemMap out(uncompress_size);
             memcpy(out.addr(), data(), uncompress_size);
@@ -156,7 +221,7 @@ struct [[gnu::packed]] ZipLocalFile {
     }
 
     std::string_view file_name() {
-        return {name, file_name_length};
+        return {(char *)(reinterpret_cast<char *>(this) + sizeof(ZipLocalFile)), file_name_length};
     }
 
     uint8_t *data() {
@@ -175,7 +240,7 @@ struct [[gnu::packed]] ZipLocalFile {
     [[maybe_unused]] uint32_t uncompress_size;
     [[maybe_unused]] uint16_t file_name_length;
     [[maybe_unused]] uint16_t extra_length;
-    [[maybe_unused]] char name[0];
+//    [[maybe_unused]] char name[0];
 };
 
 class ZipFile {
