@@ -12,7 +12,10 @@
 
 namespace dexkit {
 
-#define CHUNK 512
+#define UNZIP_BUF_CHUNK 512
+
+constexpr uint32_t kZipLocalFileSignature = 0x04034b50u;
+constexpr uint32_t kZipDataDescSignature = 0x08074b50u;
 
 struct MemMap {
     MemMap() = default;
@@ -79,156 +82,7 @@ static void myfree([[maybe_unused]] void *q, void *p) {
     free(p);
 }
 
-struct [[gnu::packed]] ZipLocalFile {
-    static ZipLocalFile *from(uint8_t *begin) {
-        auto *file = reinterpret_cast<ZipLocalFile *>(begin);
-        if (file->signature == 0x04034b50u) {
-            return file;
-        } else {
-            return nullptr;
-        }
-    }
-
-    uint32_t getDataDescriptorSize() {
-        if (this->flags & 0x8u) {
-            auto nextPtr = reinterpret_cast<uint8_t *>(this) + sizeof(ZipLocalFile) +
-                    this->file_name_length + this->extra_length + this->getRealCompressSize();
-            auto descSign = reinterpret_cast<uint32_t *>(nextPtr);
-            if (*descSign == 0x08074b50u) {
-                return 16;
-            } else {
-                return 12;
-            }
-        }
-        return 0;
-    }
-
-    ZipLocalFile *next() {
-        auto size = compress_size;
-        if ((compress & 0x8u) && compress_size == 0) {
-            size = getRealCompressSize();
-        }
-        auto p = from(reinterpret_cast<uint8_t *>(this) +
-                    sizeof(ZipLocalFile) + file_name_length + extra_length + size + getDataDescriptorSize());
-        return p;
-    }
-
-    // fuck apk compress_size | uncompress_size = 0
-    size_t getRealCompressSize() {
-        if (compress_size) {
-            return compress_size;
-        }
-        z_stream stream{};
-        auto ret = inflateInit2(&stream, -MAX_WBITS);
-        if (ret != Z_OK) {
-            return 0;
-        }
-        size_t total_used = 0;
-        char buf[CHUNK];
-        stream.zalloc = myalloc;
-        stream.zfree = myfree;
-        stream.opaque = nullptr;
-        stream.next_in = this->data();
-        stream.avail_in = CHUNK;
-        size_t input_pos = 0;
-        do {
-            if (input_pos == CHUNK) {
-                stream.next_in = this->data() + total_used;
-                stream.avail_in = CHUNK;
-                input_pos = 0;
-            }
-            stream.next_out = (u_char *)buf;
-            stream.avail_out = CHUNK;
-            ret = inflate(&stream, Z_PARTIAL_FLUSH);
-            switch (ret) {
-                case Z_OK: {
-                    size_t input_used = (CHUNK - input_pos) - stream.avail_in;
-                    input_pos += input_used;
-                    total_used += input_used;
-                    break;
-                }
-                case Z_BUF_ERROR:
-                    break;
-                case Z_DATA_ERROR:
-                case Z_MEM_ERROR:  {
-                    inflateEnd(&stream);
-                    return 0;
-                }
-                default:
-                    break;
-            }
-        } while (ret != Z_STREAM_END);
-        total_used += (CHUNK - input_pos) - stream.avail_in;
-        return total_used;
-    }
-
-    MemMap uncompress() {
-        if (compress == 0x8) {
-            std::stringstream ss;
-            z_stream stream{};
-            auto ret = inflateInit2(&stream, -MAX_WBITS);
-            if (ret != Z_OK) {
-                return {};
-            }
-            size_t total_used = 0;
-            char buf[CHUNK];
-            stream.zalloc = myalloc;
-            stream.zfree = myfree;
-            stream.opaque = nullptr;
-            stream.next_in = this->data();
-            stream.avail_in = CHUNK;
-            size_t input_pos = 0;
-            do {
-                if (input_pos == CHUNK) {
-                    stream.next_in = this->data() + total_used;
-                    stream.avail_in = CHUNK;
-                    input_pos = 0;
-                }
-                stream.next_out = (u_char *)buf;
-                stream.avail_out = CHUNK;
-                ret = inflate(&stream, Z_PARTIAL_FLUSH);
-                switch (ret) {
-                    case Z_OK: {
-                        size_t input_used = (CHUNK - input_pos) - stream.avail_in;
-                        size_t output_used = CHUNK - stream.avail_out;
-                        ss.write(buf, (int) output_used);
-                        input_pos += input_used;
-                        total_used += input_used;
-                        break;
-                    }
-                    case Z_BUF_ERROR:
-                        break;
-                    case Z_DATA_ERROR:
-                    case Z_MEM_ERROR:  {
-                        inflateEnd(&stream);
-                        return {};
-                    }
-                    default:
-                        break;
-                }
-            } while (ret != Z_STREAM_END);
-            ss.write(buf, (int) (CHUNK - stream.avail_out));
-            MemMap map(ss.str().size());
-            memcpy(map.addr(), ss.str().data(), ss.str().size());
-            return map;
-        } else if (compress == 0 && compress_size == uncompress_size) {
-            MemMap out(uncompress_size);
-            memcpy(out.addr(), data(), uncompress_size);
-            mprotect(out.addr(), out.len(), PROT_READ);
-            return out;
-        }
-        return {};
-    }
-
-    std::string_view file_name() {
-        return {(char *)(reinterpret_cast<char *>(this) + sizeof(ZipLocalFile)), file_name_length};
-    }
-
-    uint8_t *data() {
-        return reinterpret_cast<uint8_t *>(this) + sizeof(ZipLocalFile) + file_name_length +
-               extra_length;
-    }
-
+struct [[gnu::packed]] ZipFileRecord {
     [[maybe_unused]] uint32_t signature;
     [[maybe_unused]] uint16_t version;
     [[maybe_unused]] uint16_t flags;
@@ -240,7 +94,171 @@ struct [[gnu::packed]] ZipLocalFile {
     [[maybe_unused]] uint32_t uncompress_size;
     [[maybe_unused]] uint16_t file_name_length;
     [[maybe_unused]] uint16_t extra_length;
-//    [[maybe_unused]] char name[0];
+//    [[maybe_unused]] uint8_t file_name[0];
+
+    // fuck apk (compress_size | uncompress_size) == 0
+    std::pair<size_t, size_t> getRealSizeInfo() {
+        if (compress_size && uncompress_size) {
+            return {compress_size, uncompress_size};
+        }
+        z_stream stream{};
+        auto ret = inflateInit2(&stream, -MAX_WBITS);
+        if (ret != Z_OK) {
+            return {0, 0};
+        }
+
+        char buf[UNZIP_BUF_CHUNK];
+        size_t total_read = 0;
+        size_t total_write = 0;
+        size_t input_pos = 0;
+
+        stream.zalloc = myalloc;
+        stream.zfree = myfree;
+        stream.opaque = nullptr;
+        stream.next_in = this->data();
+        stream.avail_in = UNZIP_BUF_CHUNK;
+
+        do {
+            if (input_pos == UNZIP_BUF_CHUNK) {
+                stream.next_in = this->data() + total_read;
+                stream.avail_in = UNZIP_BUF_CHUNK;
+                input_pos = 0;
+            }
+            stream.next_out = (u_char *) buf;
+            stream.avail_out = UNZIP_BUF_CHUNK;
+            ret = inflate(&stream, Z_PARTIAL_FLUSH);
+            switch (ret) {
+                case Z_OK: {
+                    size_t input_used = (UNZIP_BUF_CHUNK - input_pos) - stream.avail_in;
+                    total_write += UNZIP_BUF_CHUNK - stream.avail_out;
+                    input_pos += input_used;
+                    total_read += input_used;
+                    break;
+                }
+                case Z_BUF_ERROR:
+                    return {0, 0};
+                case Z_DATA_ERROR:
+                case Z_MEM_ERROR: {
+                    inflateEnd(&stream);
+                    return {0, 0};
+                }
+                default:
+                    break;
+            }
+        } while (ret != Z_STREAM_END);
+
+        inflateEnd(&stream);
+        total_read += (UNZIP_BUF_CHUNK - input_pos) - stream.avail_in;
+        total_write += UNZIP_BUF_CHUNK - stream.avail_out;
+
+        return {total_read, total_write};
+    }
+
+    std::string_view file_name() {
+        return {reinterpret_cast<char *>(reinterpret_cast<uint8_t *>(this) + sizeof(ZipFileRecord)), file_name_length};
+    }
+
+    uint8_t *data() {
+        return reinterpret_cast<uint8_t *>(this) + sizeof(ZipFileRecord) + file_name_length + extra_length;
+    }
+};
+
+struct [[gnu::packed]] ZipLocalFile {
+
+    explicit ZipLocalFile(ZipFileRecord *record) {
+        this->record = record;
+        // check compress_size and uncompress_size
+        if (record->compress_size == 0 || record->uncompress_size == 0) {
+            auto info = record->getRealSizeInfo();
+            this->real_compress_size = info.first;
+            this->real_uncompress_size = info.second;
+        } else {
+            this->real_compress_size = record->compress_size;
+            this->real_uncompress_size = record->uncompress_size;
+        }
+    }
+
+    static ZipLocalFile *from(uint8_t *begin) {
+        auto *pRecord = reinterpret_cast<ZipFileRecord *>(begin);
+        if (pRecord->signature == kZipLocalFileSignature) {
+            return new ZipLocalFile(pRecord);
+        } else {
+            return nullptr;
+        }
+    }
+
+    [[nodiscard]] uint32_t getDataDescriptorSize() const {
+        if (record->flags & 0x8u) {
+            auto nextPtr = reinterpret_cast<uint8_t *>(record) + sizeof(ZipFileRecord) +
+                           record->file_name_length + record->extra_length + real_compress_size;
+            auto descSign = reinterpret_cast<uint32_t *>(nextPtr);
+            if (*descSign == kZipDataDescSignature) {
+                return 16;
+            } else {
+                return 12;
+            }
+        }
+        return 0;
+    }
+
+    [[nodiscard]] ZipLocalFile *next() const {
+        return from(reinterpret_cast<uint8_t *>(record) + sizeof(ZipFileRecord) +
+                    record->file_name_length + record->extra_length +
+                    real_compress_size + getDataDescriptorSize());
+    }
+
+    [[nodiscard]] MemMap uncompress() const {
+        if (record->compress == 0x8u) {
+            MemMap out(real_uncompress_size);
+            if (!out.ok()) {
+                return {};
+            }
+            z_stream d_stream;
+            d_stream.zalloc = myalloc;
+            d_stream.zfree = myfree;
+            d_stream.opaque = nullptr;
+
+            d_stream.next_in = data();
+            d_stream.avail_in = real_compress_size;
+            d_stream.next_out = out.addr();
+            d_stream.avail_out = out.len();
+
+            auto ret = inflateInit2(&d_stream, -MAX_WBITS);
+            if (ret != Z_OK) {
+                return {};
+            }
+
+            do {
+                ret = inflate(&d_stream, Z_NO_FLUSH);
+            } while (ret != Z_STREAM_END && ret == Z_OK);
+
+            inflateEnd(&d_stream);
+
+            if (d_stream.total_out != real_uncompress_size) {
+                return {};
+            }
+            mprotect(out.addr(), out.len(), PROT_READ);
+            return out;
+        } else if (record->compress == 0 && real_compress_size == real_uncompress_size) {
+            MemMap out(real_uncompress_size);
+            memcpy(out.addr(), data(), real_uncompress_size);
+            mprotect(out.addr(), out.len(), PROT_READ);
+            return out;
+        }
+        return {};
+    }
+
+    [[nodiscard]] std::string_view file_name() const {
+        return record->file_name();
+    }
+
+    [[nodiscard]] uint8_t *data() const {
+        return record->data();
+    }
+
+    ZipFileRecord *record;
+    uint32_t real_compress_size;
+    uint32_t real_uncompress_size;
 };
 
 class ZipFile {
@@ -267,5 +285,7 @@ public:
 private:
     std::map<std::string_view, ZipLocalFile *> entries;
 };
+
+#undef UNZIP_BUF_CHUNK
 
 }
