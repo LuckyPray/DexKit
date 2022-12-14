@@ -201,11 +201,28 @@ public:
                           bool unique_result = true,
                           const std::vector<size_t> &dex_priority = {});
 
+    /**
+     * @brief find using annotation's class
+     * @param annotation_class annotation class
+     * @param annotation_using_string if not empty, only search annotation using string
+     * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
+     * @return class descriptor
+     */
     std::vector<std::string>
     FindClassUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
                              const std::vector<size_t> &dex_priority = {});
 
+    /**
+     * @brief find using annotation's field
+     * @param annotation_class annotation class
+     * @param annotation_using_string if not empty, only search annotation using string
+     * @param field_declare_class if empty, match any class
+     * @param field_declare_name if empty, match any field name
+     * @param field_type if empty, match any field type
+     * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
+     * @return field descriptor
+     */
     std::vector<std::string>
     FindFieldUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
@@ -214,6 +231,17 @@ public:
                              const std::string &field_type,
                              const std::vector<size_t> &dex_priority = {});
 
+    /**
+     * @brief find using annotation's method
+     * @param annotation_class annotation class
+     * @param annotation_using_string if not empty, only search annotation using string
+     * @param method_declare_class if empty, match any class
+     * @param method_declare_name if empty, match any method name
+     * @param method_return_type if empty, match any return type
+     * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
+     * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
+     * @return method descriptor
+     */
     std::vector<std::string>
     FindMethodUsingAnnotation(const std::string &annotation_class,
                               const std::string &annotation_using_string,
