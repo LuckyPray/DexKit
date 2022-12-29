@@ -10,7 +10,7 @@
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, TAG ,__VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
 
-#define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
+#define DEXKIT_JNI JNIEXPORT JNICALL extern "C"
 
 static jfieldID path_list_field = nullptr;
 static jfieldID element_field = nullptr;
@@ -145,8 +145,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
     return (jlong) dexkit;
 }
 
-extern "C"
-JNIEXPORT void JNICALL
+DEXKIT_JNI void
 Java_io_luckypray_dexkit_DexKitBridge_nativeSetThreadNum(JNIEnv *env, jclass clazz,
                                                          jlong native_ptr, jint thread_num) {
     SetThreadNum(env, native_ptr, thread_num);
@@ -262,8 +261,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                  dex_priority);
 }
 
-extern "C"
-JNIEXPORT jobjectArray JNICALL
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindClassUsingAnnotation(JNIEnv *env, jclass clazz,
                                                                      jlong native_ptr,
                                                                      jstring annotation_class,

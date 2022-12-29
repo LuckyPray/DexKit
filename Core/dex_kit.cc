@@ -977,7 +977,6 @@ DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &annotation_class_desc, &annotation_using_string]() {
                     InitCached(dex_idx, fDefault | fAnnotation);
-                    auto &strings = strings_[dex_idx];
                     auto &type_names = type_names_[dex_idx];
                     auto &class_annotations = class_annotations_[dex_idx];
                     uint32_t lower = 0, upper = type_names.size();
@@ -1042,7 +1041,6 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
                 [this, dex_idx, &annotation_class_desc, &annotation_using_string, &field_declare_class_desc,
                         &field_name, &field_type_desc] {
                     InitCached(dex_idx, fDefault | fAnnotation);
-                    auto &strings = strings_[dex_idx];
                     auto &type_names = type_names_[dex_idx];
                     auto &class_annotations = class_annotations_[dex_idx];
                     uint32_t lower = 0, upper = type_names.size();
@@ -1134,7 +1132,6 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                 [this, dex_idx, &annotation_class_desc, &annotation_using_string, &caller_class_desc, &caller_method_name,
                         &caller_return_desc, &caller_param_descs, &caller_match_shorty, &caller_match_any_param]() {
                     InitCached(dex_idx, fDefault | fAnnotation);
-                    auto &strings = strings_[dex_idx];
                     auto &type_names = type_names_[dex_idx];
                     auto &class_annotations = class_annotations_[dex_idx];
                     uint32_t lower = 0, upper = type_names.size();
