@@ -39,6 +39,13 @@ class DexKitBridge : Closeable {
         return nativeGetDexNum(token)
     }
 
+    /**
+     * write all dex file to [outPath]
+     */
+    fun exportDexFile(outPath: String) {
+        nativeExportDexFile(token, outPath)
+    }
+
     fun batchFindClassesUsingStrings(
         map: Map<String, Iterable<String>>,
         advancedMatch: Boolean = true,
@@ -370,7 +377,10 @@ class DexKitBridge : Closeable {
         private external fun nativeGetDexNum(nativePtr: Long): Int
 
         @JvmStatic
-        private external fun nativeRelease(nativePtr: Long): Unit
+        private external fun nativeRelease(nativePtr: Long)
+
+        @JvmStatic
+        private external fun nativeExportDexFile(nativePtr: Long, outDir: String)
 
         @JvmStatic
         private external fun nativeBatchFindClassesUsingStrings(

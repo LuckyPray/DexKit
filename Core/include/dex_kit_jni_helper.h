@@ -40,6 +40,17 @@ void ReleaseDexKitInstance(JNIEnv *env, jlong dexKit) {
     delete reinterpret_cast<dexkit::DexKit *>(dexKit);
 }
 
+void ExportDexFile(JNIEnv *env, jlong dexKitPtr, jstring jOutDir) {
+    if (!dexKitPtr) {
+        return;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    const char *outDir = env->GetStringUTFChars(jOutDir, nullptr);
+    std::string outDirStr(outDir);
+    dexKit->ExportDexFile(outDirStr);
+    env->ReleaseStringUTFChars(jOutDir, outDir);
+}
+
 jobject BatchFindClassesUsingStrings(JNIEnv *env,
                                      jlong dexKitPtr,
                                      jobject jMap,

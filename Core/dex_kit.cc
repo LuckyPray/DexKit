@@ -71,6 +71,23 @@ void DexKit::AddPath(std::string_view apk_path, int unzip_thread_num) {
     InitImages(ort_size, new_size);
 }
 
+void DexKit::ExportDexFile(std::string &out_dir) {
+    for (auto &[image, size] : dex_images_) {
+        auto file_name = out_dir;
+        if (file_name.back() != '/') {
+            file_name += '/';
+        }
+        file_name += "classes_" + std::to_string(size) + ".dex";
+        // write file
+        FILE *fp = fopen(file_name.c_str(), "wb");
+        if (fp == nullptr) {
+            continue;
+        }
+        fwrite(image, 1, size, fp);
+        fclose(fp);
+    }
+}
+
 std::map<std::string, std::vector<std::string>>
 DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
                                      bool advanced_match,

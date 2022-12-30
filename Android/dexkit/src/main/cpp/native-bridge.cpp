@@ -163,6 +163,12 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeRelease(JNIEnv *env, jclass clazz,
     ReleaseDexKitInstance(env, native_ptr);
 }
 
+DEXKIT_JNI void
+Java_io_luckypray_dexkit_DexKitBridge_nativeExportDexFile(JNIEnv *env, jclass clazz,
+                                                          jlong native_ptr, jstring out_dir) {
+    ExportDexFile(env, native_ptr, out_dir);
+}
+
 DEXKIT_JNI jobject
 Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv *env,
                                                                          jclass clazz,

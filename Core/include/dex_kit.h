@@ -49,6 +49,8 @@ public:
         thread_num_ = num;
     }
 
+    void ExportDexFile(std::string &out_dir);
+
     /**
      * @brief find used all matched keywords in class (all methods of this class)
      * @param location_map deobfuscation info map <br/>
