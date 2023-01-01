@@ -123,6 +123,7 @@ int main() {
     }
 
     auto findMethods = dexKit.FindMethod(
+            "",
             "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
             "",
             "int",

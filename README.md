@@ -8,7 +8,7 @@ English | [简体中文](https://github.com/LuckyPray/DexKit/blob/master/README_
 
 </div>
 
-A high-performance dex parsing library implemented in C++, used for runtime lookup of obfuscated classes,
+A high-performance runtime parsing library for dex implemented in C++, used for lookup of obfuscated classes,
 methods, or properties.
 
 ## Background

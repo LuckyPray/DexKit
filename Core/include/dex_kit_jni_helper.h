@@ -400,6 +400,7 @@ jobjectArray FindMethodUsingAnnotation(JNIEnv *env,
 
 jobjectArray FindMethod(JNIEnv *env,
                         jlong dexKitPtr,
+                        jstring method_descriptor,
                         jstring method_declare_class,
                         jstring method_name,
                         jstring method_return_type,
@@ -409,6 +410,7 @@ jobjectArray FindMethod(JNIEnv *env,
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
     auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    auto methodDescriptor = env->GetStringUTFChars(method_descriptor, nullptr);
     auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
     auto methodName = env->GetStringUTFChars(method_name, nullptr);
     auto methodReturnType = env->GetStringUTFChars(method_return_type, nullptr);
@@ -421,10 +423,12 @@ jobjectArray FindMethod(JNIEnv *env,
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
     auto res = dexKit->FindMethod(methodDeclareClass,
+                                  methodDescriptor,
                                   methodName,
                                   methodReturnType,
                                   ParamTypes,
                                   dexPriority);
+    env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);

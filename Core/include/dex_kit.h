@@ -255,6 +255,7 @@ public:
 
     /**
      * @brief find method by multiple conditions
+     * @param method_descriptor method descriptor
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
      * @param method_return_type if empty, match any return type;
@@ -265,7 +266,8 @@ public:
      * @return method descriptor
      */
     std::vector<std::string>
-    FindMethod(const std::string &method_declare_class,
+    FindMethod(const std::string &method_descriptor,
+               const std::string &method_declare_class,
                const std::string &method_declare_name,
                const std::string &method_return_type,
                const std::optional<std::vector<std::string>> &method_param_types,

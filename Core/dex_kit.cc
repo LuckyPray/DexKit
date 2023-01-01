@@ -1227,13 +1227,14 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
 }
 
 std::vector<std::string>
-DexKit::FindMethod(const std::string &method_declare_class,
+DexKit::FindMethod(const std::string &method_descriptor,
+                   const std::string &method_declare_class,
                    const std::string &method_declare_name,
                    const std::string &method_return_type,
                    const std::optional<std::vector<std::string>> &method_param_types,
                    const std::vector<size_t> &dex_priority) {
 
-    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
+    auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class, method_declare_name,
                                                  method_return_type, method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);

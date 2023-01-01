@@ -82,7 +82,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz
 DEXKIT_JNI jlong
 Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env, jclass clazz,
                                                                     jobject class_loader,
-                                                                    jboolean use_cookie_dex_file) {
+                                                                    jboolean use_memory_dex_file) {
     if (!class_loader) {
         return 0;
     }
@@ -107,7 +107,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
                 env->GetLongArrayElements(cookie, nullptr));
         LOGI("dex_file_length -> %d", dex_file_length);
         std::vector<const DexFile *> dex_images;
-        if (use_cookie_dex_file) {
+        if (use_memory_dex_file) {
             for (int j = 0; j < dex_file_length; ++j) {
                 const auto *dex_file = dex_files[j];
                 if (!CheckPoint((void *) dex_file) ||
@@ -308,13 +308,14 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingAnnotation(JNIEnv *en
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz,
                                                        jlong native_ptr,
+                                                       jstring method_descriptor,
                                                        jstring method_declare_class,
                                                        jstring method_name,
                                                        jstring method_return_type,
                                                        jobjectArray method_param_types,
                                                        jintArray dex_priority) {
-    return FindMethod(env, native_ptr, method_declare_class, method_name, method_return_type,
-                      method_param_types, dex_priority);
+    return FindMethod(env, native_ptr, method_descriptor, method_declare_class,
+                      method_name, method_return_type, method_param_types, dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
