@@ -20,8 +20,8 @@ class FieldUsingAnnotationArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        inline fun build(block: FieldUsingAnnotationArgs.Builder.() -> Unit): FieldUsingAnnotationArgs {
-            return FieldUsingAnnotationArgs.Builder().apply(block).build()
+        inline fun build(block: Builder.() -> Unit): FieldUsingAnnotationArgs {
+            return Builder().apply(block).build()
         }
     }
 

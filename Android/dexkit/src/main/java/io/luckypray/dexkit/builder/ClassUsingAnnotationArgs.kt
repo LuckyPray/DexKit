@@ -18,7 +18,7 @@ class ClassUsingAnnotationArgs private constructor(
          */
         @JvmStatic
         inline fun build(block: ClassUsingAnnotationArgs.Builder.() -> Unit): ClassUsingAnnotationArgs {
-            return ClassUsingAnnotationArgs.Builder().apply(block).build()
+            return Builder().apply(block).build()
         }
     }
 

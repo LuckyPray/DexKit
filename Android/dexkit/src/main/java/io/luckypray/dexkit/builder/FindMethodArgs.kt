@@ -17,8 +17,8 @@ class FindMethodArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        inline fun build(block: FindMethodArgs.Builder.() -> Unit): FindMethodArgs {
-            return FindMethodArgs.Builder().apply(block).build()
+        inline fun build(block: Builder.() -> Unit): FindMethodArgs {
+            return Builder().apply(block).build()
         }
     }
 

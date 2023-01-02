@@ -27,8 +27,8 @@ class MethodUsingFieldArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        inline fun build(block: MethodInvokingArgs.Builder.() -> Unit): MethodInvokingArgs {
-            return MethodInvokingArgs.Builder().apply(block).build()
+        inline fun build(block: Builder.() -> Unit): MethodUsingFieldArgs {
+            return Builder().apply(block).build()
         }
     }
 

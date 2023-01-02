@@ -16,7 +16,7 @@ class BatchFindArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        inline fun build(block: BatchFindArgs.Builder.() -> Unit): BatchFindArgs {
+        inline fun build(block: Builder.() -> Unit): BatchFindArgs {
             return Builder().apply(block).build()
         }
     }
@@ -79,17 +79,5 @@ class BatchFindArgs private constructor(
          * @return [BatchFindArgs]
          */
         override fun build(): BatchFindArgs = BatchFindArgs(queryMap, advancedMatch)
-    }
-}
-
-fun main() {
-    val args = BatchFindArgs.build {
-        queryMap["a"] = listOf("b")
-        addQuery("c", listOf("d"))
-        advancedMatch = false
-    }
-    DexKitBridge.create("132")?.use {
-        it.batchFindClassesUsingStrings(args)
-        it.batchFindMethodsUsingStrings(args)
     }
 }

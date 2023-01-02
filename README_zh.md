@@ -2,7 +2,7 @@
     <h1> DexKit </h1>
 
 [![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-[![](https://jitpack.io/v/LuckyPray/DexKit.svg)](https://jitpack.io/#LuckyPray/DexKit)
+![](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg)
 
 [English](https://github.com/LuckyPray/DexKit/blob/master/README.md) | 简体中文
 

@@ -22,7 +22,7 @@ class MethodCallerArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        inline fun build(block: MethodCallerArgs.Builder.() -> Unit): MethodCallerArgs {
+        inline fun build(block: Builder.() -> Unit): MethodCallerArgs {
             return Builder().apply(block).build()
         }
     }
@@ -213,17 +213,4 @@ class MethodCallerArgs private constructor(
             }
         }
     }
-}
-
-fun main() {
-    val args = MethodCallerArgs.build {
-        setMethodDeclareClass("java.lang.String")
-        setMethodName("length")
-        setMethodReturnType("int")
-        setCallerMethodDeclareClass("com.example.Test")
-        setCallerMethodName("test")
-        setCallerMethodReturnType("void")
-        setUnique(true)
-    }
-    println(args)
 }
