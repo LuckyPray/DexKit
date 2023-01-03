@@ -1,6 +1,6 @@
-# 使用示例
+# Example of use
 
-现在我们有这样一个示例 APP:
+Now we have such a sample APP:
 
 ```java
 package com.luckypray.dexkit.demo;
@@ -35,16 +35,16 @@ public class DemoActivity extends ComponentActivity {
 }
 ```
 
-现在我们来分析一下有哪些信息:
+Now let's analyze what information is available:
 
-- 字符串常量: `Hello World`, `DemoActivity`, `sum: `
-- 类: `DemoActivity`, `Toast`, `AppCompatActivity`, `Log`, `Bundle`
-- 方法: `sum()`, `onCreate()`, `onDestroy()`, `setContentView()`, `setText()`, `show()`, `i()`, `new Toast()`
-- 字段: `mCount`, `TAG`
+- string constant: `Hello World`, `DemoActivity`, `sum: `
+- classes: `DemoActivity`, `Toast`, `AppCompatActivity`, `Log`, `Bundle`
+- method: `sum()`, `onCreate()`, `onDestroy()`, `setContentView()`, `setText()`, `show()`, `i()`, `new Toast()`
+- field: `mCount`, `TAG`
 
-现在我们来尝试一下使用 `DexKit` 来查找这些信息。
+Now let's try to use `DexKit` to find this.
 
-## 查找使用字符串的类
+## Find classes use strings
 
 ```kotlin
 DexKitBridge.create("demo.apk")?.use { bridge->
@@ -65,14 +65,14 @@ DexKitBridge.create("demo.apk")?.use { bridge->
 }
 ```
 
-我们得到如下输出:
+we get the following output:
 
 ```text
 DemoActivity -> ["com.luckypray.dexkit.demo.DemoActivity"]
 NotFoundActivity -> []
 ```
 
-## 查找使用字符串的方法
+## Find methods use strings
 
 ```kotlin
 DexKitBridge.create("")?.use { bridge ->
@@ -90,13 +90,13 @@ DexKitBridge.create("")?.use { bridge ->
 }
 ```
 
-我们得到如下输出:
+we get the following output:
 
 ```text
 all test pass
 ```
 
-## 查找对`mCount`字段进行赋值的方法
+## find method set `mCount`
 
 ```kotlin
     DexKitBridge.create("")?.use { bridge ->
@@ -118,14 +118,14 @@ all test pass
     }
 ```
 
-我们得到如下输出:
+we get the following output:
 
 ```text
 caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V ->
     Lcom/luckypray/dexkit/demo/DemoActivity;->mCount:I
 ```
 
-## 查找`onCreate`方法调用了哪些方法
+## find `onCreate` caller methods
 
 ```kotlin
     DexKitBridge.create("")?.use { bridge ->
@@ -143,7 +143,7 @@ caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bu
 }
 ```
 
-我们得到如下输出:
+we get the following output:
 
 ```text
 method descriptor: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V
@@ -155,7 +155,7 @@ method descriptor: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/o
     Lcom/luckypray/dexkit/demo/DemoActivity;->sum(II)I
 ```
 
-## 查找方法被哪些方法调用
+## find method be invoked
 
 ```kotlin
 DexKitBridge.create("")?.use { bridge ->
@@ -171,11 +171,12 @@ DexKitBridge.create("")?.use { bridge ->
 }
 ```
 
-我们得到如下输出:
+we get the following output:
 
 ```text
 result: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V
 ```
 
-> 所有API均可在 [API 文档](https://luckypray.org/DexKit-Doc/dexkit/io.luckypray.dexkit/-dex-kit-bridge/index.html)
-> 中进行查阅，你可以对API进行组合调用以获取你需要的结果。
+
+> All APIs can be found in the [API documentation](https://luckypray.org/DexKit-Doc/dexkit/io.luckypray.dexkit/-dex-kit-bridge/index.html), 
+> where you can combine them to get the results you need.

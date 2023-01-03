@@ -1,28 +1,23 @@
----
-home: true
-title: 首页
-actions:
-- text: 快速上手
-  link: /zh-cn/guide/home
-  type: primary
-- text: API KDoc
-  link: https://luckypray.org/DexKit-Doc
-  type: secondary
-features:
-- title: 简单易用
-  details: 不需要学习任何字节码以及实现，遵循"IDE 的所见即所得"接口设计原则，即：依赖 IDE 提示， 可不需要文档就能迅速上手
-- title: 高效
-  details: 使用 C++ 实现，且默认启用多线程懒加载资源，尽最大可能使用算法优化性能损耗，速度是同类型工具的十倍甚至上百倍
-- title: 跨平台
-  details: 能够在多种平台使用，例如在 Windows、Linux 或者 MacOS 中进行测试，测试完成后再将逻辑移入 Android 平台
-footer: LGPL-3.0 License | Copyright © 2022 LuckyPray
----
+# Introduce
 
-### 极致体验，拒绝繁琐
+> A high-performance runtime parsing library for dex implemented in C++, used for lookup of obfuscated classes,
+> methods, or properties.
 
-#### 样例 APP 代码
+## Supported functions
 
-> 假设这是一个宿主 APP 的被混淆后的代码，我们需要对这个方法的 hook 进行动态适配，由于混淆的存在，可能每个版本方法名以及类名都会发生变化
+- Batch search for methods/classes with specified string
+- Find methods/classes that use a specified string
+- Method call/called search
+- Direct subclass search
+- Method multi-condition search
+- Opcode sequence search (standard dex instructions only)
+- Annotation search (currently only supports search for string values)
+
+## Used Demo
+
+#### Demo App code
+
+> This is a host app's obfuscated code, and we need to dynamically adapt the hook for this method. Due to obfuscation, the method name and class name may change with each version.
 ```java
 public class abc {
     
@@ -36,10 +31,13 @@ public class abc {
 }
 ```
 
-#### Hook 代码
+dexkit can quickly meet our needs at this point.
 
-> 通过创建 `DexKitBridge` 实例，我们可以对 APP 的 dex 进行特定的查找，但是切记实例化只需要进行一次，请自行存储，不要重复创建。
-> 且在使用完毕后，需要调用 `DexKitBridge.close()` 方法，释放内存，否则会造成内存泄漏。
+#### Xposed hook code
+
+> By creating an instance of `DexKitBridge`, we can search for specific dex in the APP,
+> but remember to only instantiate it once and avoid repeating the creation. And after using it,
+> we need to call the `DexKitBridge.close()` method to release the memory, otherwise it will cause memory leakage.
 
 :::: code-group
 ::: code-group-item kotlin
@@ -91,4 +89,8 @@ public void vipHook() throws NoSuchMethodException {
 :::
 ::::
 
-怎么样？是不是很简单！
+How about that? Isn't it easy!
+
+Now, with the powerful performance of `DexKit`, you can quickly locate obfuscation.
+
+Next, let's learn how to use `DexKit`.

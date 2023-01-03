@@ -1,8 +1,8 @@
-<div style="text-align: center">
+<div align="center">
     <h1> DexKit </h1>
 
 [![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-![](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg)
+[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.luckypray%22%20AND%20a:%22DexKit%22)
 
 English | [简体中文](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
 
@@ -48,7 +48,7 @@ it only takes no more than twice the time to complete.
 
 ## Start using
 
-- [Click here](https://luckypray.org/DexKit) to go to the documentation page to view more detailed tutorials.
+- [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
 
 ## Cooperation project
 

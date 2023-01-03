@@ -7,7 +7,7 @@
 > 在你的项目中的 `app/build.gradle` 或者 `app/build.gradle.kts` 添加 `DexKit` 的依赖。
 
 ::: warning 注意
-从 1.0.3 版本开始，`DexKit` 已经从 jitpack.io 迁移到了 mavenCentral，如果你的项目中还在使用 jitpack.io 的话，请尽快迁移。
+从 1.1.0 版本开始，`DexKit` 已经从 jitpack.io 迁移到了 mavenCentral，如果你的项目中还在使用 jitpack.io 的话，请尽快迁移。
 :::
 
 :::: code-group

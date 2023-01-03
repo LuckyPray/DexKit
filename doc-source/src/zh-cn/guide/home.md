@@ -38,8 +38,6 @@ public class abc {
 }
 ```
 
-怎样简单快速的完成我们的需求？这时候我们的 `DexKit` 就派上用场了。
-
 ### Xposed Hook 代码
 
 > 通过创建 `DexKitBridge` 实例，我们可以对 APP 的 dex 进行特定的查找，但是切记实例化只需要进行一次，请自行存储，不要重复创建。
@@ -50,56 +48,53 @@ public class abc {
 ```kotlin
 @Throws(NoSuchMethodException::class)
 fun vipHook() {
-      val apkPath = hostApp.applicationInfo.sourceDir
-      create(apkPath)?.use { bridge ->
-          val deobfMap = mapOf(
-              "VipCheckUtil_isVip" to setOf("VipCheckUtil", "userInfo:")
-          )
+    val apkPath = hostApp.applicationInfo.sourceDir
+    DexKitBridge.create(apkPath)?.use { bridge ->
+        val resultMap = bridge.batchFindMethodsUsingStrings(
+            BatchFindArgs.build { 
+                addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
+            }
+        )
+        val result = resultMap["VipCheckUtil_isVip"]!!
+        assert(result.size == 1)
 
-          val resultMap = bridge.batchFindMethodsUsingStrings(map = deobfMap)
-          val result = resultMap["VipCheckUtil_isVip"]!!
-          assert(result.size == 1)
-
-          val method: Method = methodDescriptor[0]
-              .getMethodInstance(hostClassLoader)
-          XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
-      }
-  }
+        val method: Method = methodDescriptor[0]
+            .getMethodInstance(hostClassLoader)
+        XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
+    }
+}
 ```
 :::
 ::: code-group-item java
 ```java
 public void vipHook() throws NoSuchMethodException {
-      String apkPath = HostInfo.getHostApp().getApplicationInfo().sourceDir;
-      try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
-          if (bridge == null) {
-             return;
-          }
+    String apkPath = HostInfo.getHostApp().getApplicationInfo().sourceDir;
+    try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+        if (bridge == null) {
+            return;
+        }
+        Map<String, List<DexMethodDescriptor>> resultMap =
+            bridge.batchFindMethodsUsingStrings(
+                new BatchFindArgs.Builder()
+                    .addQuery("VipCheckUtil_isVip", List.of("VipCheckUtil", "userInfo:"))
+                    .build()
+            );
 
-          Map<String, List<String>> deobfMap = new HashMap<>();
-          deobfMap.put("VipCheckUtil_isVip", List.of("VipCheckUtil", "userInfo:"));
+        List<DexMethodDescriptor> result = Objects.requireNonNull(resultMap.get("VipCheckUtil_isVip"));
+        assert result.size() == 1;
 
-          Map<String, List<DexMethodDescriptor>> resultMap = bridge.batchFindMethodsUsingStrings(
-              deobfMap,
-              true,
-              null
-          );
-
-          List<DexMethodDescriptor> result = Objects.requireNonNull(resultMap.get("VipCheckUtil_isVip"));
-          assert result.size() == 1;
-          
-          DexMethodDescriptor descriptor = result.get(0);
-          Method isVipMethod = descriptor.get(0)
-              .getMethodInstance(HostInfo.getHostClassLoader());
-          XposedBridge.hookMethod(isVipMethod, XC_MethodReplacement.returnConstant(true));
-      }
-  }
+        DexMethodDescriptor descriptor = result.get(0);
+        Method isVipMethod = descriptor.get(0)
+            .getMethodInstance(HostInfo.getHostClassLoader());
+        XposedBridge.hookMethod(isVipMethod, XC_MethodReplacement.returnConstant(true));
+    }
+}
 ```
 :::
 ::::
 
 怎么样？是不是很简单！只需短短几行代码就完成了动态混淆的适配。
 
-现在，借助性能强劲的 `DexKit`，我们可以快速的完成我们的需求，而不需要担心混淆的问题。
+现在，借助性能强劲的 `DexKit`，可以快速的完成混淆的定位。
 
 下面我们来学习一下 `DexKit` 的使用方法。

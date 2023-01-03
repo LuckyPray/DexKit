@@ -1,8 +1,8 @@
-<div style="text-align: center">
+<div align="center">
     <h1> DexKit </h1>
 
 [![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-![](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg)
+[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.luckypray%22%20AND%20a:%22DexKit%22)
 
 [English](https://github.com/LuckyPray/DexKit/blob/master/README.md) | 简体中文
 
@@ -21,7 +21,7 @@
 
 目前对于 Dex 文件的解析库有很多，但是基本上都是基于 `dexlib2` 实现的。如果宿主应用程序内有很多 Dex 文件，则搜索时间可能长达数分钟，
 这对用户来说是一种不好的体验。因此，`DexKit` 应运而生。它使用 C++ 实现，并使用多线程加速，可以在短时间内完成搜索。它具有非常高的性能，
-单次搜索的时间在毫秒级别，且支持多线程并发搜索。即使是拥有着 30+ dex 文件的大型应用，使用 `DexKit` 也能在 100 毫秒左右完成单次搜索。
+单次搜索的时间在毫秒级别，且支持多线程并发搜索。就算是拥有着 30+ dex 文件的大型应用，使用 `DexKit` 也能在 100 毫秒左右完成单次搜索。
 此外，它还针对字符串搜索场景进行了优化，即使要搜索数以百计的字符串，也只需要在两倍的时间内即可完成。
 
 ## 支持的功能
@@ -39,7 +39,7 @@
 
 ## 开始使用
 
-- [点击这里](https://luckypray.org/DexKit) 前往文档页面查看更多详细教程
+- [点击这里](https://luckypray.org/DexKit/zh-cn/) 前往文档页面查看更多详细教程
 
 ## 合作项目
 
