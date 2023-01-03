@@ -1,7 +1,5 @@
 package io.luckypray.dexkit.builder
 
-import io.luckypray.dexkit.annotations.DexKitExperimentalApi
-import io.luckypray.dexkit.util.getOpCode
 import io.luckypray.dexkit.enums.FieldUsingType
 
 /**
@@ -81,7 +79,7 @@ class MethodUsingFieldArgs private constructor(
          *     FieldUsingType.PUT match "iput", "iput-*", "sput", "sput-*" instruction
          *     FieldUsingType.ALL match GET or PUT
          */
-        var type: FieldUsingType = FieldUsingType.ALL
+        var usingType: FieldUsingType = FieldUsingType.ALL
 
         /**
          * **caller method declare class**
@@ -161,10 +159,10 @@ class MethodUsingFieldArgs private constructor(
         }
 
         /**
-         * [Builder.type]
+         * [Builder.usingType]
          */
         fun setUsedFlags(type: FieldUsingType) = this.also {
-            this.type = type
+            this.usingType = type
         }
 
         /**
@@ -214,7 +212,7 @@ class MethodUsingFieldArgs private constructor(
                 fieldDeclareClass,
                 fieldName,
                 fieldType,
-                type.toByteFlag(),
+                usingType.toByteFlag(),
                 callerMethodDeclareClass,
                 callerMethodName,
                 callerMethodReturnType,

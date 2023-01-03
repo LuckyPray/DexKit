@@ -1,4 +1,5 @@
 @file:JvmName("DexDescriptorUtil")
+
 package io.luckypray.dexkit.util
 
 import java.lang.reflect.Constructor
@@ -26,9 +27,8 @@ fun getTypeSig(type: Class<*>): String {
             else -> throw IllegalStateException("Unknown primitive type: $type")
         }
     }
-    return if (type.isArray) {
-        "[" + getTypeSig(type.componentType!!)
-    } else "L" + type.name.replace('.', '/') + ";"
+    return if (type.isArray) "[" + getTypeSig(type.componentType!!)
+    else "L" + type.name.replace('.', '/') + ";"
 }
 
 fun getMethodSignature(method: Method): String {
