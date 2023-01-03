@@ -9,6 +9,7 @@ import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 class MethodUsingAnnotationArgs private constructor(
     val annotationClass: String,
     val annotationUsingString: String,
+    val advancedMatch: Boolean,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
@@ -41,6 +42,13 @@ class MethodUsingAnnotationArgs private constructor(
          * if empty, match any annotation
          */
         var annotationUsingString: String = ""
+
+        /**
+         * **advanced match**
+         *
+         * if true, match annotation using string
+         */
+        var advancedMatch: Boolean = true
 
         /**
          * **method declare class**
@@ -85,6 +93,13 @@ class MethodUsingAnnotationArgs private constructor(
         }
 
         /**
+         * [Builder.advancedMatch]
+         */
+        fun setAdvancedMatch(advancedMatch: Boolean) = this.also {
+            this.advancedMatch = advancedMatch
+        }
+
+        /**
          * [Builder.methodDeclareClass]
          */
         fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
@@ -122,6 +137,7 @@ class MethodUsingAnnotationArgs private constructor(
             return MethodUsingAnnotationArgs(
                 annotationClass,
                 annotationUsingString,
+                advancedMatch,
                 methodDeclareClass,
                 methodName,
                 methodReturnType,

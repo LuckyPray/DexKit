@@ -14,6 +14,7 @@ import io.luckypray.dexkit.builder.MethodUsingStringArgs
 import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
+import io.luckypray.dexkit.enums.FieldUsingType
 import io.luckypray.dexkit.util.getOpFormat
 import java.io.Closeable
 
@@ -336,7 +337,7 @@ class DexKitBridge : Closeable {
         fieldDeclareClass: String = "",
         fieldName: String = "",
         fieldType: String = "",
-        usedFlags: Int = FLAG_USING,
+        usedFlags: Int = FieldUsingType.ALL.toByteFlag(),
         callerMethodDeclareClass: String = "",
         callerMethodName: String = "",
         callerMethodReturnType: String = "",
@@ -429,6 +430,7 @@ class DexKitBridge : Closeable {
             token,
             args.annotationClass,
             args.annotationUsingString,
+            args.advancedMatch,
             null
         ).map { DexClassDescriptor(it) }
     }
@@ -447,6 +449,7 @@ class DexKitBridge : Closeable {
             token,
             annotationClass,
             annotationUsingString,
+            false,
             dexPriority
         ).map { DexClassDescriptor(it) }
     }
@@ -465,6 +468,7 @@ class DexKitBridge : Closeable {
             token,
             args.annotationClass,
             args.annotationUsingString,
+            args.advancedMatch,
             args.fieldDeclareClass,
             args.fieldName,
             args.fieldType,
@@ -489,6 +493,7 @@ class DexKitBridge : Closeable {
             token,
             annotationClass,
             annotationUsingString,
+            false,
             fieldDeclareClass,
             fieldName,
             fieldType,
@@ -512,6 +517,7 @@ class DexKitBridge : Closeable {
             token,
             args.annotationClass,
             args.annotationUsingString,
+            false,
             args.methodDeclareClass,
             args.methodName,
             args.methodReturnType,
@@ -538,6 +544,7 @@ class DexKitBridge : Closeable {
             token,
             annotationClass,
             annotationUsingString,
+            false,
             methodDeclareClass,
             methodName,
             methodReturnType,
@@ -889,7 +896,7 @@ class DexKitBridge : Closeable {
             fieldDeclareClass: String,
             fieldName: String,
             fieldType: String,
-            usedFlags: Int = FLAG_USING,
+            usedFlags: Int,
             callerMethodDeclareClass: String,
             callerMethodName: String,
             callerMethodReturnType: String,
@@ -916,6 +923,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
+            advancedMatch: Boolean,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -924,6 +932,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
+            advancedMatch: Boolean,
             fieldDeclareClass: String,
             fieldName: String,
             fieldType: String,
@@ -935,6 +944,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
+            advancedMatch: Boolean,
             methodDeclareClass: String,
             methodName: String,
             methodReturnType: String,

@@ -213,6 +213,7 @@ public:
     std::vector<std::string>
     FindClassUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
+                             bool advanced_match,
                              const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -228,6 +229,7 @@ public:
     std::vector<std::string>
     FindFieldUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
+                             bool advanced_match,
                              const std::string &field_declare_class,
                              const std::string &field_declare_name,
                              const std::string &field_type,
@@ -247,6 +249,7 @@ public:
     std::vector<std::string>
     FindMethodUsingAnnotation(const std::string &annotation_class,
                               const std::string &annotation_using_string,
+                              bool advanced_match,
                               const std::string &method_declare_class,
                               const std::string &method_declare_name,
                               const std::string &method_return_type,

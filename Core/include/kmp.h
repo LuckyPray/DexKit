@@ -37,7 +37,7 @@ static int FindIndex(const std::vector<uint8_t> &data, const std::vector<uint8_t
     return -1;
 }
 
-static void FindNext(const std::string_view &data, const std::string &find, std::vector<int> &next) {
+static void FindNext(const std::string_view &data, const std::string_view &find, std::vector<int> &next) {
     int i = 0;
     int k = next[0] = -1;
     int len = (int) find.size();
@@ -50,7 +50,7 @@ static void FindNext(const std::string_view &data, const std::string &find, std:
     }
 }
 
-static int FindIndex(const std::string_view &data, const std::string &find) {
+static int FindIndex(const std::string_view &data, const std::string_view &find) {
     std::vector<int> next(find.size() + 5);
     FindNext(data, find, next);
     int i = 0, j = 0;

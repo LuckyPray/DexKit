@@ -9,6 +9,7 @@ import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 class FieldUsingAnnotationArgs private constructor(
     val annotationClass: String,
     val annotationUsingString: String,
+    val advancedMatch: Boolean,
     val fieldDeclareClass: String,
     val fieldName: String,
     val fieldType: String,
@@ -40,6 +41,13 @@ class FieldUsingAnnotationArgs private constructor(
          * if empty, match any annotation
          */
         var annotationUsingString: String = ""
+
+        /**
+         * **advanced match**
+         *
+         * if true, match annotation using string
+         */
+        var advancedMatch: Boolean = true
 
         /**
          * **field declare class**
@@ -107,6 +115,7 @@ class FieldUsingAnnotationArgs private constructor(
             return FieldUsingAnnotationArgs(
                 annotationClass,
                 annotationUsingString,
+                advancedMatch,
                 fieldDeclareClass,
                 fieldName,
                 fieldType,
