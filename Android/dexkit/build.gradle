@@ -9,6 +9,8 @@ plugins {
 def signingPropFile = new File(projectDir, "signing.properties")
 def performSigning = signingPropFile.exists()
 
+def libVersion = "1.1.0-beta4"
+
 android {
     namespace "io.luckypray.dexkit"
     compileSdk 33
@@ -124,7 +126,7 @@ afterEvaluate {
                 groupId = "org.luckypray"
                 artifactId = "DexKit"
                 description = "A high-performance dex parsing library implemented in C++"
-                version = "1.1.0-beta3"
+                version = libVersion
 
                 pom {
                     name = 'DexKit'
@@ -175,10 +177,13 @@ afterEvaluate {
     }
 }
 
-dokkaGfm.configure {
+dokkaHtml.configure {
+//    outputDirectory.set("$rootDir/javadoc")
     dokkaSourceSets {
         named("main") {
-            noAndroidSdkLink.set(false)
+            noAndroidSdkLink.set(true)
+            noStdlibLink.set(true)
+            noJdkLink.set(true)
         }
     }
 }
