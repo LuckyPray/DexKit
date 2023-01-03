@@ -1,7 +1,7 @@
 package io.luckypray.dexkit.builder
 
 import io.luckypray.dexkit.annotations.DexKitExperimentalApi
-import io.luckypray.dexkit.descriptor.util.getOpCode
+import io.luckypray.dexkit.util.getOpCode
 import io.luckypray.dexkit.enums.FieldUsingType
 
 /**

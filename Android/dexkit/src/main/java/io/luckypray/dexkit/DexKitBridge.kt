@@ -14,7 +14,7 @@ import io.luckypray.dexkit.builder.MethodUsingStringArgs
 import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
-import io.luckypray.dexkit.descriptor.util.getOpFormat
+import io.luckypray.dexkit.util.getOpFormat
 import java.io.Closeable
 
 class DexKitBridge : Closeable {

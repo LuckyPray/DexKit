@@ -1,8 +1,8 @@
 package io.luckypray.dexkit.descriptor.member
 
 import io.luckypray.dexkit.descriptor.DexDescriptor
-import io.luckypray.dexkit.descriptor.util.getClassName
-import io.luckypray.dexkit.descriptor.util.getTypeSig
+import io.luckypray.dexkit.util.getClassName
+import io.luckypray.dexkit.util.getTypeSig
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 

@@ -1,6 +1,6 @@
 @file:JvmName("OpCodeUtil")
 
-package io.luckypray.dexkit.descriptor.util
+package io.luckypray.dexkit.util
 
 private val opFormat = arrayOf(
     "nop",

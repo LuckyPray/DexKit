@@ -1,7 +1,7 @@
 package io.luckypray.dexkit.descriptor.member
 
 import io.luckypray.dexkit.descriptor.DexDescriptor
-import io.luckypray.dexkit.descriptor.util.getClassName
+import io.luckypray.dexkit.util.getClassName
 
 class DexClassDescriptor : DexDescriptor {
 

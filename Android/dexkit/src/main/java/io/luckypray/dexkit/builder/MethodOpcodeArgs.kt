@@ -1,6 +1,6 @@
 package io.luckypray.dexkit.builder
 
-import io.luckypray.dexkit.descriptor.util.getOpCode
+import io.luckypray.dexkit.util.getOpCode
 
 /**
  * @since 1.1.0
