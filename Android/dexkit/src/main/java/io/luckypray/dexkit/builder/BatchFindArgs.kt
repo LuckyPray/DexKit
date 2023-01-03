@@ -6,7 +6,7 @@ import io.luckypray.dexkit.DexKitBridge
  * @since 1.1.0
  */
 class BatchFindArgs private constructor(
-    val queryMap: Map<String, Iterable<String>>,
+    val queryMap: Map<String, Set<String>>,
     val advancedMatch: Boolean,
 ) : BaseArgs() {
 
@@ -28,7 +28,7 @@ class BatchFindArgs private constructor(
         /**
          * query map, key is unique key, value is class/method using strings
          */
-        var queryMap = mutableMapOf<String, Iterable<String>>()
+        var queryMap = mutableMapOf<String, Set<String>>()
 
         /**
          * enable advanced match.
@@ -43,7 +43,8 @@ class BatchFindArgs private constructor(
          * [Builder.queryMap]
          */
         fun setQueryMap(queryMap: Map<String, Iterable<String>>) = this.also {
-            this.queryMap = if (queryMap is MutableMap) queryMap else queryMap.toMutableMap()
+            this.queryMap.clear()
+            this.queryMap.putAll(queryMap.mapValues { it.value.toSet() })
         }
 
         /**
@@ -53,7 +54,7 @@ class BatchFindArgs private constructor(
          * @param [usingStrings] class/method using strings
          */
         fun addQuery(key: String, usingStrings: Iterable<String>) = this.also {
-            this.queryMap[key] = usingStrings
+            this.queryMap[key] = usingStrings.toSet()
         }
 
         /**
@@ -63,7 +64,7 @@ class BatchFindArgs private constructor(
          * @param [usingStrings] class/method using strings
          */
         fun addQuery(key: String, usingStrings: Array<String>) = this.also {
-            this.queryMap[key] = usingStrings.toList()
+            this.queryMap[key] = usingStrings.toSet()
         }
 
         /**
