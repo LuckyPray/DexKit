@@ -39,7 +39,7 @@ export const configs = {
     github: {
         repo: 'https://github.com/LuckyPray/DexKit',
         branch: 'docs',
-        dir: 'docs-source/src'
+        dir: 'doc-source/src'
     }
 };
 
