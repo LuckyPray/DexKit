@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package io.luckypray.dexkit
 
 import io.luckypray.dexkit.annotations.DexKitExperimentalApi
@@ -5,9 +7,9 @@ import io.luckypray.dexkit.builder.BatchFindArgs
 import io.luckypray.dexkit.builder.ClassUsingAnnotationArgs
 import io.luckypray.dexkit.builder.FieldUsingAnnotationArgs
 import io.luckypray.dexkit.builder.FindMethodArgs
-import io.luckypray.dexkit.builder.MethodOpcodeArgs
 import io.luckypray.dexkit.builder.MethodCallerArgs
 import io.luckypray.dexkit.builder.MethodInvokingArgs
+import io.luckypray.dexkit.builder.MethodOpcodeArgs
 import io.luckypray.dexkit.builder.MethodUsingAnnotationArgs
 import io.luckypray.dexkit.builder.MethodUsingFieldArgs
 import io.luckypray.dexkit.builder.MethodUsingStringArgs
@@ -76,6 +78,7 @@ class DexKitBridge : Closeable {
         nativeExportDexFile(token, outPath)
     }
 
+    //#region batchFindClassesUsingStrings
     /**
      * find used all matched keywords in class (all methods of this class)
      *
@@ -85,44 +88,42 @@ class DexKitBridge : Closeable {
      */
     fun batchFindClassesUsingStrings(
         args: BatchFindArgs
-    ): Map<String, List<DexClassDescriptor>> {
-        return nativeBatchFindClassesUsingStrings(token, args.queryMap, args.advancedMatch, null)
-            .mapValues { it.value.map { DexClassDescriptor(it) } }
-    }
+    ): Map<String, List<DexClassDescriptor>> = nativeBatchFindClassesUsingStrings(token, args.queryMap, args.advancedMatch, null)
+        .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
+
+    inline fun batchFindClassesUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
+        batchFindClassesUsingStrings(BatchFindArgs.build(builder))
 
     /**
-     * @suppress use [batchFindClassesUsingStrings] instead
      * @see [batchFindClassesUsingStrings]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("batchFindClassesUsingStrings(BatchFindArgs)"))
     fun batchFindClassesUsingStrings(
         map: Map<String, Iterable<String>>,
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
-    ): Map<String, List<DexClassDescriptor>> {
-        return nativeBatchFindClassesUsingStrings(token, map, advancedMatch, dexPriority)
-            .mapValues { it.value.map { DexClassDescriptor(it) } }
-    }
+    ): Map<String, List<DexClassDescriptor>> = nativeBatchFindClassesUsingStrings(token, map, advancedMatch, dexPriority)
+        .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     /**
-     * @suppress use [batchFindClassesUsingStrings] instead
      * @see [batchFindClassesUsingStrings]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("batchFindClassesUsingStrings(BatchFindArgs)"))
     @JvmName("batchFindClassesUsingArrayStrings")
     fun batchFindClassesUsingStrings(
         map: Map<String, Array<String>>,
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
-    ): Map<String, List<DexClassDescriptor>> {
-        return nativeBatchFindClassesUsingStrings(
-            token,
-            map.mapValues { it.value.toList() },
-            advancedMatch,
-            dexPriority
-        ).mapValues { it.value.map { DexClassDescriptor(it) } }
-    }
+    ): Map<String, List<DexClassDescriptor>> = nativeBatchFindClassesUsingStrings(
+        token,
+        map.mapValues { it.value.toList() },
+        advancedMatch,
+        dexPriority
+    ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
+    //#endregion
+
+    //#region batchFindMethodsUsingStrings
     /**
      * find used all matched keywords in method.
      *
@@ -132,44 +133,42 @@ class DexKitBridge : Closeable {
      */
     fun batchFindMethodsUsingStrings(
         args: BatchFindArgs
-    ): Map<String, List<DexMethodDescriptor>> {
-        return nativeBatchFindMethodsUsingStrings(token, args.queryMap, args.advancedMatch, null)
-            .mapValues { it.value.map { DexMethodDescriptor(it) } }
-    }
+    ): Map<String, List<DexMethodDescriptor>> = nativeBatchFindMethodsUsingStrings(token, args.queryMap, args.advancedMatch, null)
+        .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
+
+    inline fun batchFindMethodsUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
+        batchFindMethodsUsingStrings(BatchFindArgs.build(builder))
 
     /**
-     * @suppress use [batchFindMethodsUsingStrings] instead
      * @see [batchFindMethodsUsingStrings]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("batchFindMethodsUsingStrings(BatchFindArgs)"))
     fun batchFindMethodsUsingStrings(
         map: Map<String, Iterable<String>>,
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
-    ): Map<String, List<DexMethodDescriptor>> {
-        return nativeBatchFindMethodsUsingStrings(token, map, advancedMatch, dexPriority)
-            .mapValues { it.value.map { DexMethodDescriptor(it) } }
-    }
+    ): Map<String, List<DexMethodDescriptor>> = nativeBatchFindMethodsUsingStrings(token, map, advancedMatch, dexPriority)
+        .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     /**
-     * @suppress use [batchFindMethodsUsingStrings] instead
      * @see [batchFindMethodsUsingStrings]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("batchFindMethodsUsingStrings(BatchFindArgs)"))
     @JvmName("batchFindMethodsUsingArrayStrings")
     fun batchFindMethodsUsingStrings(
         map: Map<String, Array<String>>,
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
-    ): Map<String, List<DexMethodDescriptor>> {
-        return nativeBatchFindMethodsUsingStrings(
-            token,
-            map.mapValues { it.value.toList() },
-            advancedMatch,
-            dexPriority
-        ).mapValues { it.value.map { DexMethodDescriptor(it) } }
-    }
+    ): Map<String, List<DexMethodDescriptor>> = nativeBatchFindMethodsUsingStrings(
+        token,
+        map.mapValues { it.value.toList() },
+        advancedMatch,
+        dexPriority
+    ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
+    //#endregion
+
+    //#region findMethodCaller
     /**
      * find caller for specified method.
      *
@@ -179,28 +178,27 @@ class DexKitBridge : Closeable {
      */
     fun findMethodCaller(
         args: MethodCallerArgs
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodCaller(
-            token,
-            args.methodDescriptor,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParameterTypes,
-            args.callerMethodDeclareClass,
-            args.callerMethodName,
-            args.callerMethodReturnType,
-            args.callerMethodParameterTypes,
-            args.uniqueResult,
-            null
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodCaller(
+        token,
+        args.methodDescriptor,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParameterTypes,
+        args.callerMethodDeclareClass,
+        args.callerMethodName,
+        args.callerMethodReturnType,
+        args.callerMethodParameterTypes,
+        args.uniqueResult,
+        null
+    ).map { DexMethodDescriptor(it) }
+
+    inline fun findMethodCaller(builder: MethodCallerArgs.Builder.() -> Unit) = findMethodCaller(MethodCallerArgs.build(builder))
 
     /**
-     * @suppress use [findMethodCaller] instead
      * @see [findMethodCaller]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodCaller(MethodCallerArgs)"))
     fun findMethodCaller(
         methodDescriptor: String,
         methodDeclareClass: String = "",
@@ -213,23 +211,24 @@ class DexKitBridge : Closeable {
         callerMethodParameterTypes: Array<String>? = null,
         uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodCaller(
-            token,
-            methodDescriptor,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParameterTypes,
-            callerMethodDeclareClass,
-            callerMethodName,
-            callerMethodReturnType,
-            callerMethodParameterTypes,
-            uniqueResult,
-            dexPriority
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodCaller(
+        token,
+        methodDescriptor,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParameterTypes,
+        callerMethodDeclareClass,
+        callerMethodName,
+        callerMethodReturnType,
+        callerMethodParameterTypes,
+        uniqueResult,
+        dexPriority
+    ).map { DexMethodDescriptor(it) }
 
+    //#endregion
+
+    //#region findMethodInvoking
     /**
      * find the specified method's invoking list.
      *
@@ -243,29 +242,29 @@ class DexKitBridge : Closeable {
      */
     fun findMethodInvoking(
         args: MethodInvokingArgs
-    ): Map<DexMethodDescriptor, List<DexMethodDescriptor>> {
-        return nativeFindMethodInvoking(
-            token,
-            args.methodDescriptor,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParameterTypes,
-            args.beInvokedMethodDeclareClass,
-            args.beInvokedMethodName,
-            args.beInvokedMethodReturnType,
-            args.beInvokedMethodParamTypes,
-            args.uniqueResult,
-            null
-        ).mapKeys { DexMethodDescriptor(it.key) }
-            .mapValues { it.value.map { DexMethodDescriptor(it) } }
-    }
+    ): Map<DexMethodDescriptor, List<DexMethodDescriptor>> = nativeFindMethodInvoking(
+        token,
+        args.methodDescriptor,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParameterTypes,
+        args.beInvokedMethodDeclareClass,
+        args.beInvokedMethodName,
+        args.beInvokedMethodReturnType,
+        args.beInvokedMethodParamTypes,
+        args.uniqueResult,
+        null
+    )
+        .mapKeys { DexMethodDescriptor(it.key) }
+        .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
+
+    inline fun findMethodInvoking(builder: MethodInvokingArgs.Builder.() -> Unit) = findMethodInvoking(MethodInvokingArgs.build(builder))
 
     /**
-     * @suppress use [findMethodInvoking] instead
      * @see [findMethodInvoking]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodInvoking(MethodInvokingArgs)"))
     fun findMethodInvoking(
         methodDescriptor: String,
         methodDeclareClass: String = "",
@@ -278,28 +277,30 @@ class DexKitBridge : Closeable {
         beCalledMethodParamTypes: Array<String>? = null,
         uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
-    ): Map<DexMethodDescriptor, List<DexMethodDescriptor>> {
-        return nativeFindMethodInvoking(
-            token,
-            methodDescriptor,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParameterTypes,
-            beCalledMethodDeclareClass,
-            beCalledMethodName,
-            beCalledMethodReturnType,
-            beCalledMethodParamTypes,
-            uniqueResult,
-            dexPriority
-        ).mapKeys { DexMethodDescriptor(it.key) }
-            .mapValues { it.value.map { DexMethodDescriptor(it) } }
-    }
+    ): Map<DexMethodDescriptor, List<DexMethodDescriptor>> = nativeFindMethodInvoking(
+        token,
+        methodDescriptor,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParameterTypes,
+        beCalledMethodDeclareClass,
+        beCalledMethodName,
+        beCalledMethodReturnType,
+        beCalledMethodParamTypes,
+        uniqueResult,
+        dexPriority
+    )
+        .mapKeys { DexMethodDescriptor(it.key) }
+        .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
+    //#endregion
+
+    //#region findMethodUsingField
     /**
      * find method getting specified field.
      *
-     * @param [args] search builder by [FieldGetterArgs]
+     * @param [args] search builder by [MethodUsingFieldArgs]
      * @return Aggregate according to caller
      *
      *    key: caller method descriptor
@@ -309,29 +310,29 @@ class DexKitBridge : Closeable {
      */
     fun findMethodUsingField(
         args: MethodUsingFieldArgs
-    ): Map<DexMethodDescriptor, List<DexFieldDescriptor>> {
-        return nativeFindMethodUsingField(
-            token,
-            args.fieldDescriptor,
-            args.fieldDeclareClass,
-            args.fieldName,
-            args.fieldType,
-            args.usingFlag,
-            args.callerMethodDeclareClass,
-            args.callerMethodName,
-            args.callerMethodReturnType,
-            args.callerMethodParamTypes,
-            args.uniqueResult,
-            null
-        ).mapKeys { DexMethodDescriptor(it.key) }
-            .mapValues { it.value.map { DexFieldDescriptor(it) } }
-    }
+    ): Map<DexMethodDescriptor, List<DexFieldDescriptor>> = nativeFindMethodUsingField(
+        token,
+        args.fieldDescriptor,
+        args.fieldDeclareClass,
+        args.fieldName,
+        args.fieldType,
+        args.usingFlag,
+        args.callerMethodDeclareClass,
+        args.callerMethodName,
+        args.callerMethodReturnType,
+        args.callerMethodParamTypes,
+        args.uniqueResult,
+        null
+    )
+        .mapKeys { DexMethodDescriptor(it.key) }
+        .mapValues { m -> m.value.map { DexFieldDescriptor(it) } }
+
+    inline fun findMethodUsingField(builder: MethodUsingFieldArgs.Builder.() -> Unit) = findMethodUsingField(MethodUsingFieldArgs.build(builder))
 
     /**
-     * @suppress use [findMethodUsingField] instead
      * @see [findMethodUsingField]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodUsingField(MethodUsingFieldArgs)"))
     fun findMethodUsingField(
         fieldDescriptor: String,
         fieldDeclareClass: String = "",
@@ -344,24 +345,26 @@ class DexKitBridge : Closeable {
         callerMethodParamTypes: Array<String>? = null,
         uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
-    ): Map<DexMethodDescriptor, List<DexFieldDescriptor>> {
-        return nativeFindMethodUsingField(
-            token,
-            fieldDescriptor,
-            fieldDeclareClass,
-            fieldName,
-            fieldType,
-            usedFlags,
-            callerMethodDeclareClass,
-            callerMethodName,
-            callerMethodReturnType,
-            callerMethodParamTypes,
-            uniqueResult,
-            dexPriority
-        ).mapKeys { DexMethodDescriptor(it.key) }
-            .mapValues { it.value.map { DexFieldDescriptor(it) } }
-    }
+    ): Map<DexMethodDescriptor, List<DexFieldDescriptor>> = nativeFindMethodUsingField(
+        token,
+        fieldDescriptor,
+        fieldDeclareClass,
+        fieldName,
+        fieldType,
+        usedFlags,
+        callerMethodDeclareClass,
+        callerMethodName,
+        callerMethodReturnType,
+        callerMethodParamTypes,
+        uniqueResult,
+        dexPriority
+    )
+        .mapKeys { DexMethodDescriptor(it.key) }
+        .mapValues { m -> m.value.map { DexFieldDescriptor(it) } }
 
+    //#endregion
+
+    //#region findMethodUsingString
     /**
      * find method used utf8 string
      *
@@ -372,25 +375,25 @@ class DexKitBridge : Closeable {
      */
     fun findMethodUsingString(
         args: MethodUsingStringArgs
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingString(
-            token,
-            args.usingString,
-            args.advancedMatch,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            args.unique,
-            null
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingString(
+        token,
+        args.usingString,
+        args.advancedMatch,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        args.unique,
+        null
+    ).map { DexMethodDescriptor(it) }
+
+    inline fun findMethodUsingString(builder: MethodUsingStringArgs.Builder.() -> Unit) =
+        findMethodUsingString(MethodUsingStringArgs.build(builder))
 
     /**
-     * @suppress use [findMethodUsingString] instead
      * @see [findMethodUsingString]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodUsingString(MethodUsingStringArgs)"))
     fun findMethodUsingString(
         usingString: String,
         advancedMatch: Boolean = true,
@@ -400,20 +403,21 @@ class DexKitBridge : Closeable {
         methodParamTypes: Array<String>? = null,
         uniqueResult: Boolean = true,
         dexPriority: IntArray? = null
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingString(
-            token,
-            usingString,
-            advancedMatch,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParamTypes,
-            uniqueResult,
-            dexPriority
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingString(
+        token,
+        usingString,
+        advancedMatch,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParamTypes,
+        uniqueResult,
+        dexPriority
+    ).map { DexMethodDescriptor(it) }
 
+    //#endregion
+
+    //#region findClassUsingAnnotation
     /**
      * find using annotation's class
      *
@@ -425,35 +429,37 @@ class DexKitBridge : Closeable {
     @DexKitExperimentalApi
     fun findClassUsingAnnotation(
         args: ClassUsingAnnotationArgs
-    ): List<DexClassDescriptor> {
-        return nativeFindClassUsingAnnotation(
-            token,
-            args.annotationClass,
-            args.annotationUsingString,
-            args.advancedMatch,
-            null
-        ).map { DexClassDescriptor(it) }
-    }
+    ): List<DexClassDescriptor> = nativeFindClassUsingAnnotation(
+        token,
+        args.annotationClass,
+        args.annotationUsingString,
+        args.advancedMatch,
+        null
+    ).map { DexClassDescriptor(it) }
+
+    @DexKitExperimentalApi
+    inline fun findClassUsingAnnotation(builder: ClassUsingAnnotationArgs.Builder.() -> Unit) =
+        findClassUsingAnnotation(ClassUsingAnnotationArgs.build(builder))
 
     /**
-     * @suppress use [findClassUsingAnnotation] instead
      * @see [findClassUsingAnnotation]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findClassUsingAnnotation(ClassUsingAnnotationArgs)"))
     fun findClassUsingAnnotation(
         annotationClass: String,
         annotationUsingString: String = "",
         dexPriority: IntArray? = null
-    ): List<DexClassDescriptor> {
-        return nativeFindClassUsingAnnotation(
-            token,
-            annotationClass,
-            annotationUsingString,
-            false,
-            dexPriority
-        ).map { DexClassDescriptor(it) }
-    }
+    ): List<DexClassDescriptor> = nativeFindClassUsingAnnotation(
+        token,
+        annotationClass,
+        annotationUsingString,
+        false,
+        dexPriority
+    ).map { DexClassDescriptor(it) }
 
+    //#endregion
+
+    //#region findFieldUsingAnnotation
     /**
      * find using annotation's field
      *
@@ -463,24 +469,25 @@ class DexKitBridge : Closeable {
     @DexKitExperimentalApi
     fun findFieldUsingAnnotation(
         args: FieldUsingAnnotationArgs
-    ): List<DexFieldDescriptor> {
-        return nativeFindFieldUsingAnnotation(
-            token,
-            args.annotationClass,
-            args.annotationUsingString,
-            args.advancedMatch,
-            args.fieldDeclareClass,
-            args.fieldName,
-            args.fieldType,
-            null
-        ).map { DexFieldDescriptor(it) }
-    }
+    ): List<DexFieldDescriptor> = nativeFindFieldUsingAnnotation(
+        token,
+        args.annotationClass,
+        args.annotationUsingString,
+        args.advancedMatch,
+        args.fieldDeclareClass,
+        args.fieldName,
+        args.fieldType,
+        null
+    ).map { DexFieldDescriptor(it) }
+
+    @DexKitExperimentalApi
+    inline fun findFieldUsingAnnotation(builder: FieldUsingAnnotationArgs.Builder.() -> Unit) =
+        findFieldUsingAnnotation(FieldUsingAnnotationArgs.build(builder))
 
     /**
-     * @suppress use [findFieldUsingAnnotation] instead
      * @see [findFieldUsingAnnotation]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findFieldUsingAnnotation(FieldUsingAnnotationArgs)"))
     fun findFieldUsingAnnotation(
         annotationClass: String,
         annotationUsingString: String = "",
@@ -488,19 +495,20 @@ class DexKitBridge : Closeable {
         fieldName: String = "",
         fieldType: String = "",
         dexPriority: IntArray? = null
-    ): List<DexFieldDescriptor> {
-        return nativeFindFieldUsingAnnotation(
-            token,
-            annotationClass,
-            annotationUsingString,
-            false,
-            fieldDeclareClass,
-            fieldName,
-            fieldType,
-            dexPriority
-        ).map { DexFieldDescriptor(it) }
-    }
+    ): List<DexFieldDescriptor> = nativeFindFieldUsingAnnotation(
+        token,
+        annotationClass,
+        annotationUsingString,
+        false,
+        fieldDeclareClass,
+        fieldName,
+        fieldType,
+        dexPriority
+    ).map { DexFieldDescriptor(it) }
 
+    //#endregion
+
+    //#region findMethodUsingAnnotation
     /**
      * find using annotation's method
      *
@@ -512,25 +520,26 @@ class DexKitBridge : Closeable {
     @DexKitExperimentalApi
     fun findMethodUsingAnnotation(
         args: MethodUsingAnnotationArgs
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingAnnotation(
-            token,
-            args.annotationClass,
-            args.annotationUsingString,
-            false,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            null
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingAnnotation(
+        token,
+        args.annotationClass,
+        args.annotationUsingString,
+        false,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        null
+    ).map { DexMethodDescriptor(it) }
+
+    @DexKitExperimentalApi
+    inline fun findMethodUsingAnnotation(builder: MethodUsingAnnotationArgs.Builder.() -> Unit) =
+        findMethodUsingAnnotation(MethodUsingAnnotationArgs.build(builder))
 
     /**
-     * @suppress use [findMethodUsingAnnotation] instead
      * @see [findMethodUsingAnnotation]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodUsingAnnotation(MethodUsingAnnotationArgs)"))
     fun findMethodUsingAnnotation(
         annotationClass: String,
         annotationUsingString: String = "",
@@ -539,19 +548,21 @@ class DexKitBridge : Closeable {
         methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingAnnotation(
-            token,
-            annotationClass,
-            annotationUsingString,
-            false,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParamTypes,
-            dexPriority
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingAnnotation(
+        token,
+        annotationClass,
+        annotationUsingString,
+        false,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParamTypes,
+        dexPriority
+    ).map { DexMethodDescriptor(it) }
+
+    //#endregion
+
+    //#region findMethod
 
     /**
      * find method by multiple conditions
@@ -563,41 +574,41 @@ class DexKitBridge : Closeable {
      */
     fun findMethod(
         args: FindMethodArgs
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethod(
-            token,
-            args.methodDescriptor,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            null
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethod(
+        token,
+        args.methodDescriptor,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        null
+    ).map { DexMethodDescriptor(it) }
+
+    inline fun findMethod(builder: FindMethodArgs.Builder.() -> Unit) = findMethod(FindMethodArgs.build(builder))
 
     /**
-     * @suppress use [findMethod] instead
      * @see [findMethod]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethod(FindMethodArgs)"))
     fun findMethod(
         methodDeclareClass: String,
         methodName: String = "",
         methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethod(
-            token,
-            "",
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParamTypes,
-            dexPriority
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethod(
+        token,
+        "",
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParamTypes,
+        dexPriority
+    ).map { DexMethodDescriptor(it) }
 
+    //#endregion
+
+    //#region findSubClasses
     /**
      * find all direct subclasses of the specified class
      *
@@ -608,24 +619,21 @@ class DexKitBridge : Closeable {
      */
     fun findSubClasses(
         parentClass: String,
-    ): List<DexClassDescriptor> {
-        return nativeFindSubClasses(token, parentClass, null)
-            .map { DexClassDescriptor(it) }
-    }
+    ): List<DexClassDescriptor> = nativeFindSubClasses(token, parentClass, null).map { DexClassDescriptor(it) }
 
     /**
-     * @suppress use [findSubClasses] instead
      * @see [findSubClasses]
      */
-    @Deprecated("param dexPriority have been deprecated")
+    @Deprecated("param dexPriority have been deprecated", ReplaceWith("findSubClasses(String)"))
     fun findSubClasses(
         parentClass: String,
         dexPriority: IntArray? = null
-    ): List<DexClassDescriptor> {
-        return nativeFindSubClasses(token, parentClass, dexPriority)
-            .map { DexClassDescriptor(it) }
-    }
+    ): List<DexClassDescriptor> = nativeFindSubClasses(token, parentClass, dexPriority)
+        .map { DexClassDescriptor(it) }
 
+    //#endregion
+
+    //#region findMethodUsingOpPrefixSeq
     /**
      * find all method used opcode prefix sequence
      *
@@ -636,23 +644,23 @@ class DexKitBridge : Closeable {
      */
     fun findMethodUsingOpPrefixSeq(
         args: MethodOpcodeArgs
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingOpPrefixSeq(
-            token,
-            args.opSeq,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            null
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingOpPrefixSeq(
+        token,
+        args.opSeq,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        null
+    ).map { DexMethodDescriptor(it) }
+
+    inline fun findMethodUsingOpPrefixSeq(builder: MethodOpcodeArgs.Builder.() -> Unit) =
+        findMethodUsingOpPrefixSeq(MethodOpcodeArgs.build(builder))
 
     /**
-     * @suppress use [findMethodUsingOpPrefixSeq] instead
      * @see [findMethodUsingOpPrefixSeq]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodUsingOpPrefixSeq(MethodOpcodeArgs)"))
     fun findMethodUsingOpPrefixSeq(
         opPrefixSeq: IntArray,
         methodDeclareClass: String = "",
@@ -660,18 +668,19 @@ class DexKitBridge : Closeable {
         methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingOpPrefixSeq(
-            token,
-            opPrefixSeq,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParamTypes,
-            dexPriority
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingOpPrefixSeq(
+        token,
+        opPrefixSeq,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParamTypes,
+        dexPriority
+    ).map { DexMethodDescriptor(it) }
 
+    //#endregion
+
+    //#region findMethodUsingOpCodeSeq
     /**
      * find all method using opcode sequence
      *
@@ -682,23 +691,23 @@ class DexKitBridge : Closeable {
      */
     fun findMethodUsingOpCodeSeq(
         args: MethodOpcodeArgs
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingOpCodeSeq(
-            token,
-            args.opSeq,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            null
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingOpCodeSeq(
+        token,
+        args.opSeq,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        null
+    ).map { DexMethodDescriptor(it) }
+
+    inline fun findMethodUsingOpCodeSeq(builder: MethodOpcodeArgs.Builder.() -> Unit) =
+        findMethodUsingOpCodeSeq(MethodOpcodeArgs.build(builder))
 
     /**
-     * @suppress use [findMethodUsingOpCodeSeq] instead
      * @see [findMethodUsingOpCodeSeq]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("findMethodUsingOpCodeSeq(MethodOpcodeArgs)"))
     fun findMethodUsingOpCodeSeq(
         opSeq: IntArray,
         methodDeclareClass: String = "",
@@ -706,18 +715,19 @@ class DexKitBridge : Closeable {
         methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
-    ): List<DexMethodDescriptor> {
-        return nativeFindMethodUsingOpCodeSeq(
-            token,
-            opSeq,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParamTypes,
-            dexPriority
-        ).map { DexMethodDescriptor(it) }
-    }
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingOpCodeSeq(
+        token,
+        opSeq,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParamTypes,
+        dexPriority
+    ).map { DexMethodDescriptor(it) }
 
+    //#endregion
+
+    //#region getMethodOpSeq
     /**
      * get method opcodes sequence
      *
@@ -728,17 +738,17 @@ class DexKitBridge : Closeable {
      */
     fun getMethodOpCodeSeq(
         args: FindMethodArgs
-    ): Map<DexMethodDescriptor, IntArray> {
-        return nativeGetMethodOpCodeSeq(
-            token,
-            args.methodDescriptor,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            null
-        ).mapKeys { DexMethodDescriptor(it.key) }
-    }
+    ): Map<DexMethodDescriptor, IntArray> = nativeGetMethodOpCodeSeq(
+        token,
+        args.methodDescriptor,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        null
+    ).mapKeys { DexMethodDescriptor(it.key) }
+
+    inline fun getMethodOpCodeSeq(builder: FindMethodArgs.Builder.() -> Unit) = getMethodOpCodeSeq(FindMethodArgs.build(builder))
 
     /**
      * get method opcodeFormat sequence
@@ -752,24 +762,24 @@ class DexKitBridge : Closeable {
      */
     fun getMethodOpFormatSeq(
         args: FindMethodArgs
-    ): Map<DexMethodDescriptor, Array<String>> {
-        return nativeGetMethodOpCodeSeq(
-            token,
-            args.methodDescriptor,
-            args.methodDeclareClass,
-            args.methodName,
-            args.methodReturnType,
-            args.methodParamTypes,
-            null
-        ).mapKeys { DexMethodDescriptor(it.key) }
-            .mapValues { it.value.map { getOpFormat(it) }.toTypedArray() }
-    }
+    ): Map<DexMethodDescriptor, Array<String>> = nativeGetMethodOpCodeSeq(
+        token,
+        args.methodDescriptor,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        null
+    )
+        .mapKeys { DexMethodDescriptor(it.key) }
+        .mapValues { m -> m.value.map { getOpFormat(it) }.toTypedArray() }
+
+    inline fun getMethodOpFormatSeq(builder: FindMethodArgs.Builder.() -> Unit) = getMethodOpFormatSeq(FindMethodArgs.build(builder))
 
     /**
-     * @suppress use [getMethodOpCodeSeq] instead
      * @see [getMethodOpCodeSeq]
      */
-    @Deprecated("full-argument functions have been deprecated")
+    @Deprecated("full-argument functions have been deprecated", ReplaceWith("getMethodOpCodeSeq(FindMethodArgs)"))
     fun getMethodOpCodeSeq(
         methodDescriptor: String,
         methodDeclareClass: String = "",
@@ -777,17 +787,16 @@ class DexKitBridge : Closeable {
         methodReturnType: String = "",
         methodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = null
-    ): Map<DexMethodDescriptor, IntArray> {
-        return nativeGetMethodOpCodeSeq(
-            token,
-            methodDescriptor,
-            methodDeclareClass,
-            methodName,
-            methodReturnType,
-            methodParamTypes,
-            dexPriority
-        ).mapKeys { DexMethodDescriptor(it.key) }
-    }
+    ): Map<DexMethodDescriptor, IntArray> = nativeGetMethodOpCodeSeq(
+        token,
+        methodDescriptor,
+        methodDeclareClass,
+        methodName,
+        methodReturnType,
+        methodParamTypes,
+        dexPriority
+    ).mapKeys { DexMethodDescriptor(it.key) }
+    //#endregion
 
     companion object {
 
@@ -798,6 +807,7 @@ class DexKitBridge : Closeable {
         const val FLAG_SETTING = 0x00000002
 
         @Deprecated("using FieldUsingType.ALL.toFlag() instead")
+        @Suppress("DEPRECATION")
         const val FLAG_USING = FLAG_GETTING or FLAG_SETTING
 
         @JvmStatic
