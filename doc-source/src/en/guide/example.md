@@ -52,12 +52,10 @@ DexKitBridge.create("demo.apk")?.use { bridge->
         "DemoActivity" to setOf("DemoActivity", "Hello World", "sum: "),
         "NotFoundActivity" to setOf("DemoActivity", "Hello World", "sum: ", "not found"),
     )
-    val result = bridge.batchFindClassesUsingStrings(
-        BatchFindArgs.build {
-            setQueryMap(deobfMap)
-            advancedMatch = true
-        }
-    )
+    val result = bridge.batchFindClassesUsingStrings {
+        queryMap(deobfMap)
+        advancedMatch = true
+    }
     assert(result.size == 2)
     result.forEach { (tagName, searchList) ->
         println("$tagName -> [${searchList.joinToString(", ", "\"", "\"")}]")
@@ -75,14 +73,12 @@ NotFoundActivity -> []
 ## Find methods use strings
 
 ```kotlin
-DexKitBridge.create("")?.use { bridge ->
+DexKitBridge.create("demo.apk")?.use { bridge ->
     listOf("^Hello", "^Hello World", "World$", "Hello World", "llo Wor").forEach {
-        val result = bridge.findMethodUsingString(
-            MethodUsingStringArgs.build {
-                usingString = "com.tencent.mm"
-                advancedMatch = true
-            }
-        )
+        val result = bridge.findMethodUsingString {
+            usingString = "com.tencent.mm"
+            advancedMatch = true
+        }
         assert(result.size == 1)
         assert(result.first().descriptor == "Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V")
     }
@@ -99,23 +95,21 @@ all test pass
 ## find method set `mCount`
 
 ```kotlin
-    DexKitBridge.create("")?.use { bridge ->
-        val result = bridge.findMethodUsingField(
-            MethodUsingFieldArgs.build {
-                this.fieldDeclareClass = "Lcom/luckypray/dexkit/demo/DemoActivity;"
-                this.fieldName = "mCount"
-                this.fieldType = "int"
-                this.usingType = FieldUsingType.PUT
-            }
-        )
-        assert(result.size == 1)
-        result.forEach { (callerMethod, fieldList) -> 
-            println("caller method: $callerMethod ->")
-            fieldList.forEach { field ->
-                println("\t $field")
-            }
+DexKitBridge.create("demo.apk")?.use { bridge ->
+    val result = bridge.findMethodUsingField {
+        this.fieldDeclareClass = "Lcom/luckypray/dexkit/demo/DemoActivity;"
+        this.fieldName = "mCount"
+        this.fieldType = "int"
+        this.usingType = FieldUsingType.PUT
+    }
+    assert(result.size == 1)
+    result.forEach { (callerMethod, fieldList) -> 
+        println("caller method: $callerMethod ->")
+        fieldList.forEach { field ->
+            println("\t $field")
         }
     }
+}
 ```
 
 we get the following output:
@@ -128,12 +122,10 @@ caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bu
 ## find `onCreate` caller methods
 
 ```kotlin
-    DexKitBridge.create("")?.use { bridge ->
-    val result = bridge.findMethodInvoking(
-        MethodInvokingArgs.build {
-            this.methodDescriptor = "Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V"
-        }
-    )
+DexKitBridge.create("demo.apk")?.use { bridge ->
+    val result = bridge.findMethodInvoking {
+        this.methodDescriptor = "Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V"
+    }
     result.forEach { (methodName, invokingList)->
         println("method descriptor: $methodName")
         invokingList.forEach {
@@ -158,14 +150,12 @@ method descriptor: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/o
 ## find method be invoked
 
 ```kotlin
-DexKitBridge.create("")?.use { bridge ->
-    val result = bridge.findMethodCaller(
-        MethodCallerArgs.build {
-            methodReturnType = "int"
-            methodParameterTypes = arrayOf("int", "I")
-            methodDeclareClass = "com.luckypray.dexkit.demo.DemoActivity"
-        }
-    )
+DexKitBridge.create("demo.apk")?.use { bridge ->
+    val result = bridge.findMethodCaller {
+        methodReturnType = "int"
+        methodParameterTypes = arrayOf("int", "I")
+        methodDeclareClass = "com.luckypray.dexkit.demo.DemoActivity"
+    }
     assert(result.size == 1)
     println("result: " + result.first())
 }
