@@ -5,3 +5,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+/doc-source
+/docs
