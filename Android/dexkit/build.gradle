@@ -9,7 +9,7 @@ plugins {
 def signingPropFile = new File(projectDir, "signing.properties")
 def performSigning = signingPropFile.exists()
 
-def libVersion = "1.1.0-beta4"
+def libVersion = "1.1.0-beta5"
 
 android {
     namespace "io.luckypray.dexkit"
