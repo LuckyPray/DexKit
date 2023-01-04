@@ -1,6 +1,6 @@
-package io.luckypray.dexkit.builder
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-import io.luckypray.dexkit.DexKitBridge
+package io.luckypray.dexkit.builder
 
 /**
  * @since 1.1.0
@@ -18,6 +18,14 @@ class BatchFindArgs private constructor(
         @JvmStatic
         inline fun build(block: Builder.() -> Unit): BatchFindArgs {
             return Builder().apply(block).build()
+        }
+
+        /**
+         * @since 1.1.0
+         */
+        @JvmStatic
+        fun builder(): Builder {
+            return Builder()
         }
     }
 

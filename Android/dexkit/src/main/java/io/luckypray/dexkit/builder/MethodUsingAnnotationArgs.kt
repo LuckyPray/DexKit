@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package io.luckypray.dexkit.builder
 
 import io.luckypray.dexkit.annotations.DexKitExperimentalApi
@@ -24,6 +26,14 @@ class MethodUsingAnnotationArgs private constructor(
         @JvmStatic
         inline fun build(block: Builder.() -> Unit): MethodUsingAnnotationArgs {
             return Builder().apply(block).build()
+        }
+
+        /**
+         * @since 1.1.0
+         */
+        @JvmStatic
+        fun builder(): Builder {
+            return Builder()
         }
     }
 

@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package io.luckypray.dexkit.builder
 
 /**
@@ -24,6 +26,14 @@ class MethodInvokingArgs private constructor(
         @JvmStatic
         inline fun build(block: Builder.() -> Unit): MethodInvokingArgs {
             return Builder().apply(block).build()
+        }
+
+        /**
+         * @since 1.1.0
+         */
+        @JvmStatic
+        fun builder(): Builder {
+            return Builder()
         }
     }
 
