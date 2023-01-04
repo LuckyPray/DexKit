@@ -81,49 +81,49 @@ class MethodUsingAnnotationArgs private constructor(
         /**
          * [Builder.annotationClass]
          */
-        fun setAnnotationClass(annotationClass: String) = this.also {
+        fun annotationClass(annotationClass: String) = this.also {
             this.annotationClass = annotationClass
         }
 
         /**
          * [Builder.annotationUsingString]
          */
-        fun setAnnotationUsingString(annotationUsingString: String) = this.also {
+        fun annotationUsingString(annotationUsingString: String) = this.also {
             this.annotationUsingString = annotationUsingString
         }
 
         /**
          * [Builder.advancedMatch]
          */
-        fun setAdvancedMatch(advancedMatch: Boolean) = this.also {
+        fun advancedMatch(advancedMatch: Boolean) = this.also {
             this.advancedMatch = advancedMatch
         }
 
         /**
          * [Builder.methodDeclareClass]
          */
-        fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
+        fun methodDeclareClass(methodDeclareClass: String) = this.also {
             this.methodDeclareClass = methodDeclareClass
         }
 
         /**
          * [Builder.methodName]
          */
-        fun setMethodName(methodName: String) = this.also {
+        fun methodName(methodName: String) = this.also {
             this.methodName = methodName
         }
 
         /**
          * [Builder.methodReturnType]
          */
-        fun setMethodReturnType(methodReturnType: String) = this.also {
+        fun methodReturnType(methodReturnType: String) = this.also {
             this.methodReturnType = methodReturnType
         }
 
         /**
          * [Builder.methodParamTypes]
          */
-        fun setMethodParamTypes(methodParamTypes: Array<String>) = this.also {
+        fun methodParamTypes(methodParamTypes: Array<String>) = this.also {
             this.methodParamTypes = methodParamTypes
         }
 

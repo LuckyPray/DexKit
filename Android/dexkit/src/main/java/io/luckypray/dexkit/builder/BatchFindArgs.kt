@@ -42,7 +42,7 @@ class BatchFindArgs private constructor(
         /**
          * [Builder.queryMap]
          */
-        fun setQueryMap(queryMap: Map<String, Iterable<String>>) = this.also {
+        fun queryMap(queryMap: Map<String, Iterable<String>>) = this.also {
             this.queryMap.clear()
             this.queryMap.putAll(queryMap.mapValues { it.value.toSet() })
         }
@@ -70,7 +70,7 @@ class BatchFindArgs private constructor(
         /**
          * [Builder.advancedMatch]
          */
-        fun setAdvancedMatch(advancedMatch: Boolean) = this.also {
+        fun advancedMatch(advancedMatch: Boolean) = this.also {
             this.advancedMatch = advancedMatch
         }
 

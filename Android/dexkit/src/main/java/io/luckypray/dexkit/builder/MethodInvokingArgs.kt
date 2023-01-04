@@ -114,70 +114,70 @@ class MethodInvokingArgs private constructor(
         /**
          * [Builder.methodDescriptor]
          */
-        fun setMethodDescriptor(methodDescriptor: String) = this.also {
+        fun methodDescriptor(methodDescriptor: String) = this.also {
             this.methodDescriptor = methodDescriptor
         }
 
         /**
          * [Builder.methodDeclareClass]
          */
-        fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
+        fun methodDeclareClass(methodDeclareClass: String) = this.also {
             this.methodDeclareClass = methodDeclareClass
         }
 
         /**
          * [Builder.methodName]
          */
-        fun setMethodName(methodName: String) = this.also {
+        fun methodName(methodName: String) = this.also {
             this.methodName = methodName
         }
 
         /**
          * [Builder.methodReturnType]
          */
-        fun setMethodReturnType(methodReturnType: String) = this.also {
+        fun methodReturnType(methodReturnType: String) = this.also {
             this.methodReturnType = methodReturnType
         }
 
         /**
          * [Builder.methodParameterTypes]
          */
-        fun setMethodParameterTypes(methodParameterTypes: Array<String>?) = this.also {
+        fun methodParameterTypes(methodParameterTypes: Array<String>?) = this.also {
             this.methodParameterTypes = methodParameterTypes
         }
 
         /**
          * [Builder.beInvokedMethodDeclareClass]
          */
-        fun setBeInvokedMethodDeclareClass(beInvokedMethodDeclareClass: String) = this.also {
+        fun beInvokedMethodDeclareClass(beInvokedMethodDeclareClass: String) = this.also {
             this.beInvokedMethodDeclareClass = beInvokedMethodDeclareClass
         }
 
         /**
          * [Builder.beInvokedMethodName]
          */
-        fun setBeInvokedMethodName(beInvokedMethodName: String) = this.also {
+        fun beInvokedMethodName(beInvokedMethodName: String) = this.also {
             this.beInvokedMethodName = beInvokedMethodName
         }
 
         /**
          * [Builder.beInvokedMethodReturnType]
          */
-        fun setBeInvokedMethodReturnType(beInvokedMethodReturnType: String) = this.also {
+        fun beInvokedMethodReturnType(beInvokedMethodReturnType: String) = this.also {
             this.beInvokedMethodReturnType = beInvokedMethodReturnType
         }
 
         /**
          * [Builder.beInvokedMethodParameterTypes]
          */
-        fun setBeInvokedMethodParameterTypes(beInvokedMethodParameterTypes: Array<String>?) = this.also {
+        fun beInvokedMethodParameterTypes(beInvokedMethodParameterTypes: Array<String>?) = this.also {
             this.beInvokedMethodParameterTypes = beInvokedMethodParameterTypes
         }
 
         /**
          * [Builder.unique]
          */
-        fun setUnique(unique: Boolean) = this.also {
+        fun unique(unique: Boolean) = this.also {
             this.unique = unique
         }
 

@@ -64,14 +64,14 @@ class MethodOpcodeArgs private constructor(
         /**
          * [Builder.opSeq]
          */
-        fun setOpSeq(opSeq: IntArray) = this.also {
+        fun opSeq(opSeq: IntArray) = this.also {
             this.opSeq = opSeq
         }
 
         /**
          * [Builder.opSeq]
          */
-        fun setOpSeq(opSeq: List<Int>) = this.also {
+        fun opSeq(opSeq: List<Int>) = this.also {
             this.opSeq = opSeq.toIntArray()
         }
 
@@ -80,7 +80,7 @@ class MethodOpcodeArgs private constructor(
          *
          *     e.g. ["const/16", "array-length"] -> [19, 33]
          */
-        fun setOpFormat(opFormat: Array<String>) = this.also {
+        fun opFormat(opFormat: Array<String>) = this.also {
             this.opSeq = opFormat.map { getOpCode(it) }.toIntArray()
         }
 
@@ -89,35 +89,35 @@ class MethodOpcodeArgs private constructor(
          *
          *     e.g. ["const/16", "array-length"] -> [19, 33]
          */
-        fun setOpFormat(opFormat: List<String>) = this.also {
+        fun opFormat(opFormat: List<String>) = this.also {
             this.opSeq = opFormat.map { getOpCode(it) }.toIntArray()
         }
 
         /**
          * [Builder.methodDeclareClass]
          */
-        fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
+        fun methodDeclareClass(methodDeclareClass: String) = this.also {
             this.methodDeclareClass = methodDeclareClass
         }
 
         /**
          * [Builder.methodName]
          */
-        fun setMethodName(methodName: String) = this.also {
+        fun methodName(methodName: String) = this.also {
             this.methodName = methodName
         }
 
         /**
          * [Builder.methodReturnType]
          */
-        fun setMethodReturnType(methodReturnType: String) = this.also {
+        fun methodReturnType(methodReturnType: String) = this.also {
             this.methodReturnType = methodReturnType
         }
 
         /**
          * [Builder.methodParamTypes]
          */
-        fun setMethodParamTypes(methodParamTypes: Array<String>) = this.also {
+        fun methodParamTypes(methodParamTypes: Array<String>) = this.also {
             this.methodParamTypes = methodParamTypes
         }
 

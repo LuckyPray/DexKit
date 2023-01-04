@@ -114,70 +114,70 @@ class MethodCallerArgs private constructor(
         /**
          * [Builder.methodDescriptor]
          */
-        fun setMethodDescriptor(methodDescriptor: String) = this.also {
+        fun methodDescriptor(methodDescriptor: String) = this.also {
             this.methodDescriptor = methodDescriptor
         }
 
         /**
          * [Builder.methodDeclareClass]
          */
-        fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
+        fun methodDeclareClass(methodDeclareClass: String) = this.also {
             this.methodDeclareClass = methodDeclareClass
         }
 
         /**
          * [Builder.methodName]
          */
-        fun setMethodName(methodName: String) = this.also {
+        fun methodName(methodName: String) = this.also {
             this.methodName = methodName
         }
 
         /**
          * [Builder.methodReturnType]
          */
-        fun setMethodReturnType(methodReturnType: String) = this.also {
+        fun methodReturnType(methodReturnType: String) = this.also {
             this.methodReturnType = methodReturnType
         }
 
         /**
          * [Builder.methodParameterTypes]
          */
-        fun setMethodParameterTypes(methodParameterTypes: Array<String>?) = this.also {
+        fun methodParameterTypes(methodParameterTypes: Array<String>?) = this.also {
             this.methodParameterTypes = methodParameterTypes
         }
 
         /**
          * [Builder.callerMethodDeclareClass]
          */
-        fun setCallerMethodDeclareClass(callerMethodDeclareClass: String) = this.also {
+        fun callerMethodDeclareClass(callerMethodDeclareClass: String) = this.also {
             this.callerMethodDeclareClass = callerMethodDeclareClass
         }
 
         /**
          * [Builder.callerMethodName]
          */
-        fun setCallerMethodName(callerMethodName: String) = this.also {
+        fun callerMethodName(callerMethodName: String) = this.also {
             this.callerMethodName = callerMethodName
         }
 
         /**
          * [Builder.callerMethodReturnType]
          */
-        fun setCallerMethodReturnType(callerMethodReturnType: String) = this.also {
+        fun callerMethodReturnType(callerMethodReturnType: String) = this.also {
             this.callerMethodReturnType = callerMethodReturnType
         }
 
         /**
          * [Builder.callerMethodParameterTypes]
          */
-        fun setCallerMethodParameterTypes(callerMethodParameterTypes: Array<String>?) = this.also {
+        fun callerMethodParameterTypes(callerMethodParameterTypes: Array<String>?) = this.also {
             this.callerMethodParameterTypes = callerMethodParameterTypes
         }
 
         /**
          * [Builder.unique]
          */
-        fun setUnique(unique: Boolean) = this.also {
+        fun unique(unique: Boolean) = this.also {
             this.unique = unique
         }
 

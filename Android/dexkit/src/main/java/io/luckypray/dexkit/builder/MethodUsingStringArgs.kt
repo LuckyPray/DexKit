@@ -93,49 +93,49 @@ class MethodUsingStringArgs private constructor(
         /**
          * [Builder.usingString]
          */
-        fun setUsingString(usingString: String) = this.also {
+        fun usingString(usingString: String) = this.also {
             this.usingString = usingString
         }
 
         /**
          * [Builder.advancedMatch]
          */
-        fun setAdvancedMatch(advancedMatch: Boolean) = this.also {
+        fun advancedMatch(advancedMatch: Boolean) = this.also {
             this.advancedMatch = advancedMatch
         }
 
         /**
          * [Builder.methodDeclareClass]
          */
-        fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
+        fun methodDeclareClass(methodDeclareClass: String) = this.also {
             this.methodDeclareClass = methodDeclareClass
         }
 
         /**
          * [Builder.methodName]
          */
-        fun setMethodName(methodName: String) = this.also {
+        fun methodName(methodName: String) = this.also {
             this.methodName = methodName
         }
 
         /**
          * [Builder.methodReturnType]
          */
-        fun setMethodReturnType(methodReturnType: String) = this.also {
+        fun methodReturnType(methodReturnType: String) = this.also {
             this.methodReturnType = methodReturnType
         }
 
         /**
          * [Builder.methodParamTypes]
          */
-        fun setMethodParamTypes(methodParamTypes: Array<String>?) = this.also {
+        fun methodParamTypes(methodParamTypes: Array<String>?) = this.also {
             this.methodParamTypes = methodParamTypes
         }
 
         /**
          * [Builder.unique]
          */
-        fun setUnique(unique: Boolean) = this.also {
+        fun unique(unique: Boolean) = this.also {
             this.unique = unique
         }
 

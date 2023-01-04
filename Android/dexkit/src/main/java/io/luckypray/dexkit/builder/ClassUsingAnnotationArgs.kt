@@ -49,15 +49,22 @@ class ClassUsingAnnotationArgs private constructor(
         /**
          * [Builder.annotationClass]
          */
-        fun setAnnotationClass(annotationClass: String) = this.also {
+        fun annotationClass(annotationClass: String) = this.also {
             this.annotationClass = annotationClass
         }
 
         /**
          * [Builder.annotationUsingString]
          */
-        fun setAnnotationUsingString(annotationUsingString: String) = this.also {
+        fun annotationUsingString(annotationUsingString: String) = this.also {
             this.annotationUsingString = annotationUsingString
+        }
+
+        /**
+         * [Builder.advancedMatch]
+         */
+        fun advancedMatch(advancedMatch: Boolean) = this.also {
+            this.advancedMatch = advancedMatch
         }
 
         /**

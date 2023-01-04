@@ -74,35 +74,35 @@ class FindMethodArgs private constructor(
         /**
          * [Builder.methodDescriptor]
          */
-        fun setMethodDescriptor(methodDescriptor: String) = this.also {
+        fun methodDescriptor(methodDescriptor: String) = this.also {
             this.methodDescriptor = methodDescriptor
         }
 
         /**
          * [Builder.methodDeclareClass]
          */
-        fun setMethodDeclareClass(methodDeclareClass: String) = this.also {
+        fun methodDeclareClass(methodDeclareClass: String) = this.also {
             this.methodDeclareClass = methodDeclareClass
         }
 
         /**
          * [Builder.methodName]
          */
-        fun setMethodName(methodName: String) = this.also {
+        fun methodName(methodName: String) = this.also {
             this.methodName = methodName
         }
 
         /**
          * [Builder.methodReturnType]
          */
-        fun setMethodReturnType(methodReturnType: String) = this.also {
+        fun methodReturnType(methodReturnType: String) = this.also {
             this.methodReturnType = methodReturnType
         }
 
         /**
          * [Builder.methodParamTypes]
          */
-        fun setMethodParamTypes(methodParamTypes: Array<String>?) = this.also {
+        fun methodParamTypes(methodParamTypes: Array<String>?) = this.also {
             this.methodParamTypes = methodParamTypes
         }
 

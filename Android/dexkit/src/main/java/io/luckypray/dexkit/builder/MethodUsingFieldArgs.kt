@@ -133,70 +133,70 @@ class MethodUsingFieldArgs private constructor(
         /**
          * [Builder.fieldDescriptor]
          */
-        fun setFieldDescriptor(fieldDescriptor: String) = this.also {
+        fun fieldDescriptor(fieldDescriptor: String) = this.also {
             this.fieldDescriptor = fieldDescriptor
         }
 
         /**
          * [Builder.fieldDeclareClass]
          */
-        fun setFieldDeclareClass(fieldDeclareClass: String) = this.also {
+        fun fieldDeclareClass(fieldDeclareClass: String) = this.also {
             this.fieldDeclareClass = fieldDeclareClass
         }
 
         /**
          * [Builder.fieldName]
          */
-        fun setFieldName(fieldName: String) = this.also {
+        fun fieldName(fieldName: String) = this.also {
             this.fieldName = fieldName
         }
 
         /**
          * [Builder.fieldType]
          */
-        fun setFieldType(fieldType: String) = this.also {
+        fun fieldType(fieldType: String) = this.also {
             this.fieldType = fieldType
         }
 
         /**
          * [Builder.usingType]
          */
-        fun setUsedFlags(type: FieldUsingType) = this.also {
+        fun usingType(type: FieldUsingType) = this.also {
             this.usingType = type
         }
 
         /**
          * [Builder.callerMethodDeclareClass]
          */
-        fun setCallerMethodDeclareClass(callerMethodDeclareClass: String) = this.also {
+        fun callerMethodDeclareClass(callerMethodDeclareClass: String) = this.also {
             this.callerMethodDeclareClass = callerMethodDeclareClass
         }
 
         /**
          * [Builder.callerMethodName]
          */
-        fun setCallerMethodName(callerMethodName: String) = this.also {
+        fun callerMethodName(callerMethodName: String) = this.also {
             this.callerMethodName = callerMethodName
         }
 
         /**
          * [Builder.callerMethodReturnType]
          */
-        fun setCallerMethodReturnType(callerMethodReturnType: String) = this.also {
+        fun callerMethodReturnType(callerMethodReturnType: String) = this.also {
             this.callerMethodReturnType = callerMethodReturnType
         }
 
         /**
          * [Builder.callerMethodParamTypes]
          */
-        fun setCallerMethodParamTypes(callerMethodParamTypes: Array<String>?) = this.also {
+        fun callerMethodParamTypes(callerMethodParamTypes: Array<String>?) = this.also {
             this.callerMethodParamTypes = callerMethodParamTypes
         }
 
         /**
          * [Builder.unique]
          */
-        fun setUnique(uniqueResult: Boolean) = this.also {
+        fun unique(uniqueResult: Boolean) = this.also {
             this.unique = uniqueResult
         }
 

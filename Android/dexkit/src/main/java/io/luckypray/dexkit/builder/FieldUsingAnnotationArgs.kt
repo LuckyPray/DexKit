@@ -73,35 +73,42 @@ class FieldUsingAnnotationArgs private constructor(
         /**
          * [Builder.annotationClass]
          */
-        fun setAnnotationClass(annotationClass: String) = this.also {
+        fun annotationClass(annotationClass: String) = this.also {
             this.annotationClass = annotationClass
         }
 
         /**
          * [Builder.annotationUsingString]
          */
-        fun setAnnotationUsingString(annotationUsingString: String) = this.also {
+        fun annotationUsingString(annotationUsingString: String) = this.also {
             this.annotationUsingString = annotationUsingString
+        }
+
+        /**
+         * [Builder.advancedMatch]
+         */
+        fun advancedMatch(advancedMatch: Boolean) = this.also {
+            this.advancedMatch = advancedMatch
         }
 
         /**
          * [Builder.fieldDeclareClass]
          */
-        fun setFieldDeclareClass(fieldDeclareClass: String) = this.also {
+        fun fieldDeclareClass(fieldDeclareClass: String) = this.also {
             this.fieldDeclareClass = fieldDeclareClass
         }
 
         /**
          * [Builder.fieldName]
          */
-        fun setFieldName(fieldName: String) = this.also {
+        fun fieldName(fieldName: String) = this.also {
             this.fieldName = fieldName
         }
 
         /**
          * [Builder.fieldType]
          */
-        fun setFieldType(fieldType: String) = this.also {
+        fun fieldType(fieldType: String) = this.also {
             this.fieldType = fieldType
         }
 
