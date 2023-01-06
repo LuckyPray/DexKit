@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package io.luckypray.dexkit.descriptor.member
 
 import io.luckypray.dexkit.descriptor.*
