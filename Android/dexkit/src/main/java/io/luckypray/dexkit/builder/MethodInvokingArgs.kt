@@ -34,9 +34,7 @@ class MethodInvokingArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
+        fun builder(): Builder = Builder()
     }
 
     /**
