@@ -23,6 +23,8 @@ class FieldUsingAnnotationArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): FieldUsingAnnotationArgs {
             return Builder().apply(block).build()
         }
@@ -44,6 +46,7 @@ class FieldUsingAnnotationArgs private constructor(
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
         var annotationClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **annotation using string**
@@ -51,6 +54,7 @@ class FieldUsingAnnotationArgs private constructor(
          * if empty, match any annotation
          */
         var annotationUsingString: String = ""
+            @JvmSynthetic set
 
         /**
          * **advanced match**
@@ -58,6 +62,7 @@ class FieldUsingAnnotationArgs private constructor(
          * if true, match annotation using string
          */
         var advancedMatch: Boolean = true
+            @JvmSynthetic set
 
         /**
          * **field declare class**
@@ -65,6 +70,7 @@ class FieldUsingAnnotationArgs private constructor(
          * if empty, match any class
          */
         var fieldDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **field name**
@@ -72,6 +78,7 @@ class FieldUsingAnnotationArgs private constructor(
          * if empty, match any name
          */
         var fieldName: String = ""
+            @JvmSynthetic set
 
         /**
          * **field type**
@@ -79,6 +86,7 @@ class FieldUsingAnnotationArgs private constructor(
          * if empty, match any type
          */
         var fieldType: String = ""
+            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]

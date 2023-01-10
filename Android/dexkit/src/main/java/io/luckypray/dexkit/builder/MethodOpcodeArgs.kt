@@ -21,6 +21,8 @@ class MethodOpcodeArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): MethodOpcodeArgs {
             return Builder().apply(block).build()
         }
@@ -42,6 +44,7 @@ class MethodOpcodeArgs private constructor(
          *     e.g. intArrayOf(Opcodes.ALOAD, Opcodes.INVOKE_VIRTUAL)
          */
         var opSeq: IntArray = intArrayOf()
+            @JvmSynthetic set
 
         /**
          * **method declare class**
@@ -49,6 +52,7 @@ class MethodOpcodeArgs private constructor(
          * if empty, match any class
          */
         var methodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **method name**
@@ -56,6 +60,7 @@ class MethodOpcodeArgs private constructor(
          * if empty, match any name
          */
         var methodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -63,6 +68,7 @@ class MethodOpcodeArgs private constructor(
          * if empty, match any type
          */
         var methodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **method param types**
@@ -70,6 +76,7 @@ class MethodOpcodeArgs private constructor(
          * if null, match any param types
          */
         var methodParamTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * [Builder.opSeq]

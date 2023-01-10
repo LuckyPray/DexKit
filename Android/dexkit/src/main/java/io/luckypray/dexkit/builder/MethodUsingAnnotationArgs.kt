@@ -24,6 +24,8 @@ class MethodUsingAnnotationArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): MethodUsingAnnotationArgs {
             return Builder().apply(block).build()
         }
@@ -45,6 +47,7 @@ class MethodUsingAnnotationArgs private constructor(
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
         var annotationClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **annotation using string**
@@ -52,6 +55,7 @@ class MethodUsingAnnotationArgs private constructor(
          * if empty, match any annotation
          */
         var annotationUsingString: String = ""
+            @JvmSynthetic set
 
         /**
          * **advanced match**
@@ -59,6 +63,7 @@ class MethodUsingAnnotationArgs private constructor(
          * if true, match annotation using string
          */
         var advancedMatch: Boolean = true
+            @JvmSynthetic set
 
         /**
          * **method declare class**
@@ -66,6 +71,7 @@ class MethodUsingAnnotationArgs private constructor(
          * if empty, match any class
          */
         var methodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **method name**
@@ -73,6 +79,7 @@ class MethodUsingAnnotationArgs private constructor(
          * if empty, match any name
          */
         var methodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -80,6 +87,7 @@ class MethodUsingAnnotationArgs private constructor(
          * if empty, match any type
          */
         var methodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **method param types**
@@ -87,6 +95,7 @@ class MethodUsingAnnotationArgs private constructor(
          * if null, match any param types
          */
         var methodParamTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]

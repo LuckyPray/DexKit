@@ -24,6 +24,8 @@ class MethodCallerArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): MethodCallerArgs {
             return Builder().apply(block).build()
         }
@@ -51,6 +53,7 @@ class MethodCallerArgs private constructor(
          *     e.g. "Ljava/lang/String;->length()I"
          */
         var methodDescriptor: String = ""
+            @JvmSynthetic set
 
         /**
          * **method declare class**
@@ -60,6 +63,7 @@ class MethodCallerArgs private constructor(
          *     e.g. "Ljava/lang/String;" or "java.lang.String"
          */
         var methodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **method name**
@@ -67,6 +71,7 @@ class MethodCallerArgs private constructor(
          * if empty, match any method name
          */
         var methodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -76,6 +81,7 @@ class MethodCallerArgs private constructor(
          *     e.g. "I" or "int"
          */
         var methodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **method parameter types**
@@ -93,26 +99,31 @@ class MethodCallerArgs private constructor(
          *     matches(["I", ""], ["int"]) == false
          */
         var methodParameterTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * **caller method declare class**
          */
         var callerMethodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method name**
          */
         var callerMethodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method return type**
          */
         var callerMethodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method parameter types**
          */
         var callerMethodParameterTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * **unique result**
@@ -120,6 +131,7 @@ class MethodCallerArgs private constructor(
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
         var unique: Boolean = true
+            @JvmSynthetic set
 
         /**
          * [Builder.methodDescriptor]

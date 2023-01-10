@@ -27,6 +27,8 @@ class MethodUsingFieldArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): MethodUsingFieldArgs {
             return Builder().apply(block).build()
         }
@@ -54,6 +56,7 @@ class MethodUsingFieldArgs private constructor(
          *     e.g. "Lcom/example/MainActivity;->mTextView:Landroid/widget/TextView;"
          */
         var fieldDescriptor: String = ""
+            @JvmSynthetic set
 
         /**
          * **field declare class**
@@ -63,6 +66,7 @@ class MethodUsingFieldArgs private constructor(
          *     e.g. "Lcom/example/MainActivity;"
          */
         var fieldDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **field name**
@@ -72,6 +76,7 @@ class MethodUsingFieldArgs private constructor(
          *     e.g. "mTextView"
          */
         var fieldName: String = ""
+            @JvmSynthetic set
 
         /**
          * **field type**
@@ -81,6 +86,7 @@ class MethodUsingFieldArgs private constructor(
          *     e.g. "Landroid/widget/TextView;"
          */
         var fieldType: String = ""
+            @JvmSynthetic set
 
         /**
          * **using field type**
@@ -90,6 +96,7 @@ class MethodUsingFieldArgs private constructor(
          *     FieldUsingType.ALL match GET or PUT
          */
         var usingType: FieldUsingType = FieldUsingType.ALL
+            @JvmSynthetic set
 
         /**
          * **caller method declare class**
@@ -99,6 +106,7 @@ class MethodUsingFieldArgs private constructor(
          *     e.g. "Lcom/example/MainActivity;" or "com.example.MainActivity"
          */
         var callerMethodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method name**
@@ -106,6 +114,7 @@ class MethodUsingFieldArgs private constructor(
          * if empty, match any name
          */
         var callerMethodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method return type**
@@ -115,6 +124,7 @@ class MethodUsingFieldArgs private constructor(
          *     e.g. "V" or "void"
          */
         var callerMethodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method param types**
@@ -132,6 +142,7 @@ class MethodUsingFieldArgs private constructor(
          *     matches(["I", ""], ["int"]) == false
          */
         var callerMethodParamTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * **unique result**
@@ -139,6 +150,7 @@ class MethodUsingFieldArgs private constructor(
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
         var unique: Boolean = true
+            @JvmSynthetic set
 
         /**
          * [Builder.fieldDescriptor]
