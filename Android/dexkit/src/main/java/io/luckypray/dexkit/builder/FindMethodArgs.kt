@@ -19,6 +19,8 @@ class FindMethodArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): FindMethodArgs {
             return Builder().apply(block).build()
         }
@@ -27,9 +29,7 @@ class FindMethodArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
+        fun builder(): Builder = Builder()
     }
 
     class Builder : BaseArgs.Builder<FindMethodArgs>() {
@@ -40,6 +40,7 @@ class FindMethodArgs private constructor(
          *     e.g. "Lcom/example/MainActivity;.onCreate:(Landroid/os/Bundle;)V"
          */
         var methodDescriptor: String = ""
+            @JvmSynthetic set
 
         /**
          * **method declare class**
@@ -47,6 +48,7 @@ class FindMethodArgs private constructor(
          *     e.g. "Lcom/example/MainActivity;" or "com.example.MainActivity"
          */
         var methodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **method name**
@@ -54,6 +56,7 @@ class FindMethodArgs private constructor(
          * if empty, match any name
          */
         var methodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -63,6 +66,7 @@ class FindMethodArgs private constructor(
          *     e.g. "V" or "void"
          */
         var methodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **method param types**
@@ -80,6 +84,7 @@ class FindMethodArgs private constructor(
          *     matches(["I", ""], ["int"]) == false
          */
         var methodParamTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * [Builder.methodDescriptor]

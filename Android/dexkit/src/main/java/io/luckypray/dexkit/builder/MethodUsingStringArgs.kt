@@ -21,6 +21,8 @@ class MethodUsingStringArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): MethodUsingStringArgs {
             return Builder().apply(block).build()
         }
@@ -29,9 +31,7 @@ class MethodUsingStringArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
+        fun builder(): Builder = Builder()
     }
 
     class Builder : BaseArgs.Builder<MethodUsingStringArgs>() {
@@ -42,6 +42,7 @@ class MethodUsingStringArgs private constructor(
          *     e.g. "Hello World"
          */
         var usingString: String = ""
+            @JvmSynthetic set
 
         /**
          * enable advanced match.
@@ -50,6 +51,7 @@ class MethodUsingStringArgs private constructor(
          *     "^abc$" match "abc"，not match "abcd", but "^abc" match "abcd"
          */
         var advancedMatch: Boolean = true
+            @JvmSynthetic set
 
         /**
          * **caller method declare class**
@@ -59,6 +61,7 @@ class MethodUsingStringArgs private constructor(
          *     e.g. "Lcom/example/MainActivity;" or "com.example.MainActivity"
          */
         var methodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method name**
@@ -66,6 +69,7 @@ class MethodUsingStringArgs private constructor(
          * if empty, match any name
          */
         var methodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method return type**
@@ -75,6 +79,7 @@ class MethodUsingStringArgs private constructor(
          *     e.g. "V" or "void"
          */
         var methodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **caller method param types**
@@ -92,6 +97,7 @@ class MethodUsingStringArgs private constructor(
          *     matches(["I", ""], ["int"]) == false
          */
         var methodParamTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * **unique result**
@@ -99,6 +105,7 @@ class MethodUsingStringArgs private constructor(
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
         var unique: Boolean = true
+            @JvmSynthetic set
 
         /**
          * [Builder.usingString]

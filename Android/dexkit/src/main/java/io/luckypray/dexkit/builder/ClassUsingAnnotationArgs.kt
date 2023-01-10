@@ -20,6 +20,8 @@ class ClassUsingAnnotationArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: ClassUsingAnnotationArgs.Builder.() -> Unit): ClassUsingAnnotationArgs {
             return Builder().apply(block).build()
         }
@@ -28,9 +30,7 @@ class ClassUsingAnnotationArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
+        fun builder(): Builder = Builder()
     }
 
     class Builder : BaseArgs.Builder<ClassUsingAnnotationArgs>() {
@@ -41,6 +41,7 @@ class ClassUsingAnnotationArgs private constructor(
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
         var annotationClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **annotation using string**
@@ -48,6 +49,7 @@ class ClassUsingAnnotationArgs private constructor(
          * if empty, match any annotation
          */
         var annotationUsingString: String = ""
+            @JvmSynthetic set
 
         /**
          * **advanced match**
@@ -55,6 +57,7 @@ class ClassUsingAnnotationArgs private constructor(
          * if true, match annotation using string
          */
         var advancedMatch: Boolean = true
+            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]

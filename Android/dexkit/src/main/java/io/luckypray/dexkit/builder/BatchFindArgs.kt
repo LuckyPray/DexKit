@@ -16,6 +16,8 @@ class BatchFindArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): BatchFindArgs {
             return Builder().apply(block).build()
         }
@@ -24,9 +26,7 @@ class BatchFindArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
+        fun builder(): Builder = Builder()
     }
 
     /**
@@ -36,7 +36,8 @@ class BatchFindArgs private constructor(
         /**
          * query map, key is unique key, value is class/method using strings
          */
-        var queryMap = mutableMapOf<String, Set<String>>()
+        var queryMap = mapOf<String, Set<String>>()
+            @JvmSynthetic set
 
         /**
          * enable advanced match.
@@ -46,13 +47,13 @@ class BatchFindArgs private constructor(
          *     "^abc$" match "abc"，not match "abcd", but "^abc" match "abcd"
          */
         var advancedMatch: Boolean = true
+            @JvmSynthetic set
 
         /**
          * [Builder.queryMap]
          */
         fun queryMap(queryMap: Map<String, Iterable<String>>) = this.also {
-            this.queryMap.clear()
-            this.queryMap.putAll(queryMap.mapValues { it.value.toSet() })
+            this.queryMap = queryMap.mapValues { toSet(it.value) }
         }
 
         /**
@@ -62,7 +63,10 @@ class BatchFindArgs private constructor(
          * @param [usingStrings] class/method using strings
          */
         fun addQuery(key: String, usingStrings: Iterable<String>) = this.also {
-            this.queryMap[key] = usingStrings.toSet()
+            (queryMap as? MutableMap ?: queryMap.toMutableMap()).let {
+                it[key] = toSet(usingStrings)
+                queryMap = it
+            }
         }
 
         /**
@@ -72,7 +76,7 @@ class BatchFindArgs private constructor(
          * @param [usingStrings] class/method using strings
          */
         fun addQuery(key: String, usingStrings: Array<String>) = this.also {
-            this.queryMap[key] = usingStrings.toSet()
+            addQuery(key, usingStrings.toSet())
         }
 
         /**
@@ -88,5 +92,7 @@ class BatchFindArgs private constructor(
          * @return [BatchFindArgs]
          */
         override fun build(): BatchFindArgs = BatchFindArgs(queryMap, advancedMatch)
+
+        private fun toSet(strings : Iterable<String>) = strings as? Set ?: strings.toSet()
     }
 }

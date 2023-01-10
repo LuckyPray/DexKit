@@ -24,6 +24,8 @@ class MethodInvokingArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        @kotlin.internal.InlineOnly
         inline fun build(block: Builder.() -> Unit): MethodInvokingArgs {
             return Builder().apply(block).build()
         }
@@ -32,9 +34,7 @@ class MethodInvokingArgs private constructor(
          * @since 1.1.0
          */
         @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
+        fun builder(): Builder = Builder()
     }
 
     /**
@@ -51,6 +51,7 @@ class MethodInvokingArgs private constructor(
          *     e.g. "Ljava/lang/String;->length()I"
          */
         var methodDescriptor: String = ""
+            @JvmSynthetic set
 
         /**
          * **method declare class**
@@ -60,6 +61,7 @@ class MethodInvokingArgs private constructor(
          *     e.g. "Ljava/lang/String;" or "java.lang.String"
          */
         var methodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **method name**
@@ -67,6 +69,7 @@ class MethodInvokingArgs private constructor(
          * if empty, match any method name
          */
         var methodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -76,6 +79,7 @@ class MethodInvokingArgs private constructor(
          *     e.g. "I" or "int"
          */
         var methodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **method parameter types**
@@ -93,26 +97,31 @@ class MethodInvokingArgs private constructor(
          *     matches(["I", ""], ["int"]) == false
          */
         var methodParameterTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * **be invoked method declare class**
          */
         var beInvokedMethodDeclareClass: String = ""
+            @JvmSynthetic set
 
         /**
          * **be invoked method name**
          */
         var beInvokedMethodName: String = ""
+            @JvmSynthetic set
 
         /**
          * **be invoked method return type**
          */
         var beInvokedMethodReturnType: String = ""
+            @JvmSynthetic set
 
         /**
          * **be invoked method parameter types**
          */
         var beInvokedMethodParameterTypes: Array<String>? = null
+            @JvmSynthetic set
 
         /**
          * **unique result**
@@ -120,6 +129,7 @@ class MethodInvokingArgs private constructor(
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
         var unique: Boolean = true
+            @JvmSynthetic set
 
         /**
          * [Builder.methodDescriptor]

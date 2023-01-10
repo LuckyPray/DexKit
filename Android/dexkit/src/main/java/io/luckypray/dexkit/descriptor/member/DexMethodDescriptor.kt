@@ -1,10 +1,12 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package io.luckypray.dexkit.descriptor.member
 
 import io.luckypray.dexkit.descriptor.*
-import io.luckypray.dexkit.util.getClassName
-import io.luckypray.dexkit.util.getConstructorSignature
-import io.luckypray.dexkit.util.getMethodSignature
-import io.luckypray.dexkit.util.getTypeSig
+import io.luckypray.dexkit.util.DexDescriptorUtil.getClassName
+import io.luckypray.dexkit.util.DexDescriptorUtil.getConstructorSignature
+import io.luckypray.dexkit.util.DexDescriptorUtil.getMethodSignature
+import io.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
 import java.lang.reflect.Constructor
 import java.lang.reflect.Member
 import java.lang.reflect.Method
