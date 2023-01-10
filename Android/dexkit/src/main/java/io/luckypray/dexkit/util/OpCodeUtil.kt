@@ -1,6 +1,7 @@
 package io.luckypray.dexkit.util
 
-object OpCodeUtil {
+internal object OpCodeUtil {
+
     private val opFormat = arrayOf(
         "nop",
         "move",
@@ -260,6 +261,7 @@ object OpCodeUtil {
         "const-method-type",
     )
 
+    @JvmStatic
     fun getOpFormat(opcode: Int): String {
         if (opcode < 0 || opcode >= opFormat.size) {
             throw IllegalArgumentException("opcode: ${opcode.toString(16)} is out of range")
@@ -267,6 +269,7 @@ object OpCodeUtil {
         return opFormat[opcode]
     }
 
+    @JvmStatic
     fun getOpCode(opFormat: String): Int {
         return when (opFormat) {
             "nop" -> 0

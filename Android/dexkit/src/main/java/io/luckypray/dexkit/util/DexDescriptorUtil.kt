@@ -4,6 +4,8 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
 object DexDescriptorUtil {
+
+    @JvmStatic
     fun getClassName(classDesc: String): String {
         if (classDesc.startsWith("L") && classDesc.endsWith(";")) {
             return classDesc.substring(1, classDesc.length - 1).replace('/', '.')
@@ -11,6 +13,7 @@ object DexDescriptorUtil {
         return classDesc.replace('/', '.')
     }
 
+    @JvmStatic
     fun getTypeSig(type: Class<*>): String {
         if (type.isPrimitive) {
             return when (type) {
@@ -30,6 +33,7 @@ object DexDescriptorUtil {
         else "L" + type.name.replace('.', '/') + ";"
     }
 
+    @JvmStatic
     fun getMethodSignature(method: Method): String {
         return buildString {
             append("(")
@@ -39,6 +43,7 @@ object DexDescriptorUtil {
         }
     }
 
+    @JvmStatic
     fun getConstructorSignature(constructor: Constructor<*>): String {
         return buildString {
             append("(")
