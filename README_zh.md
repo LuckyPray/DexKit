@@ -45,25 +45,65 @@
 > **Note:**
 > 目前为项目初期阶段，不保证未来API不会发生改动，如果你有什么好的建议或者意见，欢迎提出。
 
-## 开始使用
+## 使用
 
-- [点击这里](https://luckypray.org/DexKit/zh-cn/) 前往文档页面查看更多详细教程
+### 依赖
 
-## 合作项目
+添加 `DexKit` 依赖进 `build.gradle`.
 
-以下是经过合作并稳定使用 `DexKit` 的项目。
+```gradle
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation 'io.github.neonorbit:dexplore:1.4.3'
+}
+```
 
-| Repository                                                                | Developer                                                                                 |
-|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| [XAutoDaily](https://github.com/LuckyPray/XAutoDaily)                     | [韵の祈](https://github.com/teble)                                                           |
-| [QAuxiliary](https://github.com/cinit/QAuxiliary)                         | [ACh Sulfate](https://github.com/cinit)                                                   |
-| [QTool](https://github.com/Hicores/QTool)                                 | [Hicores](https://github.com/Hicores)                                                     |
-| [PPHelper](https://github.com/lliioollcn/PPHelper)                        | [lliiooll](https://github.com/lliioollcn)                                                 |
-| [MIUI QOL](https://github.com/chsbuffer/MIUIQOL)                          | [ChsBuffer](https://github.com/chsbuffer)                                                 |
-| [TwiFucker](https://github.com/Dr-TSNG/TwiFucker)                         | [Js0n](https://github.com/JasonKhew96)、[Nullptr](https://github.com/Dr-TSNG)              |
-| [FuckCoolApk R](https://github.com/Xposed-Modules-Repo/org.hello.coolapk) | [QQ little ice](https://github.com/qqlittleice233)、[lz差不多是条咸鱼了](https://github.com/lz233) |
+### 使用样例
 
-你也在使用 `DexKit` 吗？欢迎 **PR** 将你的仓库添加到上方的列表(私有仓库不需要注明网页链接)。
+宿主样例:
+
+```java
+public class abc {
+    
+    public boolean cvc() {
+        boolean b = false;
+        // ...
+        Log.d("VipCheckUtil", "info: xxxx");
+        // ...
+        return b;
+    }
+}
+```
+
+Hook 样例:
+
+```kotlin
+class MainHook : IXposedHookLoadPackage {
+    
+    override fun handleLoadPackage(loadPackageParam: LoadPackageParam) {
+        val packageName = loadPackageParam.packageName
+        val apkPath = loadPackageParam.appInfo.sourceDir
+        if (packageName != "com.test.demo") {
+            return
+        }
+        System.loadLibrary("dexkit")
+        DexKitBridge.create(apkPath)?.use { bridge ->
+            val resultMap = bridge.batchFindMethodsUsingStrings {
+                addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
+            }.firstOrNull()?.let {
+                val method: Method = it.getMethodInstance(hostClassLoader)
+                XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
+            } ?: Log.e("DexKit", "search result empty")
+        }
+    }
+}
+```
+
+### 使用文档
+
+- [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
 
 ## 第三方开源引用
 

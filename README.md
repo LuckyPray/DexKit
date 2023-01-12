@@ -54,25 +54,65 @@ it only takes no more than twice the time to complete.
 > This is the early stage of the project, and we cannot guarantee that the API will not change in the future.
 > If you have any suggestions or opinions, please let us know.
 
-## Start using
+## Usage
+
+### Library
+
+Add `DexKit` dependency in `build.gradle`.
+
+```gradle
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation 'io.github.neonorbit:dexplore:1.4.3'
+}
+```
+
+### Usage Sample
+
+Sample App:
+
+```java
+public class abc {
+    
+    public boolean cvc() {
+        boolean b = false;
+        // ...
+        Log.d("VipCheckUtil", "info: xxxx");
+        // ...
+        return b;
+    }
+}
+```
+
+Sample Hook:
+
+```kotlin
+class MainHook : IXposedHookLoadPackage {
+    
+    override fun handleLoadPackage(loadPackageParam: LoadPackageParam) {
+        val packageName = loadPackageParam.packageName
+        val apkPath = loadPackageParam.appInfo.sourceDir
+        if (packageName != "com.test.demo") {
+            return
+        }
+        System.loadLibrary("dexkit")
+        DexKitBridge.create(apkPath)?.use { bridge ->
+            val resultMap = bridge.batchFindMethodsUsingStrings {
+                addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
+            }.firstOrNull()?.let {
+                val method: Method = it.getMethodInstance(hostClassLoader)
+                XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
+            } ?: Log.e("DexKit", "search result empty")
+        }
+    }
+}
+```
+
+### Usage Document
 
 - [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
-
-## Cooperation project
-
-The following are projects that have cooperated and stable use of `DexKit`.
-
-| Repository                                                                | Developer                                                                                 |
-|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| [XAutoDaily](https://github.com/LuckyPray/XAutoDaily)                     | [韵の祈](https://github.com/teble)                                                           |
-| [QAuxiliary](https://github.com/cinit/QAuxiliary)                         | [ACh Sulfate](https://github.com/cinit)                                                   |
-| [QTool](https://github.com/Hicores/QTool)                                 | [Hicores](https://github.com/Hicores)                                                     |
-| [PPHelper](https://github.com/lliioollcn/PPHelper)                        | [lliiooll](https://github.com/lliioollcn)                                                 |
-| [MIUI QOL](https://github.com/chsbuffer/MIUIQOL)                          | [ChsBuffer](https://github.com/chsbuffer)                                                 |
-| [TwiFucker](https://github.com/Dr-TSNG/TwiFucker)                         | [Js0n](https://github.com/JasonKhew96)、[Nullptr](https://github.com/Dr-TSNG)              |
-| [FuckCoolApk R](https://github.com/Xposed-Modules-Repo/org.hello.coolapk) | [QQ little ice](https://github.com/qqlittleice233)、[lz差不多是条咸鱼了](https://github.com/lz233) |
-
-Are you also using `DexKit`? Welcome to submit **PR** to add your repository to the list above (private repositories do not need to include web link).
 
 ## Open source reference
 
