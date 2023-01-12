@@ -93,7 +93,8 @@ class MainHook : IXposedHookLoadPackage {
             val resultMap = bridge.batchFindMethodsUsingStrings {
                 addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
             }.firstOrNull()?.let {
-                val method: Method = it.getMethodInstance(hostClassLoader)
+                val classDescriptor = it.value.first()
+                val method: Method = classDescriptor.getMethodInstance(hostClassLoader)
                 XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
             } ?: Log.e("DexKit", "search result empty")
         }
