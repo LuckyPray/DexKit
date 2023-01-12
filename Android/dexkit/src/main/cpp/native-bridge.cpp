@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <android/log.h>
+#include <sys/eventfd.h>
 #include "dex_kit.h"
 #include "dex_kit_jni_helper.h"
 
@@ -36,12 +37,16 @@ static bool IsCompactDexFile(const void *image) {
 }
 
 static bool CheckPoint(void *addr) {
-    int nullfd = open("/dev/random", O_WRONLY);
+    auto fd = eventfd(0, 0);
+    if (fd < 0) {
+        LOGE("eventfd failed: %s", strerror(errno));
+        return false;
+    }
     bool valid = true;
-    if (write(nullfd, (void *) addr, sizeof(addr)) < 0) {
+    if (write(fd, (void *) addr, 8) < 0) {
         valid = false;
     }
-    close(nullfd);
+    close(fd);
     return valid;
 }
 
