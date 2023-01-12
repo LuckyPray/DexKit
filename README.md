@@ -59,7 +59,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation 'io.github.neonorbit:dexplore:1.4.3'
+    implementation 'org.luckypray:DexKit:<version>'
 }
 ```
 
