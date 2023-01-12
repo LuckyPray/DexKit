@@ -13,12 +13,6 @@ methods, or properties.
 
 ---
 
-[DexKit Document](https://luckypray.org/DexKit/en/) contains some examples of API calls, and more APIs can be found in
-[DexKitBridge](http://kdoc.dexkit.luckypray.org/dexkit/io.luckypray.dexkit/-dex-kit-bridge/index.html).
-
-[DexKit API KDoc](https://luckypray.org/DexKit-Doc) is a KDoc (similar to JavaDoc) generated from source code comments. 
-However, it is recommended to use an IDE such as IDEA to view source code comments during development.
-
 ## Background
 
 For `Xposed` modules, we often need to `Hook` specific methods, but due to obfuscation, we need to use means 
@@ -114,6 +108,8 @@ class MainHook : IXposedHookLoadPackage {
 ### Usage Document
 
 - [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
+- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) is a KDoc (similar to JavaDoc) generated from source code comments.
+However, it is recommended to use an IDE such as IDEA to view source code comments during development.
 
 ## Open source reference
 
