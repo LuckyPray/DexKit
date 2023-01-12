@@ -32,3 +32,6 @@ dependencies {
 :::
 
 现在你已经成功集成了 `DexKit` 到你的项目中，接下来我们将会介绍如何使用 `DexKit` 来完成一些常见的需求。
+
+> 记得先调用 `System.loadLibrary("dexkit")` 加载动态库，如果遇见 `Java.lang.UnsatisfiedLinkError`,
+> 请自行提取对应 ABI 的 `.so` 文件后使用 `System.load(path)` 进行加载。

@@ -35,3 +35,6 @@ so please check the release notes when using.
 
 Now that you have successfully integrated `DexKit` into your project, 
 we will introduce how to use `DexKit` to fulfill some common requirements.
+
+> 记得先调用 `System.loadLibrary("dexkit")` 加载动态库，如果遇见 `Java.lang.UnsatisfiedLinkError`,
+> 请自行提取对应 ABI 的 `.so` 文件后使用 `System.load(path)` 进行加载。

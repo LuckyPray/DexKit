@@ -48,8 +48,9 @@ dexkit can quickly meet our needs at this point.
 ::: code-group-item kotlin
 ```kotlin
 @Throws(NoSuchMethodException::class)
-fun vipHook() {
-    val apkPath = hostApp.applicationInfo.sourceDir
+fun vipHook(loadPackageParam: LoadPackageParam) {
+    System.loadLibrary("dexkit")
+    val apkPath = loadPackageParam.appInfo.sourceDir
     DexKitBridge.create(apkPath)?.use { bridge ->
         val resultMap = bridge.batchFindMethodsUsingStrings {
             addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
@@ -66,8 +67,9 @@ fun vipHook() {
 :::
 ::: code-group-item java
 ```java
-public void vipHook() throws NoSuchMethodException {
-    String apkPath = HostInfo.getHostApp().getApplicationInfo().sourceDir;
+public void vipHook(LoadPackageParam loadPackageParam) throws NoSuchMethodException {
+    System.loadLibrary("dexkit");
+    String apkPath = loadPackageParam.appInfo.sourceDir;
     try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
         if (bridge == null) {
             return;
