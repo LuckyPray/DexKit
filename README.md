@@ -73,7 +73,7 @@ public class abc {
     public boolean cvc() {
         boolean b = false;
         // ...
-        Log.d("VipCheckUtil", "info: xxxx");
+        Log.d("VipCheckUtil", "userInfo: xxxx");
         // ...
         return b;
     }
