@@ -87,13 +87,14 @@ jobject BatchFindMethodsUsingStrings(JNIEnv *env,
     return CMap2JMap(env, res);
 }
 
-jobjectArray FindMethodCaller(JNIEnv *env,
+jobject FindMethodCaller(JNIEnv *env,
                               jlong dexKitPtr,
                               jstring method_descriptor,
                               jstring method_declare_class,
                               jstring method_name,
                               jstring method_return_type,
                               jobjectArray method_param_types,
+                              jstring caller_method_descriptor,
                               jstring caller_method_declare_class,
                               jstring caller_method_name,
                               jstring caller_method_return_type,
@@ -112,6 +113,7 @@ jobjectArray FindMethodCaller(JNIEnv *env,
     if (method_param_types != NULL) {
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto callerMethodDescriptor = env->GetStringUTFChars(caller_method_descriptor, nullptr);
     auto callerMethodClass = env->GetStringUTFChars(caller_method_declare_class, nullptr);
     auto callerMethodName = env->GetStringUTFChars(caller_method_name, nullptr);
     auto callerMethodReturnType = env->GetStringUTFChars(caller_method_return_type, nullptr);
@@ -128,6 +130,7 @@ jobjectArray FindMethodCaller(JNIEnv *env,
                                         methodName,
                                         methodReturnType,
                                         ParamTypes,
+                                        callerMethodDescriptor,
                                         callerMethodClass,
                                         callerMethodName,
                                         callerMethodReturnType,
@@ -138,10 +141,11 @@ jobjectArray FindMethodCaller(JNIEnv *env,
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(caller_method_descriptor, callerMethodDescriptor);
     env->ReleaseStringUTFChars(caller_method_declare_class, callerMethodClass);
     env->ReleaseStringUTFChars(caller_method_name, callerMethodName);
     env->ReleaseStringUTFChars(caller_method_return_type, callerMethodReturnType);
-    return StrVec2JStrArr(env, res);
+    return CMap2JMap(env, res);
 }
 
 jobject FindMethodInvoking(JNIEnv *env,
@@ -151,6 +155,7 @@ jobject FindMethodInvoking(JNIEnv *env,
                            jstring method_name,
                            jstring method_return_type,
                            jobjectArray method_param_types,
+                           jstring be_called_method_descriptor,
                            jstring be_called_method_declare_class,
                            jstring be_called_method_name,
                            jstring be_called_method_return_type,
@@ -169,8 +174,8 @@ jobject FindMethodInvoking(JNIEnv *env,
     if (method_param_types != NULL) {
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
-    auto beCalledMethodDeclareClass = env->GetStringUTFChars(be_called_method_declare_class,
-                                                             nullptr);
+    auto beCalledMethodDescriptor = env->GetStringUTFChars(be_called_method_descriptor, nullptr);
+    auto beCalledMethodDeclareClass = env->GetStringUTFChars(be_called_method_declare_class,nullptr);
     auto beCalledMethodDeclareName = env->GetStringUTFChars(be_called_method_name, nullptr);
     auto beCalledMethodReturnType = env->GetStringUTFChars(be_called_method_return_type, nullptr);
     auto beCalledMethodParamTypes = dexkit::null_param;
@@ -186,6 +191,7 @@ jobject FindMethodInvoking(JNIEnv *env,
                                           methodName,
                                           methodReturnType,
                                           ParamTypes,
+                                          beCalledMethodDescriptor,
                                           beCalledMethodDeclareClass,
                                           beCalledMethodDeclareName,
                                           beCalledMethodReturnType,
@@ -196,6 +202,7 @@ jobject FindMethodInvoking(JNIEnv *env,
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(be_called_method_descriptor, beCalledMethodDescriptor);
     env->ReleaseStringUTFChars(be_called_method_declare_class, beCalledMethodDeclareClass);
     env->ReleaseStringUTFChars(be_called_method_name, beCalledMethodDeclareName);
     env->ReleaseStringUTFChars(be_called_method_return_type, beCalledMethodReturnType);
@@ -209,6 +216,7 @@ jobject FindMethodUsingField(JNIEnv *env,
                              jstring field_name,
                              jstring field_type,
                              jint used_flags,
+                             jstring caller_method_descriptor,
                              jstring caller_method_declare_class,
                              jstring caller_method_name,
                              jstring caller_method_return_type,
@@ -226,6 +234,7 @@ jobject FindMethodUsingField(JNIEnv *env,
     if (used_flags == 0) {
         used_flags = dexkit::fGetting | dexkit::fSetting;
     }
+    auto callerMethodDescriptor = env->GetStringUTFChars(caller_method_descriptor, nullptr);
     auto callerMethodClass = env->GetStringUTFChars(caller_method_declare_class, nullptr);
     auto callerMethodName = env->GetStringUTFChars(caller_method_name, nullptr);
     auto callerMethodReturnType = env->GetStringUTFChars(caller_method_return_type, nullptr);
@@ -242,6 +251,7 @@ jobject FindMethodUsingField(JNIEnv *env,
                                             fieldName,
                                             fieldType,
                                             used_flags,
+                                            callerMethodDescriptor,
                                             callerMethodClass,
                                             callerMethodName,
                                             callerMethodReturnType,
@@ -252,6 +262,7 @@ jobject FindMethodUsingField(JNIEnv *env,
     env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
     env->ReleaseStringUTFChars(field_name, fieldName);
     env->ReleaseStringUTFChars(field_type, fieldType);
+    env->ReleaseStringUTFChars(caller_method_descriptor, callerMethodDescriptor);
     env->ReleaseStringUTFChars(caller_method_declare_class, callerMethodClass);
     env->ReleaseStringUTFChars(caller_method_name, callerMethodName);
     env->ReleaseStringUTFChars(caller_method_return_type, callerMethodReturnType);
