@@ -74,9 +74,9 @@ NotFoundActivity -> []
 
 ```kotlin
 DexKitBridge.create("demo.apk")?.use { bridge ->
-    listOf("^Hello", "^Hello World", "World$", "Hello World", "llo Wor").forEach {
+    listOf("^Hello", "^Hello World", "World$", "Hello World", "llo Wor").forEach { usingString ->
         val result = bridge.findMethodUsingString {
-            usingString = "com.tencent.mm"
+            usingString = usingString
             advancedMatch = true
         }
         assert(result.size == 1)
@@ -103,8 +103,8 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
         this.usingType = FieldUsingType.PUT
     }
     assert(result.size == 1)
-    result.forEach { (callerMethod, fieldList) ->
-        println("caller method: $callerMethod ->")
+    result.forEach { (method, fieldList) ->
+        println("method: $method ->")
         fieldList.forEach { field ->
             println("\t $field")
         }
@@ -115,7 +115,7 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
 我们得到如下输出:
 
 ```text
-caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V ->
+method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V ->
     Lcom/luckypray/dexkit/demo/DemoActivity;->mCount:I
 ```
 
@@ -156,15 +156,20 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
         methodParameterTypes = arrayOf("int", "I")
         methodDeclareClass = "com.luckypray.dexkit.demo.DemoActivity"
     }
-    assert(result.size == 1)
-    println("result: " + result.first())
+    result.forEach { (callerMethod, beInvokedList)->
+        println("caller method: $callerMethod")
+        beInvokedList.forEach {
+            println("\t$it")
+        }
+    }
 }
 ```
 
 我们得到如下输出:
 
 ```text
-result: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V
+caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V
+    Lcom/luckypray/dexkit/demo/DemoActivity;->sum(II)I
 ```
 
 > 所有API均可在 [API 文档](https://luckypray.org/DexKit-Doc/dexkit/io.luckypray.dexkit/-dex-kit-bridge/index.html)
