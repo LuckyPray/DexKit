@@ -60,13 +60,17 @@ int main() {
             "<init>",
             "",
             dexkit::null_param,
+            "",
             "Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;",
             "getRegQueryAccountMsg",
             "",
             dexkit::null_param);
     std::cout << "\nFindMethodCaller -> \n";
-    for (auto &value: beInvokedMethod) {
-        std::cout << "\t" << value << "\n";
+    for (auto &[key, value]: beInvokedMethod) {
+        std::cout << key << " -> \n";
+        for (auto &v: value) {
+            std::cout << "\t" << v << "\n";
+        }
     }
 
     auto invokingMethods = dexKit.FindMethodInvoking(
@@ -75,6 +79,7 @@ int main() {
             "syncGetServerConfig",
             "",
             dexkit::null_param,
+            "",
             "",
             "",
             "",
@@ -93,6 +98,7 @@ int main() {
             "",
             "Landroid/widget/TextView;",
             dexkit::fGetting,
+            "",
             "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
             "",
             "void",

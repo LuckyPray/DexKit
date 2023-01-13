@@ -343,12 +343,13 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
     return result;
 }
 
-std::vector<std::string>
+std::map<std::string, std::vector<std::string>>
 DexKit::FindMethodCaller(const std::string &method_descriptor,
                          const std::string &method_declare_class,
                          const std::string &method_declare_name,
                          const std::string &method_return_type,
                          const std::optional<std::vector<std::string>> &method_param_types,
+                         const std::string &caller_method_descriptor,
                          const std::string &caller_method_declare_class,
                          const std::string &caller_method_declare_name,
                          const std::string &caller_method_return_type,
@@ -356,9 +357,11 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                          bool unique_result,
                          const std::vector<size_t> &dex_priority) {
     // be invoked method
-    auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class,
+    auto extract_tuple = ExtractMethodDescriptor(method_descriptor,
+                                                 method_declare_class,
                                                  method_declare_name,
-                                                 method_return_type, method_param_types);
+                                                 method_return_type,
+                                                 method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
@@ -367,7 +370,8 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
     bool match_any_param = method_param_types == null_param;
 
     // caller method
-    auto caller_extract_tuple = ExtractMethodDescriptor({}, caller_method_declare_class,
+    auto caller_extract_tuple = ExtractMethodDescriptor(caller_method_descriptor,
+                                                        caller_method_declare_class,
                                                         caller_method_declare_name,
                                                         caller_method_return_type,
                                                         caller_method_param_types);
@@ -382,7 +386,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                                              caller_method_return_type, caller_method_param_types);
 
     ThreadPool pool(thread_num_);
-    std::vector<std::future<std::vector<std::string>>> futures;
+    std::vector<std::future<std::map<std::string, std::vector<std::string>>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
                 [this, dex_idx, &class_desc, &method_name, &return_desc, &param_descs, &match_shorty, &match_any_param,
@@ -401,13 +405,13 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                     if (!class_desc.empty()) {
                         class_idx = FindTypeIdx(dex_idx, class_desc);
                         if (class_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     if (!return_desc.empty()) {
                         return_type = FindTypeIdx(dex_idx, return_desc);
                         if (return_type == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     for (auto &v: param_descs) {
@@ -415,7 +419,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                         if (!v.empty()) {
                             type = FindTypeIdx(dex_idx, v);
                             if (type == dex::kNoIndex) {
-                                return std::vector<std::string>();
+                                return std::map<std::string, std::vector<std::string>>();
                             }
                         }
                         param_types.emplace_back(type);
@@ -428,7 +432,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                     if (!caller_class_desc.empty()) {
                         caller_class_idx = FindTypeIdx(dex_idx, caller_class_desc);
                         if (caller_class_idx == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                         lower = caller_class_idx;
                         upper = caller_class_idx + 1;
@@ -436,7 +440,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                     if (!caller_return_desc.empty()) {
                         caller_return_type = FindTypeIdx(dex_idx, caller_return_desc);
                         if (caller_return_type == dex::kNoIndex) {
-                            return std::vector<std::string>();
+                            return std::map<std::string, std::vector<std::string>>();
                         }
                     }
                     for (auto &v: caller_param_descs) {
@@ -444,13 +448,13 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                         if (!v.empty()) {
                             type = FindTypeIdx(dex_idx, v);
                             if (type == dex::kNoIndex) {
-                                return std::vector<std::string>();
+                                return std::map<std::string, std::vector<std::string>>();
                             }
                         }
                         caller_param_types.emplace_back(type);
                     }
 
-                    std::vector<std::string> result;
+                    std::map<dex::u2, std::vector<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         for (auto method_idx: class_method_ids[c_idx]) {
                             if (need_caller_match) {
@@ -490,10 +494,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                                                           match_any_param)) {
                                             auto descriptor = GetMethodDescriptor(dex_idx,
                                                                                   method_idx);
-                                            result.emplace_back(descriptor);
-                                            if (unique_result) {
-                                                goto label;
-                                            }
+                                            index_map[method_idx].emplace_back(index);
                                         }
                                         break;
                                     }
@@ -502,19 +503,30 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                                 }
                                 p += width;
                             }
-                            label:;
                         }
+                    }
+                    std::map<std::string, std::vector<std::string>> result;
+                    for (auto &[key, value]: index_map) {
+                        if (unique_result) {
+                            std::sort(value.begin(), value.end());
+                            value.erase(std::unique(value.begin(), value.end()), value.end());
+                        }
+                        auto caller_descriptor = GetMethodDescriptor(dex_idx, key);
+                        std::vector<std::string> be_called_descriptors;
+                        for (auto v: value) {
+                            auto be_called_descriptor = GetMethodDescriptor(dex_idx, v);
+                            be_called_descriptors.emplace_back(be_called_descriptor);
+                        }
+                        result.emplace(caller_descriptor, be_called_descriptors);
                     }
                     return result;
                 })
         );
     }
-    std::vector<std::string> result;
+    std::map<std::string, std::vector<std::string>> result;
     for (auto &f: futures) {
         auto r = f.get();
-        for (auto &desc: r) {
-            result.emplace_back(desc);
-        }
+        result.insert(r.begin(), r.end());
     }
     return result;
 }
@@ -525,6 +537,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                            const std::string &method_declare_name,
                            const std::string &method_return_type,
                            const std::optional<std::vector<std::string>> &method_param_types,
+                           const std::string &be_called_method_descriptor,
                            const std::string &be_called_method_declare_class,
                            const std::string &be_called_method_declare_name,
                            const std::string &be_called_method_return_type,
@@ -533,9 +546,11 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                            const std::vector<size_t> &dex_priority) {
 
     // caller method
-    auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class,
+    auto extract_tuple = ExtractMethodDescriptor(method_descriptor,
+                                                 method_declare_class,
                                                  method_declare_name,
-                                                 method_return_type, method_param_types);
+                                                 method_return_type,
+                                                 method_param_types);
     std::string caller_class_desc = std::get<0>(extract_tuple);
     std::string caller_method_name = std::get<1>(extract_tuple);
     std::string caller_return_desc = std::get<2>(extract_tuple);
@@ -545,7 +560,8 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
     bool caller_match_any_param = method_param_types == null_param;
 
     // be called method
-    auto be_called_extract_tuple = ExtractMethodDescriptor({}, be_called_method_declare_class,
+    auto be_called_extract_tuple = ExtractMethodDescriptor(be_called_method_declare_class,
+                                                           be_called_method_declare_class,
                                                            be_called_method_declare_name,
                                                            be_called_method_return_type,
                                                            invoking_method_param_types);
@@ -708,6 +724,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                              const std::string &field_declare_name,
                              const std::string &field_type,
                              uint32_t used_flags,
+                             const std::string &caller_method_descriptor,
                              const std::string &caller_method_declare_class,
                              const std::string &caller_method_declare_name,
                              const std::string &caller_method_return_type,
@@ -715,15 +732,18 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                              bool unique_result,
                              const std::vector<size_t> &dex_priority) {
     // be getter field
-    auto extract_tuple = ExtractFieldDescriptor(field_descriptor, field_declare_class,
-                                                field_declare_name, field_type);
+    auto extract_tuple = ExtractFieldDescriptor(field_descriptor,
+                                                field_declare_class,
+                                                field_declare_name,
+                                                field_type);
     std::string field_declare_class_desc = std::get<0>(extract_tuple);
     std::string field_name = std::get<1>(extract_tuple);
     std::string field_type_desc = std::get<2>(extract_tuple);
     if (used_flags == 0) used_flags = fGetting | fSetting;
 
     // caller method
-    auto caller_extract_tuple = ExtractMethodDescriptor({}, caller_method_declare_class,
+    auto caller_extract_tuple = ExtractMethodDescriptor(caller_method_descriptor,
+                                                        caller_method_declare_class,
                                                         caller_method_declare_name,
                                                         caller_method_return_type,
                                                         caller_method_param_types);
@@ -874,8 +894,11 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                               bool unique_result,
                               const std::vector<size_t> &dex_priority) {
     // caller method
-    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_type, method_param_types);
+    auto extract_tuple = ExtractMethodDescriptor({},
+                                                 method_declare_class,
+                                                 method_declare_name,
+                                                 method_return_type,
+                                                 method_param_types);
     std::string caller_class_desc = std::get<0>(extract_tuple);
     std::string caller_method_name = std::get<1>(extract_tuple);
     std::string caller_return_desc = std::get<2>(extract_tuple);
@@ -1084,7 +1107,9 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
     std::string annotation_class_desc = GetClassDescriptor(annotation_class);
 
     // be getter field
-    auto extract_tuple = ExtractFieldDescriptor({}, field_declare_class, field_declare_name,
+    auto extract_tuple = ExtractFieldDescriptor({},
+                                                field_declare_class,
+                                                field_declare_name,
                                                 field_type);
     std::string field_declare_class_desc = std::get<0>(extract_tuple);
     std::string field_name = std::get<1>(extract_tuple);
@@ -1176,8 +1201,11 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                                   const std::vector<size_t> &dex_priority) {
     std::string annotation_class_desc = GetClassDescriptor(annotation_class);
     // using annotation's method
-    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_type, method_param_types);
+    auto extract_tuple = ExtractMethodDescriptor({},
+                                                 method_declare_class,
+                                                 method_declare_name,
+                                                 method_return_type,
+                                                 method_param_types);
     std::string caller_class_desc = std::get<0>(extract_tuple);
     std::string caller_method_name = std::get<1>(extract_tuple);
     std::string caller_return_desc = std::get<2>(extract_tuple);
@@ -1283,9 +1311,11 @@ DexKit::FindMethod(const std::string &method_descriptor,
                    const std::optional<std::vector<std::string>> &method_param_types,
                    const std::vector<size_t> &dex_priority) {
 
-    auto extract_tuple = ExtractMethodDescriptor(method_descriptor, method_declare_class,
+    auto extract_tuple = ExtractMethodDescriptor(method_descriptor,
+                                                 method_declare_class,
                                                  method_declare_name,
-                                                 method_return_type, method_param_types);
+                                                 method_return_type,
+                                                 method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
@@ -1415,8 +1445,11 @@ DexKit::FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                                    const std::string &method_return_type,
                                    const std::optional<std::vector<std::string>> &method_param_types,
                                    const std::vector<size_t> &dex_priority) {
-    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_type, method_param_types);
+    auto extract_tuple = ExtractMethodDescriptor({},
+                                                 method_declare_class,
+                                                 method_declare_name,
+                                                 method_return_type,
+                                                 method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
@@ -1516,8 +1549,11 @@ DexKit::FindMethodUsingOpCodeSeq(const std::vector<uint8_t> &op_seq,
                                  const std::string &method_return_type,
                                  const std::optional<std::vector<std::string>> &method_param_types,
                                  const std::vector<size_t> &dex_priority) {
-    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_type, method_param_types);
+    auto extract_tuple = ExtractMethodDescriptor({},
+                                                 method_declare_class,
+                                                 method_declare_name,
+                                                 method_return_type,
+                                                 method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);
@@ -1609,8 +1645,11 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
                            const std::string &method_return_type,
                            const std::optional<std::vector<std::string>> &method_param_types,
                            const std::vector<size_t> &dex_priority) {
-    auto extract_tuple = ExtractMethodDescriptor({}, method_declare_class, method_declare_name,
-                                                 method_return_type, method_param_types);
+    auto extract_tuple = ExtractMethodDescriptor({},
+                                                 method_declare_class,
+                                                 method_declare_name,
+                                                 method_return_type,
+                                                 method_param_types);
     std::string class_desc = std::get<0>(extract_tuple);
     std::string method_name = std::get<1>(extract_tuple);
     std::string return_desc = std::get<2>(extract_tuple);

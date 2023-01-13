@@ -11,6 +11,7 @@ class MethodInvokingArgs private constructor(
     val methodName: String,
     val methodReturnType: String,
     val methodParameterTypes: Array<String>?,
+    val beInvokedMethodDescriptor: String,
     val beInvokedMethodDeclareClass: String,
     val beInvokedMethodName: String,
     val beInvokedMethodReturnType: String,
@@ -100,6 +101,16 @@ class MethodInvokingArgs private constructor(
             @JvmSynthetic set
 
         /**
+         * **be invoked method descriptor**
+         *
+         * Method description will be parsed to corresponding: [beInvokedMethodDeclareClass], [beInvokedMethodName], [beInvokedMethodReturnType], [beInvokedMethodParamTypes].
+         *
+         *    e.g. "Ljava/lang/String;->length()I"
+         */
+        var beInvokedMethodDescriptor: String = ""
+            @JvmSynthetic set
+
+        /**
          * **be invoked method declare class**
          */
         var beInvokedMethodDeclareClass: String = ""
@@ -167,6 +178,13 @@ class MethodInvokingArgs private constructor(
         }
 
         /**
+         * [Builder.beInvokedMethodDescriptor]
+         */
+        fun beInvokedMethodDescriptor(beInvokedMethodDescriptor: String) = this.also {
+            this.beInvokedMethodDescriptor = beInvokedMethodDescriptor
+        }
+
+        /**
          * [Builder.beInvokedMethodDeclareClass]
          */
         fun beInvokedMethodDeclareClass(beInvokedMethodDeclareClass: String) = this.also {
@@ -214,6 +232,7 @@ class MethodInvokingArgs private constructor(
                 methodName,
                 methodReturnType,
                 methodParameterTypes,
+                beInvokedMethodDescriptor,
                 beInvokedMethodDeclareClass,
                 beInvokedMethodName,
                 beInvokedMethodReturnType,

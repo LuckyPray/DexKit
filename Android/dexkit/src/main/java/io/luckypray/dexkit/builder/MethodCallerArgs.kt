@@ -11,6 +11,7 @@ class MethodCallerArgs private constructor(
     val methodName: String,
     val methodReturnType: String,
     val methodParameterTypes: Array<String>?,
+    val callerMethodDescriptor: String,
     val callerMethodDeclareClass: String,
     val callerMethodName: String,
     val callerMethodReturnType: String,
@@ -100,6 +101,16 @@ class MethodCallerArgs private constructor(
             @JvmSynthetic set
 
         /**
+         * **caller method descriptor**
+         *
+         * Method description will be parsed to corresponding: [callerMethodDeclareClass], [callerMethodName], [callerMethodReturnType], [callerMethodParameterTypes].
+         *
+         *    e.g. "Lcom/example/MainActivity;->onCreate(Landroid/os/Bundle;)V"
+         */
+        var callerMethodDescriptor: String = ""
+            @JvmSynthetic set
+
+        /**
          * **caller method declare class**
          */
         var callerMethodDeclareClass: String = ""
@@ -167,6 +178,13 @@ class MethodCallerArgs private constructor(
         }
 
         /**
+         * [Builder.callerMethodDescriptor]
+         */
+        fun callerMethodDescriptor(callerMethodDescriptor: String) = this.also {
+            this.callerMethodDescriptor = callerMethodDescriptor
+        }
+
+        /**
          * [Builder.callerMethodDeclareClass]
          */
         fun callerMethodDeclareClass(callerMethodDeclareClass: String) = this.also {
@@ -214,6 +232,7 @@ class MethodCallerArgs private constructor(
                 methodName,
                 methodReturnType,
                 methodParameterTypes,
+                callerMethodDescriptor,
                 callerMethodDeclareClass,
                 callerMethodName,
                 callerMethodReturnType,

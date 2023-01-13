@@ -90,26 +90,28 @@ public:
 
     /**
      * @brief find caller for specified method.
-     * @param method_descriptor method descriptor, after specifying method_descriptor, the subsequent parameters are automatically filled in [method_declare_class], [method_declare_name], [method_return_type], [method_param_types]
+     * @param method_descriptor if not empty, filled in [method_declare_class], [method_declare_name], [method_return_type], [method_param_types]
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
      * @param method_return_type if empty, match any return type;
      * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
-     * @param caller_method_declare_class if empty, match any class;
-     * @param caller_method_declare_name if empty, match any method name;
-     * @param caller_method_return_type if empty, match any return type;
+     * @param caller_method_descriptor refer to [method_descriptor]
+     * @param caller_method_declare_class refer to [method_declare_class]
+     * @param caller_method_declare_name refer to [method_declare_name]
+     * @param caller_method_return_type refer to [method_return_type]
      * @param caller_method_param_types refer to [method_param_types]
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return method descriptor
      */
-    std::vector<std::string>
+    std::map<std::string, std::vector<std::string>>
     FindMethodCaller(const std::string &method_descriptor,
                      const std::string &method_declare_class,
                      const std::string &method_declare_name,
                      const std::string &method_return_type,
                      const std::optional<std::vector<std::string>> &method_param_types,
+                     const std::string &caller_method_descriptor,
                      const std::string &caller_method_declare_class,
                      const std::string &caller_method_declare_name,
                      const std::string &caller_method_return_type,
@@ -131,6 +133,7 @@ public:
      * @param method_param_types if match any param size and type, used 'dexkit::null_param;' or '{}', <br/>
      * if match empty param, use 'dexkit::empty_param' or 'std::vector<std::string>()', <br/>
      * if it contains unknown types, please keep the empty string eg: {"I", "", "Ljava/lang/String;"}
+     * @param called_method_descriptor refer to [method_descriptor]
      * @param be_called_method_declare_class refer to [method_declare_class]
      * @param be_called_method_declare_name refer to [method_declare_name]
      * @param be_called_method_return_type refer to [method_return_type]
@@ -144,6 +147,7 @@ public:
                        const std::string &method_declare_name,
                        const std::string &method_return_type,
                        const std::optional<std::vector<std::string>> &method_param_types,
+                       const std::string &be_called_method_descriptor,
                        const std::string &be_called_method_declare_class,
                        const std::string &be_called_method_declare_name,
                        const std::string &be_called_method_return_type,
@@ -158,6 +162,7 @@ public:
      * @param field_declare_name if empty, match any field name;
      * @param field_type if empty, match any field type;
      * @param used_flags used flags, eg: 'fGetting' or 'fSetting' or 'fGetting | fSetting'
+     * @param method_descriptor if not empty, filled in [method_declare_class], [method_declare_name], [method_return_type], [method_param_types]
      * @param caller_method_declare_class if empty, match any class;
      * @param caller_method_declare_name if empty, match any method name;
      * @param caller_method_return_type if empty, match any return type;
@@ -173,6 +178,7 @@ public:
                          const std::string &field_declare_name,
                          const std::string &field_type,
                          uint32_t used_flags,
+                         const std::string &caller_method_descriptor,
                          const std::string &caller_method_declare_class,
                          const std::string &caller_method_declare_name,
                          const std::string &caller_method_return_type,

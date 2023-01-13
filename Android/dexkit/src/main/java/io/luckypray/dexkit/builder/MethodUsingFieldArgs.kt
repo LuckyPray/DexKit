@@ -13,6 +13,7 @@ class MethodUsingFieldArgs private constructor(
     val fieldName: String,
     val fieldType: String,
     val usingFlag: Int,
+    val callerMethodDescriptor: String,
     val callerMethodDeclareClass: String,
     val callerMethodName: String,
     val callerMethodReturnType: String,
@@ -94,6 +95,16 @@ class MethodUsingFieldArgs private constructor(
          *     FieldUsingType.ALL match GET or PUT
          */
         var usingType: FieldUsingType = FieldUsingType.ALL
+            @JvmSynthetic set
+
+        /**
+         * **caller method descriptor**
+         *
+         * Caller method description will be parsed to corresponding: [callerMethodDeclareClass], [callerMethodName], [callerMethodReturnType], [callerMethodParamTypes]
+         *
+         *    e.g. "Lcom/example/MainActivity;->onCreate(Landroid/os/Bundle;)V"
+         */
+        var callerMethodDescriptor: String = ""
             @JvmSynthetic set
 
         /**
@@ -186,6 +197,13 @@ class MethodUsingFieldArgs private constructor(
         }
 
         /**
+         * [Builder.callerMethodDescriptor]
+         */
+        fun callerMethodDescriptor(callerMethodDescriptor: String) = this.also {
+            this.callerMethodDescriptor = callerMethodDescriptor
+        }
+
+        /**
          * [Builder.callerMethodDeclareClass]
          */
         fun callerMethodDeclareClass(callerMethodDeclareClass: String) = this.also {
@@ -233,6 +251,7 @@ class MethodUsingFieldArgs private constructor(
                 fieldName,
                 fieldType,
                 usingType.toByteFlag(),
+                callerMethodDescriptor,
                 callerMethodDeclareClass,
                 callerMethodName,
                 callerMethodReturnType,
