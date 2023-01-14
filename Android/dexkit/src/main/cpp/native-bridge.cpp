@@ -1,17 +1,29 @@
 #include <jni.h>
-#include <android/log.h>
-#include <sys/eventfd.h>
 #include "dex_kit.h"
 #include "dex_kit_jni_helper.h"
 
 #define TAG "DexKit"
+#define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
+
+#ifdef __ANDROID__
+#include <android/log.h>
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, TAG ,__VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
+#else
+#include <cstdio>
+#define LOGI(__FORMAT__, ...) fprintf(stdout, "I/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGD(__FORMAT__, ...) fprintf(stdout, "D/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGE(__FORMAT__, ...) fprintf(stdout, "E/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGF(__FORMAT__, ...) fprintf(stdout, "F/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGW(__FORMAT__, ...) fprintf(stdout, "W/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#endif
 
-#define DEXKIT_JNI JNIEXPORT JNICALL extern "C"
+#ifdef __ANDROID__
+// android memory processing
+#include <sys/eventfd.h>
 
 static jfieldID path_list_field = nullptr;
 static jfieldID element_field = nullptr;
@@ -68,20 +80,6 @@ void init(JNIEnv *env) {
     file_name_field = env->GetFieldID(dex_file, "mFileName", "Ljava/lang/String;");
 
     is_initialized = true;
-}
-
-DEXKIT_JNI jlong
-Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
-                                                       jstring apk_path) {
-    if (!apk_path) {
-        return 0;
-    }
-    const char *cStr = env->GetStringUTFChars(apk_path, nullptr);
-    LOGI("apkPath -> %s", cStr);
-    std::string filePathStr(cStr);
-    auto dexkit = new dexkit::DexKit(filePathStr);
-    env->ReleaseStringUTFChars(apk_path, cStr);
-    return (jlong) dexkit;
 }
 
 DEXKIT_JNI jlong
@@ -147,6 +145,21 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
             dexkit->AddImages(std::move(images));
         }
     }
+    return (jlong) dexkit;
+}
+#endif
+
+DEXKIT_JNI jlong
+Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
+                                                       jstring apk_path) {
+    if (!apk_path) {
+        return 0;
+    }
+    const char *cStr = env->GetStringUTFChars(apk_path, nullptr);
+    LOGI("apkPath -> %s", cStr);
+    std::string filePathStr(cStr);
+    auto dexkit = new dexkit::DexKit(filePathStr);
+    env->ReleaseStringUTFChars(apk_path, cStr);
     return (jlong) dexkit;
 }
 
@@ -438,3 +451,6 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodeSeq(JNIEnv *env, jcla
                               method_param_types,
                               dex_priority);
 }
+
+#undef DEXKIT_JNI
+#undef TAG
