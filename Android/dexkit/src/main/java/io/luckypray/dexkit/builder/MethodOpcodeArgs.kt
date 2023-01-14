@@ -41,40 +41,40 @@ class MethodOpcodeArgs private constructor(
          *
          *     e.g. intArrayOf(Opcodes.ALOAD, Opcodes.INVOKE_VIRTUAL)
          */
+        @set:JvmSynthetic
         var opSeq: IntArray = intArrayOf()
-            @JvmSynthetic set
 
         /**
          * **method declare class**
          *
          * if empty, match any class
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **method return type**
          *
          * if empty, match any type
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **method param types**
          *
          * if null, match any param types
          */
+        @set:JvmSynthetic
         var methodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * [Builder.opSeq]

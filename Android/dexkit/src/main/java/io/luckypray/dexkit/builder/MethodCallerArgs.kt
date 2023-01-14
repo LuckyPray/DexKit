@@ -51,8 +51,8 @@ class MethodCallerArgs private constructor(
          *
          *     e.g. "Ljava/lang/String;->length()I"
          */
+        @set:JvmSynthetic
         var methodDescriptor: String = ""
-            @JvmSynthetic set
 
         /**
          * **method declare class**
@@ -61,16 +61,16 @@ class MethodCallerArgs private constructor(
          *
          *     e.g. "Ljava/lang/String;" or "java.lang.String"
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **method name**
          *
          * if empty, match any method name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -79,8 +79,8 @@ class MethodCallerArgs private constructor(
          *
          *     e.g. "I" or "int"
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **method parameter types**
@@ -97,8 +97,8 @@ class MethodCallerArgs private constructor(
          *     matches(["I", ""], ["int", "long"]) == true
          *     matches(["I", ""], ["int"]) == false
          */
+        @set:JvmSynthetic
         var methodParameterTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * **caller method descriptor**
@@ -107,40 +107,40 @@ class MethodCallerArgs private constructor(
          *
          *    e.g. "Lcom/example/MainActivity;->onCreate(Landroid/os/Bundle;)V"
          */
+        @set:JvmSynthetic
         var callerMethodDescriptor: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method declare class**
          */
+        @set:JvmSynthetic
         var callerMethodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method name**
          */
+        @set:JvmSynthetic
         var callerMethodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method return type**
          */
+        @set:JvmSynthetic
         var callerMethodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method parameter types**
          */
+        @set:JvmSynthetic
         var callerMethodParameterTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * **unique result**
          *
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
+        @set:JvmSynthetic
         var unique: Boolean = true
-            @JvmSynthetic set
 
         /**
          * [Builder.methodDescriptor]

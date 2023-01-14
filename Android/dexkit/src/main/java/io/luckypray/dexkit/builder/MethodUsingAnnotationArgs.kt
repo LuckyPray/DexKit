@@ -44,56 +44,56 @@ class MethodUsingAnnotationArgs private constructor(
          *
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
+        @set:JvmSynthetic
         var annotationClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **annotation using string**
          *
          * if empty, match any annotation
          */
+        @set:JvmSynthetic
         var annotationUsingString: String = ""
-            @JvmSynthetic set
 
         /**
          * **advanced match**
          *
          * if true, match annotation using string
          */
+        @set:JvmSynthetic
         var advancedMatch: Boolean = true
-            @JvmSynthetic set
 
         /**
          * **method declare class**
          *
          * if empty, match any class
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **method return type**
          *
          * if empty, match any type
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **method param types**
          *
          * if null, match any param types
          */
+        @set:JvmSynthetic
         var methodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]

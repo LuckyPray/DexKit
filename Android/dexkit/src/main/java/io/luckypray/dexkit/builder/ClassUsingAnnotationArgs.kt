@@ -40,24 +40,24 @@ class ClassUsingAnnotationArgs private constructor(
          *
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
+        @set:JvmSynthetic
         var annotationClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **annotation using string**
          *
          * if empty, match any annotation
          */
+        @set:JvmSynthetic
         var annotationUsingString: String = ""
-            @JvmSynthetic set
 
         /**
          * **advanced match**
          *
          * if true, match annotation using string
          */
+        @set:JvmSynthetic
         var advancedMatch: Boolean = true
-            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]

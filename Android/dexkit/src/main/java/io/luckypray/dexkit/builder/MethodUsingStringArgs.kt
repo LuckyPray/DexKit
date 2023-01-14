@@ -41,8 +41,8 @@ class MethodUsingStringArgs private constructor(
          *
          *     e.g. "Hello World"
          */
+        @set:JvmSynthetic
         var usingString: String = ""
-            @JvmSynthetic set
 
         /**
          * enable advanced match.
@@ -50,8 +50,8 @@ class MethodUsingStringArgs private constructor(
          *
          *     "^abc$" match "abc"，not match "abcd", but "^abc" match "abcd"
          */
+        @set:JvmSynthetic
         var advancedMatch: Boolean = true
-            @JvmSynthetic set
 
         /**
          * **caller method declare class**
@@ -60,16 +60,16 @@ class MethodUsingStringArgs private constructor(
          *
          *     e.g. "Lcom/example/MainActivity;" or "com.example.MainActivity"
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method return type**
@@ -78,8 +78,8 @@ class MethodUsingStringArgs private constructor(
          *
          *     e.g. "V" or "void"
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method param types**
@@ -96,16 +96,16 @@ class MethodUsingStringArgs private constructor(
          *     matches(["I", ""], ["int", "long"]) == true
          *     matches(["I", ""], ["int"]) == false
          */
+        @set:JvmSynthetic
         var methodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * **unique result**
          *
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
+        @set:JvmSynthetic
         var unique: Boolean = true
-            @JvmSynthetic set
 
         /**
          * [Builder.usingString]

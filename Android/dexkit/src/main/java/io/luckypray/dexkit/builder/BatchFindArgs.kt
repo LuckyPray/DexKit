@@ -36,8 +36,8 @@ class BatchFindArgs private constructor(
         /**
          * query map, key is unique key, value is class/method using strings
          */
+        @set:JvmSynthetic
         var queryMap = mapOf<String, Set<String>>()
-            @JvmSynthetic set
 
         /**
          * enable advanced match.
@@ -46,8 +46,8 @@ class BatchFindArgs private constructor(
          *
          *     "^abc$" match "abc"，not match "abcd", but "^abc" match "abcd"
          */
+        @set:JvmSynthetic
         var advancedMatch: Boolean = true
-            @JvmSynthetic set
 
         /**
          * [Builder.queryMap]
@@ -93,6 +93,6 @@ class BatchFindArgs private constructor(
          */
         override fun build(): BatchFindArgs = BatchFindArgs(queryMap, advancedMatch)
 
-        private fun toSet(strings : Iterable<String>) = strings as? Set ?: strings.toSet()
+        private fun toSet(strings: Iterable<String>) = strings as? Set ?: strings.toSet()
     }
 }

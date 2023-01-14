@@ -43,48 +43,48 @@ class FieldUsingAnnotationArgs private constructor(
          *
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
+        @set:JvmSynthetic
         var annotationClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **annotation using string**
          *
          * if empty, match any annotation
          */
+        @set:JvmSynthetic
         var annotationUsingString: String = ""
-            @JvmSynthetic set
 
         /**
          * **advanced match**
          *
          * if true, match annotation using string
          */
+        @set:JvmSynthetic
         var advancedMatch: Boolean = true
-            @JvmSynthetic set
 
         /**
          * **field declare class**
          *
          * if empty, match any class
          */
+        @set:JvmSynthetic
         var fieldDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **field name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var fieldName: String = ""
-            @JvmSynthetic set
 
         /**
          * **field type**
          *
          * if empty, match any type
          */
+        @set:JvmSynthetic
         var fieldType: String = ""
-            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]
