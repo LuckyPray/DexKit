@@ -3,7 +3,11 @@
 #include <string_view>
 #include <utility>
 #include <unistd.h>
+#if defined(_WIN32) || defined(WIN32)
+#include <mmap_windows.h>
+#else
 #include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <zlib.h>
@@ -21,7 +25,11 @@ struct MemMap {
     MemMap() = default;
 
     explicit MemMap(std::string_view file_name) {
-        int fd = open(file_name.data(), O_RDONLY | O_CLOEXEC);
+        int fd = open(file_name.data(), O_RDONLY
+#if !(defined(_WIN32) || defined(WIN32))
+        | O_CLOEXEC
+#endif
+        );
         if (fd > 0) {
             struct stat s{};
             fstat(fd, &s);
@@ -34,7 +42,7 @@ struct MemMap {
         close(fd);
     }
 
-    explicit MemMap(size_t size) {
+    explicit MemMap(uint32_t size) {
         auto *addr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (addr != MAP_FAILED) {
             addr_ = static_cast<uint8_t *>(addr);
@@ -70,7 +78,7 @@ struct MemMap {
 
 private:
     uint8_t *addr_ = nullptr;
-    size_t len_ = 0;
+    uint32_t len_ = 0;
 };
 
 static void *myalloc([[maybe_unused]] void *q, unsigned n, unsigned m) {
@@ -97,9 +105,11 @@ struct [[gnu::packed]] ZipFileRecord {
 //    [[maybe_unused]] uint8_t file_name[0];
 
     // fuck apk (compress_size | uncompress_size) == 0
-    std::pair<size_t, size_t> getRealSizeInfo() {
+    std::pair<uint32_t, uint32_t> getRealSizeInfo() {
         if (compress_size && uncompress_size) {
-            return {compress_size, uncompress_size};
+            uint32_t tmp_compress_size = compress_size;
+            uint32_t tmp_uncompress_size = uncompress_size;
+            return {tmp_compress_size, tmp_uncompress_size};
         }
         z_stream stream{};
         auto ret = inflateInit2(&stream, -MAX_WBITS);
@@ -108,9 +118,9 @@ struct [[gnu::packed]] ZipFileRecord {
         }
 
         char buf[UNZIP_BUF_CHUNK];
-        size_t total_read = 0;
-        size_t total_write = 0;
-        size_t input_pos = 0;
+        uint32_t total_read = 0;
+        uint32_t total_write = 0;
+        uint32_t input_pos = 0;
 
         stream.zalloc = myalloc;
         stream.zfree = myfree;
@@ -124,12 +134,12 @@ struct [[gnu::packed]] ZipFileRecord {
                 stream.avail_in = UNZIP_BUF_CHUNK;
                 input_pos = 0;
             }
-            stream.next_out = (u_char *) buf;
+            stream.next_out = (uint8_t *) buf;
             stream.avail_out = UNZIP_BUF_CHUNK;
             ret = inflate(&stream, Z_PARTIAL_FLUSH);
             switch (ret) {
                 case Z_OK: {
-                    size_t input_used = (UNZIP_BUF_CHUNK - input_pos) - stream.avail_in;
+                    uint32_t input_used = (UNZIP_BUF_CHUNK - input_pos) - stream.avail_in;
                     total_write += UNZIP_BUF_CHUNK - stream.avail_out;
                     input_pos += input_used;
                     total_read += input_used;
@@ -237,12 +247,17 @@ struct [[gnu::packed]] ZipLocalFile {
             if (d_stream.total_out != real_uncompress_size) {
                 return {};
             }
+
+#if !(defined(_WIN32) || defined(WIN32))
             mprotect(out.addr(), out.len(), PROT_READ);
+#endif
             return out;
         } else if (record->compress == 0 && real_compress_size == real_uncompress_size) {
             MemMap out(real_uncompress_size);
             memcpy(out.addr(), data(), real_uncompress_size);
+#if !(defined(_WIN32) || defined(WIN32))
             mprotect(out.addr(), out.len(), PROT_READ);
+#endif
             return out;
         }
         return {};
