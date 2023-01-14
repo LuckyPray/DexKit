@@ -560,7 +560,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
     bool caller_match_any_param = method_param_types == null_param;
 
     // be called method
-    auto be_called_extract_tuple = ExtractMethodDescriptor(be_called_method_declare_class,
+    auto be_called_extract_tuple = ExtractMethodDescriptor(be_called_method_descriptor,
                                                            be_called_method_declare_class,
                                                            be_called_method_declare_name,
                                                            be_called_method_return_type,
