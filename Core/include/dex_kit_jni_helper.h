@@ -497,6 +497,27 @@ jobjectArray FindMethod(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
+jobjectArray FindClass(JNIEnv *env,
+                       jlong native_ptr,
+                       jstring source_file,
+                       jstring find_path,
+                       jintArray dex_priority) {
+    if (!native_ptr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPath = env->GetStringUTFChars(find_path, nullptr);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
+    auto res = dexKit->FindClass(sourceFile, findPath, dexPriority);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_path, findPath);
+    return StrVec2JStrArr(env, res);
+}
+
 jobjectArray FindSubClasses(JNIEnv *env,
                             jlong dexKitPtr,
                             jstring parent_class,

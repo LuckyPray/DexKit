@@ -6,6 +6,7 @@ import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 import io.luckypray.dexkit.builder.BatchFindArgs
 import io.luckypray.dexkit.builder.ClassUsingAnnotationArgs
 import io.luckypray.dexkit.builder.FieldUsingAnnotationArgs
+import io.luckypray.dexkit.builder.FindClassArgs
 import io.luckypray.dexkit.builder.FindMethodArgs
 import io.luckypray.dexkit.builder.MethodCallerArgs
 import io.luckypray.dexkit.builder.MethodInvokingArgs
@@ -710,6 +711,28 @@ class DexKitBridge : Closeable {
 
     //#endregion
 
+    /**
+     * find class by multiple conditions
+     *
+     * @param [args] search builder by [FindClassArgs]
+     * @return [DexClassDescriptor] list
+     *
+     * @since 1.1.0
+     */
+    @DexKitExperimentalApi
+    fun findClass(
+        args: FindClassArgs
+    ): List<DexClassDescriptor> = nativeFindClass(
+        token,
+        args.sourceFile,
+        args.findPackage,
+        null
+    ).map { DexClassDescriptor(it) }
+
+    @DexKitExperimentalApi
+    inline fun findClass(builder: FindClassArgs.Builder.() -> Unit) =
+        findClass(FindClassArgs.build(builder))
+
     //#region findSubClasses
     /**
      * find all direct subclasses of the specified class
@@ -1103,6 +1126,14 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            findPath: String,
+            dexPriority: IntArray?
+        ): Array<String>
+
+        @JvmStatic
+        private external fun nativeFindClass(
+            nativePtr: Long,
+            sourceFile: String,
             findPath: String,
             dexPriority: IntArray?
         ): Array<String>

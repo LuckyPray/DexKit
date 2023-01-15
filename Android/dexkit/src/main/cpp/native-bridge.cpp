@@ -418,6 +418,18 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz
 }
 
 DEXKIT_JNI jobjectArray
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindClass(JNIEnv *env, jclass clazz,
+                                                      jlong native_ptr,
+                                                      jstring source_file,
+                                                      jstring find_path,
+                                                      jintArray dex_priority) {
+    return FindClass(env, native_ptr,
+                     source_file,
+                     find_path,
+                     dex_priority);
+}
+
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass clazz,
                                                            jlong native_ptr,
                                                            jstring parent_class,

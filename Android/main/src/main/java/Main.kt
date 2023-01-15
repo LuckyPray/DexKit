@@ -39,5 +39,11 @@ fun find(path: String) {
         }.forEach {
             println(it.descriptor)
         }
+        kit.findClass {
+            findPackage = "AvatarInfo"
+            sourceFile = "P"
+        }.forEach {
+            println(it.descriptor)
+        }
     }
 }

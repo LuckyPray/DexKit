@@ -337,6 +337,11 @@ public:
                const std::string &find_package = "",
                const std::vector<size_t> &dex_priority = {});
 
+    std::vector<std::string>
+    FindClass(const std::string &source_file,
+              const std::string &find_package = "",
+              const std::vector<size_t> &dex_priority = {});
+
     /**
      * @brief find all direct subclasses of the specified class
      * @param parent_class direct parent class
@@ -424,6 +429,8 @@ private:
 
     std::vector<std::vector<std::string_view>> strings_;
     std::vector<std::vector<std::string_view>> type_names_;
+    std::vector<std::vector<bool>> type_declared_flag_;
+    std::vector<std::vector<std::string_view>> class_source_files_;
     std::vector<std::vector<std::vector<uint32_t>>> class_method_ids_;
     std::vector<std::vector<std::vector<uint32_t>>> class_field_ids_;
     std::vector<std::vector<const dex::Code *>> method_codes_;

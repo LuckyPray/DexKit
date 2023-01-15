@@ -189,6 +189,12 @@ int main() {
         std::cout << "\n";
     }
 
+    auto findClass = dexKit.FindClass("", "AvatarInfo");
+    std::cout << "\nFindClass -> \n";
+    for (auto &value: findClass) {
+        std::cout << "\t" << value << "\n";
+    }
+
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "used time: " << now_ms1.count() - now_ms.count() << " ms\n";

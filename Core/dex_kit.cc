@@ -8,6 +8,7 @@
 #include "kmp.h"
 #include "annotation_util.h"
 #include <algorithm>
+#include <iostream>
 
 namespace dexkit {
 
@@ -202,7 +203,7 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
                 for (auto &[real_class, value_set]: location_map) {
                     std::vector<std::string> vec;
                     std::set_intersection(search_set.begin(), search_set.end(), value_set.begin(),
-                                          value_set.end(),std::inserter(vec, vec.begin()));
+                                          value_set.end(), std::inserter(vec, vec.begin()));
                     if (vec.size() == value_set.size()) {
                         result[real_class].emplace_back(type_names[i]);
                     }
@@ -339,7 +340,7 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
                     for (auto &[real_method, value_set]: location_map) {
                         std::vector<std::string> vec;
                         std::set_intersection(search_set.begin(), search_set.end(), value_set.begin(),
-                                              value_set.end(),std::inserter(vec, vec.begin()));
+                                              value_set.end(), std::inserter(vec, vec.begin()));
                         if (vec.size() == value_set.size()) {
                             result[real_method].emplace_back(GetMethodDescriptor(dex_idx, method_idx));
                         }
@@ -1463,6 +1464,51 @@ DexKit::FindMethod(const std::string &method_descriptor,
 }
 
 std::vector<std::string>
+DexKit::FindClass(const std::string &source_file,
+                  const std::string &find_package,
+                  const std::vector<size_t> &dex_priority) {
+    auto package_path = GetPackagePath(find_package);
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+    for (auto &dex_idx: GetDexPriority(dex_priority)) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &source_file, &package_path]() {
+                    InitCached(dex_idx, fDefault);
+                    auto &type_names = type_names_[dex_idx];
+                    auto &type_declared_flag = type_declared_flag_[dex_idx];
+                    auto &class_source_files = class_source_files_[dex_idx];
+                    uint32_t lower = 0, upper = type_names.size();
+                    std::vector<std::string> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        // Skip this dex does not own the type of class_def
+                        if (!type_declared_flag[c_idx]) {
+                            continue;
+                        }
+                        auto &class_name = type_names[c_idx];
+                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                            continue;
+                        }
+                        auto &file_name = class_source_files[c_idx];
+                        if (!source_file.empty() && file_name != source_file) {
+                            continue;
+                        }
+                        result.emplace_back(type_names[c_idx]);
+                    }
+                    return result;
+                })
+        );
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
+std::vector<std::string>
 DexKit::FindSubClasses(const std::string &parent_class,
                        const std::vector<size_t> &dex_priority) {
     auto class_descriptor = GetClassDescriptor(parent_class);
@@ -1829,6 +1875,8 @@ void DexKit::InitImages(int begin, int end) {
     }
     strings_.resize(dex_images_.size());
     type_names_.resize(dex_images_.size());
+    type_declared_flag_.resize(dex_images_.size());
+    class_source_files_.resize(dex_images_.size());
     class_method_ids_.resize(dex_images_.size());
     class_field_ids_.resize(dex_images_.size());
     method_codes_.resize(dex_images_.size());
@@ -1855,6 +1903,8 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     auto &reader = readers_[dex_idx];
     auto &strings = strings_[dex_idx];
     auto &type_names = type_names_[dex_idx];
+    auto &type_declared_flag = type_declared_flag_[dex_idx];
+    auto &class_source_files = class_source_files_[dex_idx];
     auto &class_method_ids = class_method_ids_[dex_idx];
     auto &class_field_ids = class_field_ids_[dex_idx];
     auto &method_codes = method_codes_[dex_idx];
@@ -1910,6 +1960,8 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         || (need_init_annotations && (dex_flag & fMethod) == 0)
         || (need_init_method_op_code_seq && (dex_flag & fMethod) == 0)) {
 
+        type_declared_flag.resize(reader.TypeIds().size(), false);
+        class_source_files.resize(reader.TypeIds().size());
         class_method_ids.resize(reader.TypeIds().size());
         method_codes.resize(reader.MethodIds().size(), nullptr);
 
@@ -1917,6 +1969,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
         method_opcode_seq_init_flag.resize(reader.MethodIds().size(), false);
 
         for (auto &class_def: reader.ClassDefs()) {
+            if (class_def.source_file_idx != dex::kNoIndex) {
+                class_source_files[class_def.class_idx] = strings[class_def.source_file_idx];
+            }
+            type_declared_flag[class_def.class_idx] = true;
             if (class_def.class_data_off == 0) {
                 continue;
             }
