@@ -122,7 +122,8 @@ int main() {
             "",
             "",
             dexkit::null_param,
-            false);
+            false,
+            "com/tencent/aekit/openrender");
     std::cout << "\nFindMethodUsedString -> \n";
     for (auto &value: usedStringMethods) {
         std::cout << "\t" << value << "\n";

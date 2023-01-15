@@ -8,6 +8,7 @@ import io.luckypray.dexkit.enums.MatchType
  * @since 1.1.0
  */
 class MethodUsingStringArgs private constructor(
+    override val findPackage: String,
     val usingString: String,
     val matchType: Int,
     val methodDeclareClass: String,
@@ -15,7 +16,7 @@ class MethodUsingStringArgs private constructor(
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
     val unique: Boolean,
-) : BaseArgs() {
+) : BaseArgs(findPackage) {
 
     companion object {
 
@@ -165,6 +166,7 @@ class MethodUsingStringArgs private constructor(
         override fun build(): MethodUsingStringArgs {
             verifyArgs()
             return MethodUsingStringArgs(
+                findPackage,
                 usingString,
                 matchType.ordinal,
                 methodDeclareClass,

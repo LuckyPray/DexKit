@@ -6,12 +6,13 @@ package io.luckypray.dexkit.builder
  * @since 1.1.0
  */
 class FindMethodArgs private constructor(
+    override val findPackage: String,
     val methodDescriptor: String,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs() {
+) : BaseArgs(findPackage) {
 
     companion object {
 
@@ -129,6 +130,7 @@ class FindMethodArgs private constructor(
         override fun build(): FindMethodArgs {
             verifyArgs()
             return FindMethodArgs(
+                findPackage,
                 methodDescriptor,
                 methodDeclareClass,
                 methodName,

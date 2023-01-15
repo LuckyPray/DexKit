@@ -10,13 +10,14 @@ import io.luckypray.dexkit.enums.MatchType
  */
 @DexKitExperimentalApi
 class FieldUsingAnnotationArgs private constructor(
+    override val findPackage: String,
     val annotationClass: String,
     val annotationUsingString: String,
     val matchType: Int,
     val fieldDeclareClass: String,
     val fieldName: String,
     val fieldType: String,
-) : BaseArgs() {
+) : BaseArgs(findPackage) {
 
     companion object {
 
@@ -137,6 +138,7 @@ class FieldUsingAnnotationArgs private constructor(
         override fun build(): FieldUsingAnnotationArgs {
             verifyArgs()
             return FieldUsingAnnotationArgs(
+                findPackage,
                 annotationClass,
                 annotationUsingString,
                 matchType.ordinal,

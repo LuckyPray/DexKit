@@ -8,9 +8,10 @@ import io.luckypray.dexkit.enums.MatchType
  * @since 1.1.0
  */
 class BatchFindArgs private constructor(
+    override val findPackage: String,
     val queryMap: Map<String, Set<String>>,
     val matchType: Int,
-) : BaseArgs() {
+) : BaseArgs(findPackage) {
 
     companion object {
 
@@ -91,7 +92,11 @@ class BatchFindArgs private constructor(
          *
          * @return [BatchFindArgs]
          */
-        override fun build(): BatchFindArgs = BatchFindArgs(queryMap, matchType.ordinal)
+        override fun build(): BatchFindArgs = BatchFindArgs(
+            findPackage,
+            queryMap,
+            matchType.ordinal
+        )
 
         private fun toSet(strings: Iterable<String>) = strings as? Set ?: strings.toSet()
     }

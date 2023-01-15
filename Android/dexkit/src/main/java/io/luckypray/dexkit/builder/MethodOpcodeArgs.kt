@@ -8,12 +8,13 @@ import io.luckypray.dexkit.util.OpCodeUtil.getOpCode
  * @since 1.1.0
  */
 class MethodOpcodeArgs private constructor(
+    override val findPackage: String,
     val opSeq: IntArray,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs() {
+) : BaseArgs(findPackage) {
 
     companion object {
 
@@ -144,6 +145,7 @@ class MethodOpcodeArgs private constructor(
         override fun build(): MethodOpcodeArgs {
             verifyArgs()
             return MethodOpcodeArgs(
+                findPackage,
                 opSeq,
                 methodDeclareClass,
                 methodName,

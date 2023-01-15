@@ -90,8 +90,13 @@ class DexKitBridge : Closeable {
     fun batchFindClassesUsingStrings(
         args: BatchFindArgs
     ): Map<String, List<DexClassDescriptor>> =
-        nativeBatchFindClassesUsingStrings(token, args.queryMap, args.matchType, null)
-            .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
+        nativeBatchFindClassesUsingStrings(
+            token,
+            args.queryMap,
+            args.matchType,
+            args.findPackage,
+            null
+        ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     inline fun batchFindClassesUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
         batchFindClassesUsingStrings(BatchFindArgs.build(builder))
@@ -112,9 +117,9 @@ class DexKitBridge : Closeable {
             token,
             map,
             if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+            "",
             dexPriority
-        )
-            .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
+        ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     /**
      * @see [batchFindClassesUsingStrings]
@@ -132,6 +137,7 @@ class DexKitBridge : Closeable {
         token,
         map.mapValues { it.value.toList() },
         if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+        "",
         dexPriority
     ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
@@ -148,8 +154,13 @@ class DexKitBridge : Closeable {
     fun batchFindMethodsUsingStrings(
         args: BatchFindArgs
     ): Map<String, List<DexMethodDescriptor>> =
-        nativeBatchFindMethodsUsingStrings(token, args.queryMap, args.matchType, null)
-            .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
+        nativeBatchFindMethodsUsingStrings(
+            token,
+            args.queryMap,
+            args.matchType,
+            args.findPackage,
+            null
+        ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     inline fun batchFindMethodsUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
         batchFindMethodsUsingStrings(BatchFindArgs.build(builder))
@@ -170,9 +181,9 @@ class DexKitBridge : Closeable {
             token,
             map,
             if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+            "",
             dexPriority
-        )
-            .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
+        ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     /**
      * @see [batchFindMethodsUsingStrings]
@@ -190,6 +201,7 @@ class DexKitBridge : Closeable {
         token,
         map.mapValues { it.value.toList() },
         if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+        "",
         dexPriority
     ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
@@ -218,6 +230,7 @@ class DexKitBridge : Closeable {
         args.callerMethodReturnType,
         args.callerMethodParameterTypes,
         args.uniqueResult,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -258,6 +271,7 @@ class DexKitBridge : Closeable {
         callerMethodReturnType,
         callerMethodParameterTypes,
         uniqueResult,
+        "",
         dexPriority
     ).let { resultMap ->
         mutableListOf<DexMethodDescriptor>().apply {
@@ -301,6 +315,7 @@ class DexKitBridge : Closeable {
         args.beInvokedMethodReturnType,
         args.beInvokedMethodParamTypes,
         args.uniqueResult,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -341,6 +356,7 @@ class DexKitBridge : Closeable {
         beCalledMethodReturnType,
         beCalledMethodParamTypes,
         uniqueResult,
+        "",
         dexPriority
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -375,6 +391,7 @@ class DexKitBridge : Closeable {
         args.callerMethodReturnType,
         args.callerMethodParamTypes,
         args.uniqueResult,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -415,6 +432,7 @@ class DexKitBridge : Closeable {
         callerMethodReturnType,
         callerMethodParamTypes,
         uniqueResult,
+        "",
         dexPriority
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -442,6 +460,7 @@ class DexKitBridge : Closeable {
         args.methodReturnType,
         args.methodParamTypes,
         args.unique,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -473,6 +492,7 @@ class DexKitBridge : Closeable {
         methodReturnType,
         methodParamTypes,
         uniqueResult,
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -495,6 +515,7 @@ class DexKitBridge : Closeable {
         args.annotationClass,
         args.annotationUsingString,
         args.matchType,
+        args.findPackage,
         null
     ).map { DexClassDescriptor(it) }
 
@@ -518,6 +539,7 @@ class DexKitBridge : Closeable {
         annotationClass,
         annotationUsingString,
         MatchType.CONTAINS.ordinal,
+        "",
         dexPriority
     ).map { DexClassDescriptor(it) }
 
@@ -541,6 +563,7 @@ class DexKitBridge : Closeable {
         args.fieldDeclareClass,
         args.fieldName,
         args.fieldType,
+        args.findPackage,
         null
     ).map { DexFieldDescriptor(it) }
 
@@ -570,6 +593,7 @@ class DexKitBridge : Closeable {
         fieldDeclareClass,
         fieldName,
         fieldType,
+        "",
         dexPriority
     ).map { DexFieldDescriptor(it) }
 
@@ -596,6 +620,7 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -627,6 +652,7 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -651,6 +677,7 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -677,6 +704,7 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -726,6 +754,7 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -753,6 +782,7 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -776,6 +806,7 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -803,6 +834,7 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -826,6 +858,7 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.findPackage,
         null
     ).mapKeys { DexMethodDescriptor(it.key) }
 
@@ -851,6 +884,7 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -880,6 +914,7 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
         dexPriority
     ).mapKeys { DexMethodDescriptor(it.key) }
     //#endregion
@@ -942,6 +977,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             map: Map<String, Iterable<String>>,
             matchType: Int,
+            findPath: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -950,6 +986,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             map: Map<String, Iterable<String>>,
             matchType: Int,
+            findPath: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -967,6 +1004,7 @@ class DexKitBridge : Closeable {
             callerMethodReturnType: String,
             callerMethodParameterTypes: Array<String>?,
             uniqueResult: Boolean,
+            findPath: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -984,6 +1022,7 @@ class DexKitBridge : Closeable {
             beCalledMethodReturnType: String,
             beCalledMethodParamTypes: Array<String>?,
             uniqueResult: Boolean,
+            findPath: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -1001,6 +1040,7 @@ class DexKitBridge : Closeable {
             callerMethodReturnType: String,
             callerMethodParamTypes: Array<String>?,
             uniqueResult: Boolean,
+            findPath: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -1014,6 +1054,7 @@ class DexKitBridge : Closeable {
             methodReturnType: String,
             methodParamTypes: Array<String>?,
             uniqueResult: Boolean,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1023,6 +1064,7 @@ class DexKitBridge : Closeable {
             annotationClass: String,
             annotationUsingString: String,
             matchType: Int,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1035,6 +1077,7 @@ class DexKitBridge : Closeable {
             fieldDeclareClass: String,
             fieldName: String,
             fieldType: String,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1048,6 +1091,7 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1059,6 +1103,7 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1077,6 +1122,7 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1088,6 +1134,7 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            findPath: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1099,6 +1146,7 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            findPath: String,
             dexPriority: IntArray?
         ): Map<String, IntArray>
     }

@@ -93,6 +93,7 @@ public:
     std::map<std::string, std::vector<std::string>>
     BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
                                  int match_type,
+                                 const std::string &find_package = "",
                                  const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -112,6 +113,7 @@ public:
     std::map<std::string, std::vector<std::string>>
     BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
                                  int match_type,
+                                 const std::string &find_package = "",
                                  const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -143,6 +145,7 @@ public:
                      const std::string &caller_method_return_type,
                      const std::optional<std::vector<std::string>> &caller_method_param_types,
                      bool unique_result = true,
+                     const std::string &find_package = "",
                      const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -179,6 +182,7 @@ public:
                        const std::string &be_called_method_return_type,
                        const std::optional<std::vector<std::string>> &be_called_method_param_types,
                        bool unique_result = true,
+                       const std::string &find_package = "",
                        const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -210,6 +214,7 @@ public:
                          const std::string &caller_method_return_type,
                          const std::optional<std::vector<std::string>> &caller_method_param_types,
                          bool unique_result = true,
+                         const std::string &find_package = "",
                          const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -237,6 +242,7 @@ public:
                           const std::string &method_return_type,
                           const std::optional<std::vector<std::string>> &method_param_types,
                           bool unique_result = true,
+                          const std::string &find_package = "",
                           const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -255,6 +261,7 @@ public:
     FindClassUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
                              int match_type,
+                             const std::string &find_package = "",
                              const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -279,6 +286,7 @@ public:
                              const std::string &field_declare_class,
                              const std::string &field_declare_name,
                              const std::string &field_type,
+                             const std::string &find_package = "",
                              const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -305,6 +313,7 @@ public:
                               const std::string &method_declare_name,
                               const std::string &method_return_type,
                               const std::optional<std::vector<std::string>> &method_param_types,
+                              const std::string &find_package = "",
                               const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -325,6 +334,7 @@ public:
                const std::string &method_declare_name,
                const std::string &method_return_type,
                const std::optional<std::vector<std::string>> &method_param_types,
+               const std::string &find_package = "",
                const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -355,6 +365,7 @@ public:
                                const std::string &method_declare_name,
                                const std::string &method_return_type,
                                const std::optional<std::vector<std::string>> &method_param_types,
+                               const std::string &find_package = "",
                                const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -375,6 +386,7 @@ public:
                              const std::string &method_declare_name,
                              const std::string &method_return_type,
                              const std::optional<std::vector<std::string>> &method_param_types,
+                             const std::string &find_package = "",
                              const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -395,6 +407,7 @@ public:
                        const std::string &method_declare_name,
                        const std::string &method_return_type,
                        const std::optional<std::vector<std::string>> &method_param_types,
+                       const std::string &find_package = "",
                        const std::vector<size_t> &dex_priority = {});
 
     size_t GetDexNum() {

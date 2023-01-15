@@ -35,6 +35,7 @@ fun find(path: String) {
     DexKitBridge.create(path)?.use { kit ->
         kit.findMethodUsingString {
             usingString = "imei"
+            findPackage = "com/tencent"
         }.forEach {
             println(it.descriptor)
         }
