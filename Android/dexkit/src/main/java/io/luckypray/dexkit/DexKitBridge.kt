@@ -17,6 +17,7 @@ import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import io.luckypray.dexkit.enums.FieldUsingType
+import io.luckypray.dexkit.enums.MatchType
 import io.luckypray.dexkit.util.OpCodeUtil.getOpFormat
 import java.io.Closeable
 
@@ -89,7 +90,7 @@ class DexKitBridge : Closeable {
     fun batchFindClassesUsingStrings(
         args: BatchFindArgs
     ): Map<String, List<DexClassDescriptor>> =
-        nativeBatchFindClassesUsingStrings(token, args.queryMap, args.advancedMatch, null)
+        nativeBatchFindClassesUsingStrings(token, args.queryMap, args.matchType, null)
             .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     inline fun batchFindClassesUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
@@ -107,7 +108,12 @@ class DexKitBridge : Closeable {
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<String, List<DexClassDescriptor>> =
-        nativeBatchFindClassesUsingStrings(token, map, advancedMatch, dexPriority)
+        nativeBatchFindClassesUsingStrings(
+            token,
+            map,
+            if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+            dexPriority
+        )
             .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     /**
@@ -125,7 +131,7 @@ class DexKitBridge : Closeable {
     ): Map<String, List<DexClassDescriptor>> = nativeBatchFindClassesUsingStrings(
         token,
         map.mapValues { it.value.toList() },
-        advancedMatch,
+        if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
         dexPriority
     ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
@@ -142,7 +148,7 @@ class DexKitBridge : Closeable {
     fun batchFindMethodsUsingStrings(
         args: BatchFindArgs
     ): Map<String, List<DexMethodDescriptor>> =
-        nativeBatchFindMethodsUsingStrings(token, args.queryMap, args.advancedMatch, null)
+        nativeBatchFindMethodsUsingStrings(token, args.queryMap, args.matchType, null)
             .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     inline fun batchFindMethodsUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
@@ -160,7 +166,12 @@ class DexKitBridge : Closeable {
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<String, List<DexMethodDescriptor>> =
-        nativeBatchFindMethodsUsingStrings(token, map, advancedMatch, dexPriority)
+        nativeBatchFindMethodsUsingStrings(
+            token,
+            map,
+            if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+            dexPriority
+        )
             .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     /**
@@ -178,7 +189,7 @@ class DexKitBridge : Closeable {
     ): Map<String, List<DexMethodDescriptor>> = nativeBatchFindMethodsUsingStrings(
         token,
         map.mapValues { it.value.toList() },
-        advancedMatch,
+        if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
         dexPriority
     ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
@@ -425,7 +436,7 @@ class DexKitBridge : Closeable {
     ): List<DexMethodDescriptor> = nativeFindMethodUsingString(
         token,
         args.usingString,
-        args.advancedMatch,
+        args.matchType,
         args.methodDeclareClass,
         args.methodName,
         args.methodReturnType,
@@ -456,7 +467,7 @@ class DexKitBridge : Closeable {
     ): List<DexMethodDescriptor> = nativeFindMethodUsingString(
         token,
         usingString,
-        advancedMatch,
+        if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
         methodDeclareClass,
         methodName,
         methodReturnType,
@@ -483,7 +494,7 @@ class DexKitBridge : Closeable {
         token,
         args.annotationClass,
         args.annotationUsingString,
-        args.advancedMatch,
+        args.matchType,
         null
     ).map { DexClassDescriptor(it) }
 
@@ -506,7 +517,7 @@ class DexKitBridge : Closeable {
         token,
         annotationClass,
         annotationUsingString,
-        false,
+        MatchType.CONTAINS.ordinal,
         dexPriority
     ).map { DexClassDescriptor(it) }
 
@@ -526,7 +537,7 @@ class DexKitBridge : Closeable {
         token,
         args.annotationClass,
         args.annotationUsingString,
-        args.advancedMatch,
+        args.matchType,
         args.fieldDeclareClass,
         args.fieldName,
         args.fieldType,
@@ -555,7 +566,7 @@ class DexKitBridge : Closeable {
         token,
         annotationClass,
         annotationUsingString,
-        false,
+        MatchType.CONTAINS.ordinal,
         fieldDeclareClass,
         fieldName,
         fieldType,
@@ -580,7 +591,7 @@ class DexKitBridge : Closeable {
         token,
         args.annotationClass,
         args.annotationUsingString,
-        false,
+        args.matchType,
         args.methodDeclareClass,
         args.methodName,
         args.methodReturnType,
@@ -611,7 +622,7 @@ class DexKitBridge : Closeable {
         token,
         annotationClass,
         annotationUsingString,
-        false,
+        MatchType.CONTAINS.ordinal,
         methodDeclareClass,
         methodName,
         methodReturnType,
@@ -930,7 +941,7 @@ class DexKitBridge : Closeable {
         private external fun nativeBatchFindClassesUsingStrings(
             nativePtr: Long,
             map: Map<String, Iterable<String>>,
-            advancedMatch: Boolean,
+            matchType: Int,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -938,7 +949,7 @@ class DexKitBridge : Closeable {
         private external fun nativeBatchFindMethodsUsingStrings(
             nativePtr: Long,
             map: Map<String, Iterable<String>>,
-            advancedMatch: Boolean,
+            matchType: Int,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -997,7 +1008,7 @@ class DexKitBridge : Closeable {
         private external fun nativeFindMethodUsingString(
             nativePtr: Long,
             usingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             methodDeclareClass: String,
             methodName: String,
             methodReturnType: String,
@@ -1011,7 +1022,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1020,7 +1031,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             fieldDeclareClass: String,
             fieldName: String,
             fieldType: String,
@@ -1032,7 +1043,7 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             methodDeclareClass: String,
             methodName: String,
             methodReturnType: String,

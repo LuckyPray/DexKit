@@ -90,26 +90,33 @@ void DexKit::ExportDexFile(std::string &out_dir) {
 
 std::map<std::string, std::vector<std::string>>
 DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                     bool advanced_match,
+                                     int match_type,
                                      const std::vector<size_t> &dex_priority) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
     for (auto &[name, str_set]: location_map) {
         for (auto &str: str_set) {
-            uint32_t l = 0, r = str.size();
+            std::string new_str;
+            if (match_type == mFull) {
+                match_type = mSimilarRegex;
+                new_str = "^" + str + "$";
+            } else {
+                new_str = str;
+            }
+            uint32_t l = 0, r = new_str.size();
             uint8_t flag = 0;
-            if (advanced_match) {
-                if (str[0] == '^') {
+            if (match_type == mSimilarRegex) {
+                if (new_str[0] == '^') {
                     l = 1;
                     flag |= 1;
                 }
-                if (str[str.size() - 1] == '$') {
-                    r = str.size() - 1;
+                if (new_str[new_str.size() - 1] == '$') {
+                    r = new_str.size() - 1;
                     flag |= 2;
                 }
             }
-            auto origin_str = str.substr(l, r - l);
+            auto origin_str = new_str.substr(l, r - l);
             flag_map[origin_str] = flag;
             buildMap[origin_str] = origin_str;
         }
@@ -138,8 +145,7 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
                                 (flag >> 1 && end != string.size())) {
                                 return;
                             }
-                            string_map[index] =
-                                    ((flag & 1) ? "^" : "") + value + ((flag >> 1) ? "$" : "");
+                            string_map[index] = ((flag & 1) ? "^" : "") + value + ((flag >> 1) ? "$" : "");
                         };
                 acdat.parseText(string.data(), callback);
             }
@@ -188,8 +194,7 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
                 for (auto &[real_class, value_set]: location_map) {
                     std::vector<std::string> vec;
                     std::set_intersection(search_set.begin(), search_set.end(), value_set.begin(),
-                                          value_set.end(),
-                                          std::inserter(vec, vec.begin()));
+                                          value_set.end(),std::inserter(vec, vec.begin()));
                     if (vec.size() == value_set.size()) {
                         result[real_class].emplace_back(type_names[i]);
                     }
@@ -217,26 +222,33 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
 
 std::map<std::string, std::vector<std::string>>
 DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                     bool advanced_match,
+                                     int match_type,
                                      const std::vector<size_t> &dex_priority) {
     auto acdat = AhoCorasickDoubleArrayTrie<std::string>();
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
     for (auto &[name, str_set]: location_map) {
         for (auto &str: str_set) {
-            uint32_t l = 0, r = str.size();
+            std::string new_str;
+            if (match_type == mFull) {
+                match_type = mSimilarRegex;
+                new_str = "^" + str + "$";
+            } else {
+                new_str = str;
+            }
+            uint32_t l = 0, r = new_str.size();
             uint8_t flag = 0;
-            if (advanced_match) {
-                if (str[0] == '^') {
+            if (match_type == mSimilarRegex) {
+                if (new_str[0] == '^') {
                     l = 1;
                     flag |= 1;
                 }
-                if (str[str.size() - 1] == '$') {
-                    r = str.size() - 1;
+                if (new_str[new_str.size() - 1] == '$') {
+                    r = new_str.size() - 1;
                     flag |= 2;
                 }
             }
-            auto origin_str = str.substr(l, r - l);
+            auto origin_str = new_str.substr(l, r - l);
             flag_map[origin_str] = flag;
             buildMap[origin_str] = origin_str;
         }
@@ -265,8 +277,7 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
                                 (flag >> 1 && end != string.size())) {
                                 return;
                             }
-                            string_map[index] =
-                                    ((flag & 1) ? "^" : "") + value + ((flag >> 1) ? "$" : "");
+                            string_map[index] = ((flag & 1) ? "^" : "") + value + ((flag >> 1) ? "$" : "");
                         };
                 acdat.parseText(string.data(), callback);
             }
@@ -313,12 +324,10 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
                     if (search_set.empty()) continue;
                     for (auto &[real_method, value_set]: location_map) {
                         std::vector<std::string> vec;
-                        std::set_intersection(search_set.begin(), search_set.end(),
-                                              value_set.begin(), value_set.end(),
-                                              std::inserter(vec, vec.begin()));
+                        std::set_intersection(search_set.begin(), search_set.end(), value_set.begin(),
+                                              value_set.end(),std::inserter(vec, vec.begin()));
                         if (vec.size() == value_set.size()) {
-                            result[real_method].emplace_back(
-                                    GetMethodDescriptor(dex_idx, method_idx));
+                            result[real_method].emplace_back(GetMethodDescriptor(dex_idx, method_idx));
                         }
                     }
                 }
@@ -886,7 +895,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
 
 std::vector<std::string>
 DexKit::FindMethodUsingString(const std::string &using_utf8_string,
-                              bool advanced_match,
+                              int match_type,
                               const std::string &method_declare_class,
                               const std::string &method_declare_name,
                               const std::string &method_return_type,
@@ -911,7 +920,7 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
     std::vector<std::future<std::vector<std::string>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
-                [this, dex_idx, &using_utf8_string, &advanced_match, &caller_class_desc, &caller_method_name,
+                [this, dex_idx, &using_utf8_string, &match_type, &caller_class_desc, &caller_method_name,
                         &caller_return_desc, &caller_param_descs, &caller_match_shorty, caller_match_any_param,
                         unique_result]() {
                     InitCached(dex_idx, fDefault);
@@ -922,7 +931,7 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                     uint32_t lower = 0, upper = type_names.size();
 
                     uint8_t flag = 0;
-                    if (advanced_match) {
+                    if (match_type == mSimilarRegex) {
                         if (using_utf8_string[0] == '^') {
                             flag |= 1;
                         }
@@ -938,6 +947,12 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                     for (int str_idx = 0; str_idx < strings.size(); ++str_idx) {
                         auto &string = strings[str_idx];
                         auto find_idx = kmp::FindIndex(string, real_str);
+                        if (match_type == mFull) {
+                            if (find_idx == 0 && string.size() == real_str.size()) {
+                                matched_strings.emplace(str_idx);
+                            }
+                            continue;
+                        }
                         if (find_idx == -1 ||
                             (flag & 1 && find_idx != 0) ||
                             (flag & 2 && find_idx != string.size() - real_str.size())) {
@@ -1043,7 +1058,7 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
 std::vector<std::string>
 DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
                                  const std::string &annotation_using_string,
-                                 bool advanced_match,
+                                 int match_type,
                                  const std::vector<size_t> &dex_priority) {
     std::string annotation_class_desc = GetClassDescriptor(annotation_class);
 
@@ -1052,7 +1067,7 @@ DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
 
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
-                [this, dex_idx, &annotation_class_desc, &advanced_match, &annotation_using_string]() {
+                [this, dex_idx, &annotation_class_desc, &match_type, &annotation_using_string]() {
                     InitCached(dex_idx, fDefault | fAnnotation);
                     auto &type_names = type_names_[dex_idx];
                     auto &class_annotations = class_annotations_[dex_idx];
@@ -1075,7 +1090,7 @@ DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
                         bool find = FindAnnotationSetUsingString(annotations->class_annotation,
                                                                  annotation_class_idx,
                                                                  annotation_using_string,
-                                                                 advanced_match);
+                                                                 match_type);
                         if (find) {
                             auto descriptor = type_names[c_idx];
                             result.emplace_back(descriptor);
@@ -1099,7 +1114,7 @@ DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
 std::vector<std::string>
 DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
                                  const std::string &annotation_using_string,
-                                 bool advanced_match,
+                                 int match_type,
                                  const std::string &field_declare_class,
                                  const std::string &field_declare_name,
                                  const std::string &field_type,
@@ -1120,7 +1135,7 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
 
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
-                [this, dex_idx, &annotation_class_desc, &annotation_using_string, &advanced_match,
+                [this, dex_idx, &annotation_class_desc, &annotation_using_string, &match_type,
                         &field_declare_class_desc, &field_name, &field_type_desc] {
                     InitCached(dex_idx, fDefault | fAnnotation);
                     auto &type_names = type_names_[dex_idx];
@@ -1167,7 +1182,7 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
                             bool find = FindAnnotationSetUsingString(field_annotation->annotations,
                                                                      annotation_class_idx,
                                                                      annotation_using_string,
-                                                                     advanced_match);
+                                                                     match_type);
                             if (find) {
                                 auto descriptor = GetFieldDescriptor(dex_idx, field_idx);
                                 result.emplace_back(descriptor);
@@ -1193,7 +1208,7 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
 std::vector<std::string>
 DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                                   const std::string &annotation_using_string,
-                                  bool advanced_match,
+                                  int match_type,
                                   const std::string &method_declare_class,
                                   const std::string &method_declare_name,
                                   const std::string &method_return_type,
@@ -1218,7 +1233,7 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
     std::vector<std::future<std::vector<std::string>>> futures;
     for (auto &dex_idx: GetDexPriority(dex_priority)) {
         futures.emplace_back(pool.enqueue(
-                [this, dex_idx, &annotation_class_desc, &annotation_using_string, &advanced_match,
+                [this, dex_idx, &annotation_class_desc, &annotation_using_string, &match_type,
                         &caller_class_desc, &caller_method_name, &caller_return_desc,
                         &caller_param_descs, &caller_match_shorty, &caller_match_any_param]() {
                     InitCached(dex_idx, fDefault | fAnnotation);
@@ -1282,7 +1297,7 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                             bool find = FindAnnotationSetUsingString(method_annotation->annotations,
                                                                      annotation_class_idx,
                                                                      annotation_using_string,
-                                                                     advanced_match);
+                                                                     match_type);
                             if (find) {
                                 auto descriptor = GetMethodDescriptor(dex_idx, method_idx);
                                 result.emplace_back(descriptor);

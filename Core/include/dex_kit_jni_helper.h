@@ -54,7 +54,7 @@ void ExportDexFile(JNIEnv *env, jlong dexKitPtr, jstring jOutDir) {
 jobject BatchFindClassesUsingStrings(JNIEnv *env,
                                      jlong dexKitPtr,
                                      jobject jMap,
-                                     jboolean advanced_match,
+                                     jint match_type,
                                      jintArray dex_priority) {
     if (!dexKitPtr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
@@ -65,14 +65,14 @@ jobject BatchFindClassesUsingStrings(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKit->BatchFindClassesUsingStrings(map, advanced_match, dexPriority);
+    auto res = dexKit->BatchFindClassesUsingStrings(map, match_type, dexPriority);
     return CMap2JMap(env, res);
 }
 
 jobject BatchFindMethodsUsingStrings(JNIEnv *env,
                                      jlong dexKitPtr,
                                      jobject jMap,
-                                     jboolean advanced_match,
+                                     jint match_type,
                                      jintArray dex_priority) {
     if (!dexKitPtr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
@@ -83,7 +83,7 @@ jobject BatchFindMethodsUsingStrings(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKit->BatchFindMethodsUsingStrings(map, advanced_match, dexPriority);
+    auto res = dexKit->BatchFindMethodsUsingStrings(map, match_type, dexPriority);
     return CMap2JMap(env, res);
 }
 
@@ -272,7 +272,7 @@ jobject FindMethodUsingField(JNIEnv *env,
 jobjectArray FindMethodUsingString(JNIEnv *env,
                                    jlong dexKitPtr,
                                    jstring using_string,
-                                   jboolean advanced_match,
+                                   jint match_type,
                                    jstring method_declare_class,
                                    jstring method_name,
                                    jstring method_return_type,
@@ -296,7 +296,7 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
     auto res = dexKit->FindMethodUsingString(usedUtf8String,
-                                             advanced_match,
+                                             match_type,
                                              methodDeclareClass,
                                              methodName,
                                              methodReturnType,
@@ -314,7 +314,7 @@ jobjectArray FindClassUsingAnnotation(JNIEnv *env,
                                       jlong dexKitPtr,
                                       jstring annotation_class,
                                       jstring annotation_using_string,
-                                      jboolean advanced_match,
+                                      jint match_type,
                                       jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -328,7 +328,7 @@ jobjectArray FindClassUsingAnnotation(JNIEnv *env,
     }
     auto res = dexKit->FindClassUsingAnnotation(annotationClass,
                                                 annotationUsingString,
-                                                advanced_match,
+                                                match_type,
                                                 dexPriority);
     env->ReleaseStringUTFChars(annotation_class, annotationClass);
     env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
@@ -339,7 +339,7 @@ jobjectArray FindFieldUsingAnnotation(JNIEnv *env,
                                       jlong dexKitPtr,
                                       jstring annotation_class,
                                       jstring annotation_using_string,
-                                      jboolean advanced_match,
+                                      jint match_type,
                                       jstring field_declare_class,
                                       jstring field_name,
                                       jstring field_type,
@@ -359,7 +359,7 @@ jobjectArray FindFieldUsingAnnotation(JNIEnv *env,
     }
     auto res = dexKit->FindFieldUsingAnnotation(annotationClass,
                                                 annotationUsingString,
-                                                advanced_match,
+                                                match_type,
                                                 fieldDeclareClass,
                                                 fieldName,
                                                 fieldType,
@@ -376,7 +376,7 @@ jobjectArray FindMethodUsingAnnotation(JNIEnv *env,
                                        jlong dexKitPtr,
                                        jstring annotation_class,
                                        jstring annotation_using_string,
-                                       jboolean advanced_match,
+                                       jint match_type,
                                        jstring method_declare_class,
                                        jstring method_name,
                                        jstring method_return_type,
@@ -401,7 +401,7 @@ jobjectArray FindMethodUsingAnnotation(JNIEnv *env,
     }
     auto res = dexKit->FindMethodUsingAnnotation(annotationClass,
                                                  annotationUsingString,
-                                                 advanced_match,
+                                                 match_type,
                                                  methodDeclareClass,
                                                  methodName,
                                                  methodReturnType,

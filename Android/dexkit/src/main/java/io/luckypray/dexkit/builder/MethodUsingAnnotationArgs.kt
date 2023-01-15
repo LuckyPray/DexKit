@@ -3,6 +3,7 @@
 package io.luckypray.dexkit.builder
 
 import io.luckypray.dexkit.annotations.DexKitExperimentalApi
+import io.luckypray.dexkit.enums.MatchType
 
 /**
  * @since 1.1.0
@@ -11,7 +12,7 @@ import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 class MethodUsingAnnotationArgs private constructor(
     val annotationClass: String,
     val annotationUsingString: String,
-    val advancedMatch: Boolean,
+    val matchType: Int,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
@@ -56,12 +57,12 @@ class MethodUsingAnnotationArgs private constructor(
         var annotationUsingString: String = ""
 
         /**
-         * **advanced match**
+         * match type, type of string to match
          *
-         * if true, match annotation using string
+         * default [MatchType.SIMILAR_REGEX], similar regex matches, only support: '^', '$'
          */
         @set:JvmSynthetic
-        var advancedMatch: Boolean = true
+        var matchType: MatchType = MatchType.SIMILAR_REGEX
 
         /**
          * **method declare class**
@@ -110,10 +111,10 @@ class MethodUsingAnnotationArgs private constructor(
         }
 
         /**
-         * [Builder.advancedMatch]
+         * [Builder.matchType]
          */
-        fun advancedMatch(advancedMatch: Boolean) = this.also {
-            this.advancedMatch = advancedMatch
+        fun matchType(matchType: MatchType) = this.also {
+            this.matchType = matchType
         }
 
         /**
@@ -154,7 +155,7 @@ class MethodUsingAnnotationArgs private constructor(
             return MethodUsingAnnotationArgs(
                 annotationClass,
                 annotationUsingString,
-                advancedMatch,
+                matchType.ordinal,
                 methodDeclareClass,
                 methodName,
                 methodReturnType,

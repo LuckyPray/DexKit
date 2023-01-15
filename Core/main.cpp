@@ -25,7 +25,7 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
-    auto classes = dexKit.BatchFindClassesUsingStrings(obfuscate, true);
+    auto classes = dexKit.BatchFindClassesUsingStrings(obfuscate, dexkit::mSimilarRegex);
     std::cout << "\nBatchFindClassesUsedStrings -> \n";
     for (auto &[key, value]: classes) {
         std::cout << key << " -> \n";
@@ -39,7 +39,7 @@ int main() {
     // which is consistent with regular expression semantics.
     // result ex.
     // {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
-    auto methods = dexKit.BatchFindMethodsUsingStrings(obfuscate, true);
+    auto methods = dexKit.BatchFindMethodsUsingStrings(obfuscate, dexkit::mSimilarRegex);
     std::cout << "\nBatchFindMethodsUsedStrings -> \n";
     for (auto &[key, value]: methods) {
         std::cout << key << " -> \n";
@@ -116,8 +116,8 @@ int main() {
     // result ex.
     // {"Lcom/tencent/aekit/openrender/internal/Frame$Type;-><clinit>()V"}
     auto usedStringMethods = dexKit.FindMethodUsingString(
-            "mei",
-            true,
+            "^NEW$",
+            dexkit::mSimilarRegex,
             "",
             "",
             "",

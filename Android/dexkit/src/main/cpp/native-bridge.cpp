@@ -192,9 +192,9 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv 
                                                                          jclass clazz,
                                                                          jlong native_ptr,
                                                                          jobject map,
-                                                                         jboolean advanced_match,
+                                                                         jint match_type,
                                                                          jintArray dex_priority) {
-    return BatchFindClassesUsingStrings(env, native_ptr, map, advanced_match, dex_priority);
+    return BatchFindClassesUsingStrings(env, native_ptr, map, match_type, dex_priority);
 }
 
 DEXKIT_JNI jobject
@@ -202,9 +202,9 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv 
                                                                          jclass clazz,
                                                                          jlong native_ptr,
                                                                          jobject map,
-                                                                         jboolean advanced_match,
+                                                                         jint match_type,
                                                                          jintArray dex_priority) {
-    return BatchFindMethodsUsingStrings(env, native_ptr, map, advanced_match, dex_priority);
+    return BatchFindMethodsUsingStrings(env, native_ptr, map, match_type, dex_priority);
 }
 
 DEXKIT_JNI jobject
@@ -298,7 +298,7 @@ DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, jclass clazz,
                                                                   jlong native_ptr,
                                                                   jstring used_string,
-                                                                  jboolean advanced_match,
+                                                                  jint match_type,
                                                                   jstring method_declare_class,
                                                                   jstring method_name,
                                                                   jstring method_return_type,
@@ -307,7 +307,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
                                                                   jintArray dex_priority) {
     return FindMethodUsingString(env, native_ptr,
                                  used_string,
-                                 advanced_match,
+                                 match_type,
                                  method_declare_class,
                                  method_name,
                                  method_return_type,
@@ -321,12 +321,12 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindClassUsingAnnotation(JNIEnv *env
                                                                      jlong native_ptr,
                                                                      jstring annotation_class,
                                                                      jstring annotation_using_string,
-                                                                     jboolean advanced_match,
+                                                                     jint match_type,
                                                                      jintArray dex_priority) {
     return FindClassUsingAnnotation(env, native_ptr,
                                     annotation_class,
                                     annotation_using_string,
-                                    advanced_match,
+                                    match_type,
                                     dex_priority);
 }
 
@@ -335,7 +335,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindFieldUsingAnnotation(JNIEnv *env
                                                                      jlong native_ptr,
                                                                      jstring annotation_class,
                                                                      jstring annotation_using_string,
-                                                                     jboolean advanced_match,
+                                                                     jint match_type,
                                                                      jstring field_declare_class,
                                                                      jstring field_name,
                                                                      jstring field_type,
@@ -343,7 +343,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindFieldUsingAnnotation(JNIEnv *env
     return FindFieldUsingAnnotation(env, native_ptr,
                                     annotation_class,
                                     annotation_using_string,
-                                    advanced_match,
+                                    match_type,
                                     field_declare_class,
                                     field_name,
                                     field_type,
@@ -355,7 +355,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingAnnotation(JNIEnv *en
                                                                       jlong native_ptr,
                                                                       jstring annotation_class,
                                                                       jstring annotation_using_string,
-                                                                      jboolean advanced_match,
+                                                                      jint match_type,
                                                                       jstring method_declare_class,
                                                                       jstring method_name,
                                                                       jstring method_return_type,
@@ -364,7 +364,7 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingAnnotation(JNIEnv *en
     return FindMethodUsingAnnotation(env, native_ptr,
                                      annotation_class,
                                      annotation_using_string,
-                                     advanced_match,
+                                     match_type,
                                      method_declare_class,
                                      method_name,
                                      method_return_type,

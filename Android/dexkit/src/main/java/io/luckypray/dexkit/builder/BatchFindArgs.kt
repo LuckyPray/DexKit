@@ -2,12 +2,14 @@
 
 package io.luckypray.dexkit.builder
 
+import io.luckypray.dexkit.enums.MatchType
+
 /**
  * @since 1.1.0
  */
 class BatchFindArgs private constructor(
     val queryMap: Map<String, Set<String>>,
-    val advancedMatch: Boolean,
+    val matchType: Int,
 ) : BaseArgs() {
 
     companion object {
@@ -40,14 +42,12 @@ class BatchFindArgs private constructor(
         var queryMap = mapOf<String, Set<String>>()
 
         /**
-         * enable advanced match.
+         * match type, type of string to match
          *
-         * If true, '^' and '$' can be used to restrict matches, like regex:
-         *
-         *     "^abc$" match "abc"，not match "abcd", but "^abc" match "abcd"
+         * default [MatchType.SIMILAR_REGEX], similar regex matches, only support: '^', '$'
          */
         @set:JvmSynthetic
-        var advancedMatch: Boolean = true
+        var matchType: MatchType = MatchType.SIMILAR_REGEX
 
         /**
          * [Builder.queryMap]
@@ -80,10 +80,10 @@ class BatchFindArgs private constructor(
         }
 
         /**
-         * [Builder.advancedMatch]
+         * [Builder.matchType]
          */
-        fun advancedMatch(advancedMatch: Boolean) = this.also {
-            this.advancedMatch = advancedMatch
+        fun matchType(matchType: MatchType) = this.also {
+            this.matchType = matchType
         }
 
         /**
@@ -91,7 +91,7 @@ class BatchFindArgs private constructor(
          *
          * @return [BatchFindArgs]
          */
-        override fun build(): BatchFindArgs = BatchFindArgs(queryMap, advancedMatch)
+        override fun build(): BatchFindArgs = BatchFindArgs(queryMap, matchType.ordinal)
 
         private fun toSet(strings: Iterable<String>) = strings as? Set ?: strings.toSet()
     }
