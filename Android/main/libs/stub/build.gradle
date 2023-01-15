@@ -1,0 +1,36 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'io.github.tomtzook.gradle-cmake' version '1.2.2'
+}
+
+sourceSets {
+    main {
+        java {
+            java.setSrcDirs(["${buildDir}/source/main/java"])
+        }
+    }
+}
+
+cmake {
+    targets {
+        main {
+            cmakeLists.set(file("src/main/cpp/CMakeLists.txt"))
+            targetMachines.add(machines.host)
+        }
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+afterEvaluate {
+    def copy = tasks.create(name: "copySource", type: Copy) {
+        group 'build'
+        from "${project(':dexkit').projectDir}/src/main/java"
+        into "$buildDir/source/main/java"
+    }
+    tasks.compileKotlin.dependsOn(copy)
+}

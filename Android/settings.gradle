@@ -13,4 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-include ":dexkit"
+include ':dexkit'
+include ':main'
+include ':main:libs:stub'
