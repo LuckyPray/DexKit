@@ -7,14 +7,14 @@ val isWindows
 
 @Suppress("UnsafeDynamicallyLoadedCode")
 fun loadLibrary(name: String) {
-    val libName = if (isWindows) "lib$name" else name
     try {
-        System.loadLibrary(libName)
+        System.loadLibrary(if (isWindows) "lib$name" else name)
     } catch (e: UnsatisfiedLinkError) {
         val libraryPath = File("main/build/library")
         libraryPath.listFiles()?.forEach {
-            if (it.name.startsWith(libName)) {
+            if (it.name.startsWith("lib$name")) {
                 System.load(it.absolutePath)
+                println(it.name)
             }
         }
     }
