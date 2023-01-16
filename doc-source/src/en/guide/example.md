@@ -54,7 +54,7 @@ DexKitBridge.create("demo.apk")?.use { bridge->
     )
     val result = bridge.batchFindClassesUsingStrings {
         queryMap(deobfMap)
-        advancedMatch = true
+        advancedMatch = MatchType.FULL
     }
     assert(result.size == 2)
     result.forEach { (tagName, searchList) ->
@@ -77,7 +77,7 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
     listOf("^Hello", "^Hello World", "World$", "Hello World", "llo Wor").forEach { usingString ->
         val result = bridge.findMethodUsingString {
             usingString = usingString
-            advancedMatch = true
+            matchType = MatchType.SIMILAR_REGEX
         }
         assert(result.size == 1)
         assert(result.first().descriptor == "Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V")

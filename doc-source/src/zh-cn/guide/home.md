@@ -53,6 +53,7 @@ fun vipHook(loadPackageParam: LoadPackageParam) {
     DexKitBridge.create(apkPath)?.use { bridge ->
         val resultMap = bridge.batchFindMethodsUsingStrings {
             addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
+            matchType = MatchType.CONTAINS
         }
         val result = resultMap["VipCheckUtil_isVip"]!!
         assert(result.size == 1)
@@ -77,6 +78,7 @@ public void vipHook(LoadPackageParam loadPackageParam) throws NoSuchMethodExcept
             bridge.batchFindMethodsUsingStrings(
                 BatchFindArgs.builder()
                     .addQuery("VipCheckUtil_isVip", List.of("VipCheckUtil", "userInfo:"))
+                    .matchType(MatchType.CONTAINS)
                     .build()
             );
 
