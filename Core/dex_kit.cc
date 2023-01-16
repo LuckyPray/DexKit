@@ -2023,7 +2023,6 @@ void DexKit::InitImages(int begin, int end) {
 void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     auto &dex_flag = init_flags_[dex_idx];
     if (((dex_flag & flag) ^ flag) == 0) return;
-    std::cout << "InitCached: " << dex_idx << ", " << flag << std::endl;
 
     bool need_init_strings = (flag & fString) && ((dex_flag & fString) == 0);
     bool need_init_type_names = (flag & fType) && ((dex_flag & fType) == 0);
