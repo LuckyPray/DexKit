@@ -160,7 +160,7 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
             }
             for (int i = 0; i < type_names.size(); ++i) {
                 auto class_name = type_names[i];
-                if (!package_path.empty() && class_name.find(package_path) != 0) {
+                if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                     continue;
                 }
                 if (class_method_ids[i].empty()) {
@@ -298,7 +298,7 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
             }
             for (int i = 0; i < type_names.size(); ++i) {
                 auto class_name = type_names[i];
-                if (!package_path.empty() && class_name.find(package_path) != 0) {
+                if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                     continue;
                 }
                 if (class_method_ids[i].empty()) {
@@ -483,7 +483,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                     std::map<dex::u2, std::vector<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -677,7 +677,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                     std::map<dex::u2, std::vector<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -857,7 +857,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                     std::map<dex::u2, std::vector<dex::u2>> index_map;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1031,7 +1031,7 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1125,7 +1125,7 @@ DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         auto &annotations = class_annotations[c_idx];
@@ -1217,7 +1217,7 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         auto &annotations = class_annotations[c_idx];
@@ -1335,7 +1335,7 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         auto &annotations = class_annotations[c_idx];
@@ -1438,7 +1438,7 @@ DexKit::FindMethod(const std::string &method_descriptor,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1485,7 +1485,7 @@ DexKit::FindClass(const std::string &source_file,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         auto &file_name = class_source_files[c_idx];
@@ -1625,7 +1625,7 @@ DexKit::FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1735,7 +1735,7 @@ DexKit::FindMethodUsingOpCodeSeq(const std::vector<uint8_t> &op_seq,
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1837,7 +1837,7 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
                     std::map<std::string, std::vector<uint8_t>> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.find(package_path) != 0) {
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
