@@ -22,5 +22,6 @@ plugins {
 }
 
 task clean(type: Delete) {
+    group 'build'
     delete rootProject.buildDir
 }
