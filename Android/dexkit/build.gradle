@@ -187,3 +187,48 @@ dokkaHtml.configure {
         }
     }
 }
+
+task cloneKDoc {
+    doLast {
+        def dokkaDir = new File(buildDir, "dokka")
+        if (!dokkaDir.exists()) {
+            dokkaDir.mkdirs()
+            println(dokkaDir.absolutePath)
+            exec {
+                workingDir dokkaDir.absolutePath
+                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+                    commandLine 'cmd', '/c', 'git clone git@github.com:LuckyPray/DexKit-Doc.git html'
+                } else {
+                    commandLine 'sh', '-c',
+                            'git clone git@github.com:LuckyPray/DexKit-Doc.git html'
+                }
+            }
+        }
+    }
+}
+
+task updateKDoc {
+    doLast {
+        def dokkaHtmlDir = new File(buildDir, "dokka/html")
+        if (dokkaHtmlDir.exists()) {
+            println(dokkaHtmlDir.absolutePath)
+            exec {
+                workingDir dokkaHtmlDir.absolutePath
+                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+                    commandLine 'cmd', '/c',
+                            'git add . && git commit -m "update doc" && git push'
+                } else {
+                    commandLine 'sh', '-c',
+                            'git add . && git commit -m "update doc" && git push'
+                }
+            }
+        }
+    }
+}
+
+if (new File(buildDir, "dokka/html/.git").exists()) {
+    tasks.updateKDoc.dependsOn(tasks.dokkaHtml)
+} else {
+    tasks.dokkaHtml.dependsOn(tasks.cloneKDoc)
+    tasks.updateKDoc.dependsOn(tasks.dokkaHtml)
+}
