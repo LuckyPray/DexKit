@@ -35,7 +35,7 @@ class BatchFindArgs private constructor(
     /**
      * @since 1.1.0
      */
-    class Builder : BaseArgs.Builder<BatchFindArgs>() {
+    class Builder : BaseArgs.Builder<Builder, BatchFindArgs>() {
         /**
          * query map, key is unique key, value is class/method using strings
          */

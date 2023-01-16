@@ -9,6 +9,7 @@ import io.luckypray.dexkit.enums.FieldUsingType
  */
 class MethodUsingFieldArgs private constructor(
     override val findPackage: String,
+    override val sourceFile: String,
     val fieldDescriptor: String,
     val fieldDeclareClass: String,
     val fieldName: String,
@@ -20,7 +21,7 @@ class MethodUsingFieldArgs private constructor(
     val callerMethodReturnType: String,
     val callerMethodParamTypes: Array<String>?,
     val uniqueResult: Boolean,
-) : BaseArgs(findPackage) {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
 
     companion object {
@@ -45,7 +46,7 @@ class MethodUsingFieldArgs private constructor(
     /**
      * @since 1.1.0
      */
-    class Builder : BaseArgs.Builder<MethodUsingFieldArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodUsingFieldArgs>() {
 
         /**
          * **field descriptor**
@@ -248,6 +249,7 @@ class MethodUsingFieldArgs private constructor(
             verifyArgs()
             return MethodUsingFieldArgs(
                 findPackage,
+                sourceFile,
                 fieldDescriptor,
                 fieldDeclareClass,
                 fieldName,

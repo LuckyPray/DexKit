@@ -2,8 +2,8 @@ package io.luckypray.dexkit.builder
 
 class FindClassArgs(
     override val findPackage: String,
-    val sourceFile: String,
-) : BaseArgs(findPackage) {
+    override val sourceFile: String,
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -18,20 +18,7 @@ class FindClassArgs(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<FindClassArgs>() {
-
-        /**
-         * **source file name**
-         */
-        @set:JvmSynthetic
-        var sourceFile: String = ""
-
-        /**
-         * [Builder.sourceFile]
-         */
-        fun sourceFile(sourceFile: String) = this.also {
-            this.sourceFile = sourceFile
-        }
+    class Builder : BaseSourceArgs.Builder<Builder, FindClassArgs>() {
 
         override fun build(): FindClassArgs {
             verify()

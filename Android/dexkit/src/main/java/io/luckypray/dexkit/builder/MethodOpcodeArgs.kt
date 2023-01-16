@@ -9,12 +9,13 @@ import io.luckypray.dexkit.util.OpCodeUtil.getOpCode
  */
 class MethodOpcodeArgs private constructor(
     override val findPackage: String,
+    override val sourceFile: String,
     val opSeq: IntArray,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs(findPackage) {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -35,7 +36,7 @@ class MethodOpcodeArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<MethodOpcodeArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodOpcodeArgs>() {
 
         /**
          * **opcodes sequence**
@@ -146,6 +147,7 @@ class MethodOpcodeArgs private constructor(
             verifyArgs()
             return MethodOpcodeArgs(
                 findPackage,
+                sourceFile,
                 opSeq,
                 methodDeclareClass,
                 methodName,

@@ -11,6 +11,7 @@ import io.luckypray.dexkit.enums.MatchType
 @DexKitExperimentalApi
 class MethodUsingAnnotationArgs private constructor(
     override val findPackage: String,
+    override val sourceFile: String,
     val annotationClass: String,
     val annotationUsingString: String,
     val matchType: Int,
@@ -18,7 +19,7 @@ class MethodUsingAnnotationArgs private constructor(
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs(findPackage) {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -39,7 +40,7 @@ class MethodUsingAnnotationArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<MethodUsingAnnotationArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodUsingAnnotationArgs>() {
 
         /**
          * **annotation class**
@@ -155,6 +156,7 @@ class MethodUsingAnnotationArgs private constructor(
             verifyArgs()
             return MethodUsingAnnotationArgs(
                 findPackage,
+                sourceFile,
                 annotationClass,
                 annotationUsingString,
                 matchType.ordinal,

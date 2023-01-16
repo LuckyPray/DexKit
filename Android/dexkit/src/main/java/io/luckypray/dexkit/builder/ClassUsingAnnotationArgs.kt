@@ -11,10 +11,11 @@ import io.luckypray.dexkit.enums.MatchType
 @DexKitExperimentalApi
 class ClassUsingAnnotationArgs private constructor(
     override val findPackage: String,
+    override val sourceFile: String,
     val annotationClass: String,
     val annotationUsingString: String,
     val matchType: Int,
-) : BaseArgs(findPackage) {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -35,7 +36,7 @@ class ClassUsingAnnotationArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<ClassUsingAnnotationArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, ClassUsingAnnotationArgs>() {
 
         /**
          * **annotation class**
@@ -91,6 +92,7 @@ class ClassUsingAnnotationArgs private constructor(
             verifyArgs()
             return ClassUsingAnnotationArgs(
                 findPackage,
+                sourceFile,
                 annotationClass,
                 annotationUsingString,
                 matchType.ordinal,

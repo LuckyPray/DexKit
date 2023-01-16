@@ -9,7 +9,7 @@ abstract class BaseArgs(
     open val findPackage: String,
 ) {
 
-    abstract class Builder<T : BaseArgs> {
+    abstract class Builder<B : Builder<B, A>, A : BaseArgs> {
 
         /**
          * **find package**
@@ -24,11 +24,12 @@ abstract class BaseArgs(
         /**
          * [Builder.findPackage]
          */
-        fun findPath(findPath: String): Builder<T> {
+        @Suppress("UNCHECKED_CAST")
+        fun findPath(findPath: String): B {
             this.findPackage = findPath
-            return this
+            return this as B
         }
 
-        abstract fun build(): T
+        abstract fun build(): A
     }
 }

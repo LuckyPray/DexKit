@@ -7,6 +7,7 @@ package io.luckypray.dexkit.builder
  */
 class MethodInvokingArgs private constructor(
     override val findPackage: String,
+    override val sourceFile: String,
     val methodDescriptor: String,
     val methodDeclareClass: String,
     val methodName: String,
@@ -18,7 +19,7 @@ class MethodInvokingArgs private constructor(
     val beInvokedMethodReturnType: String,
     val beInvokedMethodParamTypes: Array<String>?,
     val uniqueResult: Boolean,
-) : BaseArgs(findPackage) {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -42,7 +43,7 @@ class MethodInvokingArgs private constructor(
     /**
      * @since 1.1.0
      */
-    class Builder : BaseArgs.Builder<MethodInvokingArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodInvokingArgs>() {
 
         /**
          * **method descriptor**
@@ -230,6 +231,7 @@ class MethodInvokingArgs private constructor(
             verifyArgs()
             return MethodInvokingArgs(
                 findPackage,
+                sourceFile,
                 methodDescriptor,
                 methodDeclareClass,
                 methodName,

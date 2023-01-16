@@ -9,6 +9,7 @@ import io.luckypray.dexkit.enums.MatchType
  */
 class MethodUsingStringArgs private constructor(
     override val findPackage: String,
+    override val sourceFile: String,
     val usingString: String,
     val matchType: Int,
     val methodDeclareClass: String,
@@ -16,7 +17,7 @@ class MethodUsingStringArgs private constructor(
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
     val unique: Boolean,
-) : BaseArgs(findPackage) {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -37,7 +38,7 @@ class MethodUsingStringArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<MethodUsingStringArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodUsingStringArgs>() {
 
         /**
          * **using string**
@@ -167,6 +168,7 @@ class MethodUsingStringArgs private constructor(
             verifyArgs()
             return MethodUsingStringArgs(
                 findPackage,
+                sourceFile,
                 usingString,
                 matchType.ordinal,
                 methodDeclareClass,
