@@ -195,6 +195,10 @@ int main() {
         std::cout << "\t" << value << "\n";
     }
 
+    auto accessFlag = dexKit.GetMethodAccessFlags("Lcom/tencent/mobileqq/msf/sdk/MsfServiceSdk;->syncGetServerConfig(Ljava/lang/String;I)Ljava/lang/String;");
+    std::cout << "\nGetMethodAccessFlags -> \n";
+    std::cout << "\t" << accessFlag << "\n";
+
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "used time: " << now_ms1.count() - now_ms.count() << " ms\n";

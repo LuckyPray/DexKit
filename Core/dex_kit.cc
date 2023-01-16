@@ -1866,6 +1866,116 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
     return result;
 }
 
+uint32_t
+DexKit::GetClassAccessFlags(const std::string &class_descriptor) {
+    auto class_desc = GetClassDescriptor(class_descriptor);
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<uint32_t>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &class_desc]() {
+                    InitCached(dex_idx, fDefault);
+                    auto &class_access_flags = class_access_flags_[dex_idx];
+
+                    auto class_idx = FindTypeIdx(dex_idx, class_desc);
+                    if (class_idx == dex::kNoIndex) {
+                        return dex::kNoIndex;
+                    }
+                    return class_access_flags[class_idx];
+                })
+        );
+    }
+    for (auto &f: futures) {
+        auto r = f.get();
+        if (r != dex::kNoIndex) {
+            return r;
+        }
+    }
+    return dex::kNoIndex;
+}
+
+uint32_t
+DexKit::GetMethodAccessFlags(const std::string &method_descriptor) {
+    auto extract_tuple = ExtractMethodDescriptor(method_descriptor,
+                                                 "",
+                                                 "",
+                                                 "",
+                                                 null_param);
+    std::string class_desc = std::get<0>(extract_tuple);
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<uint32_t>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &class_desc, &method_descriptor]() {
+                    InitCached(dex_idx, fDefault);
+                    auto &class_method_ids = class_method_ids_[dex_idx];
+                    auto &method_access_flags = method_access_flags_[dex_idx];
+
+                    auto class_idx = FindTypeIdx(dex_idx, class_desc);
+                    if (class_idx == dex::kNoIndex) {
+                        return dex::kNoIndex;
+                    }
+                    for (auto method_idx: class_method_ids[class_idx]) {
+                        auto desc = GetMethodDescriptor(dex_idx, method_idx);
+                        if (desc == method_descriptor) {
+                            return method_access_flags[method_idx];
+                        }
+                    }
+                    return dex::kNoIndex;
+                })
+        );
+    }
+    for (auto &f: futures) {
+        auto r = f.get();
+        if (r != dex::kNoIndex) {
+            return r;
+        }
+    }
+    return dex::kNoIndex;
+}
+
+uint32_t
+DexKit::GetFieldAccessFlags(const std::string &field_descriptor) {
+    auto extract_tuple = ExtractFieldDescriptor(field_descriptor,
+                                                "",
+                                                "",
+                                                "");
+    std::string class_desc = std::get<0>(extract_tuple);
+
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<uint32_t>> futures;
+    for (int dex_idx = 0; dex_idx < readers_.size(); ++dex_idx) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &class_desc, &field_descriptor]() {
+                    InitCached(dex_idx, fDefault | fField);
+                    auto &class_field_ids = class_field_ids_[dex_idx];
+                    auto &field_access_flags = field_access_flags_[dex_idx];
+
+                    auto class_idx = FindTypeIdx(dex_idx, class_desc);
+                    if (class_idx == dex::kNoIndex) {
+                        return dex::kNoIndex;
+                    }
+                    for (auto field_idx: class_field_ids[class_idx]) {
+                        auto desc = GetFieldDescriptor(dex_idx, field_idx);
+                        if (desc == field_descriptor) {
+                            return field_access_flags[field_idx];
+                        }
+                    }
+                    return dex::kNoIndex;
+                })
+        );
+    }
+    for (auto &f: futures) {
+        auto r = f.get();
+        if (r != dex::kNoIndex) {
+            return r;
+        }
+    }
+    return dex::kNoIndex;
+}
+
 
 void DexKit::InitImages(int begin, int end) {
     for (int i = begin; i < end; ++i) {
@@ -1875,10 +1985,14 @@ void DexKit::InitImages(int begin, int end) {
     }
     strings_.resize(dex_images_.size());
     type_names_.resize(dex_images_.size());
+    type_ids_map_.resize(dex_images_.size());
     type_declared_flag_.resize(dex_images_.size());
     class_source_files_.resize(dex_images_.size());
+    class_access_flags_.resize(dex_images_.size());
     class_method_ids_.resize(dex_images_.size());
+    method_access_flags_.resize(dex_images_.size());
     class_field_ids_.resize(dex_images_.size());
+    field_access_flags_.resize(dex_images_.size());
     method_codes_.resize(dex_images_.size());
     proto_type_list_.resize(dex_images_.size());
     method_opcode_seq_.resize(dex_images_.size());
@@ -1903,10 +2017,14 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     auto &reader = readers_[dex_idx];
     auto &strings = strings_[dex_idx];
     auto &type_names = type_names_[dex_idx];
+    auto &type_ids_map = type_ids_map_[dex_idx];
     auto &type_declared_flag = type_declared_flag_[dex_idx];
     auto &class_source_files = class_source_files_[dex_idx];
+    auto &class_access_flags = class_access_flags_[dex_idx];
     auto &class_method_ids = class_method_ids_[dex_idx];
+    auto &method_access_flags = method_access_flags_[dex_idx];
     auto &class_field_ids = class_field_ids_[dex_idx];
+    auto &field_access_flags = field_access_flags_[dex_idx];
     auto &method_codes = method_codes_[dex_idx];
     auto &proto_type_list = proto_type_list_[dex_idx];
     auto &method_opcode_seq = method_opcode_seq_[dex_idx];
@@ -1927,8 +2045,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
     if (need_init_type_names) {
         type_names.resize(reader.TypeIds().size());
         auto type_names_it = type_names.begin();
+        int idx = 0;
         for (auto &type_id: reader.TypeIds()) {
-            *type_names_it++ = strings[type_id.descriptor_idx];
+            *type_names_it = strings[type_id.descriptor_idx];
+            type_ids_map[*type_names_it++] = idx++;
         }
         dex_flag |= fType;
     }
@@ -1962,8 +2082,11 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
 
         type_declared_flag.resize(reader.TypeIds().size(), false);
         class_source_files.resize(reader.TypeIds().size());
+        class_access_flags.resize(reader.TypeIds().size());
         class_method_ids.resize(reader.TypeIds().size());
+        method_access_flags.resize(reader.MethodIds().size());
         method_codes.resize(reader.MethodIds().size(), nullptr);
+        field_access_flags.resize(reader.FieldIds().size());
 
         method_opcode_seq.resize(reader.MethodIds().size());
         method_opcode_seq_init_flag.resize(reader.MethodIds().size(), false);
@@ -1984,19 +2107,19 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
 
             auto &methods = class_method_ids[class_def.class_idx];
 
-            for (int i = 0; i < static_fields_size; ++i) {
-                ReadULeb128(&class_data);
-                ReadULeb128(&class_data);
+            for (dex::u4 i = 0, field_idx = 0; i < static_fields_size; ++i) {
+                field_idx += ReadULeb128(&class_data);
+                field_access_flags[field_idx] = ReadULeb128(&class_data);
             }
 
-            for (int i = 0; i < instance_fields_count; ++i) {
-                ReadULeb128(&class_data);
-                ReadULeb128(&class_data);
+            for (dex::u4 i = 0, field_idx = 0; i < instance_fields_count; ++i) {
+                field_idx += ReadULeb128(&class_data);
+                field_access_flags[field_idx] = ReadULeb128(&class_data);
             }
 
             for (dex::u4 i = 0, method_idx = 0; i < direct_methods_count; ++i) {
                 method_idx += ReadULeb128(&class_data);
-                ReadULeb128(&class_data);
+                method_access_flags[method_idx] = ReadULeb128(&class_data);
                 dex::u4 code_off = ReadULeb128(&class_data);
                 if (code_off == 0) {
                     continue;
@@ -2006,7 +2129,7 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
             }
             for (dex::u4 i = 0, method_idx = 0; i < virtual_methods_count; ++i) {
                 method_idx += ReadULeb128(&class_data);
-                ReadULeb128(&class_data);
+                method_access_flags[method_idx] = ReadULeb128(&class_data);
                 dex::u4 code_off = ReadULeb128(&class_data);
                 if (code_off == 0) {
                     continue;
@@ -2125,11 +2248,9 @@ std::string DexKit::GetFieldDescriptor(size_t dex_idx, uint32_t field_idx) {
 }
 
 uint32_t DexKit::FindTypeIdx(size_t dex_idx, std::string &type_desc) {
-    auto &type_names = type_names_[dex_idx];
-    for (int i = 0; i < type_names.size(); ++i) {
-        if (type_desc == type_names[i]) {
-            return i;
-        }
+    auto &type_ids_map = type_ids_map_[dex_idx];
+    if (type_ids_map.find(type_desc) != type_ids_map.end()) {
+        return type_ids_map[type_desc];
     }
     return dex::kNoIndex;
 }

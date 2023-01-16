@@ -499,5 +499,47 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodeSeq(JNIEnv *env, jcla
                               dex_priority);
 }
 
+DEXKIT_JNI jint
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetClassAccessFlags(JNIEnv *env, jclass clazz,
+                                                                jlong native_ptr,
+                                                                jstring descriptor) {
+    if (!native_ptr) {
+        return -1;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto classDescriptor = env->GetStringUTFChars(descriptor, nullptr);
+    auto res = dexKit->GetClassAccessFlags(classDescriptor);
+    env->ReleaseStringUTFChars(descriptor, classDescriptor);
+    return (jint) res;
+}
+
+DEXKIT_JNI jint
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodAccessFlags(JNIEnv *env, jclass clazz,
+                                                                jlong native_ptr,
+                                                                jstring descriptor) {
+    if (!native_ptr) {
+        return -1;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto methodDescriptor = env->GetStringUTFChars(descriptor, nullptr);
+    auto res = dexKit->GetMethodAccessFlags(methodDescriptor);
+    env->ReleaseStringUTFChars(descriptor, methodDescriptor);
+    return (jint) res;
+}
+
+DEXKIT_JNI jint
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetFieldAccessFlags(JNIEnv *env, jclass clazz,
+                                                                jlong native_ptr,
+                                                                jstring descriptor) {
+    if (!native_ptr) {
+        return -1;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto fieldDescriptor = env->GetStringUTFChars(descriptor, nullptr);
+    auto res = dexKit->GetFieldAccessFlags(fieldDescriptor);
+    env->ReleaseStringUTFChars(descriptor, fieldDescriptor);
+    return (jint) res;
+}
+
 #undef DEXKIT_JNI
 #undef TAG

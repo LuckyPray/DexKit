@@ -23,7 +23,7 @@ fun loadLibrary(name: String) {
 fun main() {
     loadLibrary("dexkit")
     println("current work dir: ${File("").absolutePath}")
-    val file = File("apk/QQ-play-8.2.11.apk")
+    val file = File("apk/qq-8.9.2.apk")
     if (!file.exists()) {
         println("apk not found")
         return
@@ -38,6 +38,7 @@ fun find(path: String) {
             findPackage = "com/tencent"
         }.forEach {
             println(it.descriptor)
+            println(kit.getMethodAccessFlags(it))
         }
         kit.findClass {
             findPackage = "AvatarInfo"

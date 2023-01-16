@@ -942,6 +942,18 @@ class DexKitBridge : Closeable {
     ).mapKeys { DexMethodDescriptor(it.key) }
     //#endregion
 
+    @DexKitExperimentalApi
+    fun getClassAccessFlags(descriptor: DexFieldDescriptor): Int =
+        nativeGetClassAccessFlags(token, descriptor.descriptor)
+
+    @DexKitExperimentalApi
+    fun getMethodAccessFlags(descriptor: DexMethodDescriptor): Int =
+        nativeGetMethodAccessFlags(token, descriptor.descriptor)
+
+    @DexKitExperimentalApi
+    fun getFieldAccessFlags(descriptor: DexFieldDescriptor): Int =
+        nativeGetFieldAccessFlags(token, descriptor.descriptor)
+
     companion object {
 
         @Deprecated("using FieldUsingType.GET.toFlag() instead")
@@ -1180,6 +1192,24 @@ class DexKitBridge : Closeable {
             findPath: String,
             dexPriority: IntArray?
         ): Map<String, IntArray>
+
+        @JvmStatic
+        private external fun nativeGetClassAccessFlags(
+            nativePtr: Long,
+            descriptor: String
+        ): Int
+
+        @JvmStatic
+        private external fun nativeGetMethodAccessFlags(
+            nativePtr: Long,
+            descriptor: String
+        ): Int
+
+        @JvmStatic
+        private external fun nativeGetFieldAccessFlags(
+            nativePtr: Long,
+            descriptor: String
+        ): Int
     }
 
     protected fun finalize() {
