@@ -6,12 +6,14 @@ package io.luckypray.dexkit.builder
  * @since 1.1.0
  */
 class FindMethodArgs private constructor(
+    override val findPackage: String,
+    override val sourceFile: String,
     val methodDescriptor: String,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs() {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -32,31 +34,31 @@ class FindMethodArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<FindMethodArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, FindMethodArgs>() {
 
         /**
          * **method descriptor**
          *
          *     e.g. "Lcom/example/MainActivity;.onCreate:(Landroid/os/Bundle;)V"
          */
+        @set:JvmSynthetic
         var methodDescriptor: String = ""
-            @JvmSynthetic set
 
         /**
          * **method declare class**
          *
          *     e.g. "Lcom/example/MainActivity;" or "com.example.MainActivity"
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **method return type**
@@ -65,8 +67,8 @@ class FindMethodArgs private constructor(
          *
          *     e.g. "V" or "void"
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **method param types**
@@ -83,8 +85,8 @@ class FindMethodArgs private constructor(
          *     matches(["I", ""], ["int", "long"]) == true
          *     matches(["I", ""], ["int"]) == false
          */
+        @set:JvmSynthetic
         var methodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * [Builder.methodDescriptor]
@@ -129,6 +131,8 @@ class FindMethodArgs private constructor(
         override fun build(): FindMethodArgs {
             verifyArgs()
             return FindMethodArgs(
+                findPackage,
+                sourceFile,
                 methodDescriptor,
                 methodDeclareClass,
                 methodName,

@@ -3,20 +3,23 @@
 package io.luckypray.dexkit.builder
 
 import io.luckypray.dexkit.annotations.DexKitExperimentalApi
+import io.luckypray.dexkit.enums.MatchType
 
 /**
  * @since 1.1.0
  */
 @DexKitExperimentalApi
 class MethodUsingAnnotationArgs private constructor(
+    override val findPackage: String,
+    override val sourceFile: String,
     val annotationClass: String,
     val annotationUsingString: String,
-    val advancedMatch: Boolean,
+    val matchType: Int,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs() {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -37,63 +40,63 @@ class MethodUsingAnnotationArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<MethodUsingAnnotationArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodUsingAnnotationArgs>() {
 
         /**
          * **annotation class**
          *
          *     e.g. "Lcom/example/MyAnnotation;" or "com.example.MyAnnotation"
          */
+        @set:JvmSynthetic
         var annotationClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **annotation using string**
          *
          * if empty, match any annotation
          */
+        @set:JvmSynthetic
         var annotationUsingString: String = ""
-            @JvmSynthetic set
 
         /**
-         * **advanced match**
+         * match type, type of string to match
          *
-         * if true, match annotation using string
+         * default [MatchType.SIMILAR_REGEX], similar regex matches, only support: '^', '$'
          */
-        var advancedMatch: Boolean = true
-            @JvmSynthetic set
+        @set:JvmSynthetic
+        var matchType: MatchType = MatchType.SIMILAR_REGEX
 
         /**
          * **method declare class**
          *
          * if empty, match any class
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **method return type**
          *
          * if empty, match any type
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **method param types**
          *
          * if null, match any param types
          */
+        @set:JvmSynthetic
         var methodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * [Builder.annotationClass]
@@ -110,10 +113,10 @@ class MethodUsingAnnotationArgs private constructor(
         }
 
         /**
-         * [Builder.advancedMatch]
+         * [Builder.matchType]
          */
-        fun advancedMatch(advancedMatch: Boolean) = this.also {
-            this.advancedMatch = advancedMatch
+        fun matchType(matchType: MatchType) = this.also {
+            this.matchType = matchType
         }
 
         /**
@@ -152,9 +155,11 @@ class MethodUsingAnnotationArgs private constructor(
         override fun build(): MethodUsingAnnotationArgs {
             verifyArgs()
             return MethodUsingAnnotationArgs(
+                findPackage,
+                sourceFile,
                 annotationClass,
                 annotationUsingString,
-                advancedMatch,
+                matchType.ordinal,
                 methodDeclareClass,
                 methodName,
                 methodReturnType,

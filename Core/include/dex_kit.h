@@ -32,6 +32,24 @@ constexpr dex::u4 fGetting = 0x1;
 constexpr dex::u4 fSetting = 0x2;
 constexpr dex::u4 fUsing = fGetting | fSetting;
 
+// match type
+// mFull           : full string match, eg.
+//     full_match(search = "abc", target = "abc") = true
+//     full_match(search = "abc", target = "abcd") = false
+constexpr dex::u4 mFull = 0;
+// mContains       : contains string match, eg.
+//     contains_match(search = "abc", target = "abcd") = true
+//     contains_match(search = "abc", target = "abc") = true
+//     contains_match(search = "abc", target = "ab") = false
+constexpr dex::u4 mContains = 1;
+// mSimilarRegex   : similar regex matches, only support: '^', '$' eg.
+//     similar_regex_match(search = "abc", target = "abc") == true
+//     similar_regex_match(search = "^abc", target = "abc") == true
+//     similar_regex_match(search = "abc$", target = "bc") == true
+//     similar_regex_match(search = "^abc$", target = "abc") == true
+//     similar_regex_match(search = "^abc$", target = "abcd") == false
+constexpr dex::u4 mSimilarRegex = 2;
+
 class DexKit {
 public:
 
@@ -56,7 +74,11 @@ public:
      * @param location_map deobfuscation info map <br/>
      * key: unique identifier, eg: class name <br/>
      * value: used keywords <br/>
-     * @param advanced_match If true, '^' and '$' can be used to restrict matches, like regular expressions
+     * @param match_type mFull: full string match, mContains: contains string match, similar regex matches, only support: '^', '$' <br/>
+     * <code>
+     * similar_regex_match("^abc$", "abc") == true
+     * similar_regex_match("^abc$", "abcd") == false
+     * </code>
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return search result map <br/>
      * like: {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;"}}
@@ -70,7 +92,8 @@ public:
      */
     std::map<std::string, std::vector<std::string>>
     BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                 bool advanced_match,
+                                 int match_type,
+                                 const std::string &find_package = "",
                                  const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -78,14 +101,19 @@ public:
      * @param location_map deobfuscation info map <br/>
      * key: unique identifier, eg: class name <br/>
      * value: used keywords <br/>
-     * @param advanced_match If true, '^' and '$' can be used to restrict matches, like regular expressions
+     * @param match_type mFull: full string match, mContains: contains string match, similar regex matches, only support: '^', '$' <br/>
+     * <code>
+     * similar_regex_match("^abc$", "abc") == true
+     * similar_regex_match("^abc$", "abcd") == false
+     * </code>
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return like: {"Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;" -> {"Lxadt;->a()V"}}
      * @see BatchFindClassesUsingStrings()
      */
     std::map<std::string, std::vector<std::string>>
     BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>> &location_map,
-                                 bool advanced_match,
+                                 int match_type,
+                                 const std::string &find_package = "",
                                  const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -117,6 +145,8 @@ public:
                      const std::string &caller_method_return_type,
                      const std::optional<std::vector<std::string>> &caller_method_param_types,
                      bool unique_result = true,
+                     const std::string &source_file = "",
+                     const std::string &find_package = "",
                      const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -153,6 +183,8 @@ public:
                        const std::string &be_called_method_return_type,
                        const std::optional<std::vector<std::string>> &be_called_method_param_types,
                        bool unique_result = true,
+                       const std::string &source_file = "",
+                       const std::string &find_package = "",
                        const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -184,12 +216,18 @@ public:
                          const std::string &caller_method_return_type,
                          const std::optional<std::vector<std::string>> &caller_method_param_types,
                          bool unique_result = true,
+                         const std::string &source_file = "",
+                         const std::string &find_package = "",
                          const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find method used utf8 string
      * @param using_utf8_string used utf8 string
-     * @param advanced_match If true, '^' and '$' can be used to restrict matches, like regular expressions
+     * @param match_type mFull: full string match, mContains: contains string match, similar regex matches, only support: '^', '$' <br/>
+     * <code>
+     * similar_regex_match("^abc$", "abc") == true
+     * similar_regex_match("^abc$", "abcd") == false
+     * </code>
      * @param method_declare_class if empty, match any class;
      * @param method_declare_name if empty, match any method name;
      * @param method_return_type if empty, match any return type;
@@ -201,31 +239,45 @@ public:
      */
     std::vector<std::string>
     FindMethodUsingString(const std::string &using_utf8_string,
-                          bool advanced_match,
+                          int match_type,
                           const std::string &method_declare_class,
                           const std::string &method_declare_name,
                           const std::string &method_return_type,
                           const std::optional<std::vector<std::string>> &method_param_types,
                           bool unique_result = true,
+                          const std::string &source_file = "",
+                          const std::string &find_package = "",
                           const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find using annotation's class
      * @param annotation_class annotation class
      * @param annotation_using_string if not empty, only search annotation using string
+     * @param match_type mFull: full string match, mContains: contains string match, similar regex matches, only support: '^', '$' <br/>
+     * <code>
+     * similar_regex_match("^abc$", "abc") == true
+     * similar_regex_match("^abc$", "abcd") == false
+     * </code>
      * @param dex_priority if not empty, only search included dex ids. dex numbering starts from 0.
      * @return class descriptor
      */
     std::vector<std::string>
     FindClassUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
-                             bool advanced_match,
+                             int match_type,
+                             const std::string &source_file = "",
+                             const std::string &find_package = "",
                              const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find using annotation's field
      * @param annotation_class annotation class
      * @param annotation_using_string if not empty, only search annotation using string
+     * @param match_type mFull: full string match, mContains: contains string match, similar regex matches, only support: '^', '$' <br/>
+     * <code>
+     * similar_regex_match("^abc$", "abc") == true
+     * similar_regex_match("^abc$", "abcd") == false
+     * </code>
      * @param field_declare_class if empty, match any class
      * @param field_declare_name if empty, match any field name
      * @param field_type if empty, match any field type
@@ -235,16 +287,23 @@ public:
     std::vector<std::string>
     FindFieldUsingAnnotation(const std::string &annotation_class,
                              const std::string &annotation_using_string,
-                             bool advanced_match,
+                             int match_type,
                              const std::string &field_declare_class,
                              const std::string &field_declare_name,
                              const std::string &field_type,
+                             const std::string &source_file = "",
+                             const std::string &find_package = "",
                              const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find using annotation's method
      * @param annotation_class annotation class
      * @param annotation_using_string if not empty, only search annotation using string
+     * @param match_type mFull: full string match, mContains: contains string match, similar regex matches, only support: '^', '$' <br/>
+     * <code>
+     * similar_regex_match("^abc$", "abc") == true
+     * similar_regex_match("^abc$", "abcd") == false
+     * </code>
      * @param method_declare_class if empty, match any class
      * @param method_declare_name if empty, match any method name
      * @param method_return_type if empty, match any return type
@@ -255,11 +314,13 @@ public:
     std::vector<std::string>
     FindMethodUsingAnnotation(const std::string &annotation_class,
                               const std::string &annotation_using_string,
-                              bool advanced_match,
+                              int match_type,
                               const std::string &method_declare_class,
                               const std::string &method_declare_name,
                               const std::string &method_return_type,
                               const std::optional<std::vector<std::string>> &method_param_types,
+                              const std::string &source_file = "",
+                              const std::string &find_package = "",
                               const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -280,7 +341,14 @@ public:
                const std::string &method_declare_name,
                const std::string &method_return_type,
                const std::optional<std::vector<std::string>> &method_param_types,
+               const std::string &source_file = "",
+               const std::string &find_package = "",
                const std::vector<size_t> &dex_priority = {});
+
+    std::vector<std::string>
+    FindClass(const std::string &source_file,
+              const std::string &find_package = "",
+              const std::vector<size_t> &dex_priority = {});
 
     /**
      * @brief find all direct subclasses of the specified class
@@ -310,6 +378,8 @@ public:
                                const std::string &method_declare_name,
                                const std::string &method_return_type,
                                const std::optional<std::vector<std::string>> &method_param_types,
+                               const std::string &source_file = "",
+                               const std::string &find_package = "",
                                const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -330,6 +400,8 @@ public:
                              const std::string &method_declare_name,
                              const std::string &method_return_type,
                              const std::optional<std::vector<std::string>> &method_param_types,
+                             const std::string &source_file = "",
+                             const std::string &find_package = "",
                              const std::vector<size_t> &dex_priority = {});
 
     /**
@@ -350,7 +422,15 @@ public:
                        const std::string &method_declare_name,
                        const std::string &method_return_type,
                        const std::optional<std::vector<std::string>> &method_param_types,
+                       const std::string &source_file = "",
+                       const std::string &find_package = "",
                        const std::vector<size_t> &dex_priority = {});
+
+    uint32_t GetClassAccessFlags(const std::string &class_descriptor);
+
+    uint32_t GetMethodAccessFlags(const std::string &method_descriptor);
+
+    uint32_t GetFieldAccessFlags(const std::string &field_descriptor);
 
     size_t GetDexNum() {
         return dex_images_.size();
@@ -366,8 +446,14 @@ private:
 
     std::vector<std::vector<std::string_view>> strings_;
     std::vector<std::vector<std::string_view>> type_names_;
+    std::vector<std::unordered_map<std::string_view, dex::u4>> type_ids_map_;
+    std::vector<std::vector<bool>> type_declared_flag_;
+    std::vector<std::vector<std::string_view>> class_source_files_;
+    std::vector<std::vector<uint32_t>> class_access_flags_;
     std::vector<std::vector<std::vector<uint32_t>>> class_method_ids_;
+    std::vector<std::vector<uint32_t>> method_access_flags_;
     std::vector<std::vector<std::vector<uint32_t>>> class_field_ids_;
+    std::vector<std::vector<uint32_t>> field_access_flags_;
     std::vector<std::vector<const dex::Code *>> method_codes_;
     std::vector<std::vector<const dex::TypeList *>> proto_type_list_;
     std::vector<std::vector<std::vector<uint8_t>>> method_opcode_seq_;

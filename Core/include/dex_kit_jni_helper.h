@@ -54,53 +54,67 @@ void ExportDexFile(JNIEnv *env, jlong dexKitPtr, jstring jOutDir) {
 jobject BatchFindClassesUsingStrings(JNIEnv *env,
                                      jlong dexKitPtr,
                                      jobject jMap,
-                                     jboolean advanced_match,
+                                     jint match_type,
+                                     jstring find_package,
                                      jintArray dex_priority) {
     if (!dexKitPtr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
     }
     auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
     auto map = JMap2CMap(env, jMap);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKit->BatchFindClassesUsingStrings(map, advanced_match, dexPriority);
+    auto res = dexKit->BatchFindClassesUsingStrings(map,
+                                                    match_type,
+                                                    findPackage,
+                                                    dexPriority);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return CMap2JMap(env, res);
 }
 
 jobject BatchFindMethodsUsingStrings(JNIEnv *env,
                                      jlong dexKitPtr,
                                      jobject jMap,
-                                     jboolean advanced_match,
+                                     jint match_type,
+                                     jstring find_package,
                                      jintArray dex_priority) {
     if (!dexKitPtr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
     }
     auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
     auto map = JMap2CMap(env, jMap);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKit->BatchFindMethodsUsingStrings(map, advanced_match, dexPriority);
+    auto res = dexKit->BatchFindMethodsUsingStrings(map,
+                                                    match_type,
+                                                    findPackage,
+                                                    dexPriority);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return CMap2JMap(env, res);
 }
 
 jobject FindMethodCaller(JNIEnv *env,
-                              jlong dexKitPtr,
-                              jstring method_descriptor,
-                              jstring method_declare_class,
-                              jstring method_name,
-                              jstring method_return_type,
-                              jobjectArray method_param_types,
-                              jstring caller_method_descriptor,
-                              jstring caller_method_declare_class,
-                              jstring caller_method_name,
-                              jstring caller_method_return_type,
-                              jobjectArray caller_method_param_types,
-                              jboolean unique_result,
-                              jintArray dex_priority) {
+                         jlong dexKitPtr,
+                         jstring method_descriptor,
+                         jstring method_declare_class,
+                         jstring method_name,
+                         jstring method_return_type,
+                         jobjectArray method_param_types,
+                         jstring caller_method_descriptor,
+                         jstring caller_method_declare_class,
+                         jstring caller_method_name,
+                         jstring caller_method_return_type,
+                         jobjectArray caller_method_param_types,
+                         jboolean unique_result,
+                         jstring source_file,
+                         jstring find_package,
+                         jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
     }
@@ -121,6 +135,8 @@ jobject FindMethodCaller(JNIEnv *env,
     if (caller_method_param_types != NULL) {
         callerParamTypes = JStrArr2StrVec(env, caller_method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -136,6 +152,8 @@ jobject FindMethodCaller(JNIEnv *env,
                                         callerMethodReturnType,
                                         callerParamTypes,
                                         unique_result,
+                                        sourceFile,
+                                        findPackage,
                                         dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
@@ -145,6 +163,8 @@ jobject FindMethodCaller(JNIEnv *env,
     env->ReleaseStringUTFChars(caller_method_declare_class, callerMethodClass);
     env->ReleaseStringUTFChars(caller_method_name, callerMethodName);
     env->ReleaseStringUTFChars(caller_method_return_type, callerMethodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return CMap2JMap(env, res);
 }
 
@@ -161,6 +181,8 @@ jobject FindMethodInvoking(JNIEnv *env,
                            jstring be_called_method_return_type,
                            jobjectArray be_called_method_param_types,
                            jboolean unique_result,
+                           jstring source_file,
+                           jstring find_package,
                            jintArray dex_priority) {
     if (!dexKitPtr) {
         return CMap2JMap(env, std::map<std::string, std::vector<std::string>>());
@@ -175,13 +197,16 @@ jobject FindMethodInvoking(JNIEnv *env,
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
     auto beCalledMethodDescriptor = env->GetStringUTFChars(be_called_method_descriptor, nullptr);
-    auto beCalledMethodDeclareClass = env->GetStringUTFChars(be_called_method_declare_class,nullptr);
+    auto beCalledMethodDeclareClass = env->GetStringUTFChars(be_called_method_declare_class,
+                                                             nullptr);
     auto beCalledMethodDeclareName = env->GetStringUTFChars(be_called_method_name, nullptr);
     auto beCalledMethodReturnType = env->GetStringUTFChars(be_called_method_return_type, nullptr);
     auto beCalledMethodParamTypes = dexkit::null_param;
     if (be_called_method_param_types != NULL) {
         beCalledMethodParamTypes = JStrArr2StrVec(env, be_called_method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -197,6 +222,8 @@ jobject FindMethodInvoking(JNIEnv *env,
                                           beCalledMethodReturnType,
                                           beCalledMethodParamTypes,
                                           unique_result,
+                                          sourceFile,
+                                          findPackage,
                                           dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
@@ -206,6 +233,8 @@ jobject FindMethodInvoking(JNIEnv *env,
     env->ReleaseStringUTFChars(be_called_method_declare_class, beCalledMethodDeclareClass);
     env->ReleaseStringUTFChars(be_called_method_name, beCalledMethodDeclareName);
     env->ReleaseStringUTFChars(be_called_method_return_type, beCalledMethodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return CMap2JMap(env, res);
 }
 
@@ -222,6 +251,8 @@ jobject FindMethodUsingField(JNIEnv *env,
                              jstring caller_method_return_type,
                              jobjectArray caller_method_param_types,
                              jboolean unique_result,
+                             jstring source_file,
+                             jstring find_package,
                              jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -242,6 +273,8 @@ jobject FindMethodUsingField(JNIEnv *env,
     if (caller_method_param_types != NULL) {
         callerParamTypes = JStrArr2StrVec(env, caller_method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -257,6 +290,8 @@ jobject FindMethodUsingField(JNIEnv *env,
                                             callerMethodReturnType,
                                             callerParamTypes,
                                             unique_result,
+                                            sourceFile,
+                                            findPackage,
                                             dexPriority);
     env->ReleaseStringUTFChars(field_descriptor, fieldDescriptor);
     env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
@@ -266,18 +301,22 @@ jobject FindMethodUsingField(JNIEnv *env,
     env->ReleaseStringUTFChars(caller_method_declare_class, callerMethodClass);
     env->ReleaseStringUTFChars(caller_method_name, callerMethodName);
     env->ReleaseStringUTFChars(caller_method_return_type, callerMethodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return CMap2JMap(env, res);
 }
 
 jobjectArray FindMethodUsingString(JNIEnv *env,
                                    jlong dexKitPtr,
                                    jstring using_string,
-                                   jboolean advanced_match,
+                                   jint match_type,
                                    jstring method_declare_class,
                                    jstring method_name,
                                    jstring method_return_type,
                                    jobjectArray method_param_types,
                                    jboolean unique_result,
+                                   jstring source_file,
+                                   jstring find_package,
                                    jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -291,22 +330,28 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
     if (method_param_types != NULL) {
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
     auto res = dexKit->FindMethodUsingString(usedUtf8String,
-                                             advanced_match,
+                                             match_type,
                                              methodDeclareClass,
                                              methodName,
                                              methodReturnType,
                                              ParamTypes,
                                              unique_result,
+                                             sourceFile,
+                                             findPackage,
                                              dexPriority);
     env->ReleaseStringUTFChars(using_string, usedUtf8String);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return StrVec2JStrArr(env, res);
 }
 
@@ -314,7 +359,9 @@ jobjectArray FindClassUsingAnnotation(JNIEnv *env,
                                       jlong dexKitPtr,
                                       jstring annotation_class,
                                       jstring annotation_using_string,
-                                      jboolean advanced_match,
+                                      jint match_type,
+                                      jstring source_file,
+                                      jstring find_package,
                                       jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -322,16 +369,22 @@ jobjectArray FindClassUsingAnnotation(JNIEnv *env,
     auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
     auto annotationClass = env->GetStringUTFChars(annotation_class, nullptr);
     auto annotationUsingString = env->GetStringUTFChars(annotation_using_string, nullptr);
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
     auto res = dexKit->FindClassUsingAnnotation(annotationClass,
                                                 annotationUsingString,
-                                                advanced_match,
+                                                match_type,
+                                                sourceFile,
+                                                findPackage,
                                                 dexPriority);
     env->ReleaseStringUTFChars(annotation_class, annotationClass);
     env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return StrVec2JStrArr(env, res);
 }
 
@@ -339,10 +392,12 @@ jobjectArray FindFieldUsingAnnotation(JNIEnv *env,
                                       jlong dexKitPtr,
                                       jstring annotation_class,
                                       jstring annotation_using_string,
-                                      jboolean advanced_match,
+                                      jint match_type,
                                       jstring field_declare_class,
                                       jstring field_name,
                                       jstring field_type,
+                                      jstring source_file,
+                                      jstring find_package,
                                       jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -353,22 +408,28 @@ jobjectArray FindFieldUsingAnnotation(JNIEnv *env,
     auto fieldDeclareClass = env->GetStringUTFChars(field_declare_class, nullptr);
     auto fieldName = env->GetStringUTFChars(field_name, nullptr);
     auto fieldType = env->GetStringUTFChars(field_type, nullptr);
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
     auto res = dexKit->FindFieldUsingAnnotation(annotationClass,
                                                 annotationUsingString,
-                                                advanced_match,
+                                                match_type,
                                                 fieldDeclareClass,
                                                 fieldName,
                                                 fieldType,
+                                                sourceFile,
+                                                findPackage,
                                                 dexPriority);
     env->ReleaseStringUTFChars(annotation_class, annotationClass);
     env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
     env->ReleaseStringUTFChars(field_declare_class, fieldDeclareClass);
     env->ReleaseStringUTFChars(field_name, fieldName);
     env->ReleaseStringUTFChars(field_type, fieldType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return StrVec2JStrArr(env, res);
 }
 
@@ -376,11 +437,13 @@ jobjectArray FindMethodUsingAnnotation(JNIEnv *env,
                                        jlong dexKitPtr,
                                        jstring annotation_class,
                                        jstring annotation_using_string,
-                                       jboolean advanced_match,
+                                       jint match_type,
                                        jstring method_declare_class,
                                        jstring method_name,
                                        jstring method_return_type,
                                        jobjectArray method_param_types,
+                                       jstring source_file,
+                                       jstring find_package,
                                        jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -395,23 +458,29 @@ jobjectArray FindMethodUsingAnnotation(JNIEnv *env,
     if (method_param_types != NULL) {
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
     auto res = dexKit->FindMethodUsingAnnotation(annotationClass,
                                                  annotationUsingString,
-                                                 advanced_match,
+                                                 match_type,
                                                  methodDeclareClass,
                                                  methodName,
                                                  methodReturnType,
                                                  ParamTypes,
+                                                 sourceFile,
+                                                 findPackage,
                                                  dexPriority);
     env->ReleaseStringUTFChars(annotation_class, annotationClass);
     env->ReleaseStringUTFChars(annotation_using_string, annotationUsingString);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return StrVec2JStrArr(env, res);
 }
 
@@ -422,6 +491,8 @@ jobjectArray FindMethod(JNIEnv *env,
                         jstring method_name,
                         jstring method_return_type,
                         jobjectArray method_param_types,
+                        jstring source_file,
+                        jstring find_package,
                         jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -435,6 +506,8 @@ jobjectArray FindMethod(JNIEnv *env,
     if (method_param_types != NULL) {
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -444,11 +517,36 @@ jobjectArray FindMethod(JNIEnv *env,
                                   methodName,
                                   methodReturnType,
                                   ParamTypes,
+                                  sourceFile,
+                                  findPackage,
                                   dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
+    return StrVec2JStrArr(env, res);
+}
+
+jobjectArray FindClass(JNIEnv *env,
+                       jlong native_ptr,
+                       jstring source_file,
+                       jstring find_path,
+                       jintArray dex_priority) {
+    if (!native_ptr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPath = env->GetStringUTFChars(find_path, nullptr);
+    std::vector<size_t> dexPriority;
+    if (dex_priority != NULL) {
+        dexPriority = JIntArr2IntVec(env, dex_priority);
+    }
+    auto res = dexKit->FindClass(sourceFile, findPath, dexPriority);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_path, findPath);
     return StrVec2JStrArr(env, res);
 }
 
@@ -477,6 +575,8 @@ jobjectArray FindMethodUsingOpPrefixSeq(JNIEnv *env,
                                         jstring method_name,
                                         jstring method_return_type,
                                         jobjectArray method_param_types,
+                                        jstring source_file,
+                                        jstring find_package,
                                         jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -490,6 +590,8 @@ jobjectArray FindMethodUsingOpPrefixSeq(JNIEnv *env,
     if (method_param_types != NULL) {
         ParamTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -499,10 +601,14 @@ jobjectArray FindMethodUsingOpPrefixSeq(JNIEnv *env,
                                                 methodName,
                                                 methodReturnType,
                                                 ParamTypes,
+                                                sourceFile,
+                                                findPackage,
                                                 dexPriority);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return StrVec2JStrArr(env, res);
 }
 
@@ -513,6 +619,8 @@ jobjectArray FindMethodUsingOpCodeSeq(JNIEnv *env,
                                       jstring method_name,
                                       jstring method_return_type,
                                       jobjectArray method_param_types,
+                                      jstring source_file,
+                                      jstring find_package,
                                       jintArray dex_priority) {
     if (!dexKitPtr) {
         return StrVec2JStrArr(env, std::vector<std::string>());
@@ -526,6 +634,8 @@ jobjectArray FindMethodUsingOpCodeSeq(JNIEnv *env,
     if (method_param_types != NULL) {
         paramTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -535,10 +645,14 @@ jobjectArray FindMethodUsingOpCodeSeq(JNIEnv *env,
                                                 methodName,
                                                 methodReturnType,
                                                 paramTypes,
+                                                sourceFile,
+                                                findPackage,
                                                 dexPriority);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
     return StrVec2JStrArr(env, res);
 }
 
@@ -549,6 +663,8 @@ jobject GetMethodOpCodeSeq(JNIEnv *env,
                            jstring method_name,
                            jstring method_return_type,
                            jobjectArray method_param_types,
+                           jstring source_file,
+                           jstring find_package,
                            jintArray dex_priority) {
     if (!dexKitPtr) {
         return EmptyJMap(env);
@@ -562,6 +678,8 @@ jobject GetMethodOpCodeSeq(JNIEnv *env,
     if (method_param_types != NULL) {
         paramTypes = JStrArr2StrVec(env, method_param_types);
     }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
     std::vector<size_t> dexPriority;
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
@@ -571,11 +689,15 @@ jobject GetMethodOpCodeSeq(JNIEnv *env,
                                           methodName,
                                           methodReturnType,
                                           paramTypes,
+                                          sourceFile,
+                                          findPackage,
                                           dexPriority);
     env->ReleaseStringUTFChars(method_descriptor, methodDescriptor);
     env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
     env->ReleaseStringUTFChars(method_name, methodName);
     env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
 
     jclass cMap = env->FindClass("java/util/HashMap");
     jmethodID mMapInit = env->GetMethodID(cMap, "<init>", "()V");

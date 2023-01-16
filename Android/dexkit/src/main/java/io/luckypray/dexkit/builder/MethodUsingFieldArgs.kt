@@ -8,6 +8,8 @@ import io.luckypray.dexkit.enums.FieldUsingType
  * @since 1.1.0
  */
 class MethodUsingFieldArgs private constructor(
+    override val findPackage: String,
+    override val sourceFile: String,
     val fieldDescriptor: String,
     val fieldDeclareClass: String,
     val fieldName: String,
@@ -19,7 +21,7 @@ class MethodUsingFieldArgs private constructor(
     val callerMethodReturnType: String,
     val callerMethodParamTypes: Array<String>?,
     val uniqueResult: Boolean,
-) : BaseArgs() {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
 
     companion object {
@@ -44,7 +46,7 @@ class MethodUsingFieldArgs private constructor(
     /**
      * @since 1.1.0
      */
-    class Builder : BaseArgs.Builder<MethodUsingFieldArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodUsingFieldArgs>() {
 
         /**
          * **field descriptor**
@@ -54,8 +56,8 @@ class MethodUsingFieldArgs private constructor(
          *
          *     e.g. "Lcom/example/MainActivity;->mTextView:Landroid/widget/TextView;"
          */
+        @set:JvmSynthetic
         var fieldDescriptor: String = ""
-            @JvmSynthetic set
 
         /**
          * **field declare class**
@@ -64,8 +66,8 @@ class MethodUsingFieldArgs private constructor(
          *
          *     e.g. "Lcom/example/MainActivity;"
          */
+        @set:JvmSynthetic
         var fieldDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **field name**
@@ -74,8 +76,8 @@ class MethodUsingFieldArgs private constructor(
          *
          *     e.g. "mTextView"
          */
+        @set:JvmSynthetic
         var fieldName: String = ""
-            @JvmSynthetic set
 
         /**
          * **field type**
@@ -84,8 +86,8 @@ class MethodUsingFieldArgs private constructor(
          *
          *     e.g. "Landroid/widget/TextView;"
          */
+        @set:JvmSynthetic
         var fieldType: String = ""
-            @JvmSynthetic set
 
         /**
          * **using field type**
@@ -94,8 +96,8 @@ class MethodUsingFieldArgs private constructor(
          *     FieldUsingType.PUT match "iput", "iput-*", "sput", "sput-*" instruction
          *     FieldUsingType.ALL match GET or PUT
          */
+        @set:JvmSynthetic
         var usingType: FieldUsingType = FieldUsingType.ALL
-            @JvmSynthetic set
 
         /**
          * **caller method descriptor**
@@ -104,8 +106,8 @@ class MethodUsingFieldArgs private constructor(
          *
          *    e.g. "Lcom/example/MainActivity;->onCreate(Landroid/os/Bundle;)V"
          */
+        @set:JvmSynthetic
         var callerMethodDescriptor: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method declare class**
@@ -114,16 +116,16 @@ class MethodUsingFieldArgs private constructor(
          *
          *     e.g. "Lcom/example/MainActivity;" or "com.example.MainActivity"
          */
+        @set:JvmSynthetic
         var callerMethodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var callerMethodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method return type**
@@ -132,8 +134,8 @@ class MethodUsingFieldArgs private constructor(
          *
          *     e.g. "V" or "void"
          */
+        @set:JvmSynthetic
         var callerMethodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **caller method param types**
@@ -150,16 +152,16 @@ class MethodUsingFieldArgs private constructor(
          *     matches(["I", ""], ["int", "long"]) == true
          *     matches(["I", ""], ["int"]) == false
          */
+        @set:JvmSynthetic
         var callerMethodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * **unique result**
          *
          * If true, the results will be unique. If you need to get the number of calls, set it to false.
          */
+        @set:JvmSynthetic
         var unique: Boolean = true
-            @JvmSynthetic set
 
         /**
          * [Builder.fieldDescriptor]
@@ -246,6 +248,8 @@ class MethodUsingFieldArgs private constructor(
         override fun build(): MethodUsingFieldArgs {
             verifyArgs()
             return MethodUsingFieldArgs(
+                findPackage,
+                sourceFile,
                 fieldDescriptor,
                 fieldDeclareClass,
                 fieldName,

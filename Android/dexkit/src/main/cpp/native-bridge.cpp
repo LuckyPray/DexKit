@@ -1,17 +1,29 @@
 #include <jni.h>
-#include <android/log.h>
-#include <sys/eventfd.h>
 #include "dex_kit.h"
 #include "dex_kit_jni_helper.h"
 
 #define TAG "DexKit"
+#define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
+
+#ifdef __ANDROID__
+#include <android/log.h>
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, TAG ,__VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
+#else
+#include <cstdio>
+#define LOGI(__FORMAT__, ...) fprintf(stdout, "I/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGD(__FORMAT__, ...) fprintf(stdout, "D/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGE(__FORMAT__, ...) fprintf(stdout, "E/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGF(__FORMAT__, ...) fprintf(stdout, "F/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#define LOGW(__FORMAT__, ...) fprintf(stdout, "W/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#endif
 
-#define DEXKIT_JNI JNIEXPORT JNICALL extern "C"
+#ifdef __ANDROID__
+// android memory processing
+#include <sys/eventfd.h>
 
 static jfieldID path_list_field = nullptr;
 static jfieldID element_field = nullptr;
@@ -68,20 +80,6 @@ void init(JNIEnv *env) {
     file_name_field = env->GetFieldID(dex_file, "mFileName", "Ljava/lang/String;");
 
     is_initialized = true;
-}
-
-DEXKIT_JNI jlong
-Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
-                                                       jstring apk_path) {
-    if (!apk_path) {
-        return 0;
-    }
-    const char *cStr = env->GetStringUTFChars(apk_path, nullptr);
-    LOGI("apkPath -> %s", cStr);
-    std::string filePathStr(cStr);
-    auto dexkit = new dexkit::DexKit(filePathStr);
-    env->ReleaseStringUTFChars(apk_path, cStr);
-    return (jlong) dexkit;
 }
 
 DEXKIT_JNI jlong
@@ -149,6 +147,21 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
     }
     return (jlong) dexkit;
 }
+#endif
+
+DEXKIT_JNI jlong
+Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
+                                                       jstring apk_path) {
+    if (!apk_path) {
+        return 0;
+    }
+    const char *cStr = env->GetStringUTFChars(apk_path, nullptr);
+    LOGI("apkPath -> %s", cStr);
+    std::string filePathStr(cStr);
+    auto dexkit = new dexkit::DexKit(filePathStr);
+    env->ReleaseStringUTFChars(apk_path, cStr);
+    return (jlong) dexkit;
+}
 
 DEXKIT_JNI void
 Java_io_luckypray_dexkit_DexKitBridge_nativeSetThreadNum(JNIEnv *env, jclass clazz,
@@ -175,23 +188,31 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeExportDexFile(JNIEnv *env, jclass cl
 }
 
 DEXKIT_JNI jobject
-Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv *env,
-                                                                         jclass clazz,
+Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindClassesUsingStrings(JNIEnv *env, jclass clazz,
                                                                          jlong native_ptr,
                                                                          jobject map,
-                                                                         jboolean advanced_match,
+                                                                         jint match_type,
+                                                                         jstring find_package,
                                                                          jintArray dex_priority) {
-    return BatchFindClassesUsingStrings(env, native_ptr, map, advanced_match, dex_priority);
+    return BatchFindClassesUsingStrings(env, native_ptr,
+                                        map,
+                                        match_type,
+                                        find_package,
+                                        dex_priority);
 }
 
 DEXKIT_JNI jobject
-Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv *env,
-                                                                         jclass clazz,
+Java_io_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodsUsingStrings(JNIEnv *env, jclass clazz,
                                                                          jlong native_ptr,
                                                                          jobject map,
-                                                                         jboolean advanced_match,
+                                                                         jint match_type,
+                                                                         jstring find_package,
                                                                          jintArray dex_priority) {
-    return BatchFindMethodsUsingStrings(env, native_ptr, map, advanced_match, dex_priority);
+    return BatchFindMethodsUsingStrings(env, native_ptr,
+                                        map,
+                                        match_type,
+                                        find_package,
+                                        dex_priority);
 }
 
 DEXKIT_JNI jobject
@@ -208,6 +229,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass
                                                              jstring caller_method_return_type,
                                                              jobjectArray caller_method_param_types,
                                                              jboolean unique_result,
+                                                             jstring source_file,
+                                                             jstring find_package,
                                                              jintArray dex_priority) {
     return FindMethodCaller(env, native_ptr,
                             method_descriptor,
@@ -221,6 +244,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodCaller(JNIEnv *env, jclass
                             caller_method_return_type,
                             caller_method_param_types,
                             unique_result,
+                            source_file,
+                            find_package,
                             dex_priority);
 }
 
@@ -238,6 +263,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jcla
                                                                jstring be_called_method_return_type,
                                                                jobjectArray be_called_method_param_types,
                                                                jboolean unique_result,
+                                                               jstring source_file,
+                                                               jstring find_package,
                                                                jintArray dex_priority) {
     return FindMethodInvoking(env, native_ptr,
                               method_descriptor,
@@ -248,8 +275,12 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodInvoking(JNIEnv *env, jcla
                               be_called_method_descriptor,
                               be_called_method_declare_class,
                               be_called_method_declare_name,
-                              be_called_method_return_type, be_called_method_param_types,
-                              unique_result, dex_priority);
+                              be_called_method_return_type,
+                              be_called_method_param_types,
+                              unique_result,
+                              source_file,
+                              find_package,
+                              dex_priority);
 }
 
 DEXKIT_JNI jobject
@@ -266,6 +297,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jc
                                                                  jstring caller_method_return_type,
                                                                  jobjectArray caller_method_param_types,
                                                                  jboolean unique_result,
+                                                                 jstring source_file,
+                                                                 jstring find_package,
                                                                  jintArray dex_priority) {
     return FindMethodUsingField(env, native_ptr,
                                 field_descriptor,
@@ -278,28 +311,35 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingField(JNIEnv *env, jc
                                 caller_method_name,
                                 caller_method_return_type,
                                 caller_method_param_types,
-                                unique_result, dex_priority);
+                                unique_result,
+                                source_file,
+                                find_package,
+                                dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, jclass clazz,
                                                                   jlong native_ptr,
                                                                   jstring used_string,
-                                                                  jboolean advanced_match,
+                                                                  jint match_type,
                                                                   jstring method_declare_class,
                                                                   jstring method_name,
                                                                   jstring method_return_type,
                                                                   jobjectArray method_param_types,
                                                                   jboolean unique_result,
+                                                                  jstring source_file,
+                                                                  jstring find_package,
                                                                   jintArray dex_priority) {
     return FindMethodUsingString(env, native_ptr,
                                  used_string,
-                                 advanced_match,
+                                 match_type,
                                  method_declare_class,
                                  method_name,
                                  method_return_type,
                                  method_param_types,
                                  unique_result,
+                                 source_file,
+                                 find_package,
                                  dex_priority);
 }
 
@@ -308,12 +348,16 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindClassUsingAnnotation(JNIEnv *env
                                                                      jlong native_ptr,
                                                                      jstring annotation_class,
                                                                      jstring annotation_using_string,
-                                                                     jboolean advanced_match,
+                                                                     jint match_type,
+                                                                     jstring source_file,
+                                                                     jstring find_package,
                                                                      jintArray dex_priority) {
     return FindClassUsingAnnotation(env, native_ptr,
                                     annotation_class,
                                     annotation_using_string,
-                                    advanced_match,
+                                    match_type,
+                                    source_file,
+                                    find_package,
                                     dex_priority);
 }
 
@@ -322,18 +366,22 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindFieldUsingAnnotation(JNIEnv *env
                                                                      jlong native_ptr,
                                                                      jstring annotation_class,
                                                                      jstring annotation_using_string,
-                                                                     jboolean advanced_match,
+                                                                     jint match_type,
                                                                      jstring field_declare_class,
                                                                      jstring field_name,
                                                                      jstring field_type,
+                                                                     jstring source_file,
+                                                                     jstring find_package,
                                                                      jintArray dex_priority) {
     return FindFieldUsingAnnotation(env, native_ptr,
                                     annotation_class,
                                     annotation_using_string,
-                                    advanced_match,
+                                    match_type,
                                     field_declare_class,
                                     field_name,
                                     field_type,
+                                    source_file,
+                                    find_package,
                                     dex_priority);
 }
 
@@ -342,20 +390,24 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingAnnotation(JNIEnv *en
                                                                       jlong native_ptr,
                                                                       jstring annotation_class,
                                                                       jstring annotation_using_string,
-                                                                      jboolean advanced_match,
+                                                                      jint match_type,
                                                                       jstring method_declare_class,
                                                                       jstring method_name,
                                                                       jstring method_return_type,
                                                                       jobjectArray method_param_types,
+                                                                      jstring source_file,
+                                                                      jstring find_package,
                                                                       jintArray dex_priority) {
     return FindMethodUsingAnnotation(env, native_ptr,
                                      annotation_class,
                                      annotation_using_string,
-                                     advanced_match,
+                                     match_type,
                                      method_declare_class,
                                      method_name,
                                      method_return_type,
                                      method_param_types,
+                                     source_file,
+                                     find_package,
                                      dex_priority);
 }
 
@@ -367,6 +419,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz
                                                        jstring method_name,
                                                        jstring method_return_type,
                                                        jobjectArray method_param_types,
+                                                       jstring source_file,
+                                                       jstring find_package,
                                                        jintArray dex_priority) {
     return FindMethod(env, native_ptr,
                       method_descriptor,
@@ -374,7 +428,21 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass clazz
                       method_name,
                       method_return_type,
                       method_param_types,
+                      source_file,
+                      find_package,
                       dex_priority);
+}
+
+DEXKIT_JNI jobjectArray
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindClass(JNIEnv *env, jclass clazz,
+                                                      jlong native_ptr,
+                                                      jstring source_file,
+                                                      jstring find_package,
+                                                      jintArray dex_priority) {
+    return FindClass(env, native_ptr,
+                     source_file,
+                     find_package,
+                     dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
@@ -382,7 +450,9 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindSubClasses(JNIEnv *env, jclass c
                                                            jlong native_ptr,
                                                            jstring parent_class,
                                                            jintArray dex_priority) {
-    return FindSubClasses(env, native_ptr, parent_class, dex_priority);
+    return FindSubClasses(env, native_ptr,
+                          parent_class,
+                          dex_priority);
 }
 
 DEXKIT_JNI jobjectArray
@@ -393,6 +463,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpPrefixSeq(JNIEnv *e
                                                                        jstring method_name,
                                                                        jstring method_return_type,
                                                                        jobjectArray method_param_types,
+                                                                       jstring source_file,
+                                                                       jstring find_package,
                                                                        jintArray dex_priority) {
     return FindMethodUsingOpPrefixSeq(env, native_ptr,
                                       op_prefix_seq,
@@ -400,6 +472,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpPrefixSeq(JNIEnv *e
                                       method_name,
                                       method_return_type,
                                       method_param_types,
+                                      source_file,
+                                      find_package,
                                       dex_priority);
 }
 
@@ -411,6 +485,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpCodeSeq(JNIEnv *env
                                                                      jstring method_name,
                                                                      jstring method_return_type,
                                                                      jobjectArray method_param_types,
+                                                                     jstring source_file,
+                                                                     jstring find_package,
                                                                      jintArray dex_priority) {
     return FindMethodUsingOpCodeSeq(env, native_ptr,
                                     op_seq,
@@ -418,6 +494,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingOpCodeSeq(JNIEnv *env
                                     method_name,
                                     method_return_type,
                                     method_param_types,
+                                    source_file,
+                                    find_package,
                                     dex_priority);
 }
 
@@ -429,6 +507,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodeSeq(JNIEnv *env, jcla
                                                                jstring method_name,
                                                                jstring method_return_type,
                                                                jobjectArray method_param_types,
+                                                               jstring source_file,
+                                                               jstring find_package,
                                                                jintArray dex_priority) {
     return GetMethodOpCodeSeq(env, native_ptr,
                               method_descriptor,
@@ -436,5 +516,52 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodeSeq(JNIEnv *env, jcla
                               method_name,
                               method_return_type,
                               method_param_types,
+                              source_file,
+                              find_package,
                               dex_priority);
 }
+
+DEXKIT_JNI jint
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetClassAccessFlags(JNIEnv *env, jclass clazz,
+                                                                jlong native_ptr,
+                                                                jstring descriptor) {
+    if (!native_ptr) {
+        return -1;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto classDescriptor = env->GetStringUTFChars(descriptor, nullptr);
+    auto res = dexKit->GetClassAccessFlags(classDescriptor);
+    env->ReleaseStringUTFChars(descriptor, classDescriptor);
+    return (jint) res;
+}
+
+DEXKIT_JNI jint
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodAccessFlags(JNIEnv *env, jclass clazz,
+                                                                jlong native_ptr,
+                                                                jstring descriptor) {
+    if (!native_ptr) {
+        return -1;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto methodDescriptor = env->GetStringUTFChars(descriptor, nullptr);
+    auto res = dexKit->GetMethodAccessFlags(methodDescriptor);
+    env->ReleaseStringUTFChars(descriptor, methodDescriptor);
+    return (jint) res;
+}
+
+DEXKIT_JNI jint
+Java_io_luckypray_dexkit_DexKitBridge_nativeGetFieldAccessFlags(JNIEnv *env, jclass clazz,
+                                                                jlong native_ptr,
+                                                                jstring descriptor) {
+    if (!native_ptr) {
+        return -1;
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto fieldDescriptor = env->GetStringUTFChars(descriptor, nullptr);
+    auto res = dexKit->GetFieldAccessFlags(fieldDescriptor);
+    env->ReleaseStringUTFChars(descriptor, fieldDescriptor);
+    return (jint) res;
+}
+
+#undef DEXKIT_JNI
+#undef TAG

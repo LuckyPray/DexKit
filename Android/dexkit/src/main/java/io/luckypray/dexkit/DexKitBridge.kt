@@ -6,6 +6,7 @@ import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 import io.luckypray.dexkit.builder.BatchFindArgs
 import io.luckypray.dexkit.builder.ClassUsingAnnotationArgs
 import io.luckypray.dexkit.builder.FieldUsingAnnotationArgs
+import io.luckypray.dexkit.builder.FindClassArgs
 import io.luckypray.dexkit.builder.FindMethodArgs
 import io.luckypray.dexkit.builder.MethodCallerArgs
 import io.luckypray.dexkit.builder.MethodInvokingArgs
@@ -17,6 +18,7 @@ import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import io.luckypray.dexkit.enums.FieldUsingType
+import io.luckypray.dexkit.enums.MatchType
 import io.luckypray.dexkit.util.OpCodeUtil.getOpFormat
 import java.io.Closeable
 
@@ -82,6 +84,36 @@ class DexKitBridge : Closeable {
     /**
      * find used all matched keywords in class (all methods of this class)
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             String a = "how are you";
+     *             Log.d("Log", a);
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.batchFindClassesUsingStrings {
+     *         addQuery("demo", listOf("hello", "how"))
+     *     }.forEach { (keyword, classes) ->
+     *         println("$keyword -> ${classes}")
+     *     }
+     *
+     * output:
+     *
+     *     demo -> [Lio/luckypray/dexkit/test/A;]
+     *
      * @param [args] search builder by [BatchFindArgs]
      *
      * @since 1.1.0
@@ -89,8 +121,13 @@ class DexKitBridge : Closeable {
     fun batchFindClassesUsingStrings(
         args: BatchFindArgs
     ): Map<String, List<DexClassDescriptor>> =
-        nativeBatchFindClassesUsingStrings(token, args.queryMap, args.advancedMatch, null)
-            .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
+        nativeBatchFindClassesUsingStrings(
+            token,
+            args.queryMap,
+            args.matchType,
+            args.findPackage,
+            null
+        ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     inline fun batchFindClassesUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
         batchFindClassesUsingStrings(BatchFindArgs.build(builder))
@@ -107,8 +144,13 @@ class DexKitBridge : Closeable {
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<String, List<DexClassDescriptor>> =
-        nativeBatchFindClassesUsingStrings(token, map, advancedMatch, dexPriority)
-            .mapValues { m -> m.value.map { DexClassDescriptor(it) } }
+        nativeBatchFindClassesUsingStrings(
+            token,
+            map,
+            if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+            "",
+            dexPriority
+        ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
     /**
      * @see [batchFindClassesUsingStrings]
@@ -125,7 +167,8 @@ class DexKitBridge : Closeable {
     ): Map<String, List<DexClassDescriptor>> = nativeBatchFindClassesUsingStrings(
         token,
         map.mapValues { it.value.toList() },
-        advancedMatch,
+        if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+        "",
         dexPriority
     ).mapValues { m -> m.value.map { DexClassDescriptor(it) } }
 
@@ -135,6 +178,40 @@ class DexKitBridge : Closeable {
     /**
      * find used all matched keywords in method.
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             String a = "how are you";
+     *             Log.d("Log", a);
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.batchFindClassesUsingStrings {
+     *         addQuery("test", listOf("hello world", "Log"))
+     *         addQuery("test1", listOf("how are you"))
+     *         addQuery("test2", listOf("hello world", "how are you"))
+     *     }.forEach { (keyword, classes) ->
+     *         println("$keyword -> ${classes}")
+     *     }
+     *
+     * output:
+     *
+     *     test -> [Lio/luckypray/dexkit/test/A;->test()V]
+     *     test1 -> [Lio/luckypray/dexkit/test/A;->test1()V]
+     *     test2 -> []
+     *
      * @param [args] search builder by [BatchFindArgs]
      *
      * @since 1.1.0
@@ -142,8 +219,13 @@ class DexKitBridge : Closeable {
     fun batchFindMethodsUsingStrings(
         args: BatchFindArgs
     ): Map<String, List<DexMethodDescriptor>> =
-        nativeBatchFindMethodsUsingStrings(token, args.queryMap, args.advancedMatch, null)
-            .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
+        nativeBatchFindMethodsUsingStrings(
+            token,
+            args.queryMap,
+            args.matchType,
+            args.findPackage,
+            null
+        ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     inline fun batchFindMethodsUsingStrings(builder: BatchFindArgs.Builder.() -> Unit) =
         batchFindMethodsUsingStrings(BatchFindArgs.build(builder))
@@ -160,8 +242,13 @@ class DexKitBridge : Closeable {
         advancedMatch: Boolean = true,
         dexPriority: IntArray? = null
     ): Map<String, List<DexMethodDescriptor>> =
-        nativeBatchFindMethodsUsingStrings(token, map, advancedMatch, dexPriority)
-            .mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
+        nativeBatchFindMethodsUsingStrings(
+            token,
+            map,
+            if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+            "",
+            dexPriority
+        ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
     /**
      * @see [batchFindMethodsUsingStrings]
@@ -178,7 +265,8 @@ class DexKitBridge : Closeable {
     ): Map<String, List<DexMethodDescriptor>> = nativeBatchFindMethodsUsingStrings(
         token,
         map.mapValues { it.value.toList() },
-        advancedMatch,
+        if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
+        "",
         dexPriority
     ).mapValues { m -> m.value.map { DexMethodDescriptor(it) } }
 
@@ -187,6 +275,38 @@ class DexKitBridge : Closeable {
     //#region findMethodCaller
     /**
      * find caller for specified method.
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodCaller {
+     *         methodDeclareClass = "io.luckypray.dexkit.test.A"
+     *         methodName = "test"
+     *     }.forEach { (callerMethod, beCalledMethods) ->
+     *         println("$callerMethod ->")
+     *         println("\t$beCalledMethods")
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test1()V ->
+     *         [Lio/luckypray/dexkit/test/A;->test()V]
      *
      * @param [args] search builder by [MethodCallerArgs]
      *
@@ -207,6 +327,8 @@ class DexKitBridge : Closeable {
         args.callerMethodReturnType,
         args.callerMethodParameterTypes,
         args.uniqueResult,
+        args.sourceFile,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -247,6 +369,8 @@ class DexKitBridge : Closeable {
         callerMethodReturnType,
         callerMethodParameterTypes,
         uniqueResult,
+        "",
+        "",
         dexPriority
     ).let { resultMap ->
         mutableListOf<DexMethodDescriptor>().apply {
@@ -266,6 +390,39 @@ class DexKitBridge : Closeable {
     //#region findMethodInvoking
     /**
      * find the specified method's invoking list.
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodInvoking {
+     *         methodDescriptor = "Lio/luckypray/dexkit/test/A;->test1()V"
+     *     }.forEach { (method, invokingList) ->
+     *         println("$method ->")
+     *         println("\t$invokingList")
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test1()V ->
+     *         [Lio/luckypray/dexkit/test/A;->test1()V, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I]
+     *
      *
      * @param [args] search builder by [MethodInvokingArgs]
      * @return Aggregate according to caller
@@ -290,6 +447,8 @@ class DexKitBridge : Closeable {
         args.beInvokedMethodReturnType,
         args.beInvokedMethodParamTypes,
         args.uniqueResult,
+        args.sourceFile,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -330,6 +489,8 @@ class DexKitBridge : Closeable {
         beCalledMethodReturnType,
         beCalledMethodParamTypes,
         uniqueResult,
+        "",
+        "",
         dexPriority
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -340,6 +501,41 @@ class DexKitBridge : Closeable {
     //#region findMethodUsingField
     /**
      * find method getting specified field.
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         private String a = "hello world";
+     *         void test() {
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodUsingField {
+     *         fieldDeclareClass = "io.luckypray.dexkit.test.A"
+     *         fieldType = "java.lang.String"
+     *         usingType = FieldUsingType.GET
+     *         callerMethodReturnType = "void"
+     *     }.forEach { (method, fields) ->
+     *         println("$method ->")
+     *         println("\t$fields")
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test()V ->
+     *         [Lio/luckypray/dexkit/test/A;->a:Ljava/lang/String;]
      *
      * @param [args] search builder by [MethodUsingFieldArgs]
      * @return Aggregate according to caller
@@ -364,6 +560,8 @@ class DexKitBridge : Closeable {
         args.callerMethodReturnType,
         args.callerMethodParamTypes,
         args.uniqueResult,
+        args.sourceFile,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -404,6 +602,8 @@ class DexKitBridge : Closeable {
         callerMethodReturnType,
         callerMethodParamTypes,
         uniqueResult,
+        "",
+        "",
         dexPriority
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -415,6 +615,38 @@ class DexKitBridge : Closeable {
     /**
      * find method used utf8 string
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodUsingString {
+     *         usingString = "Log"
+     *         findPackage = "io/luckypray"
+     *     }.forEach { method ->
+     *         println(method)
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test()V
+     *     Lio/luckypray/dexkit/test/A;->test1()V
+     *
      * @param [args] search builder by [MethodUsingStringArgs]
      * @return Aggregate according to caller
      *
@@ -425,12 +657,14 @@ class DexKitBridge : Closeable {
     ): List<DexMethodDescriptor> = nativeFindMethodUsingString(
         token,
         args.usingString,
-        args.advancedMatch,
+        args.matchType,
         args.methodDeclareClass,
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
         args.unique,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -456,12 +690,14 @@ class DexKitBridge : Closeable {
     ): List<DexMethodDescriptor> = nativeFindMethodUsingString(
         token,
         usingString,
-        advancedMatch,
+        if (advancedMatch) MatchType.SIMILAR_REGEX.ordinal else MatchType.CONTAINS.ordinal,
         methodDeclareClass,
         methodName,
         methodReturnType,
         methodParamTypes,
         uniqueResult,
+        "",
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -483,7 +719,9 @@ class DexKitBridge : Closeable {
         token,
         args.annotationClass,
         args.annotationUsingString,
-        args.advancedMatch,
+        args.matchType,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexClassDescriptor(it) }
 
@@ -506,7 +744,9 @@ class DexKitBridge : Closeable {
         token,
         annotationClass,
         annotationUsingString,
-        false,
+        MatchType.CONTAINS.ordinal,
+        "",
+        "",
         dexPriority
     ).map { DexClassDescriptor(it) }
 
@@ -526,10 +766,12 @@ class DexKitBridge : Closeable {
         token,
         args.annotationClass,
         args.annotationUsingString,
-        args.advancedMatch,
+        args.matchType,
         args.fieldDeclareClass,
         args.fieldName,
         args.fieldType,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexFieldDescriptor(it) }
 
@@ -555,10 +797,12 @@ class DexKitBridge : Closeable {
         token,
         annotationClass,
         annotationUsingString,
-        false,
+        MatchType.CONTAINS.ordinal,
         fieldDeclareClass,
         fieldName,
         fieldType,
+        "",
+        "",
         dexPriority
     ).map { DexFieldDescriptor(it) }
 
@@ -580,11 +824,13 @@ class DexKitBridge : Closeable {
         token,
         args.annotationClass,
         args.annotationUsingString,
-        false,
+        args.matchType,
         args.methodDeclareClass,
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -611,11 +857,13 @@ class DexKitBridge : Closeable {
         token,
         annotationClass,
         annotationUsingString,
-        false,
+        MatchType.CONTAINS.ordinal,
         methodDeclareClass,
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -625,6 +873,40 @@ class DexKitBridge : Closeable {
 
     /**
      * find method by multiple conditions
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *         int test2() {
+     *             return 1;
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethod {
+     *         findPackage = "io/luckypray"
+     *         methodReturnType = "int"
+     *     }.forEach { method ->
+     *         println(method)
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test2()I
      *
      * @param [args] search builder by [FindMethodArgs]
      * @return [DexMethodDescriptor] list
@@ -640,6 +922,8 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -666,10 +950,34 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
     //#endregion
+
+    /**
+     * find class by multiple conditions
+     *
+     * @param [args] search builder by [FindClassArgs]
+     * @return [DexClassDescriptor] list
+     *
+     * @since 1.1.0
+     */
+    @DexKitExperimentalApi
+    fun findClass(
+        args: FindClassArgs
+    ): List<DexClassDescriptor> = nativeFindClass(
+        token,
+        args.sourceFile,
+        args.findPackage,
+        null
+    ).map { DexClassDescriptor(it) }
+
+    @DexKitExperimentalApi
+    inline fun findClass(builder: FindClassArgs.Builder.() -> Unit) =
+        findClass(FindClassArgs.build(builder))
 
     //#region findSubClasses
     /**
@@ -715,6 +1023,8 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -742,6 +1052,8 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -765,6 +1077,8 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.sourceFile,
+        args.findPackage,
         null
     ).map { DexMethodDescriptor(it) }
 
@@ -792,6 +1106,8 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
+        "",
         dexPriority
     ).map { DexMethodDescriptor(it) }
 
@@ -815,6 +1131,8 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.sourceFile,
+        args.findPackage,
         null
     ).mapKeys { DexMethodDescriptor(it.key) }
 
@@ -840,6 +1158,8 @@ class DexKitBridge : Closeable {
         args.methodName,
         args.methodReturnType,
         args.methodParamTypes,
+        args.sourceFile,
+        args.findPackage,
         null
     )
         .mapKeys { DexMethodDescriptor(it.key) }
@@ -869,9 +1189,23 @@ class DexKitBridge : Closeable {
         methodName,
         methodReturnType,
         methodParamTypes,
+        "",
+        "",
         dexPriority
     ).mapKeys { DexMethodDescriptor(it.key) }
     //#endregion
+
+    @DexKitExperimentalApi
+    fun getClassAccessFlags(descriptor: DexFieldDescriptor): Int =
+        nativeGetClassAccessFlags(token, descriptor.descriptor)
+
+    @DexKitExperimentalApi
+    fun getMethodAccessFlags(descriptor: DexMethodDescriptor): Int =
+        nativeGetMethodAccessFlags(token, descriptor.descriptor)
+
+    @DexKitExperimentalApi
+    fun getFieldAccessFlags(descriptor: DexFieldDescriptor): Int =
+        nativeGetFieldAccessFlags(token, descriptor.descriptor)
 
     companion object {
 
@@ -930,7 +1264,8 @@ class DexKitBridge : Closeable {
         private external fun nativeBatchFindClassesUsingStrings(
             nativePtr: Long,
             map: Map<String, Iterable<String>>,
-            advancedMatch: Boolean,
+            matchType: Int,
+            findPackage: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -938,7 +1273,8 @@ class DexKitBridge : Closeable {
         private external fun nativeBatchFindMethodsUsingStrings(
             nativePtr: Long,
             map: Map<String, Iterable<String>>,
-            advancedMatch: Boolean,
+            matchType: Int,
+            findPackage: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -956,6 +1292,8 @@ class DexKitBridge : Closeable {
             callerMethodReturnType: String,
             callerMethodParameterTypes: Array<String>?,
             uniqueResult: Boolean,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -973,6 +1311,8 @@ class DexKitBridge : Closeable {
             beCalledMethodReturnType: String,
             beCalledMethodParamTypes: Array<String>?,
             uniqueResult: Boolean,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -990,6 +1330,8 @@ class DexKitBridge : Closeable {
             callerMethodReturnType: String,
             callerMethodParamTypes: Array<String>?,
             uniqueResult: Boolean,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Map<String, Array<String>>
 
@@ -997,12 +1339,14 @@ class DexKitBridge : Closeable {
         private external fun nativeFindMethodUsingString(
             nativePtr: Long,
             usingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             methodDeclareClass: String,
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
             uniqueResult: Boolean,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1011,7 +1355,9 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1020,10 +1366,12 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             fieldDeclareClass: String,
             fieldName: String,
             fieldType: String,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1032,11 +1380,13 @@ class DexKitBridge : Closeable {
             nativePtr: Long,
             annotationClass: String,
             annotationUsingString: String,
-            advancedMatch: Boolean,
+            matchType: Int,
             methodDeclareClass: String,
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1048,6 +1398,16 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            sourceFile: String,
+            findPackage: String,
+            dexPriority: IntArray?
+        ): Array<String>
+
+        @JvmStatic
+        private external fun nativeFindClass(
+            nativePtr: Long,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1066,6 +1426,8 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1077,6 +1439,8 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Array<String>
 
@@ -1088,8 +1452,28 @@ class DexKitBridge : Closeable {
             methodName: String,
             methodReturnType: String,
             methodParamTypes: Array<String>?,
+            sourceFile: String,
+            findPackage: String,
             dexPriority: IntArray?
         ): Map<String, IntArray>
+
+        @JvmStatic
+        private external fun nativeGetClassAccessFlags(
+            nativePtr: Long,
+            descriptor: String
+        ): Int
+
+        @JvmStatic
+        private external fun nativeGetMethodAccessFlags(
+            nativePtr: Long,
+            descriptor: String
+        ): Int
+
+        @JvmStatic
+        private external fun nativeGetFieldAccessFlags(
+            nativePtr: Long,
+            descriptor: String
+        ): Int
     }
 
     protected fun finalize() {

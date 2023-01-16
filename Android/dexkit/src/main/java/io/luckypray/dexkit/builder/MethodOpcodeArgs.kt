@@ -8,12 +8,14 @@ import io.luckypray.dexkit.util.OpCodeUtil.getOpCode
  * @since 1.1.0
  */
 class MethodOpcodeArgs private constructor(
+    override val findPackage: String,
+    override val sourceFile: String,
     val opSeq: IntArray,
     val methodDeclareClass: String,
     val methodName: String,
     val methodReturnType: String,
     val methodParamTypes: Array<String>?,
-) : BaseArgs() {
+) : BaseSourceArgs(findPackage, sourceFile) {
 
     companion object {
 
@@ -34,47 +36,47 @@ class MethodOpcodeArgs private constructor(
         fun builder(): Builder = Builder()
     }
 
-    class Builder : BaseArgs.Builder<MethodOpcodeArgs>() {
+    class Builder : BaseSourceArgs.Builder<Builder, MethodOpcodeArgs>() {
 
         /**
          * **opcodes sequence**
          *
          *     e.g. intArrayOf(Opcodes.ALOAD, Opcodes.INVOKE_VIRTUAL)
          */
+        @set:JvmSynthetic
         var opSeq: IntArray = intArrayOf()
-            @JvmSynthetic set
 
         /**
          * **method declare class**
          *
          * if empty, match any class
          */
+        @set:JvmSynthetic
         var methodDeclareClass: String = ""
-            @JvmSynthetic set
 
         /**
          * **method name**
          *
          * if empty, match any name
          */
+        @set:JvmSynthetic
         var methodName: String = ""
-            @JvmSynthetic set
 
         /**
          * **method return type**
          *
          * if empty, match any type
          */
+        @set:JvmSynthetic
         var methodReturnType: String = ""
-            @JvmSynthetic set
 
         /**
          * **method param types**
          *
          * if null, match any param types
          */
+        @set:JvmSynthetic
         var methodParamTypes: Array<String>? = null
-            @JvmSynthetic set
 
         /**
          * [Builder.opSeq]
@@ -144,6 +146,8 @@ class MethodOpcodeArgs private constructor(
         override fun build(): MethodOpcodeArgs {
             verifyArgs()
             return MethodOpcodeArgs(
+                findPackage,
+                sourceFile,
                 opSeq,
                 methodDeclareClass,
                 methodName,
