@@ -84,6 +84,36 @@ class DexKitBridge : Closeable {
     /**
      * find used all matched keywords in class (all methods of this class)
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             String a = "how are you";
+     *             Log.d("Log", a);
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.batchFindClassesUsingStrings {
+     *         addQuery("demo", listOf("hello", "how"))
+     *     }.forEach { (keyword, classes) ->
+     *         println("$keyword -> ${classes}")
+     *     }
+     *
+     * output:
+     *
+     *     demo -> [Lio/luckypray/dexkit/test/A;]
+     *
      * @param [args] search builder by [BatchFindArgs]
      *
      * @since 1.1.0
@@ -148,6 +178,40 @@ class DexKitBridge : Closeable {
     /**
      * find used all matched keywords in method.
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             String a = "how are you";
+     *             Log.d("Log", a);
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.batchFindClassesUsingStrings {
+     *         addQuery("test", listOf("hello world", "Log"))
+     *         addQuery("test1", listOf("how are you"))
+     *         addQuery("test2", listOf("hello world", "how are you"))
+     *     }.forEach { (keyword, classes) ->
+     *         println("$keyword -> ${classes}")
+     *     }
+     *
+     * output:
+     *
+     *     test -> [Lio/luckypray/dexkit/test/A;->test()V]
+     *     test1 -> [Lio/luckypray/dexkit/test/A;->test1()V]
+     *     test2 -> []
+     *
      * @param [args] search builder by [BatchFindArgs]
      *
      * @since 1.1.0
@@ -211,6 +275,38 @@ class DexKitBridge : Closeable {
     //#region findMethodCaller
     /**
      * find caller for specified method.
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodCaller {
+     *         methodDeclareClass = "io.luckypray.dexkit.test.A"
+     *         methodName = "test"
+     *     }.forEach { (callerMethod, beCalledMethods) ->
+     *         println("$callerMethod ->")
+     *         println("\t$beCalledMethods")
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test1()V ->
+     *         [Lio/luckypray/dexkit/test/A;->test()V]
      *
      * @param [args] search builder by [MethodCallerArgs]
      *
@@ -295,6 +391,39 @@ class DexKitBridge : Closeable {
     /**
      * find the specified method's invoking list.
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodInvoking {
+     *         methodDescriptor = "Lio/luckypray/dexkit/test/A;->test1()V"
+     *     }.forEach { (method, invokingList) ->
+     *         println("$method ->")
+     *         println("\t$invokingList")
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test1()V ->
+     *         [Lio/luckypray/dexkit/test/A;->test1()V, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I]
+     *
+     *
      * @param [args] search builder by [MethodInvokingArgs]
      * @return Aggregate according to caller
      *
@@ -373,6 +502,41 @@ class DexKitBridge : Closeable {
     /**
      * find method getting specified field.
      *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         private String a = "hello world";
+     *         void test() {
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodUsingField {
+     *         fieldDeclareClass = "io.luckypray.dexkit.test.A"
+     *         fieldType = "java.lang.String"
+     *         usingType = FieldUsingType.GET
+     *         callerMethodReturnType = "void"
+     *     }.forEach { (method, fields) ->
+     *         println("$method ->")
+     *         println("\t$fields")
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test()V ->
+     *         [Lio/luckypray/dexkit/test/A;->a:Ljava/lang/String;]
+     *
      * @param [args] search builder by [MethodUsingFieldArgs]
      * @return Aggregate according to caller
      *
@@ -450,6 +614,38 @@ class DexKitBridge : Closeable {
     //#region findMethodUsingString
     /**
      * find method used utf8 string
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethodUsingString {
+     *         usingString = "Log"
+     *         findPackage = "io/luckypray"
+     *     }.forEach { method ->
+     *         println(method)
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test()V
+     *     Lio/luckypray/dexkit/test/A;->test1()V
      *
      * @param [args] search builder by [MethodUsingStringArgs]
      * @return Aggregate according to caller
@@ -677,6 +873,40 @@ class DexKitBridge : Closeable {
 
     /**
      * find method by multiple conditions
+     *
+     * test demo:
+     *
+     *     package io.luckypray.dexkit.test;
+     *
+     *     import android.util.Log;
+     *     import java.lang.String;
+     *
+     *     class A {
+     *         void test() {
+     *             String a = "hello world";
+     *             Log.d("Log", a);
+     *         }
+     *         void test1() {
+     *             test();
+     *             Log.d("Log", "test1");
+     *         }
+     *         int test2() {
+     *             return 1;
+     *         }
+     *     }
+     *
+     * DexKit example:
+     *
+     *     dexkit.findMethod {
+     *         findPackage = "io/luckypray"
+     *         methodReturnType = "int"
+     *     }.forEach { method ->
+     *         println(method)
+     *     }
+     *
+     * output:
+     *
+     *     Lio/luckypray/dexkit/test/A;->test2()I
      *
      * @param [args] search builder by [FindMethodArgs]
      * @return [DexMethodDescriptor] list
