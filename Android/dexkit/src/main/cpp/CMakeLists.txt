@@ -1,17 +1,21 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.10)
 project(dexkit)
 
-find_package(cxx REQUIRED CONFIG)
-link_libraries(cxx::cxx)
+set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(../../../../../Core Core)
+
+set(JAVA_AWT_LIBRARY NotNeeded)
+set(JAVA_JVM_LIBRARY NotNeeded)
+set(JAVA_AWT_INCLUDE_PATH NotNeeded)
+find_package(JNI REQUIRED)
+include_directories(${JAVA_INCLUDE_PATH})
+include_directories(${JAVA_INCLUDE_PATH2})
+
+include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
         native-bridge.cpp)
 
-find_library(log-lib log)
-
 target_link_libraries(${PROJECT_NAME}
-        dex_kit_static
-        z
-        ${log-lib})
+        dex_kit_static)

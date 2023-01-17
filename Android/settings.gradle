@@ -14,5 +14,6 @@ dependencyResolutionManagement {
 }
 
 include ':dexkit'
+include ':dexkit-android'
+include ':demo'
 include ':main'
-include ':main:libs:stub'
