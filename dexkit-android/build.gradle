@@ -79,6 +79,13 @@ android {
 
     }
 
+    sourceSets {
+        main {
+            manifest.srcFile("AndroidManifest.xml")
+            java.setSrcDirs(["${project(':dexkit').projectDir}/src/main/java"])
+        }
+    }
+
     externalNativeBuild {
         cmake {
             path file("CMakeLists.txt")
