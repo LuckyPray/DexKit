@@ -3,7 +3,7 @@ project(dexkit)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_subdirectory(../../../../../Core Core)
+add_subdirectory(../../../../Core Core)
 
 set(JAVA_AWT_LIBRARY NotNeeded)
 set(JAVA_JVM_LIBRARY NotNeeded)
