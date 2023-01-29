@@ -5,6 +5,8 @@
 #include <unistd.h>
 #if defined(_WIN32) || defined(WIN32)
 #include <mmap_windows.h>
+#include <codecvt>
+#include <locale>
 #else
 #include <sys/mman.h>
 #endif
@@ -25,11 +27,13 @@ struct MemMap {
     MemMap() = default;
 
     explicit MemMap(std::string_view file_name) {
-        int fd = open(file_name.data(), O_RDONLY
 #if !(defined(_WIN32) || defined(WIN32))
-        | O_CLOEXEC
+        int fd = open(file_name.data(), O_RDONLY | O_CLOEXEC);
+#else
+        using convert_type = std::codecvt_utf8<wchar_t>;
+        auto ws_path = std::wstring_convert<convert_type, wchar_t>().from_bytes(file_name.data());
+        int fd = _wopen(ws_path.data(), O_RDONLY);
 #endif
-        );
         if (fd > 0) {
             struct stat s{};
             fstat(fd, &s);
