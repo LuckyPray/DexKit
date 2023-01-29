@@ -6,6 +6,7 @@ const navigationLinks = {
         '/guide/knowledge',
         '/guide/getting-started',
         '/guide/example',
+        '/guide/run-on-desktop'
     ],
     about: [
         // '/about/changelog',
