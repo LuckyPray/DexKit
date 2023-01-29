@@ -1,0 +1,25 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'io.github.tomtzook.gradle-cmake' version '1.2.2'
+}
+
+cmake {
+    targets {
+        main {
+            cmakeLists.set(file("src/main/cpp/CMakeLists.txt"))
+            targetMachines.add(machines.host)
+            // use 'ninja' or 'unixMakefiles'
+            generator.set(generators.ninja)
+        }
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
