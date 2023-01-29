@@ -9,6 +9,8 @@ cmake {
         main {
             cmakeLists.set(file("src/main/cpp/CMakeLists.txt"))
             targetMachines.add(machines.host)
+            // use 'ninja' or 'unixMakefiles'
+            generator.set(generators.ninja)
         }
     }
 }
