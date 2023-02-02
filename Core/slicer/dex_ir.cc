@@ -15,7 +15,6 @@
  */
 
 #include "slicer/dex_ir.h"
-
 #include "slicer/chronometer.h"
 #include "slicer/dex_utf8.h"
 #include "slicer/dex_format.h"
@@ -23,7 +22,6 @@
 #include <cstdint>
 #include <algorithm>
 #include <memory>
-#include <sstream>
 #include <vector>
 
 namespace ir {
@@ -96,16 +94,16 @@ Type::Category Type::GetCategory() const {
 // Create the corresponding JNI signature:
 //  https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/types.html#type_signatures
 std::string Proto::Signature() const {
-    std::stringstream ss;
-    ss << "(";
+    std::string ss;
+    ss += "(";
     if (param_types != nullptr) {
         for (const auto &type: param_types->types) {
-            ss << type->descriptor->c_str();
+            ss += type->descriptor->c_str();
         }
     }
-    ss << ")";
-    ss << return_type->descriptor->c_str();
-    return ss.str();
+    ss += ")";
+    ss += return_type->descriptor->c_str();
+    return ss;
 }
 
 // Helper for IR normalization
@@ -139,7 +137,7 @@ void DexFile::TopSortClassIndex(Class *irClass, dex::u4 *nextIndex) {
             }
         }
 
-        SLICER_CHECK_LT(*nextIndex, classes.size());
+        SLICER_CHECK(*nextIndex < classes.size());
         irClass->index = (*nextIndex)++;
     }
 }
@@ -255,8 +253,8 @@ void DexFile::Normalize() {
     SortClassIndexes();
 
     IndexItems(classes, [&](const own<Class> &a, const own<Class> &b) {
-        SLICER_CHECK_LT(a->index, classes.size());
-        SLICER_CHECK_LT(b->index, classes.size());
+        SLICER_CHECK(a->index < classes.size());
+        SLICER_CHECK(b->index < classes.size());
         SLICER_CHECK(a->index != b->index || a == b);
         return a->index < b->index;
     });
@@ -315,4 +313,3 @@ void DexFile::Normalize() {
 }
 
 } // namespace ir
-

@@ -1,9 +1,12 @@
 import io.luckypray.dexkit.DexKitBridge
 import java.io.File
+import java.lang.reflect.Modifier
 import java.util.Locale
 
 val isWindows
-    get() = System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")
+    get() = System.getProperty("os.name")
+        .lowercase(Locale.getDefault())
+        .contains("windows")
 
 @Suppress("UnsafeDynamicallyLoadedCode")
 fun loadLibrary(name: String) {
@@ -14,7 +17,6 @@ fun loadLibrary(name: String) {
         libraryPath.listFiles()?.forEach {
             if (it.name.startsWith("lib$name")) {
                 System.load(it.absolutePath)
-                println(it.name)
             }
         }
     }
@@ -37,7 +39,7 @@ fun find(path: String) {
             findPackage = "io/luckypray"
         }.forEach {
             println(it.descriptor)
-            println(kit.getMethodAccessFlags(it))
+            println(Modifier.toString(kit.getMethodAccessFlags(it)))
         }
 //        kit.findClass {
 //            findPackage = "AvatarInfo"

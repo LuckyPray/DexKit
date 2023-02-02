@@ -81,7 +81,7 @@ public:
     // Convert a file pointer (absolute offset) to an in-memory pointer
     template<class T>
     const T *ptr(u4 offset) const {
-        SLICER_CHECK_GE(offset, 0 && offset + sizeof(T) <= size_);
+        SLICER_CHECK(offset >= 0 && offset + sizeof(T) <= size_);
         return reinterpret_cast<const T *>(image_ + offset);
     }
 
@@ -89,7 +89,7 @@ public:
     // (offset should be inside the data section)
     template<class T>
     [[nodiscard]]  const T *dataPtr(size_t offset) const {
-        SLICER_CHECK_GE(offset, header_->data_off && offset + sizeof(T) <= size_);
+        SLICER_CHECK((offset >= header_->data_off) && offset + sizeof(T) <= size_);
         return reinterpret_cast<const T *>(image_ + offset);
     }
 

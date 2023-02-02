@@ -41,13 +41,13 @@ public:
     T *data() const { return begin_; }
 
     T &operator[](size_t i) const {
-        SLICER_CHECK_LT(i, size());
+        SLICER_CHECK(i < size());
         return *(begin_ + i);
     }
 
-    size_t size() const { return end_ - begin_; }
+    [[nodiscard]] size_t size() const { return end_ - begin_; }
 
-    bool empty() const { return begin_ == end_; }
+    [[nodiscard]] bool empty() const { return begin_ == end_; }
 
 private:
     T *begin_ = nullptr;
@@ -55,4 +55,3 @@ private:
 };
 
 } // namespace slicer
-

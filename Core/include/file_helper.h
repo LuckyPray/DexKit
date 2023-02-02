@@ -13,7 +13,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <zlib.h>
-#include <sstream>
 #include "file_helper.h"
 
 namespace dexkit {

@@ -7,8 +7,6 @@
 #include "code_format.h"
 #include "kmp.h"
 #include "annotation_util.h"
-#include <algorithm>
-#include <iostream>
 
 namespace dexkit {
 

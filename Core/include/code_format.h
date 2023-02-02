@@ -1,6 +1,5 @@
 #pragma once
 
-#include <sstream>
 #include <vector>
 #include <string_view>
 #include "slicer/reader.h"
@@ -36,11 +35,11 @@ constexpr std::string_view PrimitiveTypeName(char type_char) {
 static std::vector<std::string> ExtractParamDescriptors(const std::string &descriptors) {
     std::vector<std::string> params;
     const char *p = descriptors.c_str();
-    std::stringstream ss;
+    std::string ss;
     while (*p != '\0') {
         switch (*p) {
             case '[': {
-                ss << *p++;
+                ss += *p++;
                 break;
             }
             case 'B':
@@ -52,17 +51,17 @@ static std::vector<std::string> ExtractParamDescriptors(const std::string &descr
             case 'S':
             case 'V':
             case 'Z': {
-                ss << *p++;
-                params.emplace_back(ss.str());
-                ss.str("");
+                ss += *p++;
+                params.emplace_back(ss);
+                ss = "";
                 break;
             }
             case 'L': {
                 do {
-                    ss << *p;
+                    ss += *p;
                 } while (*p++ != ';');
-                params.emplace_back(ss.str());
-                ss.str("");
+                params.emplace_back(ss);
+                ss = "";
                 break;
             }
         }
@@ -109,37 +108,37 @@ static std::string DeclToDescriptor(const std::string &type) {
     if (CheckIsDescriptor(type)) {
         return type;
     }
-    std::stringstream desc;
+    std::string desc;
     auto arr_dimensions = std::count(type.begin(), type.end(), '[');
     for (int i = 0; i < arr_dimensions; ++i) {
-        desc << '[';
+        desc += '[';
     }
     if (type.find("int") == 0) {
-        desc << 'I';
+        desc += 'I';
     } else if (type.find("long") == 0) {
-        desc << 'J';
+        desc += 'J';
     } else if (type.find("float") == 0) {
-        desc << 'F';
+        desc += 'F';
     } else if (type.find("double") == 0) {
-        desc << 'D';
+        desc += 'D';
     } else if (type.find("char") == 0) {
-        desc << 'C';
+        desc += 'C';
     } else if (type.find("byte") == 0) {
-        desc << 'B';
+        desc += 'B';
     } else if (type.find("short") == 0) {
-        desc << 'S';
+        desc += 'S';
     } else if (type.find("boolean") == 0) {
-        desc << 'Z';
+        desc += 'Z';
     } else if (type.find("void") == 0) {
-        desc << 'V';
+        desc += 'V';
     } else {
-        desc << 'L';
+        desc += 'L';
         for (auto &c: type) {
-            desc << (c == '.' ? '/' : c);
+            desc += (c == '.' ? '/' : c);
         }
-        desc << ';';
+        desc += ';';
     }
-    return desc.str();
+    return desc;
 }
 
 static std::string GetClassDescriptor(std::string class_name) {
@@ -162,20 +161,20 @@ static std::string DeclToMatchDescriptor(const std::string &type) {
 // ps: all reference types are represented by a single 'L' character.
 static std::string
 DescriptorToMatchShorty(const std::string &return_type, const std::vector<std::string> &parameter_types) {
-    std::stringstream ss;
+    std::string ss;
     if (return_type.empty()) {
-        ss << '*';
+        ss += '*';
     } else {
-        ss << dex::DescriptorToShorty(return_type.c_str());
+        ss += dex::DescriptorToShorty(return_type.c_str());
     }
     for (auto &parameter_type: parameter_types) {
         if (parameter_type.empty()) {
-            ss << '*';
+            ss += '*';
             continue;
         }
-        ss << dex::DescriptorToShorty(parameter_type.c_str());
+        ss += dex::DescriptorToShorty(parameter_type.c_str());
     }
-    return ss.str();
+    return ss;
 }
 
 // matches a match_shorty string against a method proto shorty string

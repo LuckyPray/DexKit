@@ -240,7 +240,7 @@ struct Method : public IndexedOperand {
     ir::MethodDecl *ir_method;
 
     Method(ir::MethodDecl *ir_method, dex::u4 index) : IndexedOperand(index), ir_method(ir_method) {
-        SLICER_CHECK_NE(ir_method, nullptr);
+        SLICER_CHECK(ir_method != nullptr);
     }
 
     bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
@@ -279,10 +279,10 @@ template<class T>
 inline T *CastOperand(Operand *op) {
 #ifdef RTTI_ENABLED
     T *operand = dynamic_cast<T *>(op);
-    SLICER_CHECK_NE(operand, nullptr);
+    SLICER_CHECK(operand != nullptr);
     return operand;
 #else
-    SLICER_CHECK_NE(op, nullptr);
+    SLICER_CHECK(op != nullptr);
     struct CastVisitor : public Visitor {
       T* converted = nullptr;
       bool Visit(T* val) override {
@@ -292,7 +292,7 @@ inline T *CastOperand(Operand *op) {
     };
     CastVisitor cv;
     op->Accept(&cv);
-    SLICER_CHECK_NE(cv.converted, nullptr);
+    SLICER_CHECK(cv.converted != nullptr);
     return cv.converted;
 #endif
 }
@@ -302,10 +302,10 @@ template<>
 inline IndexedOperand *CastOperand<IndexedOperand>(Operand *op) {
 #ifdef RTTI_ENABLED
     auto *operand = dynamic_cast<IndexedOperand *>(op);
-    SLICER_CHECK_NE(operand, nullptr);
+    SLICER_CHECK(operand != nullptr);
     return operand;
 #else
-    SLICER_CHECK_NE(op, nullptr);
+    SLICER_CHECK(op != nullptr);
     struct CastVisitor : public Visitor {
       IndexedOperand* converted = nullptr;
       bool Visit(String* val) override {
@@ -327,7 +327,7 @@ inline IndexedOperand *CastOperand<IndexedOperand>(Operand *op) {
     };
     CastVisitor cv;
     op->Accept(&cv);
-    SLICER_CHECK_NE(cv.converted, nullptr);
+    SLICER_CHECK(cv.converted != nullptr);
     return cv.converted;
 #endif
 }

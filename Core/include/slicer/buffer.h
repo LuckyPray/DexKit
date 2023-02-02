@@ -44,13 +44,13 @@ public:
 
     Buffer &operator=(const Buffer &) = delete;
 
-    Buffer(Buffer &&b) {
+    Buffer(Buffer &&b) noexcept {
         std::swap(buff_, b.buff_);
         std::swap(size_, b.size_);
         std::swap(capacity_, b.capacity_);
     }
 
-    Buffer &operator=(Buffer &&b) {
+    Buffer &operator=(Buffer &&b) noexcept {
         Free();
         std::swap(buff_, b.buff_);
         std::swap(size_, b.size_);
@@ -74,7 +74,7 @@ public:
     //
     template<class T>
     T *ptr(size_t offset) {
-        SLICER_CHECK_LE(offset + sizeof(T), size_);
+        SLICER_CHECK(offset + sizeof(T) <= size_);
         return reinterpret_cast<T *>(buff_ + offset);
     }
 
@@ -116,7 +116,7 @@ public:
     }
 
     size_t Push(const Buffer &buff) {
-        SLICER_CHECK_NE(&buff, this);
+        SLICER_CHECK(&buff != this);
         return Push(buff.data(), buff.size());
     }
 
@@ -142,9 +142,9 @@ public:
         return Push(tmp, end - tmp);
     }
 
-    size_t size() const { return size_; }
+    [[nodiscard]] size_t size() const { return size_; }
 
-    bool empty() const { return size_ == 0; }
+    [[nodiscard]] bool empty() const { return size_ == 0; }
 
     void Free() {
         ::free(buff_);
@@ -153,8 +153,8 @@ public:
         capacity_ = 0;
     }
 
-    const dex::u1 *data() const {
-        SLICER_CHECK_NE(buff_, nullptr);
+    [[nodiscard]] const dex::u1 *data() const {
+        SLICER_CHECK(buff_ != nullptr);
         return buff_;
     }
 
@@ -162,9 +162,9 @@ private:
     void Expand(size_t size) {
         SLICER_CHECK(!sealed_);
         if (size_ + size > capacity_) {
-            capacity_ = std::max(size_t(capacity_ * 1.5), size_ + size);
+            capacity_ = std::max(size_t((double) capacity_ * 1.5), size_ + size);
             buff_ = static_cast<dex::u1 *>(::realloc(buff_, capacity_));
-            SLICER_CHECK_NE(buff_, nullptr);
+            SLICER_CHECK(buff_ != nullptr);
         }
         size_ += size;
     }

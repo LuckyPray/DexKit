@@ -18,7 +18,6 @@
 
 #include "dex_format.h"
 
-#include <iosfwd>
 #include <cstddef>
 
 // .dex bytecode definitions and helpers:
@@ -36,14 +35,13 @@ constexpr u2 kPackedSwitchSignature = 0x0100;
 constexpr u2 kSparseSwitchSignature = 0x0200;
 constexpr u2 kArrayDataSignature = 0x0300;
 
-// Include for  DEX_INSTRUCTION_LIST and DEX_INSTRUCTION_FORMAT_LIST
-
-#include "dex_instruction_list.h"
-
 // Enumeration of all Dalvik opcodes
 enum Opcode : u1 {
 #define INSTRUCTION_ENUM(opcode, cname, ...) OP_##cname = (opcode),
+
+#include "dex_instruction_list.h"
     DEX_INSTRUCTION_LIST(INSTRUCTION_ENUM)
+#undef DEX_INSTRUCTION_LIST
 #undef INSTRUCTION_ENUM
 };
 
@@ -55,9 +53,6 @@ enum InstructionFormat : u1 {
     DEX_INSTRUCTION_FORMAT_LIST(INSTRUCTION_FORMAT_ENUM)
 #undef INSTRUCTION_FORMAT_ENUM
 };
-
-#undef DEX_INSTRUCTION_FORMAT_LIST
-#undef DEX_INSTRUCTION_LIST
 
 using OpcodeFlags = u1;
 enum : OpcodeFlags {
@@ -191,11 +186,5 @@ size_t GetWidthFromBytecode(const u2 *bytecode);
 
 // Decode a .dex bytecode
 Instruction DecodeInstruction(const u2 *bytecode);
-
-// Writes a hex formatted opcode to an output stream.
-std::ostream &operator<<(std::ostream &os, Opcode opcode);
-
-// Writes name of format to an outputstream.
-std::ostream &operator<<(std::ostream &os, InstructionFormat format);
 
 }  // namespace dex

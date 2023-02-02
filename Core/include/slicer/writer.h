@@ -42,18 +42,18 @@ public:
     Section &operator=(const Section &) = delete;
 
     void SetOffset(dex::u4 offset) {
-        SLICER_CHECK_EQ(offset > 0 && offset % 4, 0);
+        SLICER_CHECK(offset > 0 && offset % 4 == 0);
         offset_ = offset;
     }
 
     [[nodiscard]] dex::u4 SectionOffset() const {
-        SLICER_CHECK_EQ(offset_ > 0 && offset_ % 4, 0);
+        SLICER_CHECK(offset_ > 0 && offset_ % 4 == 0);
         return ItemsCount() > 0 ? offset_ : 0;
     }
 
     [[nodiscard]] dex::u4 AbsoluteOffset(dex::u4 itemOffset) const {
-        SLICER_CHECK_GT(offset_, 0);
-        SLICER_CHECK_LT(itemOffset, size());
+        SLICER_CHECK(offset_ > 0);
+        SLICER_CHECK(itemOffset < size());
         return offset_ + itemOffset;
     }
 
@@ -101,7 +101,7 @@ public:
     }
 
     [[nodiscard]] dex::u4 SectionOffset() const {
-        SLICER_CHECK_EQ(offset_ > 0 && offset_ % 4, 0);
+        SLICER_CHECK(offset_ > 0 && offset_ % 4 == 0);
         return ItemsCount() > 0 ? offset_ : 0;
     }
 
@@ -118,11 +118,11 @@ public:
     [[nodiscard]] dex::u4 size() const { return count_ * sizeof(T); }
 
     T &operator[](int i) {
-        SLICER_CHECK_GE(i, 0 && i < count_);
+        SLICER_CHECK(i >= 0 && i < count_);
         return values_[i];
     }
 
-    dex::u2 MapEntryType() const { return map_entry_type_; }
+    [[nodiscard]] dex::u2 MapEntryType() const { return map_entry_type_; }
 
 private:
     dex::u4 offset_ = 0;

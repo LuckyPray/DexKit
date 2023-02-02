@@ -15,12 +15,10 @@
  */
 
 #include "slicer/dex_bytecode.h"
-
 #include "slicer/common.h"
 
+#include <assert.h>
 #include <array>
-#include <iomanip>
-#include <sstream>
 
 namespace dex {
 
@@ -30,8 +28,8 @@ Opcode OpcodeFromBytecode(u2 bytecode) {
 }
 
 // Table that maps each opcode to the index type implied by that opcode
-static constexpr std::array<InstructionDescriptor, kNumPackedOpcodes> gInstructionDescriptors =
-        {{
+static constexpr std::array<InstructionDescriptor, kNumPackedOpcodes>
+        gInstructionDescriptors = {{
 #define INSTRUCTION_DESCR(o, c, p, format, index, flags, e, vflags) \
   {                                                                 \
       vflags,                                                       \
@@ -41,10 +39,10 @@ static constexpr std::array<InstructionDescriptor, kNumPackedOpcodes> gInstructi
   },
 
 #include "slicer/dex_instruction_list.h"
-                 DEX_INSTRUCTION_LIST(INSTRUCTION_DESCR)
+                                           DEX_INSTRUCTION_LIST(INSTRUCTION_DESCR)
 #undef DEX_INSTRUCTION_LIST
 #undef INSTRUCTION_DESCR
-         }};
+                                   }};
 
 InstructionIndexType GetIndexTypeFromOpcode(Opcode opcode) {
     return gInstructionDescriptors[opcode].index_type;
@@ -250,7 +248,7 @@ Instruction DecodeInstruction(const u2 *bytecode) {
             switch (dec.vA) {
                 case 5:
                     // A fifth arg is verboten for inline invokes
-                    SLICER_CHECK_NE(format, k35mi);
+                    SLICER_CHECK(format != k35mi);
 
                     // Per note at the top of this format decoder, the
                     // fifth argument comes from the A field in the
@@ -308,34 +306,7 @@ Instruction DecodeInstruction(const u2 *bytecode) {
             dec.vB_wide = FetchU8(bytecode + 1);
             return dec;
     }
-
-    std::stringstream ss;
-    ss << "Can't decode unexpected format " << format << " for " << opcode;
-    SLICER_FATAL(ss.str());
-}
-
-static inline std::string HexByte(int value) {
-    std::stringstream ss;
-    ss << "0x" << std::setw(2) << std::setfill('0') << std::hex << value;
-    return ss.str();
-}
-
-std::ostream &operator<<(std::ostream &os, Opcode opcode) {
-    return os << "[" << HexByte(opcode) << "] " << gOpcodeNames[opcode];
-}
-
-std::ostream &operator<<(std::ostream &os, InstructionFormat format) {
-    switch (format) {
-#define EMIT_INSTRUCTION_FORMAT_NAME(name) \
-    case InstructionFormat::k##name: return os << #name;
-
-#include "slicer/dex_instruction_list.h"
-        DEX_INSTRUCTION_FORMAT_LIST(EMIT_INSTRUCTION_FORMAT_NAME)
-#undef EMIT_INSTRUCTION_FORMAT_NAME
-#undef DEX_INSTRUCTION_FORMAT_LIST
-#undef DEX_INSTRUCTION_LIST
-    }
-    return os << "[" << HexByte(format) << "] " << "Unknown";
+    SLICER_FATAL("Can't decode unexpected format 0x%02x (op=0x%02x)", format, opcode);
 }
 
 }  // namespace dex

@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <utility>
-
 namespace slicer {
 
 // A simple and lightweight scope guard and macro
@@ -46,7 +44,7 @@ class ScopeGuardHelper {
         }
 
         // move constructor only
-        ScopeGuard(ScopeGuard &&)  noexcept = default;
+        ScopeGuard(ScopeGuard &&) noexcept = default;
 
         ScopeGuard(const ScopeGuard &) = delete;
 
@@ -73,4 +71,3 @@ public:
     auto SLICER_SG_ANONYMOUS(_scope_guard_) = slicer::ScopeGuardHelper() << [&]()
 
 } // namespace slicer
-
