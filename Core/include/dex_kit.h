@@ -5,10 +5,10 @@
 #include <thread>
 #include <list>
 #include <set>
-#include <unordered_map>
 #include <optional>
 #include "slicer/reader.h"
 #include "file_helper.h"
+#include "parallel_hashmap/phmap.h"
 
 namespace dexkit {
 
@@ -189,7 +189,7 @@ public:
 
     /**
      * @brief find method getting specified field. for opcode: iget, iget-*, sget, sget-*, iput, iput-*, sput, sput-*
-     * @param field_descriptor field descriptor, after specifying field_descriptor, the subsequent parameters are automatically filled in [field_declare_class], [field_declare_name], [field_type]
+     * @param field_descriptor field descriptor, after specifying field_descriptor, the subsequent parameters are automatically filled in [field_declare_class], [field_declare_name], [type]
      * @param field_declare_class if empty, match any class;
      * @param field_declare_name if empty, match any field name;
      * @param field_type if empty, match any field type;
@@ -446,7 +446,7 @@ private:
 
     std::vector<std::vector<std::string_view>> strings_;
     std::vector<std::vector<std::string_view>> type_names_;
-    std::vector<std::unordered_map<std::string_view, dex::u4>> type_ids_map_;
+    std::vector<phmap::flat_hash_map<std::string_view, dex::u4>> type_ids_map_;
     std::vector<std::vector<bool>> type_declared_flag_;
     std::vector<std::vector<std::string_view>> class_source_files_;
     std::vector<std::vector<uint32_t>> class_access_flags_;

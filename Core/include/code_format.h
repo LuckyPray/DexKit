@@ -6,6 +6,19 @@
 
 namespace dexkit {
 
+struct MethodDescriptor {
+    std::string declaring_class;
+    std::string name;
+    std::string return_type;
+    std::vector<std::string> parameter_types;
+};
+
+struct FieldDescriptor {
+    std::string declaring_class;
+    std::string name;
+    std::string type;
+};
+
 // Returns the human-readable name for a primitive type
 constexpr std::string_view PrimitiveTypeName(char type_char) {
     switch (type_char) {
@@ -177,6 +190,11 @@ DescriptorToMatchShorty(const std::string &return_type, const std::vector<std::s
     return ss;
 }
 
+static std::string
+DescriptorToMatchShorty(const MethodDescriptor &method_descriptor) {
+    return DescriptorToMatchShorty(method_descriptor.return_type, method_descriptor.parameter_types);
+}
+
 // matches a match_shorty string against a method proto shorty string
 // ex. ShortyDescriptorMatch("**IL", "ILIL") -> true
 static bool ShortyDescriptorMatch(const std::string &match_shorty, const std::string_view &method_shorty) {
@@ -192,7 +210,7 @@ static bool ShortyDescriptorMatch(const std::string &match_shorty, const std::st
     return true;
 }
 
-static std::tuple<std::string, std::string, std::string, std::vector<std::string>>
+static MethodDescriptor
 ExtractMethodDescriptor(const std::string &input_method_descriptor,
                         const std::string &input_method_class,
                         const std::string &input_method_name,
@@ -223,10 +241,15 @@ ExtractMethodDescriptor(const std::string &input_method_descriptor,
             param_descs.emplace_back(DeclToMatchDescriptor(param_decl));
         }
     }
-    return std::make_tuple(declared_class_descriptor, method_name, return_type_descriptor, param_descs);
+    return {
+        .declaring_class = declared_class_descriptor,
+        .name = method_name,
+        .return_type = return_type_descriptor,
+        .parameter_types = param_descs
+    };
 }
 
-static std::tuple<std::string, std::string, std::string>
+static FieldDescriptor
 ExtractFieldDescriptor(const std::string &input_field_descriptor,
                        const std::string &input_field_class,
                        const std::string &input_field_name,
@@ -247,7 +270,11 @@ ExtractFieldDescriptor(const std::string &input_field_descriptor,
         field_name = input_field_name;
         field_type_descriptor = DeclToMatchDescriptor(input_field_type);
     }
-    return std::make_tuple(declared_class_descriptor, field_name, field_type_descriptor);
+    return {
+        .declaring_class = declared_class_descriptor,
+        .name = field_name,
+        .type = field_type_descriptor
+    };
 }
 
 } // namespace dexkit
