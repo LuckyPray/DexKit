@@ -10,6 +10,8 @@
 
 namespace dexkit {
 
+const dex::Code emptyCode{};
+
 static std::string GetPackagePath(const std::string &find_package);
 
 using namespace acdat;
@@ -2170,9 +2172,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
                 method_access_flags[method_idx] = ReadULeb128(&class_data);
                 dex::u4 code_off = ReadULeb128(&class_data);
                 if (code_off == 0) {
-                    continue;
+                    method_codes[method_idx] = &emptyCode;
+                } else {
+                    method_codes[method_idx] = reader.dataPtr<const dex::Code>(code_off);
                 }
-                method_codes[method_idx] = reader.dataPtr<const dex::Code>(code_off);
                 methods.emplace_back(method_idx);
             }
             for (dex::u4 i = 0, method_idx = 0; i < virtual_methods_count; ++i) {
@@ -2180,9 +2183,10 @@ void DexKit::InitCached(size_t dex_idx, dex::u4 flag) {
                 method_access_flags[method_idx] = ReadULeb128(&class_data);
                 dex::u4 code_off = ReadULeb128(&class_data);
                 if (code_off == 0) {
-                    continue;
+                    method_codes[method_idx] = &emptyCode;
+                } else {
+                    method_codes[method_idx] = reader.dataPtr<const dex::Code>(code_off);
                 }
-                method_codes[method_idx] = reader.dataPtr<const dex::Code>(code_off);
                 methods.emplace_back(method_idx);
             }
         }
