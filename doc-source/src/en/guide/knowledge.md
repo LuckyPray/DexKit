@@ -12,8 +12,8 @@ You will need some basic knowledge in order to use DexKit more effectively, incl
 
 ## Decompilation Tool
 
-Under normal circumstances, [jadx](https://github.com/skylot/jadx) is enough to meet most of the requirements,
-as long as the Java code is restored to some extent.
+Usually, [jadx](https://github.com/skylot/jadx) is enough to meet most of the requirements,
+as long as the Java code is restorable to some extent.
 
 ## JVM signature
 
@@ -76,15 +76,15 @@ e.g.
 
 ## Dalvik descriptor
 
-In dex, we should express a specific method/field through the `Dalvik descriptor`.
+In dex, specific methods/fields are expressed via the `Dalvik descriptor`.
 
 ### Method descriptor
 
-The format of a method description is `[ClassTypeSignature]->[MethodName][MethodSignature]`, 
+The format of a method description is `[ClassTypeSignature]->[MethodName][MethodSignature]`,
 such as `Ljava/lang/String;->length()I`.
 
 > **Note**：
-> In `Dalvik description`, the method name for a constructor is `<init>`, 
+> In `Dalvik description`, the method name for a constructor is `<init>`,
 > and the method name for a static initialization function is `<clinit>`.
 
 ### Field descriptor
@@ -92,8 +92,8 @@ such as `Ljava/lang/String;->length()I`.
 The format of a field description is `[ClassTypeSignature]->[FieldName]:[TypeSignature]`,
 such as `Ljava/lang/String;->count:I`.
 
-> **Note**: DexKit query parameters support the input of either a signature or the original Java writing, for example:
+> **Note**: DexKit query parameters support both the dalvik signature and the original Java version, for example:
 >
-> - For className related query parameters, you can input `Ljava/lang/String;` or `java.lang.String`, while `java/lang/String` is not supported.
+> - For className related query parameters, you can use either `Ljava/lang/String;` or `java.lang.String`. But `java/lang/String` will not work.
 >
-> - For `fieldType`/`returnType` related query parameters, you can input `I` or `int`.
+> - For `fieldType`/`returnType` related query parameters, you can use either `I` or `int`.

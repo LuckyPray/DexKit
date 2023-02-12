@@ -1,15 +1,15 @@
-# Example of use
+# Usage Example
 
-Now we have such a sample APP:
+Let's look at the following example app:
 
 ```java
 package com.luckypray.dexkit.demo;
 // ...
 
 public class DemoActivity extends ComponentActivity {
-    
+
     private final static String TAG = "DemoActivity";
-    
+
     private int mCount = 0;
 
     @Override
@@ -37,10 +37,10 @@ public class DemoActivity extends ComponentActivity {
 
 Now let's analyze what information is available:
 
-- string constant: `Hello World`, `DemoActivity`, `sum: `
-- classes: `DemoActivity`, `Toast`, `AppCompatActivity`, `Log`, `Bundle`
-- method: `sum()`, `onCreate()`, `onDestroy()`, `setContentView()`, `setText()`, `show()`, `i()`, `new Toast()`
-- field: `mCount`, `TAG`
+- String constants: `Hello World`, `DemoActivity`, `sum: `
+- Classes: `DemoActivity`, `Toast`, `AppCompatActivity`, `Log`, `Bundle`
+- Methods: `sum()`, `onCreate()`, `onDestroy()`, `setContentView()`, `setText()`, `show()`, `i()`, `new Toast()`
+- Fields: `mCount`, `TAG`
 
 Now let's try to use `DexKit` to find this.
 
@@ -63,14 +63,14 @@ DexKitBridge.create("demo.apk")?.use { bridge->
 }
 ```
 
-we get the following output:
+We get the following output:
 
 ```text
 DemoActivity -> ["com.luckypray.dexkit.demo.DemoActivity"]
 NotFoundActivity -> []
 ```
 
-## Find methods use strings
+## Find methods based on strings
 
 ```kotlin
 DexKitBridge.create("demo.apk")?.use { bridge ->
@@ -86,13 +86,13 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
 }
 ```
 
-we get the following output:
+We get the following output:
 
 ```text
 all test pass
 ```
 
-## find method set `mCount`
+## Find the method that sets `mCount`
 
 ```kotlin
 DexKitBridge.create("demo.apk")?.use { bridge ->
@@ -112,14 +112,14 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
 }
 ```
 
-we get the following output:
+We get the following output:
 
 ```text
 caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V ->
     Lcom/luckypray/dexkit/demo/DemoActivity;->mCount:I
 ```
 
-## find `onCreate` caller methods
+## Find which methods are called by `onCreate`
 
 ```kotlin
 DexKitBridge.create("demo.apk")?.use { bridge ->
@@ -135,7 +135,7 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
 }
 ```
 
-we get the following output:
+We get the following output:
 
 ```text
 method descriptor: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V
@@ -147,7 +147,7 @@ method descriptor: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/o
     Lcom/luckypray/dexkit/demo/DemoActivity;->sum(II)I
 ```
 
-## find method be invoked
+## Find which methods a method is called by
 
 ```kotlin
 DexKitBridge.create("demo.apk")?.use { bridge ->
@@ -165,7 +165,7 @@ DexKitBridge.create("demo.apk")?.use { bridge ->
 }
 ```
 
-we get the following output:
+We get the following output:
 
 ```text
 caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bundle;)V
@@ -173,5 +173,5 @@ caller method: Lcom/luckypray/dexkit/demo/DemoActivity;->onCreate(Landroid/os/Bu
 ```
 
 
-> All APIs can be found in the [API documentation](https://luckypray.org/DexKit-Doc/dexkit/io.luckypray.dexkit/-dex-kit-bridge/index.html), 
+> All APIs can be found in the [API documentation](https://luckypray.org/DexKit-Doc/dexkit/io.luckypray.dexkit/-dex-kit-bridge/index.html),
 > where you can combine them to get the results you need.

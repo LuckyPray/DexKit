@@ -1,13 +1,13 @@
 # Quick Start
 
-> Integrate `DexKit` into your project, you can use `Gradle` or `Maven` to manage dependencies.
+> To add `DexKit` to your project, you can use `Gradle` or `Maven` to manage dependencies.
 
-## Integration dependencies
+## Installing
 
-> Add `DexKit` dependency in `app/build.gradle` or `app/build.gradle.kts` in your project.
+> Add `DexKit` dependency in `app/build.gradle / app/build.gradle.kts`
 
 ::: warning warning
-Starting from version 1.1.0, `DexKit` has been migrated from jitpack.io to mavenCentral. 
+Starting from version 1.1.0, `DexKit` has been migrated from jitpack.io to mavenCentral.
 If you are still using jitpack.io in your project, please migrate as soon as possible.
 :::
 
@@ -29,13 +29,12 @@ dependencies {
 ::::
 
 ::: warning warning
-Because the project is in the early stage, there may be API changes during version upgrades, 
-so please check the release notes when using.
+Because DexKit is still in an early stage, the API may change with version upgrades, so please check the release notes before updating.
 :::
 
-Now that you have successfully integrated `DexKit` into your project, 
+Now that you have successfully integrated `DexKit` into your project,
 we will introduce how to use `DexKit` to fulfill some common requirements.
 
-> please to call `System.loadLibrary("dexkit")` to load the dynamic library first. 
-> If you encounter `Java.lang.UnsatisfiedLinkError`, please decompress the `.so` file corresponding 
-> to the ABI and use `System.load(path)` to load it.
+> You first need to call `System.loadLibrary("dexkit")` to load the dynamic library.
+> If you encounter `Java.lang.UnsatisfiedLinkError`, please decompress the `.so` file corresponding
+> to your ABI and use `System.load(path)` to load it.

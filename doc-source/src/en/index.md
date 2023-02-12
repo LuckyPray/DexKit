@@ -2,7 +2,7 @@
 home: true
 title: Home
 actions:
-- text: quick started
+- text: QuickStart
   link: /en/guide/home
   type: primary
 - text: API KDoc
@@ -10,22 +10,22 @@ actions:
   type: secondary
 features:
 - title: Easy to use
-  details: It is dependent on IDE prompts, and can be quickly mastered without documentation.
+  details: No need to learn bytecode! Using your IDE's hints, you can quickly get started without the need for documentation.
 - title: Efficient
-  details: Implementing using C++ and defaulting to multithreaded lazy loading of resources, its speed is ten to even hundreds of times faster than other tools of the same type.
+  details: Implemented in C++ and defaults to multithreaded lazy loading of resources! Up to ten or even hundreds of times faster than other similar tools.
 - title: Cross-platform
-  details: It is able to be used on various platforms, such as testing in Windows, Linux, or MacOS, and then moving the logic into the Android platform after testing is completed.
+  details: Usable on various platforms, such as testing on Windows, Linux, or MacOS, and then moving the logic into the Android platform after testing is completed.
 footer: LGPL-3.0 License | Copyright © 2022 LuckyPray
 ---
 
-### Refuse tediousness
+### Hassle-Free Hooking!
 
-#### Demo App code
+#### Example Code
 
-> This is a host app's obfuscated code, and we need to dynamically adapt the hook for this method. Due to obfuscation, the method name and class name may change with each version.
+> This is an example app's obfuscated code, and we want to dynamically adapt the hook for this method. Due to obfuscation, the method and class name may change with each version.
 ```java
 public class abc {
-    
+
     public boolean cvc() {
         boolean b = false;
         // ...
@@ -36,13 +36,15 @@ public class abc {
 }
 ```
 
-dexkit can quickly meet our needs at this point.
+DexKit can easily solve this problem!
 
 #### Xposed hook code
 
-> By creating an instance of `DexKitBridge`, we can search for specific dex in the APP, 
-> but remember to only instantiate it once and avoid repeating the creation. And after using it, 
-> we need to call the `DexKitBridge.close()` method to release the memory, otherwise it will cause memory leakage.
+> By creating an instance of `DexKitBridge`, you can search for specific dex in the APP
+
+::: warning
+Only create one single instance. Once done, you must call `.close()` to prevent memory leaks (or better yet, use try with resources / kotlin .use).
+:::
 
 :::: code-group
 ::: code-group-item kotlin

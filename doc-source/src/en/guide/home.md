@@ -1,7 +1,7 @@
-# Introduce
+# Introduction
 
 > A high-performance runtime parsing library for dex implemented in C++, used for lookup of obfuscated classes,
-> methods, or properties.
+> methods, and properties.
 
 ## Supported functions
 
@@ -13,14 +13,14 @@
 - Opcode sequence search (standard dex instructions only)
 - Annotation search (currently only supports search for string values)
 
-## Used Demo
+## Usage Example
 
-#### Demo App code
+#### Example Code
 
-> This is a host app's obfuscated code, and we need to dynamically adapt the hook for this method. Due to obfuscation, the method name and class name may change with each version.
+> This is an example app's obfuscated code, and we want to dynamically adapt the hook for this method. Due to obfuscation, the method and class name may change with each version.
 ```java
 public class abc {
-    
+
     public boolean cvc() {
         boolean b = false;
         // ...
@@ -31,13 +31,15 @@ public class abc {
 }
 ```
 
-dexkit can quickly meet our needs at this point.
+DexKit can easily solve this problem!
 
 #### Xposed hook code
 
-> By creating an instance of `DexKitBridge`, we can search for specific dex in the APP,
-> but remember to only instantiate it once and avoid repeating the creation. And after using it,
-> we need to call the `DexKitBridge.close()` method to release the memory, otherwise it will cause memory leakage.
+> By creating an instance of `DexKitBridge`, you can search for specific dex in the APP
+
+::: warning
+Only create one single instance. Once done, you must call `.close()` to prevent memory leaks (or better yet, use try with resources / kotlin .use).
+:::
 
 :::: code-group
 ::: code-group-item kotlin
@@ -93,6 +95,6 @@ public void vipHook(LoadPackageParam loadPackageParam) throws NoSuchMethodExcept
 
 How about that? Isn't it easy!
 
-Now, with the powerful performance of `DexKit`, you can quickly locate obfuscation.
+Now, with the powerful performance of `DexKit`, you can quickly locate obfuscated methods, classes and co.
 
 Next, let's learn how to use `DexKit`.
