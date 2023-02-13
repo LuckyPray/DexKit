@@ -43,6 +43,7 @@ afterEvaluate {
         }
     }
     tasks.jar.dependsOn(tasks.cmakeBuild)
+    tasks.run.dependsOn(tasks.jar)
 }
 
 evaluationDependsOn(":dexkit")
