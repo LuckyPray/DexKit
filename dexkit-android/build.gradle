@@ -8,6 +8,7 @@ plugins {
 
 def signingPropFile = new File(projectDir, "signing.properties")
 def performSigning = signingPropFile.exists()
+def KDockRepoName = "LuckyPray/DexKit-Doc"
 
 def libVersion = "1.1.2"
 
@@ -184,25 +185,6 @@ dokkaHtml.configure {
     }
 }
 
-task cloneKDoc {
-    doLast {
-        def dokkaDir = new File(buildDir, "dokka")
-        if (!dokkaDir.exists()) {
-            dokkaDir.mkdirs()
-            println(dokkaDir.absolutePath)
-            exec {
-                workingDir dokkaDir.absolutePath
-                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-                    commandLine 'cmd', '/c', 'git clone git@github.com:LuckyPray/DexKit-Doc.git html'
-                } else {
-                    commandLine 'sh', '-c',
-                            'git clone git@github.com:LuckyPray/DexKit-Doc.git html'
-                }
-            }
-        }
-    }
-}
-
 task updateKDoc {
     doLast {
         def dokkaHtmlDir = new File(buildDir, "dokka/html")
@@ -210,21 +192,23 @@ task updateKDoc {
             println(dokkaHtmlDir.absolutePath)
             exec {
                 workingDir dokkaHtmlDir.absolutePath
+                def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
+                def userName = System.getenv("GITHUB_ACTOR")
+                def userEmail = "${userName}@users.noreply.github.com"
                 if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-                    commandLine 'cmd', '/c',
-                            'git add . && git commit -m "update doc" && git push'
+                    commandLine = ['cmd', '/c']
                 } else {
-                    commandLine 'sh', '-c',
-                            'git add . && git commit -m "update doc" && git push'
+                    commandLine = ['sh', '-c']
                 }
+                def gitCommand = "git init -b master " +
+                        "&& git config user.name ${userName} " +
+                        "&& git config user.email ${userEmail} " +
+                        '&& git add . ' +
+                        '&& git commit -m "Auto deploy KDoc" ' +
+                        "&& git push -f ${deployRepo} master:main"
+                commandLine += [gitCommand]
+                println(gitCommand)
             }
         }
     }
-}
-
-if (new File(buildDir, "dokka/html/.git").exists()) {
-    tasks.updateKDoc.dependsOn(tasks.dokkaHtml)
-} else {
-    tasks.dokkaHtml.dependsOn(tasks.cloneKDoc)
-    tasks.updateKDoc.dependsOn(tasks.dokkaHtml)
 }

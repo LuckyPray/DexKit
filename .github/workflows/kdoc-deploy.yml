@@ -1,0 +1,38 @@
+name: KDoc Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'dexkit/src/main/java/**'
+      - '.github/workflows/kdoc-deploy.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone master branch
+        uses: actions/checkout@v3.3.0
+
+      - name: Prepare Java 17
+        uses: actions/setup-java@v3.10.0
+        with:
+          java-version: 17
+          distribution: adopt
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle') }}-${{ hashFiles('/*.gradle.kts') }}
+
+      - name: Build KDoc and deploy
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        run: |
+          chmod +x ./gradlew \
+          && ./gradlew clean \
+          && ./gradlew :dexkit-android:dokkaHtml \
+          && ./gradlew :dexkit-android:updateKDoc
