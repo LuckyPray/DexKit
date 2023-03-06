@@ -512,8 +512,8 @@ jobjectArray FindMethod(JNIEnv *env,
     if (dex_priority != NULL) {
         dexPriority = JIntArr2IntVec(env, dex_priority);
     }
-    auto res = dexKit->FindMethod(methodDeclareClass,
-                                  methodDescriptor,
+    auto res = dexKit->FindMethod(methodDescriptor,
+                                  methodDeclareClass,
                                   methodName,
                                   methodReturnType,
                                   ParamTypes,
