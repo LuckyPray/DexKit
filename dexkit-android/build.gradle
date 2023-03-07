@@ -10,7 +10,7 @@ def signingPropFile = new File(projectDir, "signing.properties")
 def performSigning = signingPropFile.exists()
 def KDockRepoName = "LuckyPray/DexKit-Doc"
 
-def libVersion = "1.1.2"
+def libVersion = "1.1.3"
 
 android {
     namespace "io.luckypray.dexkit"
