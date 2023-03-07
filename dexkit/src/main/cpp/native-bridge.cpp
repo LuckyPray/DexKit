@@ -5,6 +5,13 @@
 #define TAG "DexKit"
 #define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
 
+#ifdef NDEXKIT_LOG
+#define LOGI(...)
+#define LOGD(...)
+#define LOGE(...)
+#define LOGF(...)
+#define LOGW(...)
+#else
 #ifdef __ANDROID__
 #include <android/log.h>
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
@@ -19,6 +26,7 @@
 #define LOGE(__FORMAT__, ...) fprintf(stdout, "E/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
 #define LOGF(__FORMAT__, ...) fprintf(stdout, "F/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
 #define LOGW(__FORMAT__, ...) fprintf(stdout, "W/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
+#endif
 #endif
 
 #ifdef __ANDROID__

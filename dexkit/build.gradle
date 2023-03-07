@@ -11,6 +11,8 @@ cmake {
             targetMachines.add(machines.host)
             // use 'ninja' or 'unixMakefiles'
             generator.set(generators.ninja)
+            // if you want disable jni log enable it
+            // cmakeArgs.add("-DDISABLE_DEXKIT_LOG=ON")
         }
     }
 }

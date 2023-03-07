@@ -103,7 +103,7 @@ dependencies {
     implementation "dev.rikka.ndk.thirdparty:cxx:1.2.0"
 }
 
-task androidSourcesJar(type: Jar) {
+tasks.register("androidSourcesJar", Jar) {
     archiveClassifier.set('sources')
     from "${project(':dexkit').projectDir}/src/main/java"
 }
@@ -175,7 +175,6 @@ afterEvaluate {
 }
 
 dokkaHtml.configure {
-//    outputDirectory.set("$rootDir/javadoc")
     dokkaSourceSets {
         named("main") {
             noAndroidSdkLink.set(true)
@@ -185,7 +184,7 @@ dokkaHtml.configure {
     }
 }
 
-task updateKDoc {
+tasks.register("updateKDoc") {
     doLast {
         def dokkaHtmlDir = new File(buildDir, "dokka/html")
         if (dokkaHtmlDir.exists()) {

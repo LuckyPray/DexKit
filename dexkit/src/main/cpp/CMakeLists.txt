@@ -14,6 +14,12 @@ include_directories(${JAVA_INCLUDE_PATH2})
 
 include_directories(include)
 
+message(STATUS "Disable dexkit log")
+if (DISABLE_DEXKIT_LOG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEXKIT_LOG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEXKIT_LOG")
+endif ()
+
 add_library(${PROJECT_NAME} SHARED
         native-bridge.cpp)
 

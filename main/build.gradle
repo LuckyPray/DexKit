@@ -26,9 +26,9 @@ dependencies {
 
 
 afterEvaluate {
-    tasks.create('cmakeBuild') {
+    tasks.register('cmakeBuild') {
         group = 'build'
-        def build = project(':dexkit').tasks.getByName('cmakeBuild')
+        def build = project(':dexkit').tasks.named('cmakeBuild')
         dependsOn(build)
         doLast {
             copy {
