@@ -9,6 +9,7 @@
 #include "slicer/reader.h"
 #include "file_helper.h"
 #include "parallel_hashmap/phmap.h"
+#include "code_format.h"
 
 namespace dexkit {
 
@@ -476,11 +477,7 @@ private:
     bool IsFieldMatch(size_t dex_idx, uint32_t field_idx, uint32_t decl_class,
                       const std::string &field_declare_name, uint32_t field_type);
 
-    static inline bool NeedMethodMatch(const std::string &method_descriptor,
-                                       const std::string &caller_method_declare_class,
-                                       const std::string &caller_method_declare_name,
-                                       const std::string &caller_method_return_type,
-                                       const std::optional<std::vector<std::string>> &caller_method_param_types);
+    static inline bool NeedMethodMatch(const MethodDescriptor &method_descriptor);
 
     void InitMethodOpCodeSeq(size_t dex_idx, uint32_t method_idx);
 

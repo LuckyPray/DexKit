@@ -411,11 +411,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
             caller_method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
     bool caller_match_any_param = caller_method_param_types == null_param;
-    bool need_caller_match = NeedMethodMatch({},
-                                             caller_method_declare_class,
-                                             caller_method.name,
-                                             caller_method_return_type,
-                                             caller_method_param_types);
+    bool need_caller_match = NeedMethodMatch(caller_method);
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -449,15 +445,17 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                             std::map<std::string, std::vector<std::string>>();
                         }
                     }
-                    for (auto &v: method.parameter_types) {
-                        auto type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (method.parameter_types.has_value()) {
+                        for (auto &v: method.parameter_types.value()) {
+                            auto type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            param_types.emplace_back(type);
                         }
-                        param_types.emplace_back(type);
                     }
 
                     // caller method
@@ -478,15 +476,17 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                             return {};
                         }
                     }
-                    for (auto &v: caller_method.parameter_types) {
-                        auto type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (caller_method.parameter_types.has_value()) {
+                        for (auto &v: caller_method.parameter_types.value()) {
+                            auto type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            caller_param_types.emplace_back(type);
                         }
-                        caller_param_types.emplace_back(type);
                     }
 
                     std::map<dex::u2, std::vector<dex::u2>> index_map;
@@ -650,15 +650,17 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                             return {};
                         }
                     }
-                    for (auto &v: caller_method.parameter_types) {
-                        auto type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (caller_method.parameter_types.has_value()) {
+                        for (auto &v: caller_method.parameter_types.value()) {
+                            auto type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            caller_param_types.emplace_back(type);
                         }
-                        caller_param_types.emplace_back(type);
                     }
 
                     // be called caller_method
@@ -678,15 +680,17 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                             return {};
                         }
                     }
-                    for (auto &v: be_called_method.parameter_types) {
-                        auto type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (be_called_method.parameter_types.has_value()) {
+                        for (auto &v: be_called_method.parameter_types.value()) {
+                            auto type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            be_called_param_types.emplace_back(type);
                         }
-                        be_called_param_types.emplace_back(type);
                     }
 
                     std::map<dex::u2, std::vector<dex::u2>> index_map;
@@ -809,11 +813,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
             caller_method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
     bool caller_match_any_param = caller_method_param_types == null_param;
-    bool need_caller_match = NeedMethodMatch({},
-                                             caller_method_declare_class,
-                                             caller_method_declare_name,
-                                             caller_method_return_type,
-                                             caller_method_param_types);
+    bool need_caller_match = NeedMethodMatch(caller_method);
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -865,15 +865,17 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                             return {};
                         }
                     }
-                    for (auto &v: caller_method.parameter_types) {
-                        auto type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (caller_method.parameter_types.has_value()) {
+                        for (auto &v: caller_method.parameter_types.value()) {
+                            auto type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            caller_param_types.emplace_back(type);
                         }
-                        caller_param_types.emplace_back(type);
                     }
 
                     std::map<dex::u2, std::vector<dex::u2>> index_map;
@@ -1048,16 +1050,19 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                             return {};
                         }
                     }
-                    for (auto &v: caller_method.parameter_types) {
-                        uint32_t type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (caller_method.parameter_types.has_value()) {
+                        for (auto &v: caller_method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            caller_param_types.emplace_back(type);
                         }
-                        caller_param_types.emplace_back(type);
                     }
+
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         if (!source_file.empty() && class_source_files[c_idx] != source_file) {
@@ -1368,15 +1373,17 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                             return {};
                         }
                     }
-                    for (auto &v: method.parameter_types) {
-                        uint32_t type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (method.parameter_types.has_value()) {
+                        for (auto &v: method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            caller_param_types.emplace_back(type);
                         }
-                        caller_param_types.emplace_back(type);
                     }
 
                     std::vector<std::string> result;
@@ -1476,16 +1483,19 @@ DexKit::FindMethod(const std::string &method_descriptor,
                             return {};
                         }
                     }
-                    for (auto &v: method.parameter_types) {
-                        uint32_t type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (method.parameter_types.has_value()) {
+                        for (auto &v: method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            param_types.emplace_back(type);
                         }
-                        param_types.emplace_back(type);
                     }
+
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         if (!source_file.empty() && class_source_files[c_idx] != source_file) {
@@ -1673,16 +1683,19 @@ DexKit::FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                             return {};
                         }
                     }
-                    for (auto &v: method.parameter_types) {
-                        uint32_t type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (method.parameter_types.has_value()) {
+                        for (auto &v: method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            param_types.emplace_back(type);
                         }
-                        param_types.emplace_back(type);
                     }
+
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         if (!source_file.empty() && class_source_files[c_idx] != source_file) {
@@ -1792,16 +1805,19 @@ DexKit::FindMethodUsingOpCodeSeq(const std::vector<uint8_t> &op_seq,
                             return {};
                         }
                     }
-                    for (auto &v: method.parameter_types) {
-                        uint32_t type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (method.parameter_types.has_value()) {
+                        for (auto &v: method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            param_types.emplace_back(type);
                         }
-                        param_types.emplace_back(type);
                     }
+
                     std::vector<std::string> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         if (!source_file.empty() && class_source_files[c_idx] != source_file) {
@@ -1902,16 +1918,19 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
                             return {};
                         }
                     }
-                    for (auto &v: method.parameter_types) {
-                        uint32_t type = dex::kNoIndex;
-                        if (!v.empty()) {
-                            type = FindTypeIdx(dex_idx, v);
-                            if (type == dex::kNoIndex) {
-                                return {};
+                    if (method.parameter_types.has_value()) {
+                        for (auto &v: method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
                             }
+                            param_types.emplace_back(type);
                         }
-                        param_types.emplace_back(type);
                     }
+
                     std::map<std::string, std::vector<uint8_t>> result;
                     for (auto c_idx = lower; c_idx < upper; ++c_idx) {
                         if (!source_file.empty() && class_source_files[c_idx] != source_file) {
@@ -2341,14 +2360,11 @@ std::vector<size_t> DexKit::GetDexPriority(const std::vector<size_t> &dex_priori
     return res;
 }
 
-inline bool DexKit::NeedMethodMatch(const std::string &method_descriptor,
-                                    const std::string &caller_method_declare_class,
-                                    const std::string &caller_method_declare_name,
-                                    const std::string &caller_method_return_type,
-                                    const std::optional<std::vector<std::string>> &caller_method_param_types) {
-    return !method_descriptor.empty() || !caller_method_declare_class.empty() ||
-           !caller_method_declare_name.empty() || !caller_method_return_type.empty() ||
-           caller_method_param_types != std::nullopt;
+inline bool DexKit::NeedMethodMatch(const MethodDescriptor &method_descriptor) {
+    return !method_descriptor.declaring_class.empty() ||
+           !method_descriptor.name.empty() ||
+           !method_descriptor.return_type.empty() ||
+           method_descriptor.parameter_types != std::nullopt;
 }
 
 static std::string GetPackagePath(const std::string &find_package) {

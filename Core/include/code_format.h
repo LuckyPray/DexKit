@@ -10,7 +10,7 @@ struct MethodDescriptor {
     std::string declaring_class;
     std::string name;
     std::string return_type;
-    std::vector<std::string> parameter_types;
+    std::optional<std::vector<std::string>> parameter_types;
 };
 
 struct FieldDescriptor {
@@ -173,19 +173,21 @@ static std::string DeclToMatchDescriptor(const std::string &type) {
 // ex. "void", {"int", "int[]", "*"} -> "VIL"
 // ps: all reference types are represented by a single 'L' character.
 static std::string
-DescriptorToMatchShorty(const std::string &return_type, const std::vector<std::string> &parameter_types) {
+DescriptorToMatchShorty(const std::string &return_type, const std::optional<std::vector<std::string>> &parameter_types) {
     std::string ss;
     if (return_type.empty()) {
         ss += '*';
     } else {
         ss += dex::DescriptorToShorty(return_type.c_str());
     }
-    for (auto &parameter_type: parameter_types) {
-        if (parameter_type.empty()) {
-            ss += '*';
-            continue;
+    if (parameter_types.has_value()) {
+        for (auto &parameter_type: parameter_types.value()) {
+            if (parameter_type.empty()) {
+                ss += '*';
+                continue;
+            }
+            ss += dex::DescriptorToShorty(parameter_type.c_str());
         }
-        ss += dex::DescriptorToShorty(parameter_type.c_str());
     }
     return ss;
 }
@@ -217,7 +219,7 @@ ExtractMethodDescriptor(const std::string &input_method_descriptor,
                         const std::string &input_method_return_type,
                         const std::optional<std::vector<std::string>> &input_method_param_types) {
     std::string declared_class_descriptor, method_name, return_type_descriptor;
-    std::vector<std::string> param_descs;
+    std::optional<std::vector<std::string>> param_descs = std::nullopt;
     if (!input_method_descriptor.empty()) {
         size_t pos = input_method_descriptor.find("->");
         if (pos != std::string::npos) {
@@ -237,8 +239,11 @@ ExtractMethodDescriptor(const std::string &input_method_descriptor,
         declared_class_descriptor = GetClassDescriptor(input_method_class);
         method_name = input_method_name;
         return_type_descriptor = DeclToMatchDescriptor(input_method_return_type);
-        for (auto &param_decl: input_method_param_types.value_or(std::vector<std::string>())) {
-            param_descs.emplace_back(DeclToMatchDescriptor(param_decl));
+        if (input_method_param_types.has_value()) {
+            param_descs = std::vector<std::string>();
+            for (auto &param_type: input_method_param_types.value()) {
+                param_descs.value().push_back(DeclToMatchDescriptor(param_type));
+            }
         }
     }
     return {
