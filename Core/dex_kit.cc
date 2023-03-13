@@ -400,7 +400,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
             method_return_type,
             method_param_types);
     std::string match_shorty = DescriptorToMatchShorty(method);
-    bool match_any_param = method_param_types == null_param;
+    bool match_any_param = !method.parameter_types.has_value();
 
     // caller method
     auto caller_method = ExtractMethodDescriptor(
@@ -410,7 +410,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
             caller_method_return_type,
             caller_method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
-    bool caller_match_any_param = caller_method_param_types == null_param;
+    bool caller_match_any_param = !caller_method.parameter_types.has_value();
     bool need_caller_match = NeedMethodMatch(caller_method);
 
     auto package_path = GetPackagePath(find_package);
@@ -604,7 +604,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
             method_return_type,
             method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
-    bool caller_match_any_param = method_param_types == null_param;
+    bool caller_match_any_param = !caller_method.parameter_types.has_value();
 
     // be called caller_method
     auto be_called_method = ExtractMethodDescriptor(
@@ -614,7 +614,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
             be_called_method_return_type,
             invoking_method_param_types);
     std::string be_called_match_shorty = DescriptorToMatchShorty(be_called_method);
-    bool be_called_match_any_param = invoking_method_param_types == null_param;
+    bool be_called_match_any_param = !be_called_method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -812,7 +812,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
             caller_method_return_type,
             caller_method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
-    bool caller_match_any_param = caller_method_param_types == null_param;
+    bool caller_match_any_param = !caller_method.parameter_types.has_value();
     bool need_caller_match = NeedMethodMatch(caller_method);
 
     auto package_path = GetPackagePath(find_package);
@@ -978,7 +978,7 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
             method_return_type,
             method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
-    bool caller_match_any_param = method_param_types == null_param;
+    bool caller_match_any_param = !caller_method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -1329,7 +1329,7 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
             method_return_type,
             method_param_types);
     std::string caller_match_shorty = DescriptorToMatchShorty(method);
-    bool caller_match_any_param = method_param_types == null_param;
+    bool caller_match_any_param = !method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -1449,7 +1449,7 @@ DexKit::FindMethod(const std::string &method_descriptor,
             method_return_type,
             method_param_types);
     std::string match_shorty = DescriptorToMatchShorty(method);
-    bool match_any_param = method_param_types == null_param;
+    bool match_any_param = !method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -1647,7 +1647,7 @@ DexKit::FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
             method_return_type,
             method_param_types);
     std::string match_shorty = DescriptorToMatchShorty(method);
-    bool match_any_param = method_param_types == null_param;
+    bool match_any_param = !method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -1769,7 +1769,7 @@ DexKit::FindMethodUsingOpCodeSeq(const std::vector<uint8_t> &op_seq,
             method_return_type,
             method_param_types);
     std::string match_shorty = DescriptorToMatchShorty(method);
-    bool match_any_param = method_param_types == null_param;
+    bool match_any_param = !method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
@@ -1882,7 +1882,7 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
             method_return_type,
             method_param_types);
     std::string match_shorty = DescriptorToMatchShorty(method);
-    bool match_any_param = method_param_types == null_param;
+    bool match_any_param = !method.parameter_types.has_value();
 
     auto package_path = GetPackagePath(find_package);
     ThreadPool pool(thread_num_);
