@@ -2,7 +2,7 @@
     <h1> DexKit </h1>
 
 [![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.luckypray%22%20AND%20a:%22DexKit%22)
+[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
 English | [简体中文](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
 
@@ -52,7 +52,7 @@ it only takes no more than twice the time to complete.
 
 ### Library
 
-Add `DexKit` dependency in `build.gradle`.
+Add `DexKit` dependency in `build.gradle`. 
 
 ```gradle
 repositories {
@@ -62,6 +62,8 @@ dependencies {
     implementation 'org.luckypray:DexKit:<version>'
 }
 ```
+
+DexKit current version: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
 ### Usage Sample
 
