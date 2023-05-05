@@ -46,7 +46,7 @@ constexpr dex::u4 mContains = 1;
 // mSimilarRegex   : similar regex matches, only support: '^', '$' eg.
 //     similar_regex_match(search = "abc", target = "abc") == true
 //     similar_regex_match(search = "^abc", target = "abc") == true
-//     similar_regex_match(search = "abc$", target = "bc") == true
+//     similar_regex_match(search = "abc$", target = "bc") == false
 //     similar_regex_match(search = "^abc$", target = "abc") == true
 //     similar_regex_match(search = "^abc$", target = "abcd") == false
 constexpr dex::u4 mSimilarRegex = 2;

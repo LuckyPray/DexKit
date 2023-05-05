@@ -24,7 +24,7 @@ enum class MatchType {
      *
      *     similar_regex_match(search = "abc", target = "abc") == true
      *     similar_regex_match(search = "^abc", target = "abc") == true
-     *     similar_regex_match(search = "abc$", target = "bc") == true
+     *     similar_regex_match(search = "abc$", target = "bc") == false
      *     similar_regex_match(search = "^abc$", target = "abc") == true
      *     similar_regex_match(search = "^abc$", target = "abcd") == false
      */

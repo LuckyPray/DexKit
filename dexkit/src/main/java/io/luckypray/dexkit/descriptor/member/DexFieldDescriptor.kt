@@ -48,7 +48,7 @@ class DexFieldDescriptor : DexDescriptor {
     }
 
     @Throws(NoSuchFieldException::class)
-    fun getFieldInstance(classLoader: ClassLoader): Member {
+    fun getFieldInstance(classLoader: ClassLoader): Field {
         try {
             var clz = classLoader.loadClass(declaringClassName)
             do {
