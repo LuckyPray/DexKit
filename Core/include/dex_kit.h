@@ -250,6 +250,16 @@ public:
                           const std::string &find_package = "",
                           const std::vector<size_t> &dex_priority = {});
 
+    std::vector<std::string>
+    FindMethodUsingNumber(int64_t using_number,
+                          const std::string &method_declare_class,
+                          const std::string &method_declare_name,
+                          const std::string &method_return_type,
+                          const std::optional<std::vector<std::string>> &method_param_types,
+                          bool unique_result = true,
+                          const std::string &source_file = "",
+                          const std::string &find_package = "");
+
     /**
      * @brief find using annotation's class
      * @param annotation_class annotation class

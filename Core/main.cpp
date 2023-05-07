@@ -123,10 +123,24 @@ int main() {
             "",
             dexkit::null_param,
             false,
-            "com/tencent/aekit/openrender");
+            "");
     std::cout << "\nFindMethodUsedString -> \n";
     for (auto &value: usedStringMethods) {
         std::cout << "\t" << value << "\n";
+    }
+
+    auto usedNumberMethods = dexKit.FindMethodUsingNumber(
+            4600877379321698714,
+            "",
+            "",
+            "",
+            dexkit::null_param,
+            true,
+            "",
+            "");
+    std::cout << "\nFindMethodUsingNumber -> \n";
+    for (auto &v: usedNumberMethods) {
+        std::cout << v << "\n";
     }
 
     auto findMethods = dexKit.FindMethod(

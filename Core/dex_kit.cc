@@ -1135,6 +1135,210 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
 }
 
 std::vector<std::string>
+DexKit::FindMethodUsingNumber(int64_t using_number,
+                              const std::string &method_declare_class,
+                              const std::string &method_declare_name,
+                              const std::string &method_return_type,
+                              const std::optional<std::vector<std::string>> &method_param_types,
+                              bool unique_result,
+                              const std::string &source_file,
+                              const std::string &find_package) {
+
+    // caller method
+    auto caller_method = ExtractMethodDescriptor(
+            {},
+            method_declare_class,
+            method_declare_name,
+            method_return_type,
+            method_param_types);
+    std::string caller_match_shorty = DescriptorToMatchShorty(caller_method);
+    bool caller_match_any_param = !caller_method.parameter_types.has_value();
+
+    auto package_path = GetPackagePath(find_package);
+    ThreadPool pool(thread_num_);
+    std::vector<std::future<std::vector<std::string>>> futures;
+    for (auto &dex_idx: GetDexPriority({})) {
+        futures.emplace_back(pool.enqueue(
+                [this, dex_idx, &using_number,
+                        &caller_method, &caller_match_shorty, caller_match_any_param,
+                        unique_result, &package_path, &source_file]()
+                        -> std::vector<std::string> {
+                    InitCached(dex_idx, fDefault);
+                    auto &method_codes = method_codes_[dex_idx];
+                    auto &class_method_ids = class_method_ids_[dex_idx];
+                    auto &type_names = type_names_[dex_idx];
+                    auto &class_source_files = class_source_files_[dex_idx];
+                    uint32_t lower = 0, upper = type_names.size();
+
+                    auto caller_class_idx = dex::kNoIndex;
+                    uint32_t caller_return_type = dex::kNoIndex;
+                    std::vector<uint32_t> caller_param_types;
+                    if (!caller_method.declaring_class.empty()) {
+                        caller_class_idx = FindTypeIdx(dex_idx, caller_method.declaring_class);
+                        if (caller_class_idx == dex::kNoIndex) {
+                            return {};
+                        }
+                    }
+                    if (caller_class_idx != dex::kNoIndex) {
+                        lower = caller_class_idx;
+                        upper = caller_class_idx + 1;
+                    }
+                    if (!caller_method.return_type.empty()) {
+                        caller_return_type = FindTypeIdx(dex_idx, caller_method.return_type);
+                        if (caller_return_type == dex::kNoIndex) {
+                            return {};
+                        }
+                    }
+                    if (caller_method.parameter_types.has_value()) {
+                        for (auto &v: caller_method.parameter_types.value()) {
+                            uint32_t type = dex::kNoIndex;
+                            if (!v.empty()) {
+                                type = FindTypeIdx(dex_idx, v);
+                                if (type == dex::kNoIndex) {
+                                    return {};
+                                }
+                            }
+                            caller_param_types.emplace_back(type);
+                        }
+                    }
+
+                    std::vector<std::string> result;
+                    for (auto c_idx = lower; c_idx < upper; ++c_idx) {
+                        if (!source_file.empty() && class_source_files[c_idx] != source_file) {
+                            continue;
+                        }
+                        auto &class_name = type_names[c_idx];
+                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                            continue;
+                        }
+                        for (auto method_idx: class_method_ids[c_idx]) {
+                            if (!IsMethodMatch(dex_idx,
+                                               method_idx,
+                                               caller_class_idx,
+                                               caller_match_shorty,
+                                               caller_method.name,
+                                               caller_return_type, caller_param_types,
+                                               caller_match_any_param)) {
+                                continue;
+                            }
+                            auto &code = method_codes[method_idx];
+                            if (code == nullptr) {
+                                continue;
+                            }
+                            auto p = code->insns;
+                            auto end_p = p + code->insns_size;
+                            while (p < end_p) {
+                                auto op = *p & 0xff;
+                                auto ptr = p;
+                                auto width = GetBytecodeWidth(ptr++);
+                                if ((op >= 0x12 && op <= 0x14)
+                                || (op >= 0x16 && op <= 0x18)
+                                || (op >= 0xd0 && op <= 0xd7) // int16
+                                || (op >= 0xe0 && op <= 0xe2)) { // int8
+                                    bool match_flag = false;
+                                    switch (op) {
+                                        case 0x12: { // const/4, int4
+                                            auto value = (int8_t) *ptr >> 4;
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        case 0x13:   // const/16, int16
+                                        case 0x16: { // const-wide/16, int16
+                                            auto value = (int16_t) ReadShort(ptr);
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        case 0x15: { // const/high16
+                                            auto value = (int32_t) ReadShort(ptr) << 16;
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        case 0x14:   // const, int32|uint32|float
+                                        case 0x17: { // const-wide/32, int32
+                                            auto value = (int32_t) ReadInt(ptr);
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        case 0x18: { // const-wide, int64|uint64|double
+                                            auto value = (int64_t) ReadLong(ptr);
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        case 0x19: { // const-wide/high16
+                                            auto value = (int64_t) ReadShort(ptr) << 48;
+                                            break;
+                                        }
+                                        case 0xd0:
+                                        case 0xd1:
+                                        case 0xd2:
+                                        case 0xd3:
+                                        case 0xd4:
+                                        case 0xd5:
+                                        case 0xd6:
+                                        case 0xd7: { // binop/lit16
+                                            auto value = (int16_t) ReadShort(ptr);
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        case 0xd8:
+                                        case 0xd9:
+                                        case 0xda:
+                                        case 0xdb:
+                                        case 0xdc:
+                                        case 0xdd:
+                                        case 0xde:
+                                        case 0xdf:
+                                        case 0xe0:
+                                        case 0xe1:
+                                        case 0xe2: { // binop/lit8
+                                            auto value = (int8_t) *ptr;
+                                            if (value == using_number) {
+                                                match_flag = true;
+                                            }
+                                            break;
+                                        }
+                                        default:
+                                            break;
+                                    }
+                                    if (match_flag) {
+                                        result.emplace_back(GetMethodDescriptor(dex_idx, method_idx));
+                                        if (unique_result) {
+                                            goto label;
+                                        }
+                                    }
+                                }
+                                p += width;
+                            }
+                            label:;
+                        }
+                    }
+                    return result;
+                }
+        ));
+    }
+    std::vector<std::string> result;
+    for (auto &f: futures) {
+        auto r = f.get();
+        for (auto &desc: r) {
+            result.emplace_back(desc);
+        }
+    }
+    return result;
+}
+
+std::vector<std::string>
 DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
                                  const std::string &annotation_using_string,
                                  int match_type,

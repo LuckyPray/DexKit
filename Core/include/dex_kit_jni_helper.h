@@ -355,6 +355,45 @@ jobjectArray FindMethodUsingString(JNIEnv *env,
     return StrVec2JStrArr(env, res);
 }
 
+jobjectArray FindMethodUsingNumber(JNIEnv *env,
+                                   jlong dexKitPtr,
+                                   jlong using_number,
+                                   jstring method_declare_class,
+                                   jstring method_name,
+                                   jstring method_return_type,
+                                   jobjectArray method_param_types,
+                                   jboolean unique_result,
+                                   jstring source_file,
+                                   jstring find_package) {
+    if (!dexKitPtr) {
+        return StrVec2JStrArr(env, std::vector<std::string>());
+    }
+    auto dexKit = reinterpret_cast<dexkit::DexKit *>(dexKitPtr);
+    auto methodDeclareClass = env->GetStringUTFChars(method_declare_class, nullptr);
+    auto methodName = env->GetStringUTFChars(method_name, nullptr);
+    auto methodReturnType = env->GetStringUTFChars(method_return_type, nullptr);
+    auto ParamTypes = dexkit::null_param;
+    if (method_param_types != NULL) {
+        ParamTypes = JStrArr2StrVec(env, method_param_types);
+    }
+    auto sourceFile = env->GetStringUTFChars(source_file, nullptr);
+    auto findPackage = env->GetStringUTFChars(find_package, nullptr);
+    auto res = dexKit->FindMethodUsingNumber(using_number,
+                                             methodDeclareClass,
+                                             methodName,
+                                             methodReturnType,
+                                             ParamTypes,
+                                             unique_result,
+                                             sourceFile,
+                                             findPackage);
+    env->ReleaseStringUTFChars(method_declare_class, methodDeclareClass);
+    env->ReleaseStringUTFChars(method_name, methodName);
+    env->ReleaseStringUTFChars(method_return_type, methodReturnType);
+    env->ReleaseStringUTFChars(source_file, sourceFile);
+    env->ReleaseStringUTFChars(find_package, findPackage);
+    return StrVec2JStrArr(env, res);
+}
+
 jobjectArray FindClassUsingAnnotation(JNIEnv *env,
                                       jlong dexKitPtr,
                                       jstring annotation_class,

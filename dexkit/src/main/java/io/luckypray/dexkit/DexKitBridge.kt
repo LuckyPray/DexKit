@@ -13,6 +13,7 @@ import io.luckypray.dexkit.builder.MethodInvokingArgs
 import io.luckypray.dexkit.builder.MethodOpcodeArgs
 import io.luckypray.dexkit.builder.MethodUsingAnnotationArgs
 import io.luckypray.dexkit.builder.MethodUsingFieldArgs
+import io.luckypray.dexkit.builder.MethodUsingNumberArgs
 import io.luckypray.dexkit.builder.MethodUsingStringArgs
 import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
@@ -670,6 +671,23 @@ class DexKitBridge : Closeable {
 
     inline fun findMethodUsingString(builder: MethodUsingStringArgs.Builder.() -> Unit) =
         findMethodUsingString(MethodUsingStringArgs.build(builder))
+
+    fun findMethodUsingNumber(
+        args: MethodUsingNumberArgs
+    ): List<DexMethodDescriptor> = nativeFindMethodUsingNumber(
+        token,
+        args.usingNumber,
+        args.methodDeclareClass,
+        args.methodName,
+        args.methodReturnType,
+        args.methodParamTypes,
+        args.unique,
+        args.sourceFile,
+        args.findPackage,
+    ).map { DexMethodDescriptor(it) }
+
+    inline fun findMethodUsingNumber(builder: MethodUsingNumberArgs.Builder.() -> Unit) =
+        findMethodUsingNumber(MethodUsingNumberArgs.build(builder))
 
     /**
      * @see [findMethodUsingString]
@@ -1348,6 +1366,19 @@ class DexKitBridge : Closeable {
             sourceFile: String,
             findPackage: String,
             dexPriority: IntArray?
+        ): Array<String>
+
+        @JvmStatic
+        private external fun nativeFindMethodUsingNumber(
+            nativePtr: Long,
+            usingNumber: Long,
+            methodDeclareClass: String,
+            methodName: String,
+            methodReturnType: String,
+            methodParamTypes: Array<String>?,
+            uniqueResult: Boolean,
+            sourceFile: String,
+            findPackage: String,
         ): Array<String>
 
         @JvmStatic

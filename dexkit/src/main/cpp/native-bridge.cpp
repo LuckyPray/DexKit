@@ -352,6 +352,28 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingString(JNIEnv *env, j
 }
 
 DEXKIT_JNI jobjectArray
+Java_io_luckypray_dexkit_DexKitBridge_nativeFindMethodUsingNumber(JNIEnv *env, jclass clazz,
+                                                                  jlong native_ptr,
+                                                                  jlong used_number,
+                                                                  jstring method_declare_class,
+                                                                  jstring name,
+                                                                  jstring method_return_type,
+                                                                  jobjectArray method_param_types,
+                                                                  jboolean unique_result,
+                                                                  jstring source_file,
+                                                                  jstring find_package) {
+    return FindMethodUsingNumber(env, native_ptr,
+                                 used_number,
+                                 method_declare_class,
+                                 name,
+                                 method_return_type,
+                                 method_param_types,
+                                 unique_result,
+                                 source_file,
+                                 find_package);
+}
+
+DEXKIT_JNI jobjectArray
 Java_io_luckypray_dexkit_DexKitBridge_nativeFindClassUsingAnnotation(JNIEnv *env, jclass clazz,
                                                                      jlong native_ptr,
                                                                      jstring annotation_class,
