@@ -1231,8 +1231,7 @@ DexKit::FindMethodUsingNumber(int64_t using_number,
                                 auto op = *p & 0xff;
                                 auto ptr = p;
                                 auto width = GetBytecodeWidth(ptr++);
-                                if ((op >= 0x12 && op <= 0x14)
-                                || (op >= 0x16 && op <= 0x18)
+                                if ((op >= 0x12 && op <= 0x19)
                                 || (op >= 0xd0 && op <= 0xd7) // int16
                                 || (op >= 0xe0 && op <= 0xe2)) { // int8
                                     bool match_flag = false;
