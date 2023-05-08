@@ -38,9 +38,19 @@ class MethodUsingNumberArgs private constructor(
     class Builder : BaseSourceArgs.Builder<Builder, MethodUsingNumberArgs>() {
 
         /**
-         * **using string**
+         * **using number**
+         * number in decimal or hexadecimal
          *
-         *     e.g. 0x7f7f7f7f
+         * if number is unsigned long, use [ULong.toLong] or [java.lang.Long.parseUnsignedLong]
+         *
+         * if number is unsigned int, use [UInt.toLong] or [java.lang.Integer.parseUnsignedInt]
+         *
+         *     e.g.
+         *     0x7f7f7f7f
+         *     0x1
+         *     -0x1
+         *     Integer.parseUnsignedInt("0xffffffff").toLong()
+         *
          */
         @set:JvmSynthetic
         var usingNumber: Long = 0L

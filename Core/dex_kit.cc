@@ -163,7 +163,7 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
                     }
                     for (int i = 0; i < type_names.size(); ++i) {
                         auto class_name = type_names[i];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         if (class_method_ids[i].empty()) {
@@ -305,7 +305,7 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
                     }
                     for (int i = 0; i < type_names.size(); ++i) {
                         auto class_name = type_names[i];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         if (class_method_ids[i].empty()) {
@@ -495,7 +495,7 @@ DexKit::FindMethodCaller(const std::string &method_descriptor,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -699,7 +699,7 @@ DexKit::FindMethodInvoking(const std::string &method_descriptor,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -884,7 +884,7 @@ DexKit::FindMethodUsingField(const std::string &field_descriptor,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1069,7 +1069,7 @@ DexKit::FindMethodUsingString(const std::string &using_utf8_string,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1208,7 +1208,7 @@ DexKit::FindMethodUsingNumber(int64_t using_number,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1374,7 +1374,7 @@ DexKit::FindClassUsingAnnotation(const std::string &annotation_class,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         auto &annotations = class_annotations[c_idx];
@@ -1470,7 +1470,7 @@ DexKit::FindFieldUsingAnnotation(const std::string &annotation_class,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         auto &annotations = class_annotations[c_idx];
@@ -1595,7 +1595,7 @@ DexKit::FindMethodUsingAnnotation(const std::string &annotation_class,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         auto &annotations = class_annotations[c_idx];
@@ -1705,7 +1705,7 @@ DexKit::FindMethod(const std::string &method_descriptor,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -1761,7 +1761,7 @@ DexKit::FindClass(const std::string &source_file,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         result.emplace_back(type_names[c_idx]);
@@ -1905,7 +1905,7 @@ DexKit::FindMethodUsingOpPrefixSeq(const std::vector<uint8_t> &op_prefix_seq,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -2027,7 +2027,7 @@ DexKit::FindMethodUsingOpCodeSeq(const std::vector<uint8_t> &op_seq,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -2140,7 +2140,7 @@ DexKit::GetMethodOpCodeSeq(const std::string &method_descriptor,
                             continue;
                         }
                         auto &class_name = type_names[c_idx];
-                        if (!package_path.empty() && class_name.rfind(package_path, 0) != 0) {
+                        if (!package_path.empty() && kmp::FindIndex(class_name, package_path) == -1) {
                             continue;
                         }
                         for (auto method_idx: class_method_ids[c_idx]) {
@@ -2575,13 +2575,9 @@ static std::string GetPackagePath(const std::string &find_package) {
         return {};
     }
     auto path = find_package;
+    std::replace(path.begin(), path.end(), '.', '/');
     if (find_package[0] == '/') {
         path = "L" + path.substr(1);
-    } else {
-        path = "L" + path;
-    }
-    if (path.back() != '/') {
-        path += '/';
     }
     return path;
 }

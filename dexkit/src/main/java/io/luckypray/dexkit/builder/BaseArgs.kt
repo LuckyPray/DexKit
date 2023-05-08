@@ -14,17 +14,33 @@ abstract class BaseArgs(
         /**
          * **find package**
          *
-         * search package path, use '/' to cut paths;
+         * search package path
          *
-         *     e.g. "com/example"
+         *     e.g.
+         *     "com/example"    // contains "com.example"
+         *     "com.example"    // contains "com.example"
+         *     ""               // match all
+         *     "/"              // match all
+         *     "/com/example"   // must start with com.example
+         *     "example"        // contains "example"
          */
         @set:JvmSynthetic
         var findPackage: String = ""
+
+        @Suppress("UNCHECKED_CAST")
+        fun findPackage(findPackage: String): B {
+            this.findPackage = findPackage
+            return this as B
+        }
 
         /**
          * [Builder.findPackage]
          */
         @Suppress("UNCHECKED_CAST")
+        @Deprecated(
+            replaceWith = ReplaceWith("findPackage(findPackage)"),
+            message = "use findPackage(findPackage) instead"
+        )
         fun findPath(findPath: String): B {
             this.findPackage = findPath
             return this as B
