@@ -100,27 +100,30 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
     for (auto &[name, str_set]: location_map) {
-        for (auto &str: str_set) {
-            std::string new_str;
-            if (match_type == mFull) {
-                match_type = mSimilarRegex;
-                new_str = "^" + str + "$";
-            } else {
-                new_str = str;
+        std::set<std::string> new_str_set(str_set);
+        if (match_type == mFull) {
+            match_type = mSimilarRegex;
+            for (auto &str: str_set) {
+                std::string new_str = "^" + str + "$";
+                new_str_set.erase(str);
+                new_str_set.insert(new_str);
             }
-            uint32_t l = 0, r = new_str.size();
+            str_set = new_str_set;
+        }
+        for (auto &str: str_set) {
+            uint32_t l = 0, r = str.size();
             uint8_t flag = 0;
             if (match_type == mSimilarRegex) {
-                if (new_str[0] == '^') {
+                if (str[0] == '^') {
                     l = 1;
                     flag |= 1;
                 }
-                if (new_str[new_str.size() - 1] == '$') {
-                    r = new_str.size() - 1;
+                if (str[str.size() - 1] == '$') {
+                    r = str.size() - 1;
                     flag |= 2;
                 }
             }
-            auto origin_str = new_str.substr(l, r - l);
+            auto origin_str = str.substr(l, r - l);
             flag_map[origin_str] = flag;
             buildMap[origin_str] = origin_str;
         }
@@ -206,8 +209,8 @@ DexKit::BatchFindClassesUsingStrings(std::map<std::string, std::set<std::string>
                         for (auto &[real_class, value_set]: location_map) {
                             std::vector<std::string> vec;
                             std::set_intersection(search_set.begin(), search_set.end(),
-                                                  value_set.begin(),
-                                                  value_set.end(), std::inserter(vec, vec.begin()));
+                                                  value_set.begin(),value_set.end(),
+                                                  std::inserter(vec, vec.begin()));
                             if (vec.size() == value_set.size()) {
                                 result[real_class].emplace_back(type_names[i]);
                             }
@@ -242,27 +245,30 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
     std::map<std::string, std::string> buildMap;
     std::map<std::string, uint8_t> flag_map;
     for (auto &[name, str_set]: location_map) {
-        for (auto &str: str_set) {
-            std::string new_str;
-            if (match_type == mFull) {
-                match_type = mSimilarRegex;
-                new_str = "^" + str + "$";
-            } else {
-                new_str = str;
+        std::set<std::string> new_str_set(str_set);
+        if (match_type == mFull) {
+            match_type = mSimilarRegex;
+            for (auto &str: str_set) {
+                std::string new_str = "^" + str + "$";
+                new_str_set.erase(str);
+                new_str_set.insert(new_str);
             }
-            uint32_t l = 0, r = new_str.size();
+            str_set = new_str_set;
+        }
+        for (auto &str: str_set) {
+            uint32_t l = 0, r = str.size();
             uint8_t flag = 0;
             if (match_type == mSimilarRegex) {
-                if (new_str[0] == '^') {
+                if (str[0] == '^') {
                     l = 1;
                     flag |= 1;
                 }
-                if (new_str[new_str.size() - 1] == '$') {
-                    r = new_str.size() - 1;
+                if (str[str.size() - 1] == '$') {
+                    r = str.size() - 1;
                     flag |= 2;
                 }
             }
-            auto origin_str = new_str.substr(l, r - l);
+            auto origin_str = str.substr(l, r - l);
             flag_map[origin_str] = flag;
             buildMap[origin_str] = origin_str;
         }
@@ -347,12 +353,10 @@ DexKit::BatchFindMethodsUsingStrings(std::map<std::string, std::set<std::string>
                             for (auto &[real_method, value_set]: location_map) {
                                 std::vector<std::string> vec;
                                 std::set_intersection(search_set.begin(), search_set.end(),
-                                                      value_set.begin(),
-                                                      value_set.end(),
+                                                      value_set.begin(),value_set.end(),
                                                       std::inserter(vec, vec.begin()));
                                 if (vec.size() == value_set.size()) {
-                                    result[real_method].emplace_back(
-                                            GetMethodDescriptor(dex_idx, method_idx));
+                                    result[real_method].emplace_back(GetMethodDescriptor(dex_idx, method_idx));
                                 }
                             }
                         }
@@ -1232,8 +1236,8 @@ DexKit::FindMethodUsingNumber(int64_t using_number,
                                 auto ptr = p;
                                 auto width = GetBytecodeWidth(ptr++);
                                 if ((op >= 0x12 && op <= 0x19)
-                                || (op >= 0xd0 && op <= 0xd7) // int16
-                                || (op >= 0xe0 && op <= 0xe2)) { // int8
+                                    || (op >= 0xd0 && op <= 0xd7) // int16
+                                    || (op >= 0xe0 && op <= 0xe2)) { // int8
                                     bool match_flag = false;
                                     switch (op) {
                                         case 0x12: { // const/4, int4
