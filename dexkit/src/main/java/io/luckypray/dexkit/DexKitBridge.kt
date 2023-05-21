@@ -31,6 +31,10 @@ class DexKitBridge : Closeable {
         token = nativeInitDexKit(apkPath)
     }
 
+    private constructor(dexBytesArray: Array<ByteArray>) {
+        token = nativeInitDexKitByBytesArray(dexBytesArray)
+    }
+
     private constructor(classLoader: ClassLoader, useMemoryDexFile: Boolean) {
         token = nativeInitDexKitByClassLoader(classLoader, useMemoryDexFile)
     }
@@ -1243,6 +1247,12 @@ class DexKitBridge : Closeable {
             return if (helper.isValid) helper else null
         }
 
+        @JvmStatic
+        fun create(dexBytesArray: Array<ByteArray>): DexKitBridge? {
+            val helper = DexKitBridge(dexBytesArray)
+            return if (helper.isValid) helper else null
+        }
+
         /**
          *
          * @param loader class loader
@@ -1259,6 +1269,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeInitDexKit(apkPath: String): Long
+
+        @JvmStatic
+        private external fun nativeInitDexKitByBytesArray(dexBytesArray: Array<ByteArray>): Long
 
         @JvmStatic
         private external fun nativeInitDexKitByClassLoader(

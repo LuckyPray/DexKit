@@ -158,6 +158,29 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env,
 #endif
 
 DEXKIT_JNI jlong
+Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env, jclass clazz,
+                                                                   jobjectArray dex_bytes_array) {
+    if (!dex_bytes_array) {
+        return 0;
+    }
+    auto dexkit = new dexkit::DexKit();
+    std::vector<std::unique_ptr<dexkit::MemMap>> images;
+    for (int32_t i = 0, len = env->GetArrayLength(dex_bytes_array); i < len; ++i) {
+        auto dex_byte = (jbyteArray) env->GetObjectArrayElement(dex_bytes_array, i);
+        if (!dex_byte) continue;
+        auto dex_byte_length = env->GetArrayLength(dex_byte);
+        auto *dex_byte_ptr = env->GetByteArrayElements(dex_byte, nullptr);
+        if (!dex_byte_ptr) continue;
+        auto mmap = dexkit::MemMap(dex_byte_length);
+        memcpy(mmap.addr(), dex_byte_ptr, dex_byte_length);
+        images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
+        env->ReleaseByteArrayElements(dex_byte, dex_byte_ptr, 0);
+    }
+    dexkit->AddImages(std::move(images));
+    return (jlong) dexkit;
+}
+
+DEXKIT_JNI jlong
 Java_io_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
                                                        jstring apk_path) {
     if (!apk_path) {
@@ -567,8 +590,8 @@ Java_io_luckypray_dexkit_DexKitBridge_nativeGetClassAccessFlags(JNIEnv *env, jcl
 
 DEXKIT_JNI jint
 Java_io_luckypray_dexkit_DexKitBridge_nativeGetMethodAccessFlags(JNIEnv *env, jclass clazz,
-                                                                jlong native_ptr,
-                                                                jstring descriptor) {
+                                                                 jlong native_ptr,
+                                                                 jstring descriptor) {
     if (!native_ptr) {
         return -1;
     }

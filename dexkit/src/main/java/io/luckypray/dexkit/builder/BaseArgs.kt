@@ -18,10 +18,11 @@ abstract class BaseArgs(
          *
          *     e.g.
          *     "com/example"    // contains "com.example"
+         *     "/com/example/"  // only match "com.example.*"
          *     "com.example"    // contains "com.example"
          *     ""               // match all
          *     "/"              // match all
-         *     "/com/example"   // must start with com.example
+         *     "/com/example"   // match start with "com.example"
          *     "example"        // contains "example"
          */
         @set:JvmSynthetic
