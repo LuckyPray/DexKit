@@ -1,0 +1,70 @@
+include "encode_value.fbs";
+include "enums.fbs";
+
+namespace schema;
+
+table ClassMeta {
+    id: int32;
+    dex_id: int32;
+    annotations: [int32];
+    access_flags: uint32;
+    dex_descriptor: string;
+    super_class: int32;
+    interfaces: [int32];
+    source_file: string;
+    fields: [int32];
+    methods: [int32];
+    // annotations, super_class, interfaces, fields, methods
+    // need to call the corresponding method to actively load
+}
+
+table MethodMeta {
+    id: int32;
+    dex_id: int32;
+    annotations: [int32];
+    access_flags: uint32;
+    dex_descriptor: string;
+    return_type: int32;
+    parameter_types: [int32];
+}
+
+table FieldMeta {
+    id: int32;
+    dex_id: int32;
+    annotations: [int32];
+    access_flags: uint32;
+    dex_descriptor: string;
+    type: int32;
+}
+
+union AnnotationElementValue {
+    EncodeValueBoolean,
+    EncodeValueByte,
+    EncodeValueShort,
+    EncodeValueChar,
+    EncodeValueInt,
+    EncodeValueLong,
+    EncodeValueFloat,
+    EncodeValueDouble,
+    EncodeValueString,
+    ClassMeta,
+    AnnotationElementValueArray,
+    AnnotationMeta,
+}
+
+table AnnotationElementValueArray {
+    values: [AnnotationElementValue];
+}
+
+table AnnotationMember {
+    name: string;
+    value: AnnotationElementValue;
+}
+
+table AnnotationMeta {
+    id: int32;
+    dex_id: int32;
+    target_element_types: [TargetElementType];
+    retention_policy: RetentionPolicyType;
+    members: [AnnotationMember];
+}

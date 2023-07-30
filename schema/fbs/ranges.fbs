@@ -1,0 +1,11 @@
+namespace schema;
+
+table IntRange {
+    min: int;
+    end: int;
+}
+
+table LongRange {
+    min: long;
+    end: long;
+}

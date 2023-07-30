@@ -1,0 +1,148 @@
+include "encode_value.fbs";
+include "enums.fbs";
+include "ranges.fbs";
+
+namespace schema;
+
+table StringMatcher {
+    type: StringMatchType;
+    value: string;
+}
+
+table AccessFlagsMatcher {
+    match_type: MatchType;
+    flags: uint32;
+}
+
+table TargetElementTypesMatcher {
+    match_type: MatchType;
+    types: [TargetElementType];
+}
+
+union AnnotationElementValueMatcher {
+    EncodeValueBoolean,
+    EncodeValueByte,
+    EncodeValueShort,
+    EncodeValueChar,
+    EncodeValueInt,
+    EncodeValueLong,
+    EncodeValueFloat,
+    EncodeValueDouble,
+    StringMatcher,
+    ClassMatcher,
+    AnnotationElementsMatcher,
+    AnnotationMatcher,
+}
+
+table AnnotationElementsMatcher {
+    value_count: IntRange;
+    match_type: MatchType;
+    values: [AnnotationElementValueMatcher];
+}
+
+table AnnotationMatcher {
+    type_class: ClassMatcher;
+    target_element_types: TargetElementTypesMatcher;
+    policy: RetentionPolicyType;
+    annotations: AnnotationsMatcher;
+}
+
+table AnnotationsMatcher {
+    annotaion_count: IntRange;
+    match_type: MatchType;
+    annotations: [AnnotationMatcher];
+}
+
+table ParameterMatcher {
+    prameter_type: ClassMatcher;
+    annotations: AnnotationsMatcher;
+}
+
+table ParametersMatcher {
+    parameter_count: IntRange;
+    match_type: MatchType;
+    parameters: [ParameterMatcher];
+}
+
+table OpCodesMatcher {
+    match_type: OpCodeMatchType;
+    op_codes: [ubyte];
+}
+
+table UsingFieldMatcher {
+    using_type: UsingType;
+    field: FieldMatcher;
+}
+
+union Number {
+    EncodeValueShort,
+    EncodeValueInt,
+    EncodeValueLong,
+    EncodeValueFloat,
+    EncodeValueDouble,
+}
+
+table UsingNumberMatcher {
+    using_type: UsingType;
+    number: Number;
+}
+
+table MethodMatcher {
+    method_name: StringMatcher;
+    access_flags: AccessFlagsMatcher;
+    declaring_class: ClassMatcher;
+    return_type: ClassMatcher;
+    parameters: ParametersMatcher;
+    annotations: AnnotationsMatcher;
+    op_codes: OpCodesMatcher;
+    using_strings: [StringMatcher];
+    using_fiels: [UsingFieldMatcher];
+    using_numbers: [UsingNumberMatcher];
+    invoke_methods: MethodsMatcher;
+    call_methods: MethodsMatcher;
+}
+
+table MethodsMatcher {
+    method_count: IntRange;
+    match_type: MatchType;
+    methods: [MethodMatcher];
+}
+
+table InterfacesMatcher {
+    interface_count: IntRange;
+    match_type: MatchType;
+    interfaces: [ClassMatcher];
+}
+
+table FieldMatcher {
+    access_flags: AccessFlagsMatcher;
+    declaring_class: ClassMatcher;
+    type_class: ClassMatcher;
+    annotations: AnnotationsMatcher;
+    get_methods: MethodsMatcher;
+    put_methods: MethodsMatcher;
+}
+
+table FieldsMatcher {
+    field_count: IntRange;
+    match_type: MatchType;
+    fields: [FieldMatcher];
+}
+
+table ClassMatcher {
+    package_name: StringMatcher;
+    smali_source: StringMatcher;
+    simple_name: StringMatcher;
+    access_flags: AccessFlagsMatcher;
+    super_class: ClassMatcher;
+    interfaces: InterfacesMatcher;
+    annotations: AnnotationsMatcher;
+    fields: FieldsMatcher;
+    methods: MethodsMatcher;
+    using_strings: [StringMatcher];
+}
+
+table BatchUsingStringsMatcher {
+    union_id: string;
+    using_strings: [StringMatcher];
+}

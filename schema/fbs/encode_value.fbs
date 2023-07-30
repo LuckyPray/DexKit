@@ -1,0 +1,37 @@
+namespace schema;
+
+table EncodeValueByte {
+    value: byte;
+}
+
+table EncodeValueShort {
+    value: short;
+}
+
+table EncodeValueChar {
+    value: short;
+}
+
+table EncodeValueInt {
+    value: int;
+}
+
+table EncodeValueLong {
+    value: long;
+}
+
+table EncodeValueFloat {
+    value: float;
+}
+
+table EncodeValueDouble {
+    value: double;
+}
+
+table EncodeValueString {
+    value: string;
+}
+
+table EncodeValueBoolean {
+    value: bool;
+}

@@ -8,39 +8,38 @@ if (CCACHE)
     set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
 endif ()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
-set(DB_SOURCES
-        slicer/bytecode_encoder.cc
-        slicer/code_ir.cc
-        slicer/common.cc
-        slicer/control_flow_graph.cc
-        slicer/debuginfo_encoder.cc
-        slicer/dex_bytecode.cc
-        slicer/dex_format.cc
-        slicer/dex_ir.cc
-        slicer/dex_ir_builder.cc
-        slicer/dex_utf8.cc
-        slicer/instrumentation.cc
-        slicer/reader.cc
-        slicer/tryblocks_encoder.cc
-        slicer/writer.cc
-        dex_kit.cc)
+file(GLOB_RECURSE SLICER_SRC_FILES third_party/slicer/*.cc)
 
-set(CFLAGS -flto -fvisibility=default)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -fPIC")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -fPIC")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+set(SLICER_SOURCES
+        ${SLICER_SRC_FILES}
+)
 
-add_library(${PROJECT_NAME}_static STATIC ${DB_SOURCES})
-target_include_directories(${PROJECT_NAME}_static PUBLIC include)
-target_link_libraries(${PROJECT_NAME}_static PUBLIC z)
+add_library(${PROJECT_NAME}_static
+        STATIC
+        ${SLICER_SOURCES}
+        dexkit/dexkit.cpp
+)
+target_include_directories(${PROJECT_NAME}_static
+        PUBLIC
+        dexkit/utils
+        dexkit/schema
+        third_party/slicer/export
+        third_party/thread_pool
+        third_party/acdat
+        third_party/parallel_hashmap
+        third_party/flatbuffers/include
+)
+target_link_libraries(${PROJECT_NAME}_static
+        PUBLIC
+        z
+)
 
 option(EXECUTABLE_TEST "execute test cpp" OFF)
 if (EXECUTABLE_TEST)
     link_libraries(z ${PROJECT_NAME}_static)
     add_executable(${PROJECT_NAME}
             main.cpp
-#            qq-example.cpp
             )
 endif ()

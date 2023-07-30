@@ -1,0 +1,47 @@
+namespace schema;
+
+enum StringMatchType:byte {
+    Contains,
+    StartWith,
+    EndWith,
+    SimilarRegex,
+    Equal,
+}
+
+enum OpCodeMatchType:byte {
+    Contains,
+    StartWith,
+    EndWith,
+    Equal,
+}
+
+enum UsingType:byte {
+    Any,
+    Get,
+    Put,
+}
+
+enum MatchType:byte {
+    Contain,
+    Equal,
+}
+
+enum TargetElementType:byte {
+  Type,
+  Field,
+  Method,
+  Parameter,
+  Constructor,
+  LocalVariable,
+  AnnotationType,
+  Package,
+  // for jdk 1.8
+  TypeParameter,
+  TypeUse,
+}
+
+enum RetentionPolicyType:byte {
+  Source,
+  Class,
+  Runtime,
+}
