@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class FieldsMatcher : Table() {
@@ -27,32 +37,18 @@ class FieldsMatcher : Table() {
             null
         }
     }
-    val matchType : Byte
-        get() {
-            val o = __offset(6)
-            return if(o != 0) bb.get(o + bb_pos) else 0
-        }
-    fun mutateMatchType(matchType: Byte) : Boolean {
+    fun containFields(j: Int) : FieldMatcher? = containFields(FieldMatcher(), j)
+    fun containFields(obj: FieldMatcher, j: Int) : FieldMatcher? {
         val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, matchType)
-            true
-        } else {
-            false
-        }
-    }
-    fun fields(j: Int) : FieldMatcher? = fields(FieldMatcher(), j)
-    fun fields(obj: FieldMatcher, j: Int) : FieldMatcher? {
-        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
             null
         }
     }
-    val fieldsLength : Int
+    val containFieldsLength : Int
         get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -61,25 +57,23 @@ class FieldsMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldsMatcher(builder: FlatBufferBuilder, fieldCountOffset: Int, matchType: Byte, fieldsOffset: Int) : Int {
-            builder.startTable(3)
-            addFields(builder, fieldsOffset)
+        fun createFieldsMatcher(builder: FlatBufferBuilder, fieldCountOffset: Int, containFieldsOffset: Int) : Int {
+            builder.startTable(2)
+            addContainFields(builder, containFieldsOffset)
             addFieldCount(builder, fieldCountOffset)
-            addMatchType(builder, matchType)
             return endFieldsMatcher(builder)
         }
-        fun startFieldsMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun startFieldsMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
         fun addFieldCount(builder: FlatBufferBuilder, fieldCount: Int) = builder.addOffset(0, fieldCount, 0)
-        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
-        fun addFields(builder: FlatBufferBuilder, fields: Int) = builder.addOffset(2, fields, 0)
-        fun createFieldsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+        fun addContainFields(builder: FlatBufferBuilder, containFields: Int) = builder.addOffset(1, containFields, 0)
+        fun createContainFieldsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
                 builder.addOffset(data[i])
             }
             return builder.endVector()
         }
-        fun startFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startContainFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endFieldsMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

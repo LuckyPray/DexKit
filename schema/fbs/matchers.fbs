@@ -15,8 +15,7 @@ table AccessFlagsMatcher {
 }
 
 table TargetElementTypesMatcher {
-    match_type: MatchType;
-    types: [TargetElementType];
+    contain_types: [TargetElementType];
 }
 
 union AnnotationElementValueMatcher {
@@ -34,23 +33,36 @@ union AnnotationElementValueMatcher {
     AnnotationMatcher,
 }
 
+table OptionalAnnotationElementValueMatcher {
+    value: AnnotationElementValueMatcher;
+}
+
+table AnnotationElementMatcher {
+    name: StringMatcher;
+    value: OptionalAnnotationElementValueMatcher;
+}
+
+table OptionalAnnotationElementMatcher {
+    element: AnnotationElementMatcher;
+}
+
 table AnnotationElementsMatcher {
     value_count: IntRange;
     match_type: MatchType;
-    values: [AnnotationElementValueMatcher];
+    elements: [OptionalAnnotationElementMatcher];
 }
 
 table AnnotationMatcher {
-    type_class: ClassMatcher;
+    type_name: StringMatcher;
     target_element_types: TargetElementTypesMatcher;
     policy: RetentionPolicyType;
     annotations: AnnotationsMatcher;
+    elements: AnnotationElementsMatcher;
 }
 
 table AnnotationsMatcher {
     annotaion_count: IntRange;
-    match_type: MatchType;
-    annotations: [AnnotationMatcher];
+    contain_annotations: [AnnotationMatcher];
 }
 
 table ParameterMatcher {
@@ -58,15 +70,19 @@ table ParameterMatcher {
     annotations: AnnotationsMatcher;
 }
 
+table OptionalParameterMatcher {
+    parameter: ParameterMatcher;
+}
+
 table ParametersMatcher {
     parameter_count: IntRange;
     match_type: MatchType;
-    parameters: [ParameterMatcher];
+    parameters: [OptionalParameterMatcher];
 }
 
 table OpCodesMatcher {
     match_type: OpCodeMatchType;
-    op_codes: [ubyte];
+    op_codes: [int16];
 }
 
 table UsingFieldMatcher {
@@ -104,14 +120,12 @@ table MethodMatcher {
 
 table MethodsMatcher {
     method_count: IntRange;
-    match_type: MatchType;
-    methods: [MethodMatcher];
+    contain_methods: [MethodMatcher];
 }
 
 table InterfacesMatcher {
     interface_count: IntRange;
-    match_type: MatchType;
-    interfaces: [ClassMatcher];
+    contain_interfaces: [ClassMatcher];
 }
 
 table FieldMatcher {
@@ -125,8 +139,7 @@ table FieldMatcher {
 
 table FieldsMatcher {
     field_count: IntRange;
-    match_type: MatchType;
-    fields: [FieldMatcher];
+    contain_fields: [FieldMatcher];
 }
 
 table ClassMatcher {

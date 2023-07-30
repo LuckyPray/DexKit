@@ -28,6 +28,15 @@ struct AccessFlagsMatcherBuilder;
 struct TargetElementTypesMatcher;
 struct TargetElementTypesMatcherBuilder;
 
+struct OptionalAnnotationElementValueMatcher;
+struct OptionalAnnotationElementValueMatcherBuilder;
+
+struct AnnotationElementMatcher;
+struct AnnotationElementMatcherBuilder;
+
+struct OptionalAnnotationElementMatcher;
+struct OptionalAnnotationElementMatcherBuilder;
+
 struct AnnotationElementsMatcher;
 struct AnnotationElementsMatcherBuilder;
 
@@ -39,6 +48,9 @@ struct AnnotationsMatcherBuilder;
 
 struct ParameterMatcher;
 struct ParameterMatcherBuilder;
+
+struct OptionalParameterMatcher;
+struct OptionalParameterMatcherBuilder;
 
 struct ParametersMatcher;
 struct ParametersMatcherBuilder;
@@ -373,7 +385,7 @@ struct AccessFlagsMatcherBuilder {
 
 inline ::flatbuffers::Offset<AccessFlagsMatcher> CreateAccessFlagsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    schema::MatchType match_type = schema::MatchType::Contain,
+    schema::MatchType match_type = schema::MatchType::Equal,
     uint32_t flags = 0) {
   AccessFlagsMatcherBuilder builder_(_fbb);
   builder_.add_flags(flags);
@@ -390,20 +402,15 @@ struct TargetElementTypesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   typedef TargetElementTypesMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MATCH_TYPE = 4,
-    VT_TYPES = 6
+    VT_CONTAIN_TYPES = 4
   };
-  schema::MatchType match_type() const {
-    return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
-  }
-  const ::flatbuffers::Vector<schema::TargetElementType> *types() const {
-    return GetPointer<const ::flatbuffers::Vector<schema::TargetElementType> *>(VT_TYPES);
+  const ::flatbuffers::Vector<schema::TargetElementType> *contain_types() const {
+    return GetPointer<const ::flatbuffers::Vector<schema::TargetElementType> *>(VT_CONTAIN_TYPES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_TYPES) &&
-           verifier.VerifyVector(types()) &&
+           VerifyOffset(verifier, VT_CONTAIN_TYPES) &&
+           verifier.VerifyVector(contain_types()) &&
            verifier.EndTable();
   }
 };
@@ -412,11 +419,8 @@ struct TargetElementTypesMatcherBuilder {
   typedef TargetElementTypesMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_match_type(schema::MatchType match_type) {
-    fbb_.AddElement<int8_t>(TargetElementTypesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
-  }
-  void add_types(::flatbuffers::Offset<::flatbuffers::Vector<schema::TargetElementType>> types) {
-    fbb_.AddOffset(TargetElementTypesMatcher::VT_TYPES, types);
+  void add_contain_types(::flatbuffers::Offset<::flatbuffers::Vector<schema::TargetElementType>> contain_types) {
+    fbb_.AddOffset(TargetElementTypesMatcher::VT_CONTAIN_TYPES, contain_types);
   }
   explicit TargetElementTypesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -431,11 +435,9 @@ struct TargetElementTypesMatcherBuilder {
 
 inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<schema::TargetElementType>> types = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<schema::TargetElementType>> contain_types = 0) {
   TargetElementTypesMatcherBuilder builder_(_fbb);
-  builder_.add_types(types);
-  builder_.add_match_type(match_type);
+  builder_.add_contain_types(contain_types);
   return builder_.Finish();
 }
 
@@ -446,14 +448,262 @@ struct TargetElementTypesMatcher::Traits {
 
 inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<schema::TargetElementType> *types = nullptr) {
-  auto types__ = types ? _fbb.CreateVector<schema::TargetElementType>(*types) : 0;
+    const std::vector<schema::TargetElementType> *contain_types = nullptr) {
+  auto contain_types__ = contain_types ? _fbb.CreateVector<schema::TargetElementType>(*contain_types) : 0;
   return schema::CreateTargetElementTypesMatcher(
       _fbb,
-      match_type,
-      types__);
+      contain_types__);
 }
+
+struct OptionalAnnotationElementValueMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef OptionalAnnotationElementValueMatcherBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_VALUE_TYPE = 4,
+    VT_VALUE = 6
+  };
+  schema::AnnotationElementValueMatcher value_type() const {
+    return static_cast<schema::AnnotationElementValueMatcher>(GetField<uint8_t>(VT_VALUE_TYPE, 0));
+  }
+  const void *value() const {
+    return GetPointer<const void *>(VT_VALUE);
+  }
+  template<typename T> const T *value_as() const;
+  const schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueBoolean ? static_cast<const schema::EncodeValueBoolean *>(value()) : nullptr;
+  }
+  const schema::EncodeValueByte *value_as_EncodeValueByte() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueByte ? static_cast<const schema::EncodeValueByte *>(value()) : nullptr;
+  }
+  const schema::EncodeValueShort *value_as_EncodeValueShort() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueShort ? static_cast<const schema::EncodeValueShort *>(value()) : nullptr;
+  }
+  const schema::EncodeValueChar *value_as_EncodeValueChar() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueChar ? static_cast<const schema::EncodeValueChar *>(value()) : nullptr;
+  }
+  const schema::EncodeValueInt *value_as_EncodeValueInt() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueInt ? static_cast<const schema::EncodeValueInt *>(value()) : nullptr;
+  }
+  const schema::EncodeValueLong *value_as_EncodeValueLong() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueLong ? static_cast<const schema::EncodeValueLong *>(value()) : nullptr;
+  }
+  const schema::EncodeValueFloat *value_as_EncodeValueFloat() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueFloat ? static_cast<const schema::EncodeValueFloat *>(value()) : nullptr;
+  }
+  const schema::EncodeValueDouble *value_as_EncodeValueDouble() const {
+    return value_type() == schema::AnnotationElementValueMatcher::EncodeValueDouble ? static_cast<const schema::EncodeValueDouble *>(value()) : nullptr;
+  }
+  const schema::StringMatcher *value_as_StringMatcher() const {
+    return value_type() == schema::AnnotationElementValueMatcher::StringMatcher ? static_cast<const schema::StringMatcher *>(value()) : nullptr;
+  }
+  const schema::ClassMatcher *value_as_ClassMatcher() const {
+    return value_type() == schema::AnnotationElementValueMatcher::ClassMatcher ? static_cast<const schema::ClassMatcher *>(value()) : nullptr;
+  }
+  const schema::AnnotationElementsMatcher *value_as_AnnotationElementsMatcher() const {
+    return value_type() == schema::AnnotationElementValueMatcher::AnnotationElementsMatcher ? static_cast<const schema::AnnotationElementsMatcher *>(value()) : nullptr;
+  }
+  const schema::AnnotationMatcher *value_as_AnnotationMatcher() const {
+    return value_type() == schema::AnnotationElementValueMatcher::AnnotationMatcher ? static_cast<const schema::AnnotationMatcher *>(value()) : nullptr;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_VALUE_TYPE, 1) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           VerifyAnnotationElementValueMatcher(verifier, value(), value_type()) &&
+           verifier.EndTable();
+  }
+};
+
+template<> inline const schema::EncodeValueBoolean *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueBoolean>() const {
+  return value_as_EncodeValueBoolean();
+}
+
+template<> inline const schema::EncodeValueByte *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueByte>() const {
+  return value_as_EncodeValueByte();
+}
+
+template<> inline const schema::EncodeValueShort *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueShort>() const {
+  return value_as_EncodeValueShort();
+}
+
+template<> inline const schema::EncodeValueChar *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueChar>() const {
+  return value_as_EncodeValueChar();
+}
+
+template<> inline const schema::EncodeValueInt *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueInt>() const {
+  return value_as_EncodeValueInt();
+}
+
+template<> inline const schema::EncodeValueLong *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueLong>() const {
+  return value_as_EncodeValueLong();
+}
+
+template<> inline const schema::EncodeValueFloat *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueFloat>() const {
+  return value_as_EncodeValueFloat();
+}
+
+template<> inline const schema::EncodeValueDouble *OptionalAnnotationElementValueMatcher::value_as<schema::EncodeValueDouble>() const {
+  return value_as_EncodeValueDouble();
+}
+
+template<> inline const schema::StringMatcher *OptionalAnnotationElementValueMatcher::value_as<schema::StringMatcher>() const {
+  return value_as_StringMatcher();
+}
+
+template<> inline const schema::ClassMatcher *OptionalAnnotationElementValueMatcher::value_as<schema::ClassMatcher>() const {
+  return value_as_ClassMatcher();
+}
+
+template<> inline const schema::AnnotationElementsMatcher *OptionalAnnotationElementValueMatcher::value_as<schema::AnnotationElementsMatcher>() const {
+  return value_as_AnnotationElementsMatcher();
+}
+
+template<> inline const schema::AnnotationMatcher *OptionalAnnotationElementValueMatcher::value_as<schema::AnnotationMatcher>() const {
+  return value_as_AnnotationMatcher();
+}
+
+struct OptionalAnnotationElementValueMatcherBuilder {
+  typedef OptionalAnnotationElementValueMatcher Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_value_type(schema::AnnotationElementValueMatcher value_type) {
+    fbb_.AddElement<uint8_t>(OptionalAnnotationElementValueMatcher::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0);
+  }
+  void add_value(::flatbuffers::Offset<void> value) {
+    fbb_.AddOffset(OptionalAnnotationElementValueMatcher::VT_VALUE, value);
+  }
+  explicit OptionalAnnotationElementValueMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<OptionalAnnotationElementValueMatcher> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<OptionalAnnotationElementValueMatcher>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<OptionalAnnotationElementValueMatcher> CreateOptionalAnnotationElementValueMatcher(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    schema::AnnotationElementValueMatcher value_type = schema::AnnotationElementValueMatcher::NONE,
+    ::flatbuffers::Offset<void> value = 0) {
+  OptionalAnnotationElementValueMatcherBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_value_type(value_type);
+  return builder_.Finish();
+}
+
+struct OptionalAnnotationElementValueMatcher::Traits {
+  using type = OptionalAnnotationElementValueMatcher;
+  static auto constexpr Create = CreateOptionalAnnotationElementValueMatcher;
+};
+
+struct AnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AnnotationElementMatcherBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_NAME = 4,
+    VT_VALUE = 6
+  };
+  const schema::StringMatcher *name() const {
+    return GetPointer<const schema::StringMatcher *>(VT_NAME);
+  }
+  const schema::OptionalAnnotationElementValueMatcher *value() const {
+    return GetPointer<const schema::OptionalAnnotationElementValueMatcher *>(VT_VALUE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyTable(name()) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.VerifyTable(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AnnotationElementMatcherBuilder {
+  typedef AnnotationElementMatcher Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_name(::flatbuffers::Offset<schema::StringMatcher> name) {
+    fbb_.AddOffset(AnnotationElementMatcher::VT_NAME, name);
+  }
+  void add_value(::flatbuffers::Offset<schema::OptionalAnnotationElementValueMatcher> value) {
+    fbb_.AddOffset(AnnotationElementMatcher::VT_VALUE, value);
+  }
+  explicit AnnotationElementMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AnnotationElementMatcher> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AnnotationElementMatcher>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AnnotationElementMatcher> CreateAnnotationElementMatcher(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<schema::StringMatcher> name = 0,
+    ::flatbuffers::Offset<schema::OptionalAnnotationElementValueMatcher> value = 0) {
+  AnnotationElementMatcherBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_name(name);
+  return builder_.Finish();
+}
+
+struct AnnotationElementMatcher::Traits {
+  using type = AnnotationElementMatcher;
+  static auto constexpr Create = CreateAnnotationElementMatcher;
+};
+
+struct OptionalAnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef OptionalAnnotationElementMatcherBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ELEMENT = 4
+  };
+  const schema::AnnotationElementMatcher *element() const {
+    return GetPointer<const schema::AnnotationElementMatcher *>(VT_ELEMENT);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ELEMENT) &&
+           verifier.VerifyTable(element()) &&
+           verifier.EndTable();
+  }
+};
+
+struct OptionalAnnotationElementMatcherBuilder {
+  typedef OptionalAnnotationElementMatcher Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_element(::flatbuffers::Offset<schema::AnnotationElementMatcher> element) {
+    fbb_.AddOffset(OptionalAnnotationElementMatcher::VT_ELEMENT, element);
+  }
+  explicit OptionalAnnotationElementMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<OptionalAnnotationElementMatcher> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<OptionalAnnotationElementMatcher>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<OptionalAnnotationElementMatcher> CreateOptionalAnnotationElementMatcher(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<schema::AnnotationElementMatcher> element = 0) {
+  OptionalAnnotationElementMatcherBuilder builder_(_fbb);
+  builder_.add_element(element);
+  return builder_.Finish();
+}
+
+struct OptionalAnnotationElementMatcher::Traits {
+  using type = OptionalAnnotationElementMatcher;
+  static auto constexpr Create = CreateOptionalAnnotationElementMatcher;
+};
 
 struct AnnotationElementsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AnnotationElementsMatcherBuilder Builder;
@@ -461,8 +711,7 @@ struct AnnotationElementsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_VALUE_COUNT = 4,
     VT_MATCH_TYPE = 6,
-    VT_VALUES_TYPE = 8,
-    VT_VALUES = 10
+    VT_ELEMENTS = 8
   };
   const schema::IntRange *value_count() const {
     return GetPointer<const schema::IntRange *>(VT_VALUE_COUNT);
@@ -470,22 +719,17 @@ struct AnnotationElementsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   schema::MatchType match_type() const {
     return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
-  const ::flatbuffers::Vector<schema::AnnotationElementValueMatcher> *values_type() const {
-    return GetPointer<const ::flatbuffers::Vector<schema::AnnotationElementValueMatcher> *>(VT_VALUES_TYPE);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *>(VT_VALUES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalAnnotationElementMatcher>> *elements() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalAnnotationElementMatcher>> *>(VT_ELEMENTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_VALUE_COUNT) &&
            verifier.VerifyTable(value_count()) &&
            VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_VALUES_TYPE) &&
-           verifier.VerifyVector(values_type()) &&
-           VerifyOffset(verifier, VT_VALUES) &&
-           verifier.VerifyVector(values()) &&
-           VerifyAnnotationElementValueMatcherVector(verifier, values(), values_type()) &&
+           VerifyOffset(verifier, VT_ELEMENTS) &&
+           verifier.VerifyVector(elements()) &&
+           verifier.VerifyVectorOfTables(elements()) &&
            verifier.EndTable();
   }
 };
@@ -500,11 +744,8 @@ struct AnnotationElementsMatcherBuilder {
   void add_match_type(schema::MatchType match_type) {
     fbb_.AddElement<int8_t>(AnnotationElementsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
-  void add_values_type(::flatbuffers::Offset<::flatbuffers::Vector<schema::AnnotationElementValueMatcher>> values_type) {
-    fbb_.AddOffset(AnnotationElementsMatcher::VT_VALUES_TYPE, values_type);
-  }
-  void add_values(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values) {
-    fbb_.AddOffset(AnnotationElementsMatcher::VT_VALUES, values);
+  void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalAnnotationElementMatcher>>> elements) {
+    fbb_.AddOffset(AnnotationElementsMatcher::VT_ELEMENTS, elements);
   }
   explicit AnnotationElementsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -520,12 +761,10 @@ struct AnnotationElementsMatcherBuilder {
 inline ::flatbuffers::Offset<AnnotationElementsMatcher> CreateAnnotationElementsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> value_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<schema::AnnotationElementValueMatcher>> values_type = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values = 0) {
+    schema::MatchType match_type = schema::MatchType::Equal,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalAnnotationElementMatcher>>> elements = 0) {
   AnnotationElementsMatcherBuilder builder_(_fbb);
-  builder_.add_values(values);
-  builder_.add_values_type(values_type);
+  builder_.add_elements(elements);
   builder_.add_value_count(value_count);
   builder_.add_match_type(match_type);
   return builder_.Finish();
@@ -539,30 +778,28 @@ struct AnnotationElementsMatcher::Traits {
 inline ::flatbuffers::Offset<AnnotationElementsMatcher> CreateAnnotationElementsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> value_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<schema::AnnotationElementValueMatcher> *values_type = nullptr,
-    const std::vector<::flatbuffers::Offset<void>> *values = nullptr) {
-  auto values_type__ = values_type ? _fbb.CreateVector<schema::AnnotationElementValueMatcher>(*values_type) : 0;
-  auto values__ = values ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*values) : 0;
+    schema::MatchType match_type = schema::MatchType::Equal,
+    const std::vector<::flatbuffers::Offset<schema::OptionalAnnotationElementMatcher>> *elements = nullptr) {
+  auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<schema::OptionalAnnotationElementMatcher>>(*elements) : 0;
   return schema::CreateAnnotationElementsMatcher(
       _fbb,
       value_count,
       match_type,
-      values_type__,
-      values__);
+      elements__);
 }
 
 struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AnnotationMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_TYPE_CLASS = 4,
+    VT_TYPE_NAME = 4,
     VT_TARGET_ELEMENT_TYPES = 6,
     VT_POLICY = 8,
-    VT_ANNOTATIONS = 10
+    VT_ANNOTATIONS = 10,
+    VT_ELEMENTS = 12
   };
-  const schema::ClassMatcher *type_class() const {
-    return GetPointer<const schema::ClassMatcher *>(VT_TYPE_CLASS);
+  const schema::StringMatcher *type_name() const {
+    return GetPointer<const schema::StringMatcher *>(VT_TYPE_NAME);
   }
   const schema::TargetElementTypesMatcher *target_element_types() const {
     return GetPointer<const schema::TargetElementTypesMatcher *>(VT_TARGET_ELEMENT_TYPES);
@@ -573,15 +810,20 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   const schema::AnnotationsMatcher *annotations() const {
     return GetPointer<const schema::AnnotationsMatcher *>(VT_ANNOTATIONS);
   }
+  const schema::AnnotationElementsMatcher *elements() const {
+    return GetPointer<const schema::AnnotationElementsMatcher *>(VT_ELEMENTS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_TYPE_CLASS) &&
-           verifier.VerifyTable(type_class()) &&
+           VerifyOffset(verifier, VT_TYPE_NAME) &&
+           verifier.VerifyTable(type_name()) &&
            VerifyOffset(verifier, VT_TARGET_ELEMENT_TYPES) &&
            verifier.VerifyTable(target_element_types()) &&
            VerifyField<int8_t>(verifier, VT_POLICY, 1) &&
            VerifyOffset(verifier, VT_ANNOTATIONS) &&
            verifier.VerifyTable(annotations()) &&
+           VerifyOffset(verifier, VT_ELEMENTS) &&
+           verifier.VerifyTable(elements()) &&
            verifier.EndTable();
   }
 };
@@ -590,8 +832,8 @@ struct AnnotationMatcherBuilder {
   typedef AnnotationMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_type_class(::flatbuffers::Offset<schema::ClassMatcher> type_class) {
-    fbb_.AddOffset(AnnotationMatcher::VT_TYPE_CLASS, type_class);
+  void add_type_name(::flatbuffers::Offset<schema::StringMatcher> type_name) {
+    fbb_.AddOffset(AnnotationMatcher::VT_TYPE_NAME, type_name);
   }
   void add_target_element_types(::flatbuffers::Offset<schema::TargetElementTypesMatcher> target_element_types) {
     fbb_.AddOffset(AnnotationMatcher::VT_TARGET_ELEMENT_TYPES, target_element_types);
@@ -601,6 +843,9 @@ struct AnnotationMatcherBuilder {
   }
   void add_annotations(::flatbuffers::Offset<schema::AnnotationsMatcher> annotations) {
     fbb_.AddOffset(AnnotationMatcher::VT_ANNOTATIONS, annotations);
+  }
+  void add_elements(::flatbuffers::Offset<schema::AnnotationElementsMatcher> elements) {
+    fbb_.AddOffset(AnnotationMatcher::VT_ELEMENTS, elements);
   }
   explicit AnnotationMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -615,14 +860,16 @@ struct AnnotationMatcherBuilder {
 
 inline ::flatbuffers::Offset<AnnotationMatcher> CreateAnnotationMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<schema::ClassMatcher> type_class = 0,
+    ::flatbuffers::Offset<schema::StringMatcher> type_name = 0,
     ::flatbuffers::Offset<schema::TargetElementTypesMatcher> target_element_types = 0,
     schema::RetentionPolicyType policy = schema::RetentionPolicyType::Source,
-    ::flatbuffers::Offset<schema::AnnotationsMatcher> annotations = 0) {
+    ::flatbuffers::Offset<schema::AnnotationsMatcher> annotations = 0,
+    ::flatbuffers::Offset<schema::AnnotationElementsMatcher> elements = 0) {
   AnnotationMatcherBuilder builder_(_fbb);
+  builder_.add_elements(elements);
   builder_.add_annotations(annotations);
   builder_.add_target_element_types(target_element_types);
-  builder_.add_type_class(type_class);
+  builder_.add_type_name(type_name);
   builder_.add_policy(policy);
   return builder_.Finish();
 }
@@ -637,26 +884,21 @@ struct AnnotationsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ANNOTAION_COUNT = 4,
-    VT_MATCH_TYPE = 6,
-    VT_ANNOTATIONS = 8
+    VT_CONTAIN_ANNOTATIONS = 6
   };
   const schema::IntRange *annotaion_count() const {
     return GetPointer<const schema::IntRange *>(VT_ANNOTAION_COUNT);
   }
-  schema::MatchType match_type() const {
-    return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>> *annotations() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>> *>(VT_ANNOTATIONS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>> *contain_annotations() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>> *>(VT_CONTAIN_ANNOTATIONS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_ANNOTAION_COUNT) &&
            verifier.VerifyTable(annotaion_count()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_ANNOTATIONS) &&
-           verifier.VerifyVector(annotations()) &&
-           verifier.VerifyVectorOfTables(annotations()) &&
+           VerifyOffset(verifier, VT_CONTAIN_ANNOTATIONS) &&
+           verifier.VerifyVector(contain_annotations()) &&
+           verifier.VerifyVectorOfTables(contain_annotations()) &&
            verifier.EndTable();
   }
 };
@@ -668,11 +910,8 @@ struct AnnotationsMatcherBuilder {
   void add_annotaion_count(::flatbuffers::Offset<schema::IntRange> annotaion_count) {
     fbb_.AddOffset(AnnotationsMatcher::VT_ANNOTAION_COUNT, annotaion_count);
   }
-  void add_match_type(schema::MatchType match_type) {
-    fbb_.AddElement<int8_t>(AnnotationsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
-  }
-  void add_annotations(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>>> annotations) {
-    fbb_.AddOffset(AnnotationsMatcher::VT_ANNOTATIONS, annotations);
+  void add_contain_annotations(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>>> contain_annotations) {
+    fbb_.AddOffset(AnnotationsMatcher::VT_CONTAIN_ANNOTATIONS, contain_annotations);
   }
   explicit AnnotationsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -688,12 +927,10 @@ struct AnnotationsMatcherBuilder {
 inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> annotaion_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>>> annotations = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::AnnotationMatcher>>> contain_annotations = 0) {
   AnnotationsMatcherBuilder builder_(_fbb);
-  builder_.add_annotations(annotations);
+  builder_.add_contain_annotations(contain_annotations);
   builder_.add_annotaion_count(annotaion_count);
-  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -705,14 +942,12 @@ struct AnnotationsMatcher::Traits {
 inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> annotaion_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<::flatbuffers::Offset<schema::AnnotationMatcher>> *annotations = nullptr) {
-  auto annotations__ = annotations ? _fbb.CreateVector<::flatbuffers::Offset<schema::AnnotationMatcher>>(*annotations) : 0;
+    const std::vector<::flatbuffers::Offset<schema::AnnotationMatcher>> *contain_annotations = nullptr) {
+  auto contain_annotations__ = contain_annotations ? _fbb.CreateVector<::flatbuffers::Offset<schema::AnnotationMatcher>>(*contain_annotations) : 0;
   return schema::CreateAnnotationsMatcher(
       _fbb,
       annotaion_count,
-      match_type,
-      annotations__);
+      contain_annotations__);
 }
 
 struct ParameterMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -774,6 +1009,54 @@ struct ParameterMatcher::Traits {
   static auto constexpr Create = CreateParameterMatcher;
 };
 
+struct OptionalParameterMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef OptionalParameterMatcherBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PARAMETER = 4
+  };
+  const schema::ParameterMatcher *parameter() const {
+    return GetPointer<const schema::ParameterMatcher *>(VT_PARAMETER);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_PARAMETER) &&
+           verifier.VerifyTable(parameter()) &&
+           verifier.EndTable();
+  }
+};
+
+struct OptionalParameterMatcherBuilder {
+  typedef OptionalParameterMatcher Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_parameter(::flatbuffers::Offset<schema::ParameterMatcher> parameter) {
+    fbb_.AddOffset(OptionalParameterMatcher::VT_PARAMETER, parameter);
+  }
+  explicit OptionalParameterMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<OptionalParameterMatcher> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<OptionalParameterMatcher>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<OptionalParameterMatcher> CreateOptionalParameterMatcher(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<schema::ParameterMatcher> parameter = 0) {
+  OptionalParameterMatcherBuilder builder_(_fbb);
+  builder_.add_parameter(parameter);
+  return builder_.Finish();
+}
+
+struct OptionalParameterMatcher::Traits {
+  using type = OptionalParameterMatcher;
+  static auto constexpr Create = CreateOptionalParameterMatcher;
+};
+
 struct ParametersMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ParametersMatcherBuilder Builder;
   struct Traits;
@@ -788,8 +1071,8 @@ struct ParametersMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   schema::MatchType match_type() const {
     return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::ParameterMatcher>> *parameters() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::ParameterMatcher>> *>(VT_PARAMETERS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalParameterMatcher>> *parameters() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalParameterMatcher>> *>(VT_PARAMETERS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -813,7 +1096,7 @@ struct ParametersMatcherBuilder {
   void add_match_type(schema::MatchType match_type) {
     fbb_.AddElement<int8_t>(ParametersMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
-  void add_parameters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::ParameterMatcher>>> parameters) {
+  void add_parameters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalParameterMatcher>>> parameters) {
     fbb_.AddOffset(ParametersMatcher::VT_PARAMETERS, parameters);
   }
   explicit ParametersMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
@@ -830,8 +1113,8 @@ struct ParametersMatcherBuilder {
 inline ::flatbuffers::Offset<ParametersMatcher> CreateParametersMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> parameter_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::ParameterMatcher>>> parameters = 0) {
+    schema::MatchType match_type = schema::MatchType::Equal,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::OptionalParameterMatcher>>> parameters = 0) {
   ParametersMatcherBuilder builder_(_fbb);
   builder_.add_parameters(parameters);
   builder_.add_parameter_count(parameter_count);
@@ -847,9 +1130,9 @@ struct ParametersMatcher::Traits {
 inline ::flatbuffers::Offset<ParametersMatcher> CreateParametersMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> parameter_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<::flatbuffers::Offset<schema::ParameterMatcher>> *parameters = nullptr) {
-  auto parameters__ = parameters ? _fbb.CreateVector<::flatbuffers::Offset<schema::ParameterMatcher>>(*parameters) : 0;
+    schema::MatchType match_type = schema::MatchType::Equal,
+    const std::vector<::flatbuffers::Offset<schema::OptionalParameterMatcher>> *parameters = nullptr) {
+  auto parameters__ = parameters ? _fbb.CreateVector<::flatbuffers::Offset<schema::OptionalParameterMatcher>>(*parameters) : 0;
   return schema::CreateParametersMatcher(
       _fbb,
       parameter_count,
@@ -867,8 +1150,8 @@ struct OpCodesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   schema::OpCodeMatchType match_type() const {
     return static_cast<schema::OpCodeMatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
-  const ::flatbuffers::Vector<uint8_t> *op_codes() const {
-    return GetPointer<const ::flatbuffers::Vector<uint8_t> *>(VT_OP_CODES);
+  const ::flatbuffers::Vector<int16_t> *op_codes() const {
+    return GetPointer<const ::flatbuffers::Vector<int16_t> *>(VT_OP_CODES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -886,7 +1169,7 @@ struct OpCodesMatcherBuilder {
   void add_match_type(schema::OpCodeMatchType match_type) {
     fbb_.AddElement<int8_t>(OpCodesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
-  void add_op_codes(::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> op_codes) {
+  void add_op_codes(::flatbuffers::Offset<::flatbuffers::Vector<int16_t>> op_codes) {
     fbb_.AddOffset(OpCodesMatcher::VT_OP_CODES, op_codes);
   }
   explicit OpCodesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
@@ -903,7 +1186,7 @@ struct OpCodesMatcherBuilder {
 inline ::flatbuffers::Offset<OpCodesMatcher> CreateOpCodesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     schema::OpCodeMatchType match_type = schema::OpCodeMatchType::Contains,
-    ::flatbuffers::Offset<::flatbuffers::Vector<uint8_t>> op_codes = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<int16_t>> op_codes = 0) {
   OpCodesMatcherBuilder builder_(_fbb);
   builder_.add_op_codes(op_codes);
   builder_.add_match_type(match_type);
@@ -918,8 +1201,8 @@ struct OpCodesMatcher::Traits {
 inline ::flatbuffers::Offset<OpCodesMatcher> CreateOpCodesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     schema::OpCodeMatchType match_type = schema::OpCodeMatchType::Contains,
-    const std::vector<uint8_t> *op_codes = nullptr) {
-  auto op_codes__ = op_codes ? _fbb.CreateVector<uint8_t>(*op_codes) : 0;
+    const std::vector<int16_t> *op_codes = nullptr) {
+  auto op_codes__ = op_codes ? _fbb.CreateVector<int16_t>(*op_codes) : 0;
   return schema::CreateOpCodesMatcher(
       _fbb,
       match_type,
@@ -1298,26 +1581,21 @@ struct MethodsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_METHOD_COUNT = 4,
-    VT_MATCH_TYPE = 6,
-    VT_METHODS = 8
+    VT_CONTAIN_METHODS = 6
   };
   const schema::IntRange *method_count() const {
     return GetPointer<const schema::IntRange *>(VT_METHOD_COUNT);
   }
-  schema::MatchType match_type() const {
-    return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>> *methods() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>> *>(VT_METHODS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>> *contain_methods() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>> *>(VT_CONTAIN_METHODS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_METHOD_COUNT) &&
            verifier.VerifyTable(method_count()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_METHODS) &&
-           verifier.VerifyVector(methods()) &&
-           verifier.VerifyVectorOfTables(methods()) &&
+           VerifyOffset(verifier, VT_CONTAIN_METHODS) &&
+           verifier.VerifyVector(contain_methods()) &&
+           verifier.VerifyVectorOfTables(contain_methods()) &&
            verifier.EndTable();
   }
 };
@@ -1329,11 +1607,8 @@ struct MethodsMatcherBuilder {
   void add_method_count(::flatbuffers::Offset<schema::IntRange> method_count) {
     fbb_.AddOffset(MethodsMatcher::VT_METHOD_COUNT, method_count);
   }
-  void add_match_type(schema::MatchType match_type) {
-    fbb_.AddElement<int8_t>(MethodsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
-  }
-  void add_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>>> methods) {
-    fbb_.AddOffset(MethodsMatcher::VT_METHODS, methods);
+  void add_contain_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>>> contain_methods) {
+    fbb_.AddOffset(MethodsMatcher::VT_CONTAIN_METHODS, contain_methods);
   }
   explicit MethodsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1349,12 +1624,10 @@ struct MethodsMatcherBuilder {
 inline ::flatbuffers::Offset<MethodsMatcher> CreateMethodsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> method_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>>> methods = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::MethodMatcher>>> contain_methods = 0) {
   MethodsMatcherBuilder builder_(_fbb);
-  builder_.add_methods(methods);
+  builder_.add_contain_methods(contain_methods);
   builder_.add_method_count(method_count);
-  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1366,14 +1639,12 @@ struct MethodsMatcher::Traits {
 inline ::flatbuffers::Offset<MethodsMatcher> CreateMethodsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> method_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<::flatbuffers::Offset<schema::MethodMatcher>> *methods = nullptr) {
-  auto methods__ = methods ? _fbb.CreateVector<::flatbuffers::Offset<schema::MethodMatcher>>(*methods) : 0;
+    const std::vector<::flatbuffers::Offset<schema::MethodMatcher>> *contain_methods = nullptr) {
+  auto contain_methods__ = contain_methods ? _fbb.CreateVector<::flatbuffers::Offset<schema::MethodMatcher>>(*contain_methods) : 0;
   return schema::CreateMethodsMatcher(
       _fbb,
       method_count,
-      match_type,
-      methods__);
+      contain_methods__);
 }
 
 struct InterfacesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1381,26 +1652,21 @@ struct InterfacesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INTERFACE_COUNT = 4,
-    VT_MATCH_TYPE = 6,
-    VT_INTERFACES = 8
+    VT_CONTAIN_INTERFACES = 6
   };
   const schema::IntRange *interface_count() const {
     return GetPointer<const schema::IntRange *>(VT_INTERFACE_COUNT);
   }
-  schema::MatchType match_type() const {
-    return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>> *interfaces() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>> *>(VT_INTERFACES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>> *contain_interfaces() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>> *>(VT_CONTAIN_INTERFACES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_INTERFACE_COUNT) &&
            verifier.VerifyTable(interface_count()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_INTERFACES) &&
-           verifier.VerifyVector(interfaces()) &&
-           verifier.VerifyVectorOfTables(interfaces()) &&
+           VerifyOffset(verifier, VT_CONTAIN_INTERFACES) &&
+           verifier.VerifyVector(contain_interfaces()) &&
+           verifier.VerifyVectorOfTables(contain_interfaces()) &&
            verifier.EndTable();
   }
 };
@@ -1412,11 +1678,8 @@ struct InterfacesMatcherBuilder {
   void add_interface_count(::flatbuffers::Offset<schema::IntRange> interface_count) {
     fbb_.AddOffset(InterfacesMatcher::VT_INTERFACE_COUNT, interface_count);
   }
-  void add_match_type(schema::MatchType match_type) {
-    fbb_.AddElement<int8_t>(InterfacesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
-  }
-  void add_interfaces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>>> interfaces) {
-    fbb_.AddOffset(InterfacesMatcher::VT_INTERFACES, interfaces);
+  void add_contain_interfaces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>>> contain_interfaces) {
+    fbb_.AddOffset(InterfacesMatcher::VT_CONTAIN_INTERFACES, contain_interfaces);
   }
   explicit InterfacesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1432,12 +1695,10 @@ struct InterfacesMatcherBuilder {
 inline ::flatbuffers::Offset<InterfacesMatcher> CreateInterfacesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> interface_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>>> interfaces = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::ClassMatcher>>> contain_interfaces = 0) {
   InterfacesMatcherBuilder builder_(_fbb);
-  builder_.add_interfaces(interfaces);
+  builder_.add_contain_interfaces(contain_interfaces);
   builder_.add_interface_count(interface_count);
-  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1449,14 +1710,12 @@ struct InterfacesMatcher::Traits {
 inline ::flatbuffers::Offset<InterfacesMatcher> CreateInterfacesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> interface_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<::flatbuffers::Offset<schema::ClassMatcher>> *interfaces = nullptr) {
-  auto interfaces__ = interfaces ? _fbb.CreateVector<::flatbuffers::Offset<schema::ClassMatcher>>(*interfaces) : 0;
+    const std::vector<::flatbuffers::Offset<schema::ClassMatcher>> *contain_interfaces = nullptr) {
+  auto contain_interfaces__ = contain_interfaces ? _fbb.CreateVector<::flatbuffers::Offset<schema::ClassMatcher>>(*contain_interfaces) : 0;
   return schema::CreateInterfacesMatcher(
       _fbb,
       interface_count,
-      match_type,
-      interfaces__);
+      contain_interfaces__);
 }
 
 struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1567,26 +1826,21 @@ struct FieldsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_FIELD_COUNT = 4,
-    VT_MATCH_TYPE = 6,
-    VT_FIELDS = 8
+    VT_CONTAIN_FIELDS = 6
   };
   const schema::IntRange *field_count() const {
     return GetPointer<const schema::IntRange *>(VT_FIELD_COUNT);
   }
-  schema::MatchType match_type() const {
-    return static_cast<schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>> *fields() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>> *>(VT_FIELDS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>> *contain_fields() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>> *>(VT_CONTAIN_FIELDS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_FIELD_COUNT) &&
            verifier.VerifyTable(field_count()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_FIELDS) &&
-           verifier.VerifyVector(fields()) &&
-           verifier.VerifyVectorOfTables(fields()) &&
+           VerifyOffset(verifier, VT_CONTAIN_FIELDS) &&
+           verifier.VerifyVector(contain_fields()) &&
+           verifier.VerifyVectorOfTables(contain_fields()) &&
            verifier.EndTable();
   }
 };
@@ -1598,11 +1852,8 @@ struct FieldsMatcherBuilder {
   void add_field_count(::flatbuffers::Offset<schema::IntRange> field_count) {
     fbb_.AddOffset(FieldsMatcher::VT_FIELD_COUNT, field_count);
   }
-  void add_match_type(schema::MatchType match_type) {
-    fbb_.AddElement<int8_t>(FieldsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
-  }
-  void add_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>>> fields) {
-    fbb_.AddOffset(FieldsMatcher::VT_FIELDS, fields);
+  void add_contain_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>>> contain_fields) {
+    fbb_.AddOffset(FieldsMatcher::VT_CONTAIN_FIELDS, contain_fields);
   }
   explicit FieldsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1618,12 +1869,10 @@ struct FieldsMatcherBuilder {
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> field_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>>> fields = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<schema::FieldMatcher>>> contain_fields = 0) {
   FieldsMatcherBuilder builder_(_fbb);
-  builder_.add_fields(fields);
+  builder_.add_contain_fields(contain_fields);
   builder_.add_field_count(field_count);
-  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1635,14 +1884,12 @@ struct FieldsMatcher::Traits {
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<schema::IntRange> field_count = 0,
-    schema::MatchType match_type = schema::MatchType::Contain,
-    const std::vector<::flatbuffers::Offset<schema::FieldMatcher>> *fields = nullptr) {
-  auto fields__ = fields ? _fbb.CreateVector<::flatbuffers::Offset<schema::FieldMatcher>>(*fields) : 0;
+    const std::vector<::flatbuffers::Offset<schema::FieldMatcher>> *contain_fields = nullptr) {
+  auto contain_fields__ = contain_fields ? _fbb.CreateVector<::flatbuffers::Offset<schema::FieldMatcher>>(*contain_fields) : 0;
   return schema::CreateFieldsMatcher(
       _fbb,
       field_count,
-      match_type,
-      fields__);
+      contain_fields__);
 }
 
 struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class AccessFlagsMatcher : Table() {
@@ -23,29 +33,11 @@ class AccessFlagsMatcher : Table() {
             val o = __offset(4)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateMatchType(matchType: Byte) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.put(o + bb_pos, matchType)
-            true
-        } else {
-            false
-        }
-    }
     val flags : UInt
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    fun mutateFlags(flags: UInt) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, flags.toInt())
-            true
-        } else {
-            false
-        }
-    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsAccessFlagsMatcher(_bb: ByteBuffer): AccessFlagsMatcher = getRootAsAccessFlagsMatcher(_bb, AccessFlagsMatcher())

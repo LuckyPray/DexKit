@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class AnnotationMatcher : Table() {
@@ -18,8 +28,8 @@ class AnnotationMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val typeClass : ClassMatcher? get() = typeClass(ClassMatcher())
-    fun typeClass(obj: ClassMatcher) : ClassMatcher? {
+    val typeName : StringMatcher? get() = typeName(StringMatcher())
+    fun typeName(obj: StringMatcher) : StringMatcher? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -41,18 +51,18 @@ class AnnotationMatcher : Table() {
             val o = __offset(8)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutatePolicy(policy: Byte) : Boolean {
-        val o = __offset(8)
-        return if (o != 0) {
-            bb.put(o + bb_pos, policy)
-            true
-        } else {
-            false
-        }
-    }
     val annotations : AnnotationsMatcher? get() = annotations(AnnotationsMatcher())
     fun annotations(obj: AnnotationsMatcher) : AnnotationsMatcher? {
         val o = __offset(10)
+        return if (o != 0) {
+            obj.__assign(__indirect(o + bb_pos), bb)
+        } else {
+            null
+        }
+    }
+    val elements : AnnotationElementsMatcher? get() = elements(AnnotationElementsMatcher())
+    fun elements(obj: AnnotationElementsMatcher) : AnnotationElementsMatcher? {
+        val o = __offset(12)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -66,19 +76,21 @@ class AnnotationMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMatcher(builder: FlatBufferBuilder, typeClassOffset: Int, targetElementTypesOffset: Int, policy: Byte, annotationsOffset: Int) : Int {
-            builder.startTable(4)
+        fun createAnnotationMatcher(builder: FlatBufferBuilder, typeNameOffset: Int, targetElementTypesOffset: Int, policy: Byte, annotationsOffset: Int, elementsOffset: Int) : Int {
+            builder.startTable(5)
+            addElements(builder, elementsOffset)
             addAnnotations(builder, annotationsOffset)
             addTargetElementTypes(builder, targetElementTypesOffset)
-            addTypeClass(builder, typeClassOffset)
+            addTypeName(builder, typeNameOffset)
             addPolicy(builder, policy)
             return endAnnotationMatcher(builder)
         }
-        fun startAnnotationMatcher(builder: FlatBufferBuilder) = builder.startTable(4)
-        fun addTypeClass(builder: FlatBufferBuilder, typeClass: Int) = builder.addOffset(0, typeClass, 0)
+        fun startAnnotationMatcher(builder: FlatBufferBuilder) = builder.startTable(5)
+        fun addTypeName(builder: FlatBufferBuilder, typeName: Int) = builder.addOffset(0, typeName, 0)
         fun addTargetElementTypes(builder: FlatBufferBuilder, targetElementTypes: Int) = builder.addOffset(1, targetElementTypes, 0)
         fun addPolicy(builder: FlatBufferBuilder, policy: Byte) = builder.addByte(2, policy, 0)
         fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)
+        fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(4, elements, 0)
         fun endAnnotationMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

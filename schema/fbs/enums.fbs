@@ -22,8 +22,8 @@ enum UsingType:byte {
 }
 
 enum MatchType:byte {
-    Contain,
     Equal,
+    Contain,
 }
 
 enum TargetElementType:byte {

@@ -2,29 +2,19 @@
 
 package org.luckypray.dexkit.schema
 
-import com.google.flatbuffers.BaseVector
-import com.google.flatbuffers.BooleanVector
-import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
-import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
-import com.google.flatbuffers.FloatVector
-import com.google.flatbuffers.LongVector
-import com.google.flatbuffers.StringVector
-import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
-import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.sign
 
 @Suppress("unused")
-class EncodeValueByte : Table() {
+class OptionalTargetElementType : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : EncodeValueByte {
+    fun __assign(_i: Int, _bb: ByteBuffer) : OptionalTargetElementType {
         __init(_i, _bb)
         return this
     }
@@ -35,19 +25,19 @@ class EncodeValueByte : Table() {
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsEncodeValueByte(_bb: ByteBuffer): EncodeValueByte = getRootAsEncodeValueByte(_bb, EncodeValueByte())
-        fun getRootAsEncodeValueByte(_bb: ByteBuffer, obj: EncodeValueByte): EncodeValueByte {
+        fun getRootAsOptionalTargetElementType(_bb: ByteBuffer): OptionalTargetElementType = getRootAsOptionalTargetElementType(_bb, OptionalTargetElementType())
+        fun getRootAsOptionalTargetElementType(_bb: ByteBuffer, obj: OptionalTargetElementType): OptionalTargetElementType {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createEncodeValueByte(builder: FlatBufferBuilder, value: Byte) : Int {
+        fun createOptionalTargetElementType(builder: FlatBufferBuilder, value: Byte) : Int {
             builder.startTable(1)
             addValue(builder, value)
-            return endEncodeValueByte(builder)
+            return endOptionalTargetElementType(builder)
         }
-        fun startEncodeValueByte(builder: FlatBufferBuilder) = builder.startTable(1)
+        fun startOptionalTargetElementType(builder: FlatBufferBuilder) = builder.startTable(1)
         fun addValue(builder: FlatBufferBuilder, value: Byte) = builder.addByte(0, value, 0)
-        fun endEncodeValueByte(builder: FlatBufferBuilder) : Int {
+        fun endOptionalTargetElementType(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

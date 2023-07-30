@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class AnnotationMember : Table() {
@@ -34,15 +44,6 @@ class AnnotationMember : Table() {
             val o = __offset(6)
             return if(o != 0) bb.get(o + bb_pos).toUByte() else 0u
         }
-    fun mutateValueType(valueType: UByte) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, valueType.toByte())
-            true
-        } else {
-            false
-        }
-    }
     fun value(obj: Table) : Table? {
         val o = __offset(8); return if (o != 0) __union(obj, o + bb_pos) else null
     }

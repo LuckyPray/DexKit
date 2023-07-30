@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class InterfacesMatcher : Table() {
@@ -27,32 +37,18 @@ class InterfacesMatcher : Table() {
             null
         }
     }
-    val matchType : Byte
-        get() {
-            val o = __offset(6)
-            return if(o != 0) bb.get(o + bb_pos) else 0
-        }
-    fun mutateMatchType(matchType: Byte) : Boolean {
+    fun containInterfaces(j: Int) : ClassMatcher? = containInterfaces(ClassMatcher(), j)
+    fun containInterfaces(obj: ClassMatcher, j: Int) : ClassMatcher? {
         val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, matchType)
-            true
-        } else {
-            false
-        }
-    }
-    fun interfaces(j: Int) : ClassMatcher? = interfaces(ClassMatcher(), j)
-    fun interfaces(obj: ClassMatcher, j: Int) : ClassMatcher? {
-        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
             null
         }
     }
-    val interfacesLength : Int
+    val containInterfacesLength : Int
         get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -61,25 +57,23 @@ class InterfacesMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createInterfacesMatcher(builder: FlatBufferBuilder, interfaceCountOffset: Int, matchType: Byte, interfacesOffset: Int) : Int {
-            builder.startTable(3)
-            addInterfaces(builder, interfacesOffset)
+        fun createInterfacesMatcher(builder: FlatBufferBuilder, interfaceCountOffset: Int, containInterfacesOffset: Int) : Int {
+            builder.startTable(2)
+            addContainInterfaces(builder, containInterfacesOffset)
             addInterfaceCount(builder, interfaceCountOffset)
-            addMatchType(builder, matchType)
             return endInterfacesMatcher(builder)
         }
-        fun startInterfacesMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun startInterfacesMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
         fun addInterfaceCount(builder: FlatBufferBuilder, interfaceCount: Int) = builder.addOffset(0, interfaceCount, 0)
-        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
-        fun addInterfaces(builder: FlatBufferBuilder, interfaces: Int) = builder.addOffset(2, interfaces, 0)
-        fun createInterfacesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+        fun addContainInterfaces(builder: FlatBufferBuilder, containInterfaces: Int) = builder.addOffset(1, containInterfaces, 0)
+        fun createContainInterfacesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
                 builder.addOffset(data[i])
             }
             return builder.endVector()
         }
-        fun startInterfacesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startContainInterfacesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endInterfacesMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

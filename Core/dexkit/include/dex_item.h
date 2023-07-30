@@ -3,8 +3,8 @@
 #include <string_view>
 #include <vector>
 
-#include <phmap.h>
-#include <slicer/reader.h>
+#include "phmap.h"
+#include "slicer/reader.h"
 
 #include "byte_code_util.h"
 #include "constant.h"

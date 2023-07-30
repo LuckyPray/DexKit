@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class ClassMeta : Table() {
@@ -23,29 +33,11 @@ class ClassMeta : Table() {
             val o = __offset(4)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateId(id: Int) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, id)
-            true
-        } else {
-            false
-        }
-    }
     val dexId : Int
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateDexId(dexId: Int) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, dexId)
-            true
-        } else {
-            false
-        }
-    }
     fun annotations(j: Int) : Int {
         val o = __offset(8)
         return if (o != 0) {
@@ -60,29 +52,11 @@ class ClassMeta : Table() {
         }
     val annotationsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 4)
     fun annotationsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 4)
-    fun mutateAnnotations(j: Int, annotations: Int) : Boolean {
-        val o = __offset(8)
-        return if (o != 0) {
-            bb.putInt(__vector(o) + j * 4, annotations)
-            true
-        } else {
-            false
-        }
-    }
     val accessFlags : UInt
         get() {
             val o = __offset(10)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    fun mutateAccessFlags(accessFlags: UInt) : Boolean {
-        val o = __offset(10)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, accessFlags.toInt())
-            true
-        } else {
-            false
-        }
-    }
     val dexDescriptor : String?
         get() {
             val o = __offset(12)
@@ -99,15 +73,6 @@ class ClassMeta : Table() {
             val o = __offset(14)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateSuperClass(superClass: Int) : Boolean {
-        val o = __offset(14)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, superClass)
-            true
-        } else {
-            false
-        }
-    }
     fun interfaces(j: Int) : Int {
         val o = __offset(16)
         return if (o != 0) {
@@ -122,15 +87,6 @@ class ClassMeta : Table() {
         }
     val interfacesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(16, 4)
     fun interfacesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 16, 4)
-    fun mutateInterfaces(j: Int, interfaces: Int) : Boolean {
-        val o = __offset(16)
-        return if (o != 0) {
-            bb.putInt(__vector(o) + j * 4, interfaces)
-            true
-        } else {
-            false
-        }
-    }
     val sourceFile : String?
         get() {
             val o = __offset(18)
@@ -156,15 +112,6 @@ class ClassMeta : Table() {
         }
     val fieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(20, 4)
     fun fieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 20, 4)
-    fun mutateFields(j: Int, fields: Int) : Boolean {
-        val o = __offset(20)
-        return if (o != 0) {
-            bb.putInt(__vector(o) + j * 4, fields)
-            true
-        } else {
-            false
-        }
-    }
     fun methods(j: Int) : Int {
         val o = __offset(22)
         return if (o != 0) {
@@ -179,15 +126,6 @@ class ClassMeta : Table() {
         }
     val methodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(22, 4)
     fun methodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 22, 4)
-    fun mutateMethods(j: Int, methods: Int) : Boolean {
-        val o = __offset(22)
-        return if (o != 0) {
-            bb.putInt(__vector(o) + j * 4, methods)
-            true
-        } else {
-            false
-        }
-    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsClassMeta(_bb: ByteBuffer): ClassMeta = getRootAsClassMeta(_bb, ClassMeta())

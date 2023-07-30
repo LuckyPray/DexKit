@@ -52,3 +52,4 @@ cmake-build*/
 
 *.dex
 *.apk
+/apks

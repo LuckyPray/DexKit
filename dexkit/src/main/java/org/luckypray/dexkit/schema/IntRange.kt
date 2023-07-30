@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class IntRange : Table() {
@@ -23,29 +33,11 @@ class IntRange : Table() {
             val o = __offset(4)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateMin(min: Int) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, min)
-            true
-        } else {
-            false
-        }
-    }
     val end : Int
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateEnd(end: Int) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, end)
-            true
-        } else {
-            false
-        }
-    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsIntRange(_bb: ByteBuffer): IntRange = getRootAsIntRange(_bb, IntRange())

@@ -11,6 +11,7 @@ endif ()
 set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB_RECURSE SLICER_SRC_FILES third_party/slicer/*.cc)
+file(GLOB_RECURSE DEXKIT_SRC_FILES dexkit/*.cpp)
 
 set(SLICER_SOURCES
         ${SLICER_SRC_FILES}
@@ -19,10 +20,11 @@ set(SLICER_SOURCES
 add_library(${PROJECT_NAME}_static
         STATIC
         ${SLICER_SOURCES}
-        dexkit/dexkit.cpp
+        ${DEXKIT_SRC_FILES}
 )
 target_include_directories(${PROJECT_NAME}_static
         PUBLIC
+        dexkit/include
         dexkit/utils
         dexkit/schema
         third_party/slicer/export

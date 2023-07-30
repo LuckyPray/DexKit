@@ -1,6 +1,7 @@
 #include <iostream>
 #include "slicer/reader.h"
 #include "querys_generated.h"
+#include "dexkit.h"
 
 using namespace schema;
 

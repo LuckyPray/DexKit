@@ -19,17 +19,17 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class ParameterMatcher : Table() {
+class AnnotationElementMatcher : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : ParameterMatcher {
+    fun __assign(_i: Int, _bb: ByteBuffer) : AnnotationElementMatcher {
         __init(_i, _bb)
         return this
     }
-    val prameterType : ClassMatcher? get() = prameterType(ClassMatcher())
-    fun prameterType(obj: ClassMatcher) : ClassMatcher? {
+    val name : StringMatcher? get() = name(StringMatcher())
+    fun name(obj: StringMatcher) : StringMatcher? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -37,8 +37,8 @@ class ParameterMatcher : Table() {
             null
         }
     }
-    val annotations : AnnotationsMatcher? get() = annotations(AnnotationsMatcher())
-    fun annotations(obj: AnnotationsMatcher) : AnnotationsMatcher? {
+    val value : OptionalAnnotationElementValueMatcher? get() = value(OptionalAnnotationElementValueMatcher())
+    fun value(obj: OptionalAnnotationElementValueMatcher) : OptionalAnnotationElementValueMatcher? {
         val o = __offset(6)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -48,21 +48,21 @@ class ParameterMatcher : Table() {
     }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsParameterMatcher(_bb: ByteBuffer): ParameterMatcher = getRootAsParameterMatcher(_bb, ParameterMatcher())
-        fun getRootAsParameterMatcher(_bb: ByteBuffer, obj: ParameterMatcher): ParameterMatcher {
+        fun getRootAsAnnotationElementMatcher(_bb: ByteBuffer): AnnotationElementMatcher = getRootAsAnnotationElementMatcher(_bb, AnnotationElementMatcher())
+        fun getRootAsAnnotationElementMatcher(_bb: ByteBuffer, obj: AnnotationElementMatcher): AnnotationElementMatcher {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createParameterMatcher(builder: FlatBufferBuilder, prameterTypeOffset: Int, annotationsOffset: Int) : Int {
+        fun createAnnotationElementMatcher(builder: FlatBufferBuilder, nameOffset: Int, valueOffset: Int) : Int {
             builder.startTable(2)
-            addAnnotations(builder, annotationsOffset)
-            addPrameterType(builder, prameterTypeOffset)
-            return endParameterMatcher(builder)
+            addValue(builder, valueOffset)
+            addName(builder, nameOffset)
+            return endAnnotationElementMatcher(builder)
         }
-        fun startParameterMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addPrameterType(builder: FlatBufferBuilder, prameterType: Int) = builder.addOffset(0, prameterType, 0)
-        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(1, annotations, 0)
-        fun endParameterMatcher(builder: FlatBufferBuilder) : Int {
+        fun startAnnotationElementMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun addName(builder: FlatBufferBuilder, name: Int) = builder.addOffset(0, name, 0)
+        fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(1, value, 0)
+        fun endAnnotationElementMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

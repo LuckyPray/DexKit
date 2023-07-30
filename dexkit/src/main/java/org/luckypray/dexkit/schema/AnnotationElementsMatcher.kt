@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class AnnotationElementsMatcher : Table() {
@@ -32,49 +42,18 @@ class AnnotationElementsMatcher : Table() {
             val o = __offset(6)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateMatchType(matchType: Byte) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, matchType)
-            true
-        } else {
-            false
-        }
-    }
-    fun valuesType(j: Int) : UByte {
+    fun elements(j: Int) : OptionalAnnotationElementMatcher? = elements(OptionalAnnotationElementMatcher(), j)
+    fun elements(obj: OptionalAnnotationElementMatcher, j: Int) : OptionalAnnotationElementMatcher? {
         val o = __offset(8)
         return if (o != 0) {
-            bb.get(__vector(o) + j * 1).toUByte()
-        } else {
-            0u
-        }
-    }
-    val valuesTypeLength : Int
-        get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
-        }
-    val valuesTypeAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 1)
-    fun valuesTypeInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 1)
-    fun mutateValuesType(j: Int, valuesType: UByte) : Boolean {
-        val o = __offset(8)
-        return if (o != 0) {
-            bb.put(__vector(o) + j * 1, valuesType.toByte())
-            true
-        } else {
-            false
-        }
-    }
-    fun values(obj: Table, j: Int) : Table? {
-        val o = __offset(10)
-        return if (o != 0) {
-            __union(obj, __vector(o) + j * 4)
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
             null
         }
     }
-    val valuesLength : Int
+    val elementsLength : Int
         get() {
-            val o = __offset(10); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -83,36 +62,25 @@ class AnnotationElementsMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationElementsMatcher(builder: FlatBufferBuilder, valueCountOffset: Int, matchType: Byte, valuesTypeOffset: Int, valuesOffset: Int) : Int {
-            builder.startTable(4)
-            addValues(builder, valuesOffset)
-            addValuesType(builder, valuesTypeOffset)
+        fun createAnnotationElementsMatcher(builder: FlatBufferBuilder, valueCountOffset: Int, matchType: Byte, elementsOffset: Int) : Int {
+            builder.startTable(3)
+            addElements(builder, elementsOffset)
             addValueCount(builder, valueCountOffset)
             addMatchType(builder, matchType)
             return endAnnotationElementsMatcher(builder)
         }
-        fun startAnnotationElementsMatcher(builder: FlatBufferBuilder) = builder.startTable(4)
+        fun startAnnotationElementsMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addValueCount(builder: FlatBufferBuilder, valueCount: Int) = builder.addOffset(0, valueCount, 0)
         fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
-        fun addValuesType(builder: FlatBufferBuilder, valuesType: Int) = builder.addOffset(2, valuesType, 0)
-        @kotlin.ExperimentalUnsignedTypes
-        fun createValuesTypeVector(builder: FlatBufferBuilder, data: UByteArray) : Int {
-            builder.startVector(1, data.size, 1)
-            for (i in data.size - 1 downTo 0) {
-                builder.addByte(data[i].toByte())
-            }
-            return builder.endVector()
-        }
-        fun startValuesTypeVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(1, numElems, 1)
-        fun addValues(builder: FlatBufferBuilder, values: Int) = builder.addOffset(3, values, 0)
-        fun createValuesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+        fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(2, elements, 0)
+        fun createElementsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
                 builder.addOffset(data[i])
             }
             return builder.endVector()
         }
-        fun startValuesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startElementsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endAnnotationElementsMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class UsingNumberMatcher : Table() {
@@ -23,29 +33,11 @@ class UsingNumberMatcher : Table() {
             val o = __offset(4)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateUsingType(usingType: Byte) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.put(o + bb_pos, usingType)
-            true
-        } else {
-            false
-        }
-    }
     val numberType : UByte
         get() {
             val o = __offset(6)
             return if(o != 0) bb.get(o + bb_pos).toUByte() else 0u
         }
-    fun mutateNumberType(numberType: UByte) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, numberType.toByte())
-            true
-        } else {
-            false
-        }
-    }
     fun number(obj: Table) : Table? {
         val o = __offset(8); return if (o != 0) __union(obj, o + bb_pos) else null
     }

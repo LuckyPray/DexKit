@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class FindClass : Table() {
@@ -23,15 +33,6 @@ class FindClass : Table() {
             val o = __offset(4)
             return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
         }
-    fun mutateUniqueResult(uniqueResult: Boolean) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.put(o + bb_pos, (if(uniqueResult) 1 else 0).toByte())
-            true
-        } else {
-            false
-        }
-    }
     fun inClasses(j: Int) : Int {
         val o = __offset(6)
         return if (o != 0) {
@@ -46,15 +47,6 @@ class FindClass : Table() {
         }
     val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
     fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
-    fun mutateInClasses(j: Int, inClasses: Int) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.putInt(__vector(o) + j * 4, inClasses)
-            true
-        } else {
-            false
-        }
-    }
     val matcher : ClassMatcher? get() = matcher(ClassMatcher())
     fun matcher(obj: ClassMatcher) : ClassMatcher? {
         val o = __offset(8)

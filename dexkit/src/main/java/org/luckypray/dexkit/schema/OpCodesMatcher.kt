@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class OpCodesMatcher : Table() {
@@ -23,38 +33,20 @@ class OpCodesMatcher : Table() {
             val o = __offset(4)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateMatchType(matchType: Byte) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.put(o + bb_pos, matchType)
-            true
-        } else {
-            false
-        }
-    }
-    fun opCodes(j: Int) : UByte {
+    fun opCodes(j: Int) : Short {
         val o = __offset(6)
         return if (o != 0) {
-            bb.get(__vector(o) + j * 1).toUByte()
+            bb.getShort(__vector(o) + j * 2)
         } else {
-            0u
+            0
         }
     }
     val opCodesLength : Int
         get() {
             val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
-    val opCodesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 1)
-    fun opCodesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 1)
-    fun mutateOpCodes(j: Int, opCodes: UByte) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.put(__vector(o) + j * 1, opCodes.toByte())
-            true
-        } else {
-            false
-        }
-    }
+    val opCodesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 2)
+    fun opCodesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 2)
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsOpCodesMatcher(_bb: ByteBuffer): OpCodesMatcher = getRootAsOpCodesMatcher(_bb, OpCodesMatcher())
@@ -71,15 +63,14 @@ class OpCodesMatcher : Table() {
         fun startOpCodesMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
         fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(0, matchType, 0)
         fun addOpCodes(builder: FlatBufferBuilder, opCodes: Int) = builder.addOffset(1, opCodes, 0)
-        @kotlin.ExperimentalUnsignedTypes
-        fun createOpCodesVector(builder: FlatBufferBuilder, data: UByteArray) : Int {
-            builder.startVector(1, data.size, 1)
+        fun createOpCodesVector(builder: FlatBufferBuilder, data: ShortArray) : Int {
+            builder.startVector(2, data.size, 2)
             for (i in data.size - 1 downTo 0) {
-                builder.addByte(data[i].toByte())
+                builder.addShort(data[i])
             }
             return builder.endVector()
         }
-        fun startOpCodesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(1, numElems, 1)
+        fun startOpCodesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(2, numElems, 2)
         fun endOpCodesMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

@@ -19,35 +19,39 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class EncodeValueFloat : Table() {
+class OptionalParameterMatcher : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : EncodeValueFloat {
+    fun __assign(_i: Int, _bb: ByteBuffer) : OptionalParameterMatcher {
         __init(_i, _bb)
         return this
     }
-    val value : Float
-        get() {
-            val o = __offset(4)
-            return if(o != 0) bb.getFloat(o + bb_pos) else 0.0f
+    val parameter : ParameterMatcher? get() = parameter(ParameterMatcher())
+    fun parameter(obj: ParameterMatcher) : ParameterMatcher? {
+        val o = __offset(4)
+        return if (o != 0) {
+            obj.__assign(__indirect(o + bb_pos), bb)
+        } else {
+            null
         }
+    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsEncodeValueFloat(_bb: ByteBuffer): EncodeValueFloat = getRootAsEncodeValueFloat(_bb, EncodeValueFloat())
-        fun getRootAsEncodeValueFloat(_bb: ByteBuffer, obj: EncodeValueFloat): EncodeValueFloat {
+        fun getRootAsOptionalParameterMatcher(_bb: ByteBuffer): OptionalParameterMatcher = getRootAsOptionalParameterMatcher(_bb, OptionalParameterMatcher())
+        fun getRootAsOptionalParameterMatcher(_bb: ByteBuffer, obj: OptionalParameterMatcher): OptionalParameterMatcher {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createEncodeValueFloat(builder: FlatBufferBuilder, value: Float) : Int {
+        fun createOptionalParameterMatcher(builder: FlatBufferBuilder, parameterOffset: Int) : Int {
             builder.startTable(1)
-            addValue(builder, value)
-            return endEncodeValueFloat(builder)
+            addParameter(builder, parameterOffset)
+            return endOptionalParameterMatcher(builder)
         }
-        fun startEncodeValueFloat(builder: FlatBufferBuilder) = builder.startTable(1)
-        fun addValue(builder: FlatBufferBuilder, value: Float) = builder.addFloat(0, value, 0.0)
-        fun endEncodeValueFloat(builder: FlatBufferBuilder) : Int {
+        fun startOptionalParameterMatcher(builder: FlatBufferBuilder) = builder.startTable(1)
+        fun addParameter(builder: FlatBufferBuilder, parameter: Int) = builder.addOffset(0, parameter, 0)
+        fun endOptionalParameterMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

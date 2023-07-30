@@ -1,4 +1,4 @@
-#include "dexkit.h"
+#include "include/dexkit.h"
 
 namespace dexkit {
 
@@ -79,6 +79,18 @@ Error DexKit::ExportDexFile(std::string_view path) {
         fclose(fp);
     }
     return Error::SUCCESS;
+}
+
+ResultClassVector DexKit::FindClass(const schema::FindClass *query) {
+    return {};
+}
+
+ResultMethodVector DexKit::FindMethod(const schema::FindMethod *query) {
+    return {};
+}
+
+ResultFieldVector DexKit::FindField(const schema::FindField *query) {
+    return {};
 }
 
 } // namespace dexkit

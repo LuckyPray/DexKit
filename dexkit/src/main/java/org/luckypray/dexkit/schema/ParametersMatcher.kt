@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class ParametersMatcher : Table() {
@@ -32,17 +42,8 @@ class ParametersMatcher : Table() {
             val o = __offset(6)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateMatchType(matchType: Byte) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, matchType)
-            true
-        } else {
-            false
-        }
-    }
-    fun parameters(j: Int) : ParameterMatcher? = parameters(ParameterMatcher(), j)
-    fun parameters(obj: ParameterMatcher, j: Int) : ParameterMatcher? {
+    fun parameters(j: Int) : OptionalParameterMatcher? = parameters(OptionalParameterMatcher(), j)
+    fun parameters(obj: OptionalParameterMatcher, j: Int) : OptionalParameterMatcher? {
         val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)

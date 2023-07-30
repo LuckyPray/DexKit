@@ -124,31 +124,31 @@ inline const char *EnumNameUsingType(UsingType e) {
 }
 
 enum class MatchType : int8_t {
-  Contain = 0,
-  Equal = 1,
-  MIN = Contain,
-  MAX = Equal
+  Equal = 0,
+  Contain = 1,
+  MIN = Equal,
+  MAX = Contain
 };
 
 inline const MatchType (&EnumValuesMatchType())[2] {
   static const MatchType values[] = {
-    MatchType::Contain,
-    MatchType::Equal
+    MatchType::Equal,
+    MatchType::Contain
   };
   return values;
 }
 
 inline const char * const *EnumNamesMatchType() {
   static const char * const names[3] = {
-    "Contain",
     "Equal",
+    "Contain",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameMatchType(MatchType e) {
-  if (::flatbuffers::IsOutRange(e, MatchType::Contain, MatchType::Equal)) return "";
+  if (::flatbuffers::IsOutRange(e, MatchType::Equal, MatchType::Contain)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesMatchType()[index];
 }

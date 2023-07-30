@@ -4,7 +4,7 @@
 #include <string_view>
 #include <vector>
 
-#include <slicer/dex_ir.h>
+#include "slicer/dex_ir.h"
 
 // null_param is used to match any param
 const static std::optional<std::vector<std::string>> null_param = std::nullopt;

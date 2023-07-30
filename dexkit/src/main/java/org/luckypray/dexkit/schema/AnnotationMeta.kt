@@ -2,11 +2,21 @@
 
 package org.luckypray.dexkit.schema
 
+import com.google.flatbuffers.BaseVector
+import com.google.flatbuffers.BooleanVector
+import com.google.flatbuffers.ByteVector
 import com.google.flatbuffers.Constants
+import com.google.flatbuffers.DoubleVector
 import com.google.flatbuffers.FlatBufferBuilder
+import com.google.flatbuffers.FloatVector
+import com.google.flatbuffers.LongVector
+import com.google.flatbuffers.StringVector
+import com.google.flatbuffers.Struct
 import com.google.flatbuffers.Table
+import com.google.flatbuffers.UnionVector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.sign
 
 @Suppress("unused")
 class AnnotationMeta : Table() {
@@ -23,29 +33,11 @@ class AnnotationMeta : Table() {
             val o = __offset(4)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateId(id: Int) : Boolean {
-        val o = __offset(4)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, id)
-            true
-        } else {
-            false
-        }
-    }
     val dexId : Int
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    fun mutateDexId(dexId: Int) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.putInt(o + bb_pos, dexId)
-            true
-        } else {
-            false
-        }
-    }
     fun targetElementTypes(j: Int) : Byte {
         val o = __offset(8)
         return if (o != 0) {
@@ -60,29 +52,11 @@ class AnnotationMeta : Table() {
         }
     val targetElementTypesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 1)
     fun targetElementTypesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 1)
-    fun mutateTargetElementTypes(j: Int, targetElementTypes: Byte) : Boolean {
-        val o = __offset(8)
-        return if (o != 0) {
-            bb.put(__vector(o) + j * 1, targetElementTypes)
-            true
-        } else {
-            false
-        }
-    }
     val retentionPolicy : Byte
         get() {
             val o = __offset(10)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateRetentionPolicy(retentionPolicy: Byte) : Boolean {
-        val o = __offset(10)
-        return if (o != 0) {
-            bb.put(o + bb_pos, retentionPolicy)
-            true
-        } else {
-            false
-        }
-    }
     fun members(j: Int) : AnnotationMember? = members(AnnotationMember(), j)
     fun members(obj: AnnotationMember, j: Int) : AnnotationMember? {
         val o = __offset(12)

@@ -19,23 +19,18 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class UsingFieldMatcher : Table() {
+class OptionalAnnotationElementMatcher : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : UsingFieldMatcher {
+    fun __assign(_i: Int, _bb: ByteBuffer) : OptionalAnnotationElementMatcher {
         __init(_i, _bb)
         return this
     }
-    val usingType : Byte
-        get() {
-            val o = __offset(4)
-            return if(o != 0) bb.get(o + bb_pos) else 0
-        }
-    val field : FieldMatcher? get() = field(FieldMatcher())
-    fun field(obj: FieldMatcher) : FieldMatcher? {
-        val o = __offset(6)
+    val element : AnnotationElementMatcher? get() = element(AnnotationElementMatcher())
+    fun element(obj: AnnotationElementMatcher) : AnnotationElementMatcher? {
+        val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -44,21 +39,19 @@ class UsingFieldMatcher : Table() {
     }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsUsingFieldMatcher(_bb: ByteBuffer): UsingFieldMatcher = getRootAsUsingFieldMatcher(_bb, UsingFieldMatcher())
-        fun getRootAsUsingFieldMatcher(_bb: ByteBuffer, obj: UsingFieldMatcher): UsingFieldMatcher {
+        fun getRootAsOptionalAnnotationElementMatcher(_bb: ByteBuffer): OptionalAnnotationElementMatcher = getRootAsOptionalAnnotationElementMatcher(_bb, OptionalAnnotationElementMatcher())
+        fun getRootAsOptionalAnnotationElementMatcher(_bb: ByteBuffer, obj: OptionalAnnotationElementMatcher): OptionalAnnotationElementMatcher {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createUsingFieldMatcher(builder: FlatBufferBuilder, usingType: Byte, fieldOffset: Int) : Int {
-            builder.startTable(2)
-            addField(builder, fieldOffset)
-            addUsingType(builder, usingType)
-            return endUsingFieldMatcher(builder)
+        fun createOptionalAnnotationElementMatcher(builder: FlatBufferBuilder, elementOffset: Int) : Int {
+            builder.startTable(1)
+            addElement(builder, elementOffset)
+            return endOptionalAnnotationElementMatcher(builder)
         }
-        fun startUsingFieldMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addUsingType(builder: FlatBufferBuilder, usingType: Byte) = builder.addByte(0, usingType, 0)
-        fun addField(builder: FlatBufferBuilder, field: Int) = builder.addOffset(1, field, 0)
-        fun endUsingFieldMatcher(builder: FlatBufferBuilder) : Int {
+        fun startOptionalAnnotationElementMatcher(builder: FlatBufferBuilder) = builder.startTable(1)
+        fun addElement(builder: FlatBufferBuilder, element: Int) = builder.addOffset(0, element, 0)
+        fun endOptionalAnnotationElementMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }
