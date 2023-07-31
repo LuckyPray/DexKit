@@ -1,5 +1,11 @@
 # DexKit FlatBuffer schema
 
+## python generate
+
+```shell
+python gen_code.py
+```
+
 ## kotlin
 
 ```shell
