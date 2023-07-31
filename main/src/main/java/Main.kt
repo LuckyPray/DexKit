@@ -1,4 +1,10 @@
 import io.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.schema.AccessFlagsMatcher
+import org.luckypray.dexkit.schema.ClassMatcher
+import org.luckypray.dexkit.schema.IntRange
+import org.luckypray.dexkit.schema.MatchType
+import org.luckypray.dexkit.schema.StringMatchType
+import org.luckypray.dexkit.schema.StringMatcher
 import java.io.File
 import java.lang.reflect.Modifier
 import java.util.Locale
@@ -34,21 +40,66 @@ fun main() {
 }
 
 fun find(path: String) {
-    infix fun Double.f(fmt: Float) = "%${if (fmt < 1) fmt + 1 else fmt}f".format(this)
-    val pi = 3.141592653589793
-    println("pi = ${pi f .2f}")
-//    DexKitBridge.create(path)?.use { kit ->
-//        kit.findMethod {
-//            findPackage = "io/luckypray"
-//        }.forEach {
-//            println(it.descriptor)
-//            println(Modifier.toString(kit.getMethodAccessFlags(it)))
-//        }
-////        kit.findClass {
-////            findPackage = "AvatarInfo"
-////            sourceFile = "P"
-////        }.forEach {
-////            println(it.descriptor)
-////        }
-//    }
+    DexKitBridge.create(path)?.use { dexkit ->
+        dexkit.searchClass {
+            packageName = StringMatcher(
+                type = StringMatchType.StartWith,
+                ignoreCase = false,
+                value = "com.tencent"
+            )
+            accessFlags = AccessFlagsMatcher(
+                flags = Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL,
+                matchType = MatchType.Equal
+            )
+            superClass = classMatcher {}
+            interfacesMatcher {}
+            contain {
+                methodMatcher {
+                    methodMatcher {
+                        parametersMatcher {
+                            matchType = MatchType.Equal
+                            parameters = arrayOf(
+                                classMatcher {
+                                    usingStrings {
+                                        value = "Util"
+                                    }
+                                },
+                                // match any class
+                                null,
+                            )
+                        }
+                    }
+                }
+                fieldMatcher {
+                    annotationsMatcher {
+                        typeName = classMatcher {
+                            typeName = "com.alibaba.fastjson.annotation.JSONField"
+                        }
+                        annotationElementsMatcher {
+                            elementCount = IntRange(max = 3)
+                            matchType = MatchType.Contain
+                            elements = arrayOf(
+                                annotationElementMatcher {
+                                    name = "name"
+                                    value = "user_name"
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            // 在上一步搜索中返回的类中匹配方法
+        }.searchMethod {
+            methodMatcher {
+                usingField {
+                    type = classMatcher {
+                        typeName = "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel"
+                    }
+                    name = "a"
+                }
+            }
+        }.first().hookAfter {
+            // TODO do something
+        }
+    }
 }

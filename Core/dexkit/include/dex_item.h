@@ -6,10 +6,14 @@
 #include "phmap.h"
 #include "slicer/reader.h"
 
+#include "beans.h"
 #include "byte_code_util.h"
 #include "constant.h"
 #include "error.h"
 #include "file_helper.h"
+
+#include "querys_generated.h"
+#include "results_generated.h"
 
 namespace dexkit {
 
@@ -31,16 +35,19 @@ public:
         return _image.get();
     }
 
+    std::vector<ClassBean> FindClass(const schema::FindClass *query);
+    std::vector<MethodBean> FindMethod(const schema::FindMethod *query);
+    std::vector<FieldBean> FindField(const schema::FindField *query);
+
 private:
 
-    int InitCache(uint32_t flags);
-    int ExportDexImage(std::string &out_dir);
+    int InitCache();
 
 private:
     std::unique_ptr<MemMap> _image;
-    dex::Reader *_reader;
+    dex::Reader reader;
 
-    uint32_t dex_flag;
+    uint32_t dex_flag = 0;
 
     // string constants, sorted by string value
     std::vector<std::string_view> strings;

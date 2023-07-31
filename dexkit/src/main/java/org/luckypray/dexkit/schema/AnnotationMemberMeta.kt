@@ -19,12 +19,12 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class AnnotationMember : Table() {
+class AnnotationMemberMeta : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : AnnotationMember {
+    fun __assign(_i: Int, _bb: ByteBuffer) : AnnotationMemberMeta {
         __init(_i, _bb)
         return this
     }
@@ -49,23 +49,23 @@ class AnnotationMember : Table() {
     }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsAnnotationMember(_bb: ByteBuffer): AnnotationMember = getRootAsAnnotationMember(_bb, AnnotationMember())
-        fun getRootAsAnnotationMember(_bb: ByteBuffer, obj: AnnotationMember): AnnotationMember {
+        fun getRootAsAnnotationMemberMeta(_bb: ByteBuffer): AnnotationMemberMeta = getRootAsAnnotationMemberMeta(_bb, AnnotationMemberMeta())
+        fun getRootAsAnnotationMemberMeta(_bb: ByteBuffer, obj: AnnotationMemberMeta): AnnotationMemberMeta {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMember(builder: FlatBufferBuilder, nameOffset: Int, valueType: UByte, valueOffset: Int) : Int {
+        fun createAnnotationMemberMeta(builder: FlatBufferBuilder, nameOffset: Int, valueType: UByte, valueOffset: Int) : Int {
             builder.startTable(3)
             addValue(builder, valueOffset)
             addName(builder, nameOffset)
             addValueType(builder, valueType)
-            return endAnnotationMember(builder)
+            return endAnnotationMemberMeta(builder)
         }
-        fun startAnnotationMember(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun startAnnotationMemberMeta(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addName(builder: FlatBufferBuilder, name: Int) = builder.addOffset(0, name, 0)
         fun addValueType(builder: FlatBufferBuilder, valueType: UByte) = builder.addByte(1, valueType.toByte(), 0)
         fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(2, value, 0)
-        fun endAnnotationMember(builder: FlatBufferBuilder) : Int {
+        fun endAnnotationMemberMeta(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

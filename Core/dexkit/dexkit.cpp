@@ -81,16 +81,46 @@ Error DexKit::ExportDexFile(std::string_view path) {
     return Error::SUCCESS;
 }
 
-ResultClassVector DexKit::FindClass(const schema::FindClass *query) {
-    return {};
+std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::FindClass *query) {
+    std::vector<ClassBean> result;
+    for (auto &dex_item: dex_items) {
+        auto classes = dex_item->FindClass(query);
+        result.insert(result.end(), classes.begin(), classes.end());
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    for (auto &bean : result) {
+        auto res = bean.CreateClassMeta(*builder);
+        builder->Finish(res);
+    }
+    return builder;
 }
 
-ResultMethodVector DexKit::FindMethod(const schema::FindMethod *query) {
-    return {};
+std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema::FindMethod *query) {
+    std::vector<MethodBean> result;
+    for (auto &dex_item: dex_items) {
+        auto methods = dex_item->FindMethod(query);
+        result.insert(result.end(), methods.begin(), methods.end());
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    for (auto &bean : result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+    }
+    return builder;
 }
 
-ResultFieldVector DexKit::FindField(const schema::FindField *query) {
-    return {};
+std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::FindField *query) {
+    std::vector<FieldBean> result;
+    for (auto &dex_item: dex_items) {
+        auto fields = dex_item->FindField(query);
+        result.insert(result.end(), fields.begin(), fields.end());
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    for (auto &bean : result) {
+        auto res = bean.CreateFieldMeta(*builder);
+        builder->Finish(res);
+    }
+    return builder;
 }
 
 } // namespace dexkit

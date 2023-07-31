@@ -37,9 +37,37 @@ class BatchFindMethodUsingStrings : Table() {
             null
         }
     }
+    fun inClasses(j: Int) : Int {
+        val o = __offset(6)
+        return if (o != 0) {
+            bb.getInt(__vector(o) + j * 4)
+        } else {
+            0
+        }
+    }
+    val inClassesLength : Int
+        get() {
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+        }
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
+    fun inMethods(j: Int) : Int {
+        val o = __offset(8)
+        return if (o != 0) {
+            bb.getInt(__vector(o) + j * 4)
+        } else {
+            0
+        }
+    }
+    val inMethodsLength : Int
+        get() {
+            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+        }
+    val inMethodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 4)
+    fun inMethodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 4)
     fun matchers(j: Int) : BatchUsingStringsMatcher? = matchers(BatchUsingStringsMatcher(), j)
     fun matchers(obj: BatchUsingStringsMatcher, j: Int) : BatchUsingStringsMatcher? {
-        val o = __offset(6)
+        val o = __offset(10)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -48,7 +76,7 @@ class BatchFindMethodUsingStrings : Table() {
     }
     val matchersLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(10); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -57,15 +85,35 @@ class BatchFindMethodUsingStrings : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchFindMethodUsingStrings(builder: FlatBufferBuilder, findPackageNameOffset: Int, matchersOffset: Int) : Int {
-            builder.startTable(2)
+        fun createBatchFindMethodUsingStrings(builder: FlatBufferBuilder, findPackageNameOffset: Int, inClassesOffset: Int, inMethodsOffset: Int, matchersOffset: Int) : Int {
+            builder.startTable(4)
             addMatchers(builder, matchersOffset)
+            addInMethods(builder, inMethodsOffset)
+            addInClasses(builder, inClassesOffset)
             addFindPackageName(builder, findPackageNameOffset)
             return endBatchFindMethodUsingStrings(builder)
         }
-        fun startBatchFindMethodUsingStrings(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun startBatchFindMethodUsingStrings(builder: FlatBufferBuilder) = builder.startTable(4)
         fun addFindPackageName(builder: FlatBufferBuilder, findPackageName: Int) = builder.addOffset(0, findPackageName, 0)
-        fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(1, matchers, 0)
+        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
+        fun createInClassesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addInt(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addInMethods(builder: FlatBufferBuilder, inMethods: Int) = builder.addOffset(2, inMethods, 0)
+        fun createInMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addInt(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startInMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(3, matchers, 0)
         fun createMatchersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

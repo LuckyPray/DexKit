@@ -2,20 +2,26 @@ include "encode_value.fbs";
 include "enums.fbs";
 include "ranges.fbs";
 
-namespace schema;
+namespace dexkit.schema;
 
 table StringMatcher {
-    type: StringMatchType;
     value: string;
+    type: StringMatchType;
+    ignore_case: bool;
 }
 
 table AccessFlagsMatcher {
-    match_type: MatchType;
     flags: uint32;
+    match_type: MatchType;
 }
 
 table TargetElementTypesMatcher {
     contain_types: [TargetElementType];
+}
+
+table EnumMatcher {
+    enum_class: ClassMatcher;
+    enum_name: StringMatcher;
 }
 
 union AnnotationElementValueMatcher {
@@ -29,6 +35,7 @@ union AnnotationElementValueMatcher {
     EncodeValueDouble,
     StringMatcher,
     ClassMatcher,
+    EnumMatcher,
     AnnotationElementsMatcher,
     AnnotationMatcher,
 }
@@ -47,7 +54,7 @@ table OptionalAnnotationElementMatcher {
 }
 
 table AnnotationElementsMatcher {
-    value_count: IntRange;
+    element_count: IntRange;
     match_type: MatchType;
     elements: [OptionalAnnotationElementMatcher];
 }
@@ -99,8 +106,8 @@ union Number {
 }
 
 table UsingNumberMatcher {
-    using_type: UsingType;
     number: Number;
+    using_type: UsingType;
 }
 
 table MethodMatcher {
@@ -119,13 +126,13 @@ table MethodMatcher {
 }
 
 table MethodsMatcher {
-    method_count: IntRange;
     contain_methods: [MethodMatcher];
+    method_count: IntRange;
 }
 
 table InterfacesMatcher {
-    interface_count: IntRange;
     contain_interfaces: [ClassMatcher];
+    interface_count: IntRange;
 }
 
 table FieldMatcher {
@@ -138,8 +145,8 @@ table FieldMatcher {
 }
 
 table FieldsMatcher {
-    field_count: IntRange;
     contain_fields: [FieldMatcher];
+    field_count: IntRange;
 }
 
 table ClassMatcher {
@@ -156,6 +163,6 @@ table ClassMatcher {
 }
 
 table BatchUsingStringsMatcher {
-    union_id: string;
+    union_key: string;
     using_strings: [StringMatcher];
 }

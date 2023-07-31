@@ -38,8 +38,13 @@ class MethodMeta : Table() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
+    val classId : Int
+        get() {
+            val o = __offset(8)
+            return if(o != 0) bb.getInt(o + bb_pos) else 0
+        }
     fun annotations(j: Int) : Int {
-        val o = __offset(8)
+        val o = __offset(10)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -48,33 +53,33 @@ class MethodMeta : Table() {
     }
     val annotationsLength : Int
         get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(10); return if (o != 0) __vector_len(o) else 0
         }
-    val annotationsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 4)
-    fun annotationsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 4)
+    val annotationsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(10, 4)
+    fun annotationsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 10, 4)
     val accessFlags : UInt
         get() {
-            val o = __offset(10)
+            val o = __offset(12)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     val dexDescriptor : String?
         get() {
-            val o = __offset(12)
+            val o = __offset(14)
             return if (o != 0) {
                 __string(o + bb_pos)
             } else {
                 null
             }
         }
-    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(12, 1)
-    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 12, 1)
+    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
+    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
     val returnType : Int
         get() {
-            val o = __offset(14)
+            val o = __offset(16)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
     fun parameterTypes(j: Int) : Int {
-        val o = __offset(16)
+        val o = __offset(18)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -83,10 +88,10 @@ class MethodMeta : Table() {
     }
     val parameterTypesLength : Int
         get() {
-            val o = __offset(16); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(18); return if (o != 0) __vector_len(o) else 0
         }
-    val parameterTypesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(16, 4)
-    fun parameterTypesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 16, 4)
+    val parameterTypesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(18, 4)
+    fun parameterTypesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 18, 4)
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsMethodMeta(_bb: ByteBuffer): MethodMeta = getRootAsMethodMeta(_bb, MethodMeta())
@@ -94,21 +99,23 @@ class MethodMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createMethodMeta(builder: FlatBufferBuilder, id: Int, dexId: Int, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, returnType: Int, parameterTypesOffset: Int) : Int {
-            builder.startTable(7)
+        fun createMethodMeta(builder: FlatBufferBuilder, id: Int, dexId: Int, classId: Int, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, returnType: Int, parameterTypesOffset: Int) : Int {
+            builder.startTable(8)
             addParameterTypes(builder, parameterTypesOffset)
             addReturnType(builder, returnType)
             addDexDescriptor(builder, dexDescriptorOffset)
             addAccessFlags(builder, accessFlags)
             addAnnotations(builder, annotationsOffset)
+            addClassId(builder, classId)
             addDexId(builder, dexId)
             addId(builder, id)
             return endMethodMeta(builder)
         }
-        fun startMethodMeta(builder: FlatBufferBuilder) = builder.startTable(7)
+        fun startMethodMeta(builder: FlatBufferBuilder) = builder.startTable(8)
         fun addId(builder: FlatBufferBuilder, id: Int) = builder.addInt(0, id, 0)
         fun addDexId(builder: FlatBufferBuilder, dexId: Int) = builder.addInt(1, dexId, 0)
-        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(2, annotations, 0)
+        fun addClassId(builder: FlatBufferBuilder, classId: Int) = builder.addInt(2, classId, 0)
+        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)
         fun createAnnotationsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -117,10 +124,10 @@ class MethodMeta : Table() {
             return builder.endVector()
         }
         fun startAnnotationsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(3, accessFlags.toInt(), 0)
-        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(4, dexDescriptor, 0)
-        fun addReturnType(builder: FlatBufferBuilder, returnType: Int) = builder.addInt(5, returnType, 0)
-        fun addParameterTypes(builder: FlatBufferBuilder, parameterTypes: Int) = builder.addOffset(6, parameterTypes, 0)
+        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
+        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
+        fun addReturnType(builder: FlatBufferBuilder, returnType: Int) = builder.addInt(6, returnType, 0)
+        fun addParameterTypes(builder: FlatBufferBuilder, parameterTypes: Int) = builder.addOffset(7, parameterTypes, 0)
         fun createParameterTypesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

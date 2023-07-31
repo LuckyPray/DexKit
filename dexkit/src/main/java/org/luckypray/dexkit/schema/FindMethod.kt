@@ -33,8 +33,22 @@ class FindMethod : Table() {
             val o = __offset(4)
             return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
         }
-    fun inMethods(j: Int) : Int {
+    fun inClasses(j: Int) : Int {
         val o = __offset(6)
+        return if (o != 0) {
+            bb.getInt(__vector(o) + j * 4)
+        } else {
+            0
+        }
+    }
+    val inClassesLength : Int
+        get() {
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+        }
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
+    fun inMethods(j: Int) : Int {
+        val o = __offset(8)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -43,13 +57,13 @@ class FindMethod : Table() {
     }
     val inMethodsLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
         }
-    val inMethodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
-    fun inMethodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
+    val inMethodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 4)
+    fun inMethodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 4)
     val matcher : MethodMatcher? get() = matcher(MethodMatcher())
     fun matcher(obj: MethodMatcher) : MethodMatcher? {
-        val o = __offset(8)
+        val o = __offset(10)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -63,16 +77,26 @@ class FindMethod : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFindMethod(builder: FlatBufferBuilder, uniqueResult: Boolean, inMethodsOffset: Int, matcherOffset: Int) : Int {
-            builder.startTable(3)
+        fun createFindMethod(builder: FlatBufferBuilder, uniqueResult: Boolean, inClassesOffset: Int, inMethodsOffset: Int, matcherOffset: Int) : Int {
+            builder.startTable(4)
             addMatcher(builder, matcherOffset)
             addInMethods(builder, inMethodsOffset)
+            addInClasses(builder, inClassesOffset)
             addUniqueResult(builder, uniqueResult)
             return endFindMethod(builder)
         }
-        fun startFindMethod(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun startFindMethod(builder: FlatBufferBuilder) = builder.startTable(4)
         fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(0, uniqueResult, false)
-        fun addInMethods(builder: FlatBufferBuilder, inMethods: Int) = builder.addOffset(1, inMethods, 0)
+        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
+        fun createInClassesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addInt(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addInMethods(builder: FlatBufferBuilder, inMethods: Int) = builder.addOffset(2, inMethods, 0)
         fun createInMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -81,7 +105,7 @@ class FindMethod : Table() {
             return builder.endVector()
         }
         fun startInMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(2, matcher, 0)
+        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(3, matcher, 0)
         fun endFindMethod(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

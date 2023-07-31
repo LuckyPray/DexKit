@@ -55,6 +55,18 @@ struct MemMap {
         }
     }
 
+    explicit MemMap(uint8_t *addr, uint32_t len) {
+        auto *map = mmap(addr, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (map != MAP_FAILED) {
+            addr_ = static_cast<uint8_t *>(map);
+            len_ = len;
+        }
+        memcpy(addr_, addr, len);
+#if !(defined(_WIN32) || defined(WIN32))
+        mprotect(addr_, len_, PROT_READ);
+#endif
+    }
+
     ~MemMap() {
         if (ok()) {
             munmap(addr_, len_);
@@ -258,11 +270,7 @@ struct [[gnu::packed]] ZipLocalFile {
 #endif
             return out;
         } else if (record->compress == 0 && real_compress_size == real_uncompress_size) {
-            MemMap out(real_uncompress_size);
-            memcpy(out.addr(), data(), real_uncompress_size);
-#if !(defined(_WIN32) || defined(WIN32))
-            mprotect(out.addr(), out.len(), PROT_READ);
-#endif
+            MemMap out(data(), real_uncompress_size);
             return out;
         }
         return {};

@@ -28,19 +28,19 @@ class UsingNumberMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val usingType : Byte
-        get() {
-            val o = __offset(4)
-            return if(o != 0) bb.get(o + bb_pos) else 0
-        }
     val numberType : UByte
         get() {
-            val o = __offset(6)
+            val o = __offset(4)
             return if(o != 0) bb.get(o + bb_pos).toUByte() else 0u
         }
     fun number(obj: Table) : Table? {
-        val o = __offset(8); return if (o != 0) __union(obj, o + bb_pos) else null
+        val o = __offset(6); return if (o != 0) __union(obj, o + bb_pos) else null
     }
+    val usingType : Byte
+        get() {
+            val o = __offset(8)
+            return if(o != 0) bb.get(o + bb_pos) else 0
+        }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsUsingNumberMatcher(_bb: ByteBuffer): UsingNumberMatcher = getRootAsUsingNumberMatcher(_bb, UsingNumberMatcher())
@@ -48,17 +48,17 @@ class UsingNumberMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createUsingNumberMatcher(builder: FlatBufferBuilder, usingType: Byte, numberType: UByte, numberOffset: Int) : Int {
+        fun createUsingNumberMatcher(builder: FlatBufferBuilder, numberType: UByte, numberOffset: Int, usingType: Byte) : Int {
             builder.startTable(3)
             addNumber(builder, numberOffset)
-            addNumberType(builder, numberType)
             addUsingType(builder, usingType)
+            addNumberType(builder, numberType)
             return endUsingNumberMatcher(builder)
         }
         fun startUsingNumberMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
-        fun addUsingType(builder: FlatBufferBuilder, usingType: Byte) = builder.addByte(0, usingType, 0)
-        fun addNumberType(builder: FlatBufferBuilder, numberType: UByte) = builder.addByte(1, numberType.toByte(), 0)
-        fun addNumber(builder: FlatBufferBuilder, number: Int) = builder.addOffset(2, number, 0)
+        fun addNumberType(builder: FlatBufferBuilder, numberType: UByte) = builder.addByte(0, numberType.toByte(), 0)
+        fun addNumber(builder: FlatBufferBuilder, number: Int) = builder.addOffset(1, number, 0)
+        fun addUsingType(builder: FlatBufferBuilder, usingType: Byte) = builder.addByte(2, usingType, 0)
         fun endUsingNumberMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

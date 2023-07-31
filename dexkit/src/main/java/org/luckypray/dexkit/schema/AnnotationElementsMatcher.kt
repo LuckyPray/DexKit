@@ -28,8 +28,8 @@ class AnnotationElementsMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val valueCount : IntRange? get() = valueCount(IntRange())
-    fun valueCount(obj: IntRange) : IntRange? {
+    val elementCount : IntRange? get() = elementCount(IntRange())
+    fun elementCount(obj: IntRange) : IntRange? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -62,15 +62,15 @@ class AnnotationElementsMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationElementsMatcher(builder: FlatBufferBuilder, valueCountOffset: Int, matchType: Byte, elementsOffset: Int) : Int {
+        fun createAnnotationElementsMatcher(builder: FlatBufferBuilder, elementCountOffset: Int, matchType: Byte, elementsOffset: Int) : Int {
             builder.startTable(3)
             addElements(builder, elementsOffset)
-            addValueCount(builder, valueCountOffset)
+            addElementCount(builder, elementCountOffset)
             addMatchType(builder, matchType)
             return endAnnotationElementsMatcher(builder)
         }
         fun startAnnotationElementsMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
-        fun addValueCount(builder: FlatBufferBuilder, valueCount: Int) = builder.addOffset(0, valueCount, 0)
+        fun addElementCount(builder: FlatBufferBuilder, elementCount: Int) = builder.addOffset(0, elementCount, 0)
         fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
         fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(2, elements, 0)
         fun createElementsVector(builder: FlatBufferBuilder, data: IntArray) : Int {

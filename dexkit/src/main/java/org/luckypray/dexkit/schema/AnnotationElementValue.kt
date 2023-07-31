@@ -6,17 +6,18 @@ package org.luckypray.dexkit.schema
 class AnnotationElementValue private constructor() {
     companion object {
         const val NONE: UByte = 0u
-        const val EncodeValueBoolean: UByte = 1u
-        const val EncodeValueByte: UByte = 2u
-        const val EncodeValueShort: UByte = 3u
-        const val EncodeValueChar: UByte = 4u
-        const val EncodeValueInt: UByte = 5u
-        const val EncodeValueLong: UByte = 6u
-        const val EncodeValueFloat: UByte = 7u
-        const val EncodeValueDouble: UByte = 8u
-        const val EncodeValueString: UByte = 9u
-        const val ClassMeta: UByte = 10u
+        const val EncodeValueByte: UByte = 1u
+        const val EncodeValueShort: UByte = 2u
+        const val EncodeValueChar: UByte = 3u
+        const val EncodeValueInt: UByte = 4u
+        const val EncodeValueLong: UByte = 5u
+        const val EncodeValueFloat: UByte = 6u
+        const val EncodeValueDouble: UByte = 7u
+        const val EncodeValueString: UByte = 8u
+        const val ClassMeta: UByte = 9u
+        const val EnumValueMeta: UByte = 10u
         const val AnnotationElementValueArray: UByte = 11u
         const val AnnotationMeta: UByte = 12u
+        const val EncodeValueBoolean: UByte = 13u
     }
 }

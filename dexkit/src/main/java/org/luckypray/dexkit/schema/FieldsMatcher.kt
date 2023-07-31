@@ -28,18 +28,9 @@ class FieldsMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val fieldCount : IntRange? get() = fieldCount(IntRange())
-    fun fieldCount(obj: IntRange) : IntRange? {
-        val o = __offset(4)
-        return if (o != 0) {
-            obj.__assign(__indirect(o + bb_pos), bb)
-        } else {
-            null
-        }
-    }
     fun containFields(j: Int) : FieldMatcher? = containFields(FieldMatcher(), j)
     fun containFields(obj: FieldMatcher, j: Int) : FieldMatcher? {
-        val o = __offset(6)
+        val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -48,8 +39,17 @@ class FieldsMatcher : Table() {
     }
     val containFieldsLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(4); return if (o != 0) __vector_len(o) else 0
         }
+    val fieldCount : IntRange? get() = fieldCount(IntRange())
+    fun fieldCount(obj: IntRange) : IntRange? {
+        val o = __offset(6)
+        return if (o != 0) {
+            obj.__assign(__indirect(o + bb_pos), bb)
+        } else {
+            null
+        }
+    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsFieldsMatcher(_bb: ByteBuffer): FieldsMatcher = getRootAsFieldsMatcher(_bb, FieldsMatcher())
@@ -57,15 +57,14 @@ class FieldsMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldsMatcher(builder: FlatBufferBuilder, fieldCountOffset: Int, containFieldsOffset: Int) : Int {
+        fun createFieldsMatcher(builder: FlatBufferBuilder, containFieldsOffset: Int, fieldCountOffset: Int) : Int {
             builder.startTable(2)
-            addContainFields(builder, containFieldsOffset)
             addFieldCount(builder, fieldCountOffset)
+            addContainFields(builder, containFieldsOffset)
             return endFieldsMatcher(builder)
         }
         fun startFieldsMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addFieldCount(builder: FlatBufferBuilder, fieldCount: Int) = builder.addOffset(0, fieldCount, 0)
-        fun addContainFields(builder: FlatBufferBuilder, containFields: Int) = builder.addOffset(1, containFields, 0)
+        fun addContainFields(builder: FlatBufferBuilder, containFields: Int) = builder.addOffset(0, containFields, 0)
         fun createContainFieldsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -74,6 +73,7 @@ class FieldsMatcher : Table() {
             return builder.endVector()
         }
         fun startContainFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addFieldCount(builder: FlatBufferBuilder, fieldCount: Int) = builder.addOffset(1, fieldCount, 0)
         fun endFieldsMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

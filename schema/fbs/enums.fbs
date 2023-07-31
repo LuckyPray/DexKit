@@ -1,4 +1,4 @@
-namespace schema;
+namespace dexkit.schema;
 
 enum StringMatchType:byte {
     Contains,
@@ -27,21 +27,37 @@ enum MatchType:byte {
 }
 
 enum TargetElementType:byte {
-  Type,
-  Field,
-  Method,
-  Parameter,
-  Constructor,
-  LocalVariable,
-  AnnotationType,
-  Package,
-  // for jdk 1.8
-  TypeParameter,
-  TypeUse,
+    Type,
+    Field,
+    Method,
+    Parameter,
+    Constructor,
+    LocalVariable,
+    AnnotationType,
+    Package,
+    // for jdk 1.8
+    TypeParameter,
+    TypeUse,
 }
 
 enum RetentionPolicyType:byte {
-  Source,
-  Class,
-  Runtime,
+    Source,
+    Class,
+    Runtime,
+}
+
+enum AnnotationElementValueType: byte {
+    Byte,
+    Short,
+    Char,
+    Int,
+    Long,
+    Float,
+    Double,
+    String,
+    Type,
+    Enum,
+    Array,
+    Annotation,
+    Bool,
 }

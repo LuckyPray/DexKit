@@ -16,7 +16,8 @@ class AnnotationElementValueMatcher private constructor() {
         const val EncodeValueDouble: UByte = 8u
         const val StringMatcher: UByte = 9u
         const val ClassMatcher: UByte = 10u
-        const val AnnotationElementsMatcher: UByte = 11u
-        const val AnnotationMatcher: UByte = 12u
+        const val EnumMatcher: UByte = 11u
+        const val AnnotationElementsMatcher: UByte = 12u
+        const val AnnotationMatcher: UByte = 13u
     }
 }

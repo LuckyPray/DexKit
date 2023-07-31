@@ -28,7 +28,7 @@ class BatchUsingStringsMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val unionId : String?
+    val unionKey : String?
         get() {
             val o = __offset(4)
             return if (o != 0) {
@@ -37,8 +37,8 @@ class BatchUsingStringsMatcher : Table() {
                 null
             }
         }
-    val unionIdAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
-    fun unionIdInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
+    val unionKeyAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
+    fun unionKeyInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
     fun usingStrings(j: Int) : StringMatcher? = usingStrings(StringMatcher(), j)
     fun usingStrings(obj: StringMatcher, j: Int) : StringMatcher? {
         val o = __offset(6)
@@ -59,14 +59,14 @@ class BatchUsingStringsMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchUsingStringsMatcher(builder: FlatBufferBuilder, unionIdOffset: Int, usingStringsOffset: Int) : Int {
+        fun createBatchUsingStringsMatcher(builder: FlatBufferBuilder, unionKeyOffset: Int, usingStringsOffset: Int) : Int {
             builder.startTable(2)
             addUsingStrings(builder, usingStringsOffset)
-            addUnionId(builder, unionIdOffset)
+            addUnionKey(builder, unionKeyOffset)
             return endBatchUsingStringsMatcher(builder)
         }
         fun startBatchUsingStringsMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addUnionId(builder: FlatBufferBuilder, unionId: Int) = builder.addOffset(0, unionId, 0)
+        fun addUnionKey(builder: FlatBufferBuilder, unionKey: Int) = builder.addOffset(0, unionKey, 0)
         fun addUsingStrings(builder: FlatBufferBuilder, usingStrings: Int) = builder.addOffset(1, usingStrings, 0)
         fun createUsingStringsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)

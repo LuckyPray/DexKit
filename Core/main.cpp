@@ -2,8 +2,9 @@
 #include "slicer/reader.h"
 #include "querys_generated.h"
 #include "dexkit.h"
+#include "beans.h"
 
-using namespace schema;
+using namespace dexkit::schema;
 
 template<typename T>
 const T *From(const void *buf) {
@@ -13,13 +14,12 @@ const T *From(const void *buf) {
 int main() {
     flatbuffers::FlatBufferBuilder builder;
     auto using_strings = builder.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
-        CreateStringMatcher(builder, StringMatchType::EndWith,
-                            builder.CreateString("abc"))
+        CreateStringMatcher(builder, builder.CreateString("abc"), StringMatchType::EndWith, false)
     });
-    auto union_id = builder.CreateString("abc");
+    auto union_key = builder.CreateString("abc");
     BatchUsingStringsMatcherBuilder builder_(builder);
     builder_.add_using_strings(using_strings);
-    builder_.add_union_id(union_id);
+    builder_.add_union_key(union_key);
     auto matcher = builder_.Finish();
     builder.Finish(matcher);
 

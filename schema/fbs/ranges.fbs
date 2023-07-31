@@ -1,4 +1,4 @@
-namespace schema;
+namespace dexkit.schema;
 
 table IntRange {
     min: int;

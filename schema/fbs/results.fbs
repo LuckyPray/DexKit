@@ -1,17 +1,17 @@
 include "encode_value.fbs";
 include "enums.fbs";
 
-namespace schema;
+namespace dexkit.schema;
 
 table ClassMeta {
     id: int32;
     dex_id: int32;
+    source_file: string;
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
     super_class: int32;
     interfaces: [int32];
-    source_file: string;
     fields: [int32];
     methods: [int32];
     // annotations, super_class, interfaces, fields, methods
@@ -21,6 +21,7 @@ table ClassMeta {
 table MethodMeta {
     id: int32;
     dex_id: int32;
+    class_id: int32;
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
@@ -31,14 +32,22 @@ table MethodMeta {
 table FieldMeta {
     id: int32;
     dex_id: int32;
+    class_id: int32;
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
     type: int32;
 }
 
+table EnumValueMeta {
+    // field id
+    id: int32;
+    dex_id: int32;
+    class_id: int32;
+    value_name: string;
+}
+
 union AnnotationElementValue {
-    EncodeValueBoolean,
     EncodeValueByte,
     EncodeValueShort,
     EncodeValueChar,
@@ -48,15 +57,17 @@ union AnnotationElementValue {
     EncodeValueDouble,
     EncodeValueString,
     ClassMeta,
+    EnumValueMeta,
     AnnotationElementValueArray,
     AnnotationMeta,
+    EncodeValueBoolean,
 }
 
 table AnnotationElementValueArray {
     values: [AnnotationElementValue];
 }
 
-table AnnotationMember {
+table AnnotationMemberMeta {
     name: string;
     value: AnnotationElementValue;
 }
@@ -64,7 +75,8 @@ table AnnotationMember {
 table AnnotationMeta {
     id: int32;
     dex_id: int32;
+    class_id: int32;
     target_element_types: [TargetElementType];
     retention_policy: RetentionPolicyType;
-    members: [AnnotationMember];
+    members: [AnnotationMemberMeta];
 }

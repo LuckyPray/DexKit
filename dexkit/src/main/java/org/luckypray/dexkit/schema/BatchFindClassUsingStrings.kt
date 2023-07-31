@@ -37,9 +37,23 @@ class BatchFindClassUsingStrings : Table() {
             null
         }
     }
+    fun inClasses(j: Int) : Int {
+        val o = __offset(6)
+        return if (o != 0) {
+            bb.getInt(__vector(o) + j * 4)
+        } else {
+            0
+        }
+    }
+    val inClassesLength : Int
+        get() {
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+        }
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
     fun matchers(j: Int) : BatchUsingStringsMatcher? = matchers(BatchUsingStringsMatcher(), j)
     fun matchers(obj: BatchUsingStringsMatcher, j: Int) : BatchUsingStringsMatcher? {
-        val o = __offset(6)
+        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -48,7 +62,7 @@ class BatchFindClassUsingStrings : Table() {
     }
     val matchersLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -57,15 +71,25 @@ class BatchFindClassUsingStrings : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchFindClassUsingStrings(builder: FlatBufferBuilder, findPackageNameOffset: Int, matchersOffset: Int) : Int {
-            builder.startTable(2)
+        fun createBatchFindClassUsingStrings(builder: FlatBufferBuilder, findPackageNameOffset: Int, inClassesOffset: Int, matchersOffset: Int) : Int {
+            builder.startTable(3)
             addMatchers(builder, matchersOffset)
+            addInClasses(builder, inClassesOffset)
             addFindPackageName(builder, findPackageNameOffset)
             return endBatchFindClassUsingStrings(builder)
         }
-        fun startBatchFindClassUsingStrings(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun startBatchFindClassUsingStrings(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addFindPackageName(builder: FlatBufferBuilder, findPackageName: Int) = builder.addOffset(0, findPackageName, 0)
-        fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(1, matchers, 0)
+        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
+        fun createInClassesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addInt(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(2, matchers, 0)
         fun createMatchersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

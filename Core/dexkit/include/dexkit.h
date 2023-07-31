@@ -13,10 +13,6 @@
 
 namespace dexkit {
 
-typedef flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<schema::ClassMeta>>> ResultClassVector;
-typedef flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<schema::MethodMeta>>> ResultMethodVector;
-typedef flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<schema::FieldMeta>>> ResultFieldVector;
-
 class DexKit {
 public:
 
@@ -31,9 +27,9 @@ public:
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
     Error ExportDexFile(std::string_view path);
 
-    ResultClassVector FindClass(const schema::FindClass *query);
-    ResultMethodVector FindMethod(const schema::FindMethod *query);
-    ResultFieldVector FindField(const schema::FindField *query);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> FindMethod(const schema::FindMethod *query);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> FindField(const schema::FindField *query);
 
 private:
     uint32_t _thread_num = std::thread::hardware_concurrency();
