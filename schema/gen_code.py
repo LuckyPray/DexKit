@@ -2,7 +2,7 @@ import os
 import subprocess
 
 KOTLIN_OUT_DIR = '../dexkit/src/main/java/org/luckypray'
-CPP_OUT_DIR = '../Core/dexkit/schema'
+CPP_OUT_DIR = '../Core/dexkit/include/schema'
 
 
 files = []

@@ -8,8 +8,8 @@
 #include "file_helper.h"
 #include "ThreadPool.h"
 #include "error.h"
-#include "querys_generated.h"
-#include "results_generated.h"
+#include "schema/querys_generated.h"
+#include "schema/results_generated.h"
 
 namespace dexkit {
 

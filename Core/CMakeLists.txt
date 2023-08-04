@@ -26,7 +26,6 @@ target_include_directories(${PROJECT_NAME}_static
         PUBLIC
         dexkit/include
         dexkit/utils
-        dexkit/schema
         third_party/slicer/export
         third_party/thread_pool
         third_party/acdat

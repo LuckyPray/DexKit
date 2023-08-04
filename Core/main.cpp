@@ -1,6 +1,6 @@
 #include <iostream>
 #include "slicer/reader.h"
-#include "querys_generated.h"
+#include "schema/querys_generated.h"
 #include "dexkit.h"
 #include "beans.h"
 

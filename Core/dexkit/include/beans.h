@@ -1,7 +1,7 @@
 #pragma once
 
-#include "enums_generated.h"
-#include "results_generated.h"
+#include "schema/enums_generated.h"
+#include "schema/results_generated.h"
 
 namespace dexkit {
 

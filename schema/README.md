@@ -22,6 +22,6 @@ sed -i '' 's/dexkit.schema.//g' ../dexkit/src/main/java/org/luckypray/dexkit/sch
 ## c++
 
 ```shell
-./flatc -c --cpp-std c++17 --scoped-enums --no-emit-min-max-enum-values -o ../Core/dexkit/schema \
+./flatc -c --cpp-std c++17 --scoped-enums --no-emit-min-max-enum-values -o ../Core/dexkit/include/schema \
 fbs/encode_value.fbs fbs/enums.fbs fbs/matchers.fbs fbs/querys.fbs fbs/ranges.fbs fbs/results.fbs
 ```

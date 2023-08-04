@@ -12,8 +12,8 @@
 #include "error.h"
 #include "file_helper.h"
 
-#include "querys_generated.h"
-#include "results_generated.h"
+#include "schema/querys_generated.h"
+#include "schema/results_generated.h"
 
 namespace dexkit {
 
