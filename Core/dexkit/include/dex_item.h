@@ -38,6 +38,8 @@ public:
     std::vector<ClassBean> FindClass(const schema::FindClass *query);
     std::vector<MethodBean> FindMethod(const schema::FindMethod *query);
     std::vector<FieldBean> FindField(const schema::FindField *query);
+    std::vector<ClassBean> BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query);
+    std::vector<MethodBean> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
 
 private:
 

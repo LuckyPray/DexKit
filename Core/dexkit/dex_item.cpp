@@ -131,4 +131,14 @@ DexItem::FindField(const schema::FindField *query) {
     return {};
 }
 
+std::vector<ClassBean>
+DexItem::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query) {
+    return {};
+}
+
+std::vector<MethodBean>
+DexItem::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
+    return {};
+}
+
 }

@@ -123,4 +123,34 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
     return builder;
 }
 
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query) {
+    std::vector<ClassBean> result;
+    for (auto &dex_item: dex_items) {
+        auto classes = dex_item->BatchFindClassUsingStrings(query);
+        result.insert(result.end(), classes.begin(), classes.end());
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    for (auto &bean : result) {
+        auto res = bean.CreateClassMeta(*builder);
+        builder->Finish(res);
+    }
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
+    std::vector<MethodBean> result;
+    for (auto &dex_item: dex_items) {
+        auto methods = dex_item->BatchFindMethodUsingStrings(query);
+        result.insert(result.end(), methods.begin(), methods.end());
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    for (auto &bean : result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+    }
+    return builder;
+}
+
 } // namespace dexkit

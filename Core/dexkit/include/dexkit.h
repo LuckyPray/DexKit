@@ -30,6 +30,8 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindMethod(const schema::FindMethod *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindField(const schema::FindField *query);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
 
 private:
     uint32_t _thread_num = std::thread::hardware_concurrency();
