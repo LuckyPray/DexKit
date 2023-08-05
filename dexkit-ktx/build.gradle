@@ -80,12 +80,15 @@ android {
 
     }
 
-    sourceSets {
-        main {
-            manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(["${project(':dexkit-lib').projectDir}/src/main/java"])
-        }
-    }
+//    sourceSets {
+//        main {
+//            manifest.srcFile("AndroidManifest.xml")
+//            java.setSrcDirs([
+//                    "${project(':dexkit-lib').projectDir}/src/main/java",
+//                    "${projectDir}/src/main/java"
+//            ])
+//        }
+//    }
 
     externalNativeBuild {
         cmake {
@@ -96,6 +99,7 @@ android {
 }
 
 dependencies {
+    api(project(':dexkit-lib'))
     implementation "dev.rikka.ndk.thirdparty:cxx:1.2.0"
 }
 
@@ -117,12 +121,12 @@ afterEvaluate {
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = "org.luckypray"
-                artifactId = "DexKit"
+                artifactId = "dexkit-ktx"
                 description = "A high-performance dex parsing library implemented in C++"
                 version = libVersion
 
                 pom {
-                    name = 'DexKit'
+                    name = 'dexkit-ktx'
                     description = 'A high-performance runtime parsing library for dex implemented in C++.'
                     url = 'https://github.com/LuckyPray/DexKit'
                     licenses {
@@ -180,30 +184,30 @@ dokkaHtml.configure {
     }
 }
 
-tasks.register("updateKDoc") {
-    doLast {
-        def dokkaHtmlDir = new File(buildDir, "dokka/html")
-        if (dokkaHtmlDir.exists()) {
-            println(dokkaHtmlDir.absolutePath)
-            exec {
-                workingDir dokkaHtmlDir.absolutePath
-                def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
-                def userName = System.getenv("GITHUB_ACTOR")
-                def userEmail = "${userName}@users.noreply.github.com"
-                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-                    commandLine = ['cmd', '/c']
-                } else {
-                    commandLine = ['sh', '-c']
-                }
-                def gitCommand = "git init -b master " +
-                        "&& git config user.name ${userName} " +
-                        "&& git config user.email ${userEmail} " +
-                        '&& git add . ' +
-                        '&& git commit -m "Auto deploy KDoc" ' +
-                        "&& git push -f ${deployRepo} master:main"
-                commandLine += [gitCommand]
-                println(gitCommand)
-            }
-        }
-    }
-}
+//tasks.register("updateKDoc") {
+//    doLast {
+//        def dokkaHtmlDir = new File(buildDir, "dokka/html")
+//        if (dokkaHtmlDir.exists()) {
+//            println(dokkaHtmlDir.absolutePath)
+//            exec {
+//                workingDir dokkaHtmlDir.absolutePath
+//                def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
+//                def userName = System.getenv("GITHUB_ACTOR")
+//                def userEmail = "${userName}@users.noreply.github.com"
+//                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+//                    commandLine = ['cmd', '/c']
+//                } else {
+//                    commandLine = ['sh', '-c']
+//                }
+//                def gitCommand = "git init -b master " +
+//                        "&& git config user.name ${userName} " +
+//                        "&& git config user.email ${userEmail} " +
+//                        '&& git add . ' +
+//                        '&& git commit -m "Auto deploy KDoc" ' +
+//                        "&& git push -f ${deployRepo} master:main"
+//                commandLine += [gitCommand]
+//                println(gitCommand)
+//            }
+//        }
+//    }
+//}

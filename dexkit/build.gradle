@@ -1,0 +1,213 @@
+plugins {
+    id "com.android.library"
+    id "maven-publish"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.dokka"
+    id "signing"
+}
+
+def signingPropFile = new File(projectDir, "signing.properties")
+def performSigning = signingPropFile.exists()
+def KDockRepoName = "LuckyPray/DexKit-Doc"
+
+def libVersion = "1.1.8"
+
+android {
+    namespace "io.luckypray.dexkit"
+    compileSdk 33
+    ndkVersion = "25.0.8775105"
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=none"
+                def flags = [
+                        "-funwind-tables",
+                        "-fasynchronous-unwind-tables",
+                        "-Qunused-arguments",
+                        "-fno-rtti",
+                        "-fno-exceptions",
+                        "-fvisibility=hidden",
+                        "-fvisibility-inlines-hidden",
+                        "-Wno-unused-value",
+                        "-Wno-unused-variable",
+                        "-Wno-unused-command-line-argument",
+                ]
+                cppFlags = ["-std=c++17"] + flags
+                cFlags = ["-std=c18"] + flags
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            externalNativeBuild {
+                cmake {
+                    def releaseFlags = [
+                            "-ffunction-sections",
+                            "-fdata-sections",
+                            "-Wl,--gc-sections",
+                            "-Wl,--exclude-libs,ALL",
+                            "-Wl,--strip-all",
+                            "-Oz",
+                            "-flto=full",
+                    ]
+                    def configFlags = [
+                            "-Oz",
+                            "-DNDEBUG"
+                    ].join(" ")
+                    cppFlags += releaseFlags
+                    cFlags += releaseFlags
+                    arguments += [
+                            "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCMAKE_CXX_FLAGS_RELEASE=$configFlags",
+                            "-DCMAKE_C_FLAGS_RELEASE=$configFlags",
+                    ]
+                }
+            }
+            consumerProguardFiles "proguard-rules.pro"
+        }
+
+        debug {
+            jniDebuggable true
+        }
+
+    }
+
+//    sourceSets {
+//        main {
+//            manifest.srcFile("AndroidManifest.xml")
+//            java.setSrcDirs([
+//                    "${project(':dexkit-lib').projectDir}/src/main/java",
+//                    "${projectDir}/src/main/java",
+//            ])
+//        }
+//    }
+
+    externalNativeBuild {
+        cmake {
+            path file("CMakeLists.txt")
+            version "3.18.1"
+        }
+    }
+}
+
+dependencies {
+    api(project(':dexkit-lib'))
+    implementation "dev.rikka.ndk.thirdparty:cxx:1.2.0"
+}
+
+tasks.register("androidSourcesJar", Jar) {
+    archiveClassifier.set('sources')
+    from "${project(':dexkit-lib').projectDir}/src/main/java"
+}
+
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
+                artifact androidSourcesJar
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = "org.luckypray"
+                artifactId = "dexkit"
+                description = "A high-performance dex parsing library implemented in C++"
+                version = libVersion
+
+                pom {
+                    name = 'dexkit'
+                    description = 'A high-performance runtime parsing library for dex implemented in C++.'
+                    url = 'https://github.com/LuckyPray/DexKit'
+                    licenses {
+                        license {
+                            name = 'LGPL-3.0 license'
+                            url = 'https://www.gnu.org/licenses/lgpl-3.0.html'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'teble'
+                            name = 'teble'
+                            email = 'me@teble.me'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/LuckyPray/DexKit.git'
+                        developerConnection = 'scm:git:ssh://github.com/LuckyPray/DexKit.git'
+                        url = 'https://github.com/LuckyPray/DexKit.git'
+                    }
+                }
+            }
+        }
+        if (performSigning) {
+            repositories {
+                maven {
+                    url 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+                    credentials {
+                        def properties = new Properties()
+                        def bufferedReader = new BufferedReader(new FileReader(signingPropFile))
+                        properties.load(bufferedReader)
+
+                        username = properties.getProperty("username")
+                        password = properties.getProperty("password")
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        if (performSigning) {
+            sign publishing.publications.release
+        }
+    }
+}
+
+dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(true)
+            noStdlibLink.set(true)
+            noJdkLink.set(true)
+        }
+    }
+}
+
+//tasks.register("updateKDoc") {
+//    doLast {
+//        def dokkaHtmlDir = new File(buildDir, "dokka/html")
+//        if (dokkaHtmlDir.exists()) {
+//            println(dokkaHtmlDir.absolutePath)
+//            exec {
+//                workingDir dokkaHtmlDir.absolutePath
+//                def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
+//                def userName = System.getenv("GITHUB_ACTOR")
+//                def userEmail = "${userName}@users.noreply.github.com"
+//                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+//                    commandLine = ['cmd', '/c']
+//                } else {
+//                    commandLine = ['sh', '-c']
+//                }
+//                def gitCommand = "git init -b master " +
+//                        "&& git config user.name ${userName} " +
+//                        "&& git config user.email ${userEmail} " +
+//                        '&& git add . ' +
+//                        '&& git commit -m "Auto deploy KDoc" ' +
+//                        "&& git push -f ${deployRepo} master:main"
+//                commandLine += [gitCommand]
+//                println(gitCommand)
+//            }
+//        }
+//    }
+//}

@@ -93,35 +93,35 @@ class DexKitBridge : Closeable {
     /**
      * find class by [BatchFindMethodUsingStrings]'s [FlatBufferBuilder]
      */
-    internal fun batchFindClassUsingStrings(fbb: FlatBufferBuilder) {
+    fun _batchFindClassUsingStrings(fbb: FlatBufferBuilder) {
         nativeBatchFindClassUsingStrings(token, fbb.sizedByteArray())
     }
 
     /**
      * find class by [BatchFindClassUsingStrings]'s [FlatBufferBuilder]
      */
-    internal fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder) {
+    fun _batchFindMethodUsingStrings(fbb: FlatBufferBuilder) {
         nativeBatchFindMethodUsingStrings(token, fbb.sizedByteArray())
     }
 
     /**
      * find class by [FindClass]'s [FlatBufferBuilder]
      */
-    internal fun findClass(fbb: FlatBufferBuilder) {
+    fun _findClass(fbb: FlatBufferBuilder) {
         nativeFindClass(token, fbb.sizedByteArray())
     }
 
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    internal fun findMethod(fbb: FlatBufferBuilder) {
+    fun _findMethod(fbb: FlatBufferBuilder) {
         nativeFindMethod(token, fbb.sizedByteArray())
     }
 
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    internal fun findField(fbb: FlatBufferBuilder) {
+    fun _findField(fbb: FlatBufferBuilder) {
         nativeFindField(token, fbb.sizedByteArray())
     }
 
