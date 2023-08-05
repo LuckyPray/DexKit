@@ -83,7 +83,7 @@ android {
     sourceSets {
         main {
             manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(["${project(':dexkit').projectDir}/src/main/java"])
+            java.setSrcDirs(["${project(':dexkit-lib').projectDir}/src/main/java"])
         }
     }
 
@@ -93,10 +93,6 @@ android {
             version "3.18.1"
         }
     }
-
-    buildFeatures {
-        prefab true
-    }
 }
 
 dependencies {
@@ -105,7 +101,7 @@ dependencies {
 
 tasks.register("androidSourcesJar", Jar) {
     archiveClassifier.set('sources')
-    from "${project(':dexkit').projectDir}/src/main/java"
+    from "${project(':dexkit-lib').projectDir}/src/main/java"
 }
 
 // Because the components are created only during the afterEvaluate phase, you must
