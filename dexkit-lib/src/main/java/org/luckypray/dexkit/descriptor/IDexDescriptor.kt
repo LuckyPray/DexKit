@@ -1,4 +1,4 @@
-package io.luckypray.dexkit.descriptor
+package org.luckypray.dexkit.descriptor
 
 interface IDexDescriptor {
     val descriptor: String

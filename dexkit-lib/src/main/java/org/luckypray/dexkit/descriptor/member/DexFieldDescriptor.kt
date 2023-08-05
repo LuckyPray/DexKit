@@ -1,12 +1,11 @@
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-package io.luckypray.dexkit.descriptor.member
+package org.luckypray.dexkit.descriptor.member
 
-import io.luckypray.dexkit.descriptor.DexDescriptor
-import io.luckypray.dexkit.util.DexDescriptorUtil.getClassName
-import io.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
+import org.luckypray.dexkit.descriptor.DexDescriptor
+import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
+import org.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
 import java.lang.reflect.Field
-import java.lang.reflect.Member
 
 class DexFieldDescriptor : DexDescriptor {
 

@@ -99,13 +99,15 @@ android {
 }
 
 dependencies {
-    api(project(':dexkit-lib'))
+    api project(':dexkit-lib')
+
+    implementation 'com.google.flatbuffers:flatbuffers-java:23.5.26'
     implementation "dev.rikka.ndk.thirdparty:cxx:1.2.0"
 }
 
 tasks.register("androidSourcesJar", Jar) {
     archiveClassifier.set('sources')
-    from "${project(':dexkit-lib').projectDir}/src/main/java"
+    from "${projectDir}/src/main/java"
 }
 
 // Because the components are created only during the afterEvaluate phase, you must

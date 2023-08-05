@@ -1,9 +1,9 @@
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-package io.luckypray.dexkit.descriptor.member
+package org.luckypray.dexkit.descriptor.member
 
-import io.luckypray.dexkit.descriptor.DexDescriptor
-import io.luckypray.dexkit.util.DexDescriptorUtil.getClassName
+import org.luckypray.dexkit.descriptor.DexDescriptor
+import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
 class DexClassDescriptor : DexDescriptor {
 

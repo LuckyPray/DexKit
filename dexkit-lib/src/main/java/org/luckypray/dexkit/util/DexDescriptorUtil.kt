@@ -1,4 +1,4 @@
-package io.luckypray.dexkit.util
+package org.luckypray.dexkit.util
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method

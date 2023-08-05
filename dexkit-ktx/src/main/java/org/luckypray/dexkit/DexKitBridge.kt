@@ -3,25 +3,9 @@
 package org.luckypray.dexkit
 
 import com.google.flatbuffers.FlatBufferBuilder
-import io.luckypray.dexkit.annotations.DexKitExperimentalApi
-import io.luckypray.dexkit.builder.BatchFindArgs
-import io.luckypray.dexkit.builder.ClassUsingAnnotationArgs
-import io.luckypray.dexkit.builder.FieldUsingAnnotationArgs
-import io.luckypray.dexkit.builder.FindClassArgs
-import io.luckypray.dexkit.builder.FindMethodArgs
-import io.luckypray.dexkit.builder.MethodCallerArgs
-import io.luckypray.dexkit.builder.MethodInvokingArgs
-import io.luckypray.dexkit.builder.MethodOpcodeArgs
-import io.luckypray.dexkit.builder.MethodUsingAnnotationArgs
-import io.luckypray.dexkit.builder.MethodUsingFieldArgs
-import io.luckypray.dexkit.builder.MethodUsingNumberArgs
-import io.luckypray.dexkit.builder.MethodUsingStringArgs
-import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
-import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor
-import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
-import io.luckypray.dexkit.enums.FieldUsingType
-import io.luckypray.dexkit.enums.MatchType
-import io.luckypray.dexkit.util.OpCodeUtil.getOpFormat
+import org.luckypray.dexkit.descriptor.member.DexClassDescriptor
+import org.luckypray.dexkit.descriptor.member.DexFieldDescriptor
+import org.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import org.luckypray.dexkit.schema.BatchFindClassUsingStrings
 import org.luckypray.dexkit.schema.BatchFindMethodUsingStrings
 import org.luckypray.dexkit.schema.FindClass
@@ -93,36 +77,41 @@ class DexKitBridge : Closeable {
     /**
      * find class by [BatchFindMethodUsingStrings]'s [FlatBufferBuilder]
      */
-    fun _batchFindClassUsingStrings(fbb: FlatBufferBuilder) {
-        nativeBatchFindClassUsingStrings(token, fbb.sizedByteArray())
+    internal fun batchFindClassUsingStrings(fbb: FlatBufferBuilder): Map<String, List<DexClassDescriptor>> {
+        // TODO
+        return HashMap()
     }
 
     /**
      * find class by [BatchFindClassUsingStrings]'s [FlatBufferBuilder]
      */
-    fun _batchFindMethodUsingStrings(fbb: FlatBufferBuilder) {
-        nativeBatchFindMethodUsingStrings(token, fbb.sizedByteArray())
+    internal fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder): Map<String, List<DexMethodDescriptor>> {
+        // TODO
+        return HashMap()
     }
 
     /**
      * find class by [FindClass]'s [FlatBufferBuilder]
      */
-    fun _findClass(fbb: FlatBufferBuilder) {
-        nativeFindClass(token, fbb.sizedByteArray())
+    internal fun findClass(fbb: FlatBufferBuilder): List<DexClassDescriptor> {
+        // TODO
+        return ArrayList()
     }
 
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    fun _findMethod(fbb: FlatBufferBuilder) {
-        nativeFindMethod(token, fbb.sizedByteArray())
+    internal fun findMethod(fbb: FlatBufferBuilder): List<DexMethodDescriptor> {
+        // TODO
+        return ArrayList()
     }
 
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    fun _findField(fbb: FlatBufferBuilder) {
-        nativeFindField(token, fbb.sizedByteArray())
+    internal fun findField(fbb: FlatBufferBuilder): List<DexFieldDescriptor> {
+        // TODO
+        return ArrayList()
     }
 
     companion object {
@@ -178,19 +167,19 @@ class DexKitBridge : Closeable {
         private external fun nativeExportDexFile(nativePtr: Long, outDir: String)
 
         @JvmStatic
-        private external fun nativeBatchFindClassUsingStrings(nativePtr: Long, bytes: ByteArray)
+        private external fun nativeBatchFindClassUsingStrings(nativePtr: Long, bytes: ByteArray): ByteArray
 
         @JvmStatic
-        private external fun nativeBatchFindMethodUsingStrings(nativePtr: Long, bytes: ByteArray)
+        private external fun nativeBatchFindMethodUsingStrings(nativePtr: Long, bytes: ByteArray): ByteArray
 
         @JvmStatic
-        private external fun nativeFindClass(nativePtr: Long, bytes: ByteArray)
+        private external fun nativeFindClass(nativePtr: Long, bytes: ByteArray): ByteArray
 
         @JvmStatic
-        private external fun nativeFindMethod(nativePtr: Long, bytes: ByteArray)
+        private external fun nativeFindMethod(nativePtr: Long, bytes: ByteArray): ByteArray
 
         @JvmStatic
-        private external fun nativeFindField(nativePtr: Long, bytes: ByteArray)
+        private external fun nativeFindField(nativePtr: Long, bytes: ByteArray): ByteArray
 
     }
 

@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-KOTLIN_OUT_DIR = '../dexkit/src/main/java/org/luckypray'
+KOTLIN_OUT_DIR = '../dexkit-lib/src/main/java/org/luckypray'
 CPP_OUT_DIR = '../Core/dexkit/include/schema'
 
 
@@ -17,11 +17,11 @@ subprocess.call(['./flatc', '--kotlin', '-o', KOTLIN_OUT_DIR] + files)
 for dir, _, _files in os.walk(KOTLIN_OUT_DIR):
     for file in _files:
         file_path = os.path.join(dir, file)
-        with open(file_path, 'r') as f:
+        with open(file_path, 'rb') as f:
             content = f.read()
-        content = content.replace('package dexkit.schema', 'package org.luckypray.dexkit.schema')
-        content = content.replace('dexkit.schema.', '')
-        with open(file_path, 'w') as f:
+        content = content.replace(b'package dexkit.schema', b'package org.luckypray.dexkit.schema')
+        content = content.replace(b'dexkit.schema.', b'')
+        with open(file_path, 'wb') as f:
             f.write(content)
 
 # c++
