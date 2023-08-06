@@ -2,6 +2,7 @@
 
 #include <set>
 #include <map>
+#include <cstdint>
 #include <vector>
 
 namespace acdat {
@@ -11,7 +12,7 @@ class State {
 private:
     State *failure = nullptr;
     std::set<int, std::greater<>> emits;
-    std::map<unsigned char, State *> success;
+    std::map<uint8_t, State *> success;
     int index = 0;
 protected:
     const int depth;
@@ -20,46 +21,46 @@ public:
 
     explicit State(int depth) : depth(depth) {}
 
-    [[nodiscard]] int getDepth() const {
+    [[nodiscard]] int GetDepth() const {
         return depth;
     }
 
-    void addEmit(int keyword) {
+    void AddEmit(int keyword) {
         if (keyword == -1) return;
         this->emits.insert(keyword);
     }
 
-    int getLargestValueId() {
+    int GetLargestValueId() {
         if (emits.empty()) return -1;
         return *emits.begin();
     }
 
-    void addEmit(const std::set<int, std::greater<>> &emitSet) {
+    void AddEmit(const std::set<int, std::greater<>> &emitSet) {
         for (auto &i: emitSet) {
-            addEmit(i);
+            AddEmit(i);
         }
     }
 
-    std::set<int, std::greater<>> emit() {
+    std::set<int, std::greater<>> Emit() {
         return this->emits;
     }
 
-    bool isAcceptable() {
+    bool IsAcceptable() {
         return this->depth > 0 && !this->emits.empty();
     }
 
-    State *getFailure() {
+    State *GetFailure() {
         return this->failure;
     }
 
-    void setFailure(State *failState, std::vector<int> &fail) {
+    void SetFailure(State *failState, std::vector<int> &fail) {
         this->failure = failState;
         fail[index] = failState->index;
     }
 
 private:
-    State *next(unsigned char c, bool ignoreRootState) {
-        auto it = this->success.find(c);
+    State *Next(uint8_t ch, bool ignoreRootState) {
+        auto it = this->success.find(ch);
         State *nextState = it != this->success.end() ? (*it).second : nullptr;
         if (!ignoreRootState && nextState == nullptr && this->depth == 0) {
             nextState = this;
@@ -68,24 +69,24 @@ private:
     }
 
 public:
-    State *next(unsigned char c) {
-        return next(c, false);
+    State *Next(uint8_t ch) {
+        return Next(ch, false);
     }
 
-    State *nextStateIgnoreRootState(unsigned char c) {
-        return next(c, true);
+    State *NextStateIgnoreRootState(uint8_t ch) {
+        return Next(ch, true);
     }
 
-    State *addState(unsigned char c) {
-        State *nextState = nextStateIgnoreRootState(c);
+    State *AddState(uint8_t ch) {
+        State *nextState = NextStateIgnoreRootState(ch);
         if (nextState == nullptr) {
             nextState = new State(this->depth + 1);
-            this->success[c] = nextState;
+            this->success[ch] = nextState;
         }
         return nextState;
     }
 
-    std::vector<State *> getStates() {
+    std::vector<State *> GetStates() {
         std::vector<State *> states;
         states.reserve(this->success.size());
         for (auto &i: this->success) {
@@ -94,8 +95,8 @@ public:
         return states;
     }
 
-    std::vector<unsigned char> getTransitions() {
-        std::vector<unsigned char> transitions;
+    std::vector<uint8_t> GetTransitions() {
+        std::vector<uint8_t> transitions;
         transitions.reserve(this->success.size());
         for (auto &i: this->success) {
             transitions.push_back(i.first);
@@ -103,15 +104,15 @@ public:
         return transitions;
     }
 
-    std::map<unsigned char, State *> getSuccess() {
+    std::map<uint8_t, State *> GetSuccess() {
         return this->success;
     }
 
-    [[nodiscard]] int getIndex() const {
+    [[nodiscard]] int GetIndex() const {
         return this->index;
     }
 
-    void setIndex(int idx) {
+    void SetIndex(int idx) {
         this->index = idx;
     }
 };

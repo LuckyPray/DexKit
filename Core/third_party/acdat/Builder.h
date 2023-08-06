@@ -17,45 +17,44 @@ private:
 
     AhoCorasickDoubleArrayTrie <V> *mACTrie = nullptr;
 
-    static int fetch(State *parent, std::vector<std::pair<int, State *>> &siblings) {
-        if (parent->isAcceptable()) {
-            auto *fakeNode = new State(-(parent->getDepth() + 1));
-            fakeNode->addEmit(parent->getLargestValueId());
+    static int Fetch(State *parent, std::vector<std::pair<int, State *>> &siblings) {
+        if (parent->IsAcceptable()) {
+            auto *fakeNode = new State(-(parent->GetDepth() + 1));
+            fakeNode->AddEmit(parent->GetLargestValueId());
             siblings.emplace_back(0, fakeNode);
         }
-        for (auto &item: parent->getSuccess()) {
+        for (auto &item: parent->GetSuccess()) {
             siblings.emplace_back(item.first + 1, item.second);
         }
         return (int) siblings.size();
     }
 
-    void addKeyword(const char *keyword, int index) {
+    void AddKeyword(std::string_view keyword, int index) {
         State *currentState = this->rootState;
-        int length = strlen(keyword);
-        while (*keyword != '\0') {
-            currentState = currentState->addState(*keyword++);
+        for (int i = 0; i < keyword.size(); ++i) {
+            currentState = currentState->AddState(keyword[i]);
         }
-        currentState->addEmit(index);
-        mACTrie->l[index] = length;
+        currentState->AddEmit(index);
+        mACTrie->l[index] = keyword.size();
     }
 
-    void addAllKeyword(const std::vector<const char *> &keywords) {
+    void AddAllKeyword(const std::vector<std::string_view> &keywords) {
         int i = 0;
         for (auto keyword: keywords) {
-            addKeyword(keyword, i++);
+            AddKeyword(keyword, i++);
         }
     }
 
-    void constructFailureStates() {
+    void ConstructFailureStates() {
         mACTrie->fail.resize(mACTrie->size + 1);
         mACTrie->output.resize(mACTrie->size + 1);
         std::queue<State *> queue;
 
         // 第一步，将深度为1的节点的failure设为根节点
-        for (State *depthOneState: this->rootState->getStates()) {
-            depthOneState->setFailure(this->rootState, mACTrie->fail);
+        for (State *depthOneState: this->rootState->GetStates()) {
+            depthOneState->SetFailure(this->rootState, mACTrie->fail);
             queue.push(depthOneState);
-            constructOutput(depthOneState);
+            ConstructOutput(depthOneState);
         }
 
         // 第二步，为深度 > 1 的节点建立failure表，这是一个bfs
@@ -63,24 +62,24 @@ private:
             State *currentState = queue.front();
             queue.pop();
 
-            for (auto &c: currentState->getTransitions()) {
-                State *targetState = currentState->next(c);
+            for (auto &c: currentState->GetTransitions()) {
+                State *targetState = currentState->Next(c);
                 queue.push(targetState);
 
-                State *traceFailureState = currentState->getFailure();
-                while (traceFailureState->next(c) == nullptr) {
-                    traceFailureState = traceFailureState->getFailure();
+                State *traceFailureState = currentState->GetFailure();
+                while (traceFailureState->Next(c) == nullptr) {
+                    traceFailureState = traceFailureState->GetFailure();
                 }
-                State *newFailureState = traceFailureState->next(c);
-                targetState->setFailure(newFailureState, mACTrie->fail);
-                targetState->addEmit(newFailureState->emit());
-                constructOutput(targetState);
+                State *newFailureState = traceFailureState->Next(c);
+                targetState->SetFailure(newFailureState, mACTrie->fail);
+                targetState->AddEmit(newFailureState->Emit());
+                ConstructOutput(targetState);
             }
         }
     }
 
-    void constructOutput(State *targetState) {
-        std::set<int, std::greater<>> emit = targetState->emit();
+    void ConstructOutput(State *targetState) {
+        std::set<int, std::greater<>> emit = targetState->Emit();
         if (emit.empty()) {
             return;
         }
@@ -89,13 +88,13 @@ private:
         for (auto &item: emit) {
             vec.push_back(item);
         }
-        mACTrie->output[targetState->getIndex()] = vec;
+        mACTrie->output[targetState->GetIndex()] = vec;
     }
 
-    void buildDoubleArrayTrie(int siz) {
+    void BuildDoubleArrayTrie(int siz) {
         this->progress = 0;
         this->keySize = siz;
-        resize(512 * 32);
+        Resize(512 * 32);
 
         mACTrie->base[0] = 1;
         nextCheckPos = 0;
@@ -103,13 +102,13 @@ private:
         State *rootNode = this->rootState;
 
         std::vector<std::pair<int, State *>> siblings;
-        fetch(rootNode, siblings);
+        Fetch(rootNode, siblings);
         if (!siblings.empty()) {
-            insert(siblings);
+            Insert(siblings);
         }
     }
 
-    int resize(int newSize) {
+    int Resize(int newSize) {
         mACTrie->base.resize(newSize);
         mACTrie->check.resize(newSize);
         used.resize(newSize);
@@ -117,15 +116,15 @@ private:
         return allocSize = newSize;
     }
 
-    void insert(std::vector<std::pair<int, State *>> &firstSiblings) {
+    void Insert(std::vector<std::pair<int, State *>> &firstSiblings) {
         std::queue<std::pair<int, std::vector<std::pair<int, State *>>>> siblingQueue;
         siblingQueue.push(std::pair<int, std::vector<std::pair<int, State *>>>(-1, firstSiblings));
         while (!siblingQueue.empty()) {
-            insert(siblingQueue);
+            Insert(siblingQueue);
         }
     }
 
-    void insert(std::queue<std::pair<int, std::vector<std::pair<int, State *>>>> &siblingQueue) {
+    void Insert(std::queue<std::pair<int, std::vector<std::pair<int, State *>>>> &siblingQueue) {
         std::pair<int, std::vector<std::pair<int, State *>>> tCurrent = siblingQueue.front();
         siblingQueue.pop();
         std::vector<std::pair<int, State *>> siblings = tCurrent.second;
@@ -136,7 +135,7 @@ private:
         int first = 0;
 
         if (allocSize <= pos) {
-            resize(pos + 1);
+            Resize(pos + 1);
         }
 
         outer:
@@ -144,7 +143,7 @@ private:
             pos++;
 
             if (allocSize <= pos) {
-                resize(pos + 1);
+                Resize(pos + 1);
             }
 
             if (mACTrie->check[pos] != 0) {
@@ -160,7 +159,7 @@ private:
             if (allocSize <= (begin + siblings[siblings.size() - 1].first)) {
                 // progress can be zero // 防止progress产生除零错误
                 double ll = std::max(1.05, 1.5 * keySize / (progress + 1));
-                resize((int) (allocSize * ll));
+                Resize((int) (allocSize * ll));
             }
 
             if (used[begin]) {
@@ -195,15 +194,15 @@ private:
 
         for (auto &sibling: siblings) {
             std::vector<std::pair<int, State *>> newSiblings;
-            newSiblings.reserve(rootState->getSuccess().size());
-            if (fetch(sibling.second, newSiblings) == 0) {
-                mACTrie->base[begin + sibling.first] = (-sibling.second->getLargestValueId() - 1);
+            newSiblings.reserve(rootState->GetSuccess().size());
+            if (Fetch(sibling.second, newSiblings) == 0) {
+                mACTrie->base[begin + sibling.first] = (-sibling.second->GetLargestValueId() - 1);
                 progress++;
             } else {
                 auto pair = std::pair<int, std::vector<std::pair<int, State *>>>(begin + sibling.first, newSiblings);
                 siblingQueue.push(pair);
             }
-            sibling.second->setIndex(begin + sibling.first);
+            sibling.second->SetIndex(begin + sibling.first);
         }
 
         // Insert siblings
@@ -216,26 +215,26 @@ private:
     /**
      * free the unnecessary memory
      */
-    void losWeight() {
+    void LosWeight() {
         mACTrie->base.resize(mACTrie->size + 512);
         mACTrie->check.resize(mACTrie->size + 512);
     }
 
 public:
-    void build(std::map<std::string, V> &map, AhoCorasickDoubleArrayTrie <V> *acdat) {
+    void Build(std::map<std::string_view, V> &map, AhoCorasickDoubleArrayTrie <V> *acdat) {
         this->mACTrie = acdat;
-        std::vector<const char *> keys;
+        std::vector<std::string_view> keys;
         keys.reserve(map.size());
         for (auto &[key, value]: map) {
             mACTrie->v.push_back(value);
-            keys.push_back(key.c_str());
+            keys.push_back(key);
         }
         mACTrie->l.resize(map.size());
-        addAllKeyword(keys);
-        buildDoubleArrayTrie(keys.size());
-        constructFailureStates();
+        AddAllKeyword(keys);
+        BuildDoubleArrayTrie(keys.size());
+        ConstructFailureStates();
         rootState = nullptr;
-        losWeight();
+        LosWeight();
     }
 };
 

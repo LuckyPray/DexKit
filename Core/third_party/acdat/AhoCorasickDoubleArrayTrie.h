@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string_view>
+#include <cstring>
+#include <cstdint>
 #include <functional>
 #include "State.h"
 
@@ -27,31 +30,41 @@ public:
     std::vector<int> l;
     int size = 0;
 
-    std::vector<Hit<V>> parseText(const char *text);
+    std::vector<Hit<V>> ParseText(const char *text, bool ignoreCase = false);
 
-    void parseText(const char *text, std::function<void(int, int, V)> &callback);
+    std::vector<Hit<V>> ParseText(const char *text, int len, bool ignoreCase = false);
 
-    void parseText(const char *text, std::function<bool(int, int, V)> callback);
+    void ParseText(const char *text, std::function<void(int, int, V)> &callback, bool ignoreCase = false);
 
-    bool matches(const char *text);
+    void ParseText(const char *text, int len, std::function<void(int, int, V)> &callback, bool ignoreCase = false);
 
-    Hit<V> findFirst(const char *text);
+//    void ParseText(const char *text, std::function<bool(int, int, V)> callback, bool ignoreCase = false);
+//
+//    void ParseText(const char *text, int len, std::function<bool(int, int, V)> callback, bool ignoreCase = false);
 
-    void save() {}
+    bool Matches(const char *text, bool ignoreCase = false);
 
-    void load() {}
+    bool Matches(const char *text, int len, bool ignoreCase = false);
 
-    V get(const char *key);
+    Hit<V> FindFirst(const char *text, bool ignoreCase = false);
 
-    bool set(const char *key, V value);
+    Hit<V> FindFirst(const char *text, int len, bool ignoreCase = false);
 
-    V get(int index) {
+    void Save() {}
+
+    void Load() {}
+
+    V Get(const char *key);
+
+    bool Set(const char *key, V value);
+
+    V Get(int index) {
         return v[index];
     }
 
-    int exactMatchSearch(const char *key);
+    int ExactMatchSearch(const char *key);
 
-    int getSize() {
+    int GetSize() {
         return v.size();
     }
 
@@ -66,41 +79,49 @@ private:
      * @param character
      * @return
      */
-    int getState(int currentState, unsigned char c);
+    int GetState(int currentState, uint8_t c, bool ignoreCase = false);
 
-    void storeEmits(int position, int currentState, std::vector<Hit<V>> &collectedEmits);
+    void StoreEmits(int position, int currentState, std::vector<Hit<V>> &collectedEmits);
 
-    int exactMatchSearch(const char *key, int pos, int len, int nodePos);
+    int ExactMatchSearch(const char *key, int pos, int len, int nodePos);
 
-    int getMatched(int pos, int len, int result, const char *key, int b1);
+    int GetMatched(int pos, int len, int result, const char *key, int b1);
 
 protected:
-    int transition(int current, unsigned char c);
+    int Transition(int current, uint8_t c, bool ignoreCase = false);
 
-    int transitionWithRoot(int nodePos, unsigned char c);
+    int TransitionWithRoot(int nodePos, uint8_t c, bool ignoreCase = false);
 };
 
 template<typename V>
-std::vector<Hit<V>> AhoCorasickDoubleArrayTrie<V>::parseText(const char *text) {
+std::vector<Hit<V>> AhoCorasickDoubleArrayTrie<V>::ParseText(const char *text, bool ignoreCase) {
+    return ParseText(text, strlen(text), ignoreCase);
+}
+
+template<typename V>
+std::vector<Hit<V>> AhoCorasickDoubleArrayTrie<V>::ParseText(const char *text, int len, bool ignoreCase) {
     int position = 1;
     int currentState = 0;
     std::vector<Hit<V>> collectedEmits = std::vector<Hit<V>>();
-    while (*text != '\0') {
-        currentState = getState(currentState, *text);
-        storeEmits(position, currentState, collectedEmits);
-        ++position;
-        ++text;
+    while (len-- > 0) {
+        currentState = GetState(currentState, *text++, ignoreCase);
+        StoreEmits(position++, currentState, collectedEmits);
     }
 
     return collectedEmits;
 }
 
 template<typename V>
-void AhoCorasickDoubleArrayTrie<V>::parseText(const char *text, std::function<void(int, int, V)> &callback) {
+void AhoCorasickDoubleArrayTrie<V>::ParseText(const char *text, std::function<void(int, int, V)> &callback, bool ignoreCase) {
+    ParseText(text, strlen(text), callback, ignoreCase);
+}
+
+template<typename V>
+void AhoCorasickDoubleArrayTrie<V>::ParseText(const char *text, int len, std::function<void(int, int, V)> &callback, bool ignoreCase) {
     int position = 1;
     int currentState = 0;
-    while (*text != '\0') {
-        currentState = getState(currentState, *text++);
+    while (len-- > 0) {
+        currentState = GetState(currentState, *text++, ignoreCase);
         auto hitArray = output[currentState];
         if (!hitArray.empty()) {
             for (int &hit: hitArray) {
@@ -111,41 +132,41 @@ void AhoCorasickDoubleArrayTrie<V>::parseText(const char *text, std::function<vo
     }
 }
 
+
+//template<typename V>
+//void AhoCorasickDoubleArrayTrie<V>::ParseText(const char *text, std::function<bool(int, int, V)> callback, bool ignoreCase) {
+//    ParseText(text, strlen(text), callback, ignoreCase);
+//}
+//
+//template<typename V>
+//void AhoCorasickDoubleArrayTrie<V>::ParseText(const char *text, int len, std::function<bool(int, int, V)> callback, bool ignoreCase) {
+//    int position = 1;
+//    int currentState = 0;
+//    while (len-- > 0) {
+//        currentState = GetState(currentState, *text++, ignoreCase);
+//        auto hitArray = output[currentState];
+//        if (!hitArray.empty()) {
+//            for (int &hit: hitArray) {
+//                bool proceed = callback(position - l[hit], position, v[hit]);
+//                if (!proceed) {
+//                    return;
+//                }
+//            }
+//        }
+//        ++position;
+//    }
+//}
+
 template<typename V>
-int AhoCorasickDoubleArrayTrie<V>::getState(int currentState, unsigned char c) {
-    int newCurrentState = transitionWithRoot(currentState, c);  // 先按success跳转
-    while (newCurrentState == -1) // 跳转失败的话，按failure跳转
-    {
-        currentState = fail[currentState];
-        newCurrentState = transitionWithRoot(currentState, c);
-    }
-    return newCurrentState;
+bool AhoCorasickDoubleArrayTrie<V>::Matches(const char *text, bool ignoreCase) {
+    return Matches(text, strlen(text), ignoreCase);
 }
 
 template<typename V>
-void AhoCorasickDoubleArrayTrie<V>::parseText(const char *text, std::function<bool(int, int, V)> callback) {
-    int position = 1;
+bool AhoCorasickDoubleArrayTrie<V>::Matches(const char *text, int len, bool ignoreCase) {
     int currentState = 0;
-    while (*text != '\0') {
-        currentState = getState(currentState, *text++);
-        auto hitArray = output[currentState];
-        if (!hitArray.empty()) {
-            for (int &hit: hitArray) {
-                bool proceed = callback.hit(position - l[hit], position, v[hit]);
-                if (!proceed) {
-                    return;
-                }
-            }
-        }
-        ++position;
-    }
-}
-
-template<typename V>
-bool AhoCorasickDoubleArrayTrie<V>::matches(const char *text) {
-    int currentState = 0;
-    while (*text != '\0') {
-        currentState = getState(currentState, *text++);
+    while (len-- > 0) {
+        currentState = GetState(currentState, *text++, ignoreCase);
         auto hitArray = output[currentState];
         if (!hitArray.empty()) {
             return true;
@@ -155,11 +176,16 @@ bool AhoCorasickDoubleArrayTrie<V>::matches(const char *text) {
 }
 
 template<typename V>
-Hit<V> AhoCorasickDoubleArrayTrie<V>::findFirst(const char *text) {
+Hit<V> AhoCorasickDoubleArrayTrie<V>::FindFirst(const char *text, bool ignoreCase) {
+    return FindFirst(text, strlen(text), ignoreCase);
+}
+
+template<typename V>
+Hit<V> AhoCorasickDoubleArrayTrie<V>::FindFirst(const char *text, int len, bool ignoreCase) {
     int position = 1;
     int currentState = 0;
-    while (*text != '\0') {
-        currentState = getState(currentState, *text++);
+    while (len-- > 0) {
+        currentState = GetState(currentState, *text++, ignoreCase);
         auto hitArray = output[currentState];
         if (!hitArray.empty()) {
             int hitIndex = hitArray[0];
@@ -171,8 +197,19 @@ Hit<V> AhoCorasickDoubleArrayTrie<V>::findFirst(const char *text) {
 }
 
 template<typename V>
-V AhoCorasickDoubleArrayTrie<V>::get(const char *key) {
-    int index = exactMatchSearch(key);
+int AhoCorasickDoubleArrayTrie<V>::GetState(int currentState, uint8_t ch, bool ignoreCase) {
+    int newCurrentState = TransitionWithRoot(currentState, ch, ignoreCase);  // 先按success跳转
+    while (newCurrentState == -1) // 跳转失败的话，按failure跳转
+    {
+        currentState = fail[currentState];
+        newCurrentState = TransitionWithRoot(currentState, ch, ignoreCase);
+    }
+    return newCurrentState;
+}
+
+template<typename V>
+V AhoCorasickDoubleArrayTrie<V>::Get(const char *key) {
+    int index = ExactMatchSearch(key);
     if (index >= 0) {
         return v[index];
     }
@@ -180,8 +217,8 @@ V AhoCorasickDoubleArrayTrie<V>::get(const char *key) {
 }
 
 template<typename V>
-bool AhoCorasickDoubleArrayTrie<V>::set(const char *key, V value) {
-    int index = exactMatchSearch(key);
+bool AhoCorasickDoubleArrayTrie<V>::Set(const char *key, V value) {
+    int index = ExactMatchSearch(key);
     if (index >= 0) {
         v[index] = value;
         return true;
@@ -190,7 +227,7 @@ bool AhoCorasickDoubleArrayTrie<V>::set(const char *key, V value) {
 }
 
 template<typename V>
-void AhoCorasickDoubleArrayTrie<V>::storeEmits(int position, int currentState, std::vector<Hit<V>> &collectedEmits) {
+void AhoCorasickDoubleArrayTrie<V>::StoreEmits(int position, int currentState, std::vector<Hit<V>> &collectedEmits) {
     auto hitArray = output[currentState];
     if (!hitArray.empty()) {
         for (int &hit: hitArray) {
@@ -200,7 +237,7 @@ void AhoCorasickDoubleArrayTrie<V>::storeEmits(int position, int currentState, s
 }
 
 template<typename V>
-int AhoCorasickDoubleArrayTrie<V>::transition(int current, unsigned char c) {
+int AhoCorasickDoubleArrayTrie<V>::Transition(int current, uint8_t c, bool ignoreCase) {
     int b = current;
     int p;
 
@@ -208,6 +245,13 @@ int AhoCorasickDoubleArrayTrie<V>::transition(int current, unsigned char c) {
     if (b == check[p]) {
         b = base[p];
     } else {
+        if (ignoreCase) {
+            uint8_t c2 = c >= 'A' && c <= 'Z' ? c + 32 : c >= 'a' && c <= 'z' ? c - 32 : c;
+            int p1 = b + c2 + 1;
+            if (b == check[p1]) {
+                return base[p1];
+            }
+        }
         return -1;
     }
 
@@ -216,12 +260,19 @@ int AhoCorasickDoubleArrayTrie<V>::transition(int current, unsigned char c) {
 }
 
 template<typename V>
-int AhoCorasickDoubleArrayTrie<V>::transitionWithRoot(int nodePos, unsigned char c) {
+int AhoCorasickDoubleArrayTrie<V>::TransitionWithRoot(int nodePos, uint8_t c, bool ignoreCase) {
     int b = base[nodePos];
     int p;
 
     p = b + c + 1;
     if (b != check[p]) {
+        if (ignoreCase) {
+            uint8_t c2 = c >= 'A' && c <= 'Z' ? c + 32 : c >= 'a' && c <= 'z' ? c - 32 : c;
+            int p1 = b + c2 + 1;
+            if (b == check[p1]) {
+                return p1;
+            }
+        }
         if (nodePos == 0) {
             return 0;
         }
@@ -232,12 +283,12 @@ int AhoCorasickDoubleArrayTrie<V>::transitionWithRoot(int nodePos, unsigned char
 }
 
 template<typename V>
-int AhoCorasickDoubleArrayTrie<V>::exactMatchSearch(const char *key) {
-    return exactMatchSearch(key, 0, 0, 0);
+int AhoCorasickDoubleArrayTrie<V>::ExactMatchSearch(const char *key) {
+    return ExactMatchSearch(key, 0, 0, 0);
 }
 
 template<typename V>
-int AhoCorasickDoubleArrayTrie<V>::exactMatchSearch(const char *key, int pos, int len, int nodePos) {
+int AhoCorasickDoubleArrayTrie<V>::ExactMatchSearch(const char *key, int pos, int len, int nodePos) {
     if (len <= 0) {
         len = (int) strlen(reinterpret_cast<const char *>(key));
     }
@@ -247,11 +298,11 @@ int AhoCorasickDoubleArrayTrie<V>::exactMatchSearch(const char *key, int pos, in
 
     int result = -1;
 
-    return getMatched(pos, len, result, key, base[nodePos]);
+    return GetMatched(pos, len, result, key, base[nodePos]);
 }
 
 template<typename V>
-int AhoCorasickDoubleArrayTrie<V>::getMatched(int pos, int len, int result, const char *key, int b1) {
+int AhoCorasickDoubleArrayTrie<V>::GetMatched(int pos, int len, int result, const char *key, int b1) {
     int b = b1;
     int p;
 
