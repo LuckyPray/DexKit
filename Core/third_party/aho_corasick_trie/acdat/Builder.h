@@ -31,8 +31,9 @@ private:
 
     void AddKeyword(std::string_view keyword, int index) {
         State *currentState = this->rootState;
-        for (int i = 0; i < keyword.size(); ++i) {
-            currentState = currentState->AddState(keyword[i]);
+        for (char i : keyword) {
+            i = i >= 'A' && i <= 'Z' ? (i + 32) : i;
+            currentState = currentState->AddState(i);
         }
         currentState->AddEmit(index);
         mACTrie->l[index] = keyword.size();
@@ -118,7 +119,7 @@ private:
 
     void Insert(std::vector<std::pair<int, State *>> &firstSiblings) {
         std::queue<std::pair<int, std::vector<std::pair<int, State *>>>> siblingQueue;
-        siblingQueue.push(std::pair<int, std::vector<std::pair<int, State *>>>(-1, firstSiblings));
+        siblingQueue.emplace(-1, firstSiblings);
         while (!siblingQueue.empty()) {
             Insert(siblingQueue);
         }
@@ -221,20 +222,39 @@ private:
     }
 
 public:
-    void Build(std::map<std::string_view, V> &map, AhoCorasickDoubleArrayTrie <V> *acdat) {
+    void Build(std::vector<std::pair<V, bool>> &keywords, AhoCorasickDoubleArrayTrie <V> *acdat) {
         this->mACTrie = acdat;
-        std::vector<std::string_view> keys;
-        keys.reserve(map.size());
-        for (auto &[key, value]: map) {
-            mACTrie->v.push_back(value);
-            keys.push_back(key);
+        std::map<std::string, int> index_map;
+        std::vector<std::string_view> views;
+        int index = 0;
+        for (auto &[key, keyIgnore]: keywords) {
+            std::string str(key);
+            std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+            if (!index_map.contains(str)) {
+                index_map[str] = index++;
+                views.emplace_back(key);
+                std::vector<std::pair<V, bool>> vec;
+                vec.emplace_back(key, keyIgnore);
+                mACTrie->v.emplace_back(vec);
+            } else {
+                int i = index_map[str];
+                mACTrie->v[i].emplace_back(key, keyIgnore);
+            }
         }
-        mACTrie->l.resize(map.size());
-        AddAllKeyword(keys);
-        BuildDoubleArrayTrie(keys.size());
+        mACTrie->l.resize(views.size());
+        AddAllKeyword(views);
+        BuildDoubleArrayTrie(views.size());
         ConstructFailureStates();
         rootState = nullptr;
         LosWeight();
+    }
+
+    void Build(std::vector<V> &keywords, AhoCorasickDoubleArrayTrie <V> *acdat) {
+        std::vector<std::pair<V, bool>> vec;
+        for (auto &key: keywords) {
+            vec.emplace_back(key, false);
+        }
+        Build(vec, acdat);
     }
 };
 

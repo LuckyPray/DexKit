@@ -28,7 +28,7 @@ target_include_directories(${PROJECT_NAME}_static
         dexkit/utils
         third_party/slicer/export
         third_party/thread_pool
-        third_party/acdat
+        third_party/aho_corasick_trie
         third_party/parallel_hashmap
         third_party/flatbuffers/include
 )
