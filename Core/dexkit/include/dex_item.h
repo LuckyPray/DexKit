@@ -3,7 +3,7 @@
 #include <string_view>
 #include <vector>
 
-#include "phmap.h"
+#include "parallel_hashmap/phmap.h"
 #include "slicer/reader.h"
 
 #include "beans.h"
