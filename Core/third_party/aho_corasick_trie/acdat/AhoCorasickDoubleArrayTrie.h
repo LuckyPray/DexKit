@@ -95,7 +95,7 @@ std::vector<Hit<V>> AhoCorasickDoubleArrayTrie<V>::ParseText(std::string_view te
     int text_len = (int) text.length();
     const char *p = text.data();
     while (text_len-- > 0) {
-        currentState = GetState(currentState, *p++, ignoreCase);
+        currentState = GetState(currentState, *p++);
         StoreEmits(text, position++, currentState, ignoreCase, collectedEmits);
     }
 
