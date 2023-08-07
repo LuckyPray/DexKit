@@ -127,4 +127,24 @@ public:
     CreateAnnotationMember(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
+class BatchFindClassItemBean {
+public:
+    std::string_view union_key;
+    std::vector<ClassBean> classes;
+
+public:
+    flatbuffers::Offset<schema::BatchFindClassItem>
+    CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder &fbb) const;
+};
+
+class BatchFindMethodItemBean {
+public:
+    std::string_view union_key;
+    std::vector<MethodBean> methods;
+
+public:
+    flatbuffers::Offset<schema::BatchFindMethodItem>
+    CreateBatchFindMethodItem(flatbuffers::FlatBufferBuilder &fbb) const;
+};
+
 }

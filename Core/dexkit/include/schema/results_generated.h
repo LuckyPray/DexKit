@@ -40,6 +40,12 @@ struct AnnotationMemberMetaBuilder;
 struct AnnotationMeta;
 struct AnnotationMetaBuilder;
 
+struct BatchFindClassItem;
+struct BatchFindClassItemBuilder;
+
+struct BatchFindMethodItem;
+struct BatchFindMethodItemBuilder;
+
 enum class AnnotationElementValue : uint8_t {
   NONE = 0,
   EncodeValueByte = 1,
@@ -1071,6 +1077,150 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
       target_element_types__,
       retention_policy,
       members__);
+}
+
+struct BatchFindClassItem FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BatchFindClassItemBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_UNION_KEY = 4,
+    VT_CLASSES = 6
+  };
+  const ::flatbuffers::String *union_key() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_UNION_KEY);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *classes() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *>(VT_CLASSES);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_UNION_KEY) &&
+           verifier.VerifyString(union_key()) &&
+           VerifyOffset(verifier, VT_CLASSES) &&
+           verifier.VerifyVector(classes()) &&
+           verifier.VerifyVectorOfTables(classes()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BatchFindClassItemBuilder {
+  typedef BatchFindClassItem Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_union_key(::flatbuffers::Offset<::flatbuffers::String> union_key) {
+    fbb_.AddOffset(BatchFindClassItem::VT_UNION_KEY, union_key);
+  }
+  void add_classes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>> classes) {
+    fbb_.AddOffset(BatchFindClassItem::VT_CLASSES, classes);
+  }
+  explicit BatchFindClassItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<BatchFindClassItem> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<BatchFindClassItem>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<BatchFindClassItem> CreateBatchFindClassItem(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> union_key = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>> classes = 0) {
+  BatchFindClassItemBuilder builder_(_fbb);
+  builder_.add_classes(classes);
+  builder_.add_union_key(union_key);
+  return builder_.Finish();
+}
+
+struct BatchFindClassItem::Traits {
+  using type = BatchFindClassItem;
+  static auto constexpr Create = CreateBatchFindClassItem;
+};
+
+inline ::flatbuffers::Offset<BatchFindClassItem> CreateBatchFindClassItemDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *union_key = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *classes = nullptr) {
+  auto union_key__ = union_key ? _fbb.CreateString(union_key) : 0;
+  auto classes__ = classes ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>(*classes) : 0;
+  return dexkit::schema::CreateBatchFindClassItem(
+      _fbb,
+      union_key__,
+      classes__);
+}
+
+struct BatchFindMethodItem FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BatchFindMethodItemBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_UNION_KEY = 4,
+    VT_METHODS = 6
+  };
+  const ::flatbuffers::String *union_key() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_UNION_KEY);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *methods() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *>(VT_METHODS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_UNION_KEY) &&
+           verifier.VerifyString(union_key()) &&
+           VerifyOffset(verifier, VT_METHODS) &&
+           verifier.VerifyVector(methods()) &&
+           verifier.VerifyVectorOfTables(methods()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BatchFindMethodItemBuilder {
+  typedef BatchFindMethodItem Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_union_key(::flatbuffers::Offset<::flatbuffers::String> union_key) {
+    fbb_.AddOffset(BatchFindMethodItem::VT_UNION_KEY, union_key);
+  }
+  void add_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>> methods) {
+    fbb_.AddOffset(BatchFindMethodItem::VT_METHODS, methods);
+  }
+  explicit BatchFindMethodItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<BatchFindMethodItem> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<BatchFindMethodItem>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<BatchFindMethodItem> CreateBatchFindMethodItem(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> union_key = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>> methods = 0) {
+  BatchFindMethodItemBuilder builder_(_fbb);
+  builder_.add_methods(methods);
+  builder_.add_union_key(union_key);
+  return builder_.Finish();
+}
+
+struct BatchFindMethodItem::Traits {
+  using type = BatchFindMethodItem;
+  static auto constexpr Create = CreateBatchFindMethodItem;
+};
+
+inline ::flatbuffers::Offset<BatchFindMethodItem> CreateBatchFindMethodItemDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *union_key = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *methods = nullptr) {
+  auto union_key__ = union_key ? _fbb.CreateString(union_key) : 0;
+  auto methods__ = methods ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>(*methods) : 0;
+  return dexkit::schema::CreateBatchFindMethodItem(
+      _fbb,
+      union_key__,
+      methods__);
 }
 
 inline bool VerifyAnnotationElementValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationElementValue type) {

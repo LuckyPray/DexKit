@@ -80,3 +80,13 @@ table AnnotationMeta {
     retention_policy: RetentionPolicyType;
     members: [AnnotationMemberMeta];
 }
+
+table BatchFindClassItem {
+    union_key: string;
+    classes: [ClassMeta];
+}
+
+table BatchFindMethodItem {
+    union_key: string;
+    methods: [MethodMeta];
+}

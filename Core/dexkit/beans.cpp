@@ -180,4 +180,36 @@ AnnotationBean::CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const 
     return annotation_meta;
 }
 
+flatbuffers::Offset<schema::BatchFindClassItem>
+BatchFindClassItemBean::CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder &fbb) const {
+    std::vector<flatbuffers::Offset<schema::ClassMeta>> class_metas;
+    class_metas.reserve(this->classes.size());
+    for (auto &clazz : this->classes) {
+        class_metas.push_back(clazz.CreateClassMeta(fbb));
+    }
+    auto batch_find_class_item = schema::CreateBatchFindClassItem(
+            fbb,
+            fbb.CreateString(this->union_key),
+            fbb.CreateVector(class_metas)
+    );
+    fbb.Finish(batch_find_class_item);
+    return batch_find_class_item;
+}
+
+flatbuffers::Offset<schema::BatchFindMethodItem>
+BatchFindMethodItemBean::CreateBatchFindMethodItem(flatbuffers::FlatBufferBuilder &fbb) const {
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> method_metas;
+    method_metas.reserve(this->methods.size());
+    for (auto &method : this->methods) {
+        method_metas.push_back(method.CreateMethodMeta(fbb));
+    }
+    auto batch_find_method_item = schema::CreateBatchFindMethodItem(
+            fbb,
+            fbb.CreateString(this->union_key),
+            fbb.CreateVector(method_metas)
+    );
+    fbb.Finish(batch_find_method_item);
+    return batch_find_method_item;
+}
+
 }

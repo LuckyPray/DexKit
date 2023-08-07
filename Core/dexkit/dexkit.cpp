@@ -125,14 +125,50 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query) {
-    std::vector<ClassBean> result;
+    // build keywords trie
+    std::vector<std::pair<std::string_view, bool>> keywords;
+    phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
+    if (!query->matchers()) {
+        return {};
+    }
+    for (int i = 0; i < query->matchers()->size(); ++i) {
+        auto matcher = query->matchers()->Get(i);
+        for (int j = 0; j < matcher->using_strings()->size(); ++j) {
+            auto string_matcher = matcher->using_strings()->Get(j);
+            auto value = string_matcher->value()->string_view();
+            auto type = string_matcher->type();
+            auto ignore_case = string_matcher->ignore_case();
+            if (type == schema::StringMatchType::SimilarRegex) {
+                int l = 0, r = (int) value.size();
+                if (value.starts_with('^')) {
+                    l = 1;
+                    type = schema::StringMatchType::StartWith;
+                }
+                if (value.ends_with('$')) {
+                    r = (int) value.size() - 1;
+                    if (type == schema::StringMatchType::StartWith) {
+                        type = schema::StringMatchType::Equal;
+                    } else {
+                        type = schema::StringMatchType::EndWith;
+                    }
+                }
+                value = value.substr(l, r - l);
+            }
+            keywords.emplace_back(value, ignore_case);
+            match_type_map[value] = type;
+        }
+    }
+    acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
+    acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+
+    std::vector<BatchFindClassItemBean> result;
     for (auto &dex_item: dex_items) {
-        auto classes = dex_item->BatchFindClassUsingStrings(query);
+        auto classes = dex_item->BatchFindClassUsingStrings(query, acTrie, match_type_map);
         result.insert(result.end(), classes.begin(), classes.end());
     }
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     for (auto &bean : result) {
-        auto res = bean.CreateClassMeta(*builder);
+        auto res = bean.CreateBatchFindClassItem(*builder);
         builder->Finish(res);
     }
     return builder;
@@ -140,14 +176,14 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
-    std::vector<MethodBean> result;
+    std::vector<BatchFindMethodItemBean> result;
     for (auto &dex_item: dex_items) {
         auto methods = dex_item->BatchFindMethodUsingStrings(query);
         result.insert(result.end(), methods.begin(), methods.end());
     }
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     for (auto &bean : result) {
-        auto res = bean.CreateMethodMeta(*builder);
+        auto res = bean.CreateBatchFindMethodItem(*builder);
         builder->Finish(res);
     }
     return builder;
