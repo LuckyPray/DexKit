@@ -28,20 +28,20 @@ class MethodMeta : Table() {
         __init(_i, _bb)
         return this
     }
-    val id : Int
+    val id : UInt
         get() {
             val o = __offset(4)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val dexId : Int
+    val dexId : UInt
         get() {
             val o = __offset(6)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val classId : Int
+    val classId : UInt
         get() {
             val o = __offset(8)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun annotations(j: Int) : Int {
         val o = __offset(10)
@@ -73,10 +73,10 @@ class MethodMeta : Table() {
         }
     val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
     fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
-    val returnType : Int
+    val returnType : UInt
         get() {
             val o = __offset(16)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun parameterTypes(j: Int) : Int {
         val o = __offset(18)
@@ -99,7 +99,7 @@ class MethodMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createMethodMeta(builder: FlatBufferBuilder, id: Int, dexId: Int, classId: Int, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, returnType: Int, parameterTypesOffset: Int) : Int {
+        fun createMethodMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, returnType: UInt, parameterTypesOffset: Int) : Int {
             builder.startTable(8)
             addParameterTypes(builder, parameterTypesOffset)
             addReturnType(builder, returnType)
@@ -112,9 +112,9 @@ class MethodMeta : Table() {
             return endMethodMeta(builder)
         }
         fun startMethodMeta(builder: FlatBufferBuilder) = builder.startTable(8)
-        fun addId(builder: FlatBufferBuilder, id: Int) = builder.addInt(0, id, 0)
-        fun addDexId(builder: FlatBufferBuilder, dexId: Int) = builder.addInt(1, dexId, 0)
-        fun addClassId(builder: FlatBufferBuilder, classId: Int) = builder.addInt(2, classId, 0)
+        fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
+        fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
+        fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
         fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)
         fun createAnnotationsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
@@ -126,7 +126,7 @@ class MethodMeta : Table() {
         fun startAnnotationsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
         fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
-        fun addReturnType(builder: FlatBufferBuilder, returnType: Int) = builder.addInt(6, returnType, 0)
+        fun addReturnType(builder: FlatBufferBuilder, returnType: UInt) = builder.addInt(6, returnType.toInt(), 0)
         fun addParameterTypes(builder: FlatBufferBuilder, parameterTypes: Int) = builder.addOffset(7, parameterTypes, 0)
         fun createParameterTypesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)

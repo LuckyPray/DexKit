@@ -26,6 +26,7 @@ public:
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
     Error ExportDexFile(std::string_view path);
+    int GetDexNum() const { return (int) dex_items.size(); }
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindMethod(const schema::FindMethod *query);

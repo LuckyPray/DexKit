@@ -4,13 +4,13 @@ include "enums.fbs";
 namespace dexkit.schema;
 
 table ClassMeta {
-    id: int32;
-    dex_id: int32;
+    id: uint32;
+    dex_id: uint32;
     source_file: string;
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
-    super_class: int32;
+    super_class: uint32;
     interfaces: [int32];
     fields: [int32];
     methods: [int32];
@@ -19,31 +19,31 @@ table ClassMeta {
 }
 
 table MethodMeta {
-    id: int32;
-    dex_id: int32;
-    class_id: int32;
+    id: uint32;
+    dex_id: uint32;
+    class_id: uint32;
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
-    return_type: int32;
+    return_type: uint32;
     parameter_types: [int32];
 }
 
 table FieldMeta {
-    id: int32;
-    dex_id: int32;
-    class_id: int32;
+    id: uint32;
+    dex_id: uint32;
+    class_id: uint32;
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
-    type: int32;
+    type: uint32;
 }
 
 table EnumValueMeta {
     // field id
-    id: int32;
-    dex_id: int32;
-    class_id: int32;
+    id: uint32;
+    dex_id: uint32;
+    class_id: uint32;
     value_name: string;
 }
 
@@ -73,9 +73,9 @@ table AnnotationMemberMeta {
 }
 
 table AnnotationMeta {
-    id: int32;
-    dex_id: int32;
-    class_id: int32;
+    id: uint32;
+    dex_id: uint32;
+    class_id: uint32;
     target_element_types: [TargetElementType];
     retention_policy: RetentionPolicyType;
     members: [AnnotationMemberMeta];

@@ -37,34 +37,34 @@ class BatchFindMethodUsingStrings : Table() {
             null
         }
     }
-    fun inClasses(j: Int) : Int {
+    fun inClasses(j: Int) : ULong {
         val o = __offset(6)
         return if (o != 0) {
-            bb.getInt(__vector(o) + j * 4)
+            bb.getLong(__vector(o) + j * 8).toULong()
         } else {
-            0
+            0uL
         }
     }
     val inClassesLength : Int
         get() {
             val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
-    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
-    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
-    fun inMethods(j: Int) : Int {
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
+    fun inMethods(j: Int) : ULong {
         val o = __offset(8)
         return if (o != 0) {
-            bb.getInt(__vector(o) + j * 4)
+            bb.getLong(__vector(o) + j * 8).toULong()
         } else {
-            0
+            0uL
         }
     }
     val inMethodsLength : Int
         get() {
             val o = __offset(8); return if (o != 0) __vector_len(o) else 0
         }
-    val inMethodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 4)
-    fun inMethodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 4)
+    val inMethodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 8)
+    fun inMethodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 8)
     fun matchers(j: Int) : BatchUsingStringsMatcher? = matchers(BatchUsingStringsMatcher(), j)
     fun matchers(obj: BatchUsingStringsMatcher, j: Int) : BatchUsingStringsMatcher? {
         val o = __offset(10)
@@ -96,23 +96,25 @@ class BatchFindMethodUsingStrings : Table() {
         fun startBatchFindMethodUsingStrings(builder: FlatBufferBuilder) = builder.startTable(4)
         fun addFindPackageName(builder: FlatBufferBuilder, findPackageName: Int) = builder.addOffset(0, findPackageName, 0)
         fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
-        fun createInClassesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
-            builder.startVector(4, data.size, 4)
+        @kotlin.ExperimentalUnsignedTypes
+        fun createInClassesVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
+            builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
-                builder.addInt(data[i])
+                builder.addLong(data[i].toLong())
             }
             return builder.endVector()
         }
-        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
         fun addInMethods(builder: FlatBufferBuilder, inMethods: Int) = builder.addOffset(2, inMethods, 0)
-        fun createInMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
-            builder.startVector(4, data.size, 4)
+        @kotlin.ExperimentalUnsignedTypes
+        fun createInMethodsVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
+            builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
-                builder.addInt(data[i])
+                builder.addLong(data[i].toLong())
             }
             return builder.endVector()
         }
-        fun startInMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startInMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
         fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(3, matchers, 0)
         fun createMatchersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)

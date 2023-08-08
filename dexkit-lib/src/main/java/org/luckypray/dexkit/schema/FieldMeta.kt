@@ -28,20 +28,20 @@ class FieldMeta : Table() {
         __init(_i, _bb)
         return this
     }
-    val id : Int
+    val id : UInt
         get() {
             val o = __offset(4)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val dexId : Int
+    val dexId : UInt
         get() {
             val o = __offset(6)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val classId : Int
+    val classId : UInt
         get() {
             val o = __offset(8)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun annotations(j: Int) : Int {
         val o = __offset(10)
@@ -73,10 +73,10 @@ class FieldMeta : Table() {
         }
     val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
     fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
-    val type : Int
+    val type : UInt
         get() {
             val o = __offset(16)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -85,7 +85,7 @@ class FieldMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldMeta(builder: FlatBufferBuilder, id: Int, dexId: Int, classId: Int, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, type: Int) : Int {
+        fun createFieldMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, type: UInt) : Int {
             builder.startTable(7)
             addType(builder, type)
             addDexDescriptor(builder, dexDescriptorOffset)
@@ -97,9 +97,9 @@ class FieldMeta : Table() {
             return endFieldMeta(builder)
         }
         fun startFieldMeta(builder: FlatBufferBuilder) = builder.startTable(7)
-        fun addId(builder: FlatBufferBuilder, id: Int) = builder.addInt(0, id, 0)
-        fun addDexId(builder: FlatBufferBuilder, dexId: Int) = builder.addInt(1, dexId, 0)
-        fun addClassId(builder: FlatBufferBuilder, classId: Int) = builder.addInt(2, classId, 0)
+        fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
+        fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
+        fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
         fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)
         fun createAnnotationsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
@@ -111,7 +111,7 @@ class FieldMeta : Table() {
         fun startAnnotationsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
         fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
-        fun addType(builder: FlatBufferBuilder, type: Int) = builder.addInt(6, type, 0)
+        fun addType(builder: FlatBufferBuilder, type: UInt) = builder.addInt(6, type.toInt(), 0)
         fun endFieldMeta(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

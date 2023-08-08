@@ -7,16 +7,16 @@ namespace dexkit {
 
 class ClassBean {
 public:
-    int32_t id;
-    int32_t dex_id;
+    uint32_t id;
+    uint32_t dex_id;
     std::string_view source_file;
-    std::vector<int32_t> annotation_ids;
+    std::vector<uint32_t> annotation_ids;
     uint32_t access_flags;
     std::string_view dex_descriptor;
-    int32_t super_class_id;
-    std::vector<int32_t> interface_ids;
-    std::vector<int32_t> method_ids;
-    std::vector<int32_t> field_ids;
+    uint32_t super_class_id;
+    std::vector<uint32_t> interface_ids;
+    std::vector<uint32_t> method_ids;
+    std::vector<uint32_t> field_ids;
 
 public:
     flatbuffers::Offset<schema::ClassMeta>
@@ -25,14 +25,14 @@ public:
 
 class MethodBean {
 public:
-    int32_t id;
-    int32_t dex_id;
-    int32_t class_id;
-    std::vector<int32_t> annotation_ids;
+    uint32_t id;
+    uint32_t dex_id;
+    uint32_t class_id;
+    std::vector<uint32_t> annotation_ids;
     uint32_t access_flags;
     std::string_view dex_descriptor;
-    int32_t return_type;
-    std::vector<int32_t> parameter_types;
+    uint32_t return_type;
+    std::vector<uint32_t> parameter_types;
 
 public:
     flatbuffers::Offset<schema::MethodMeta>
@@ -41,13 +41,13 @@ public:
 
 class FieldBean {
 public:
-    int32_t id;
-    int32_t dex_id;
-    int32_t class_id;
-    std::vector<int32_t> annotation_ids;
+    uint32_t id;
+    uint32_t dex_id;
+    uint32_t class_id;
+    std::vector<uint32_t> annotation_ids;
     uint32_t access_flags;
     std::string_view dex_descriptor;
-    int32_t type;
+    uint32_t type_id;
 
 public:
     flatbuffers::Offset<schema::FieldMeta>
@@ -70,9 +70,9 @@ public:
 
 class EnumValueBean {
 public:
-    int32_t id;
-    int32_t dex_id;
-    int32_t class_id;
+    uint32_t id;
+    uint32_t dex_id;
+    uint32_t class_id;
     std::string_view name;
 
 public:
@@ -82,9 +82,9 @@ public:
 
 class AnnotationBean {
 public:
-    int32_t id;
-    int32_t dex_id;
-    int32_t class_id;
+    uint32_t id;
+    uint32_t dex_id;
+    uint32_t class_id;
     std::vector<schema::TargetElementType> target_element_types;
     schema::RetentionPolicyType retention_policy;
     std::vector<AnnotationMemberBean> elements;
@@ -98,7 +98,7 @@ union AnnotationElementValue {
     int8_t byte_value;
     int16_t short_value;
     int16_t char_value;
-    int32_t int_value;
+    uint32_t int_value;
     int64_t long_value;
     float float_value;
     double double_value;

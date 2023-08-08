@@ -28,20 +28,20 @@ class EnumValueMeta : Table() {
         __init(_i, _bb)
         return this
     }
-    val id : Int
+    val id : UInt
         get() {
             val o = __offset(4)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val dexId : Int
+    val dexId : UInt
         get() {
             val o = __offset(6)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val classId : Int
+    val classId : UInt
         get() {
             val o = __offset(8)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     val valueName : String?
         get() {
@@ -61,7 +61,7 @@ class EnumValueMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createEnumValueMeta(builder: FlatBufferBuilder, id: Int, dexId: Int, classId: Int, valueNameOffset: Int) : Int {
+        fun createEnumValueMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, valueNameOffset: Int) : Int {
             builder.startTable(4)
             addValueName(builder, valueNameOffset)
             addClassId(builder, classId)
@@ -70,9 +70,9 @@ class EnumValueMeta : Table() {
             return endEnumValueMeta(builder)
         }
         fun startEnumValueMeta(builder: FlatBufferBuilder) = builder.startTable(4)
-        fun addId(builder: FlatBufferBuilder, id: Int) = builder.addInt(0, id, 0)
-        fun addDexId(builder: FlatBufferBuilder, dexId: Int) = builder.addInt(1, dexId, 0)
-        fun addClassId(builder: FlatBufferBuilder, classId: Int) = builder.addInt(2, classId, 0)
+        fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
+        fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
+        fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
         fun addValueName(builder: FlatBufferBuilder, valueName: Int) = builder.addOffset(3, valueName, 0)
         fun endEnumValueMeta(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()

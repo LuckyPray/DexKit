@@ -44,8 +44,8 @@ struct FindClass FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
   }
-  const ::flatbuffers::Vector<int32_t> *in_classes() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_CLASSES);
+  const ::flatbuffers::Vector<uint64_t> *in_classes() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
   }
   const dexkit::schema::ClassMatcher *matcher() const {
     return GetPointer<const dexkit::schema::ClassMatcher *>(VT_MATCHER);
@@ -68,7 +68,7 @@ struct FindClassBuilder {
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindClass::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
   }
-  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes) {
+  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
     fbb_.AddOffset(FindClass::VT_IN_CLASSES, in_classes);
   }
   void add_matcher(::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher) {
@@ -88,7 +88,7 @@ struct FindClassBuilder {
 inline ::flatbuffers::Offset<FindClass> CreateFindClass(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool unique_result = false,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher = 0) {
   FindClassBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
@@ -105,9 +105,9 @@ struct FindClass::Traits {
 inline ::flatbuffers::Offset<FindClass> CreateFindClassDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool unique_result = false,
-    const std::vector<int32_t> *in_classes = nullptr,
+    const std::vector<uint64_t> *in_classes = nullptr,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher = 0) {
-  auto in_classes__ = in_classes ? _fbb.CreateVector<int32_t>(*in_classes) : 0;
+  auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   return dexkit::schema::CreateFindClass(
       _fbb,
       unique_result,
@@ -127,11 +127,11 @@ struct FindMethod FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
   }
-  const ::flatbuffers::Vector<int32_t> *in_classes() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_CLASSES);
+  const ::flatbuffers::Vector<uint64_t> *in_classes() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
   }
-  const ::flatbuffers::Vector<int32_t> *in_methods() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_METHODS);
+  const ::flatbuffers::Vector<uint64_t> *in_methods() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_METHODS);
   }
   const dexkit::schema::MethodMatcher *matcher() const {
     return GetPointer<const dexkit::schema::MethodMatcher *>(VT_MATCHER);
@@ -156,10 +156,10 @@ struct FindMethodBuilder {
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindMethod::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
   }
-  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes) {
+  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
     fbb_.AddOffset(FindMethod::VT_IN_CLASSES, in_classes);
   }
-  void add_in_methods(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_methods) {
+  void add_in_methods(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_methods) {
     fbb_.AddOffset(FindMethod::VT_IN_METHODS, in_methods);
   }
   void add_matcher(::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher) {
@@ -179,8 +179,8 @@ struct FindMethodBuilder {
 inline ::flatbuffers::Offset<FindMethod> CreateFindMethod(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool unique_result = false,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_methods = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_methods = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher = 0) {
   FindMethodBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
@@ -198,11 +198,11 @@ struct FindMethod::Traits {
 inline ::flatbuffers::Offset<FindMethod> CreateFindMethodDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool unique_result = false,
-    const std::vector<int32_t> *in_classes = nullptr,
-    const std::vector<int32_t> *in_methods = nullptr,
+    const std::vector<uint64_t> *in_classes = nullptr,
+    const std::vector<uint64_t> *in_methods = nullptr,
     ::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher = 0) {
-  auto in_classes__ = in_classes ? _fbb.CreateVector<int32_t>(*in_classes) : 0;
-  auto in_methods__ = in_methods ? _fbb.CreateVector<int32_t>(*in_methods) : 0;
+  auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
+  auto in_methods__ = in_methods ? _fbb.CreateVector<uint64_t>(*in_methods) : 0;
   return dexkit::schema::CreateFindMethod(
       _fbb,
       unique_result,
@@ -222,8 +222,8 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
   }
-  const ::flatbuffers::Vector<int32_t> *in_fields() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_FIELDS);
+  const ::flatbuffers::Vector<uint64_t> *in_fields() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_FIELDS);
   }
   const dexkit::schema::FieldMatcher *matcher() const {
     return GetPointer<const dexkit::schema::FieldMatcher *>(VT_MATCHER);
@@ -246,7 +246,7 @@ struct FindFieldBuilder {
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindField::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
   }
-  void add_in_fields(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_fields) {
+  void add_in_fields(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_fields) {
     fbb_.AddOffset(FindField::VT_IN_FIELDS, in_fields);
   }
   void add_matcher(::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher) {
@@ -266,7 +266,7 @@ struct FindFieldBuilder {
 inline ::flatbuffers::Offset<FindField> CreateFindField(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool unique_result = false,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_fields = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_fields = 0,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
   FindFieldBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
@@ -283,9 +283,9 @@ struct FindField::Traits {
 inline ::flatbuffers::Offset<FindField> CreateFindFieldDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool unique_result = false,
-    const std::vector<int32_t> *in_fields = nullptr,
+    const std::vector<uint64_t> *in_fields = nullptr,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
-  auto in_fields__ = in_fields ? _fbb.CreateVector<int32_t>(*in_fields) : 0;
+  auto in_fields__ = in_fields ? _fbb.CreateVector<uint64_t>(*in_fields) : 0;
   return dexkit::schema::CreateFindField(
       _fbb,
       unique_result,
@@ -304,8 +304,8 @@ struct BatchFindClassUsingStrings FLATBUFFERS_FINAL_CLASS : private ::flatbuffer
   const dexkit::schema::StringMatcher *find_package_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIND_PACKAGE_NAME);
   }
-  const ::flatbuffers::Vector<int32_t> *in_classes() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_CLASSES);
+  const ::flatbuffers::Vector<uint64_t> *in_classes() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *>(VT_MATCHERS);
@@ -330,7 +330,7 @@ struct BatchFindClassUsingStringsBuilder {
   void add_find_package_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name) {
     fbb_.AddOffset(BatchFindClassUsingStrings::VT_FIND_PACKAGE_NAME, find_package_name);
   }
-  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes) {
+  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
     fbb_.AddOffset(BatchFindClassUsingStrings::VT_IN_CLASSES, in_classes);
   }
   void add_matchers(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>> matchers) {
@@ -350,7 +350,7 @@ struct BatchFindClassUsingStringsBuilder {
 inline ::flatbuffers::Offset<BatchFindClassUsingStrings> CreateBatchFindClassUsingStrings(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>> matchers = 0) {
   BatchFindClassUsingStringsBuilder builder_(_fbb);
   builder_.add_matchers(matchers);
@@ -367,9 +367,9 @@ struct BatchFindClassUsingStrings::Traits {
 inline ::flatbuffers::Offset<BatchFindClassUsingStrings> CreateBatchFindClassUsingStringsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
-    const std::vector<int32_t> *in_classes = nullptr,
+    const std::vector<uint64_t> *in_classes = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers = nullptr) {
-  auto in_classes__ = in_classes ? _fbb.CreateVector<int32_t>(*in_classes) : 0;
+  auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   auto matchers__ = matchers ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>(*matchers) : 0;
   return dexkit::schema::CreateBatchFindClassUsingStrings(
       _fbb,
@@ -390,11 +390,11 @@ struct BatchFindMethodUsingStrings FLATBUFFERS_FINAL_CLASS : private ::flatbuffe
   const dexkit::schema::StringMatcher *find_package_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIND_PACKAGE_NAME);
   }
-  const ::flatbuffers::Vector<int32_t> *in_classes() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_CLASSES);
+  const ::flatbuffers::Vector<uint64_t> *in_classes() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
   }
-  const ::flatbuffers::Vector<int32_t> *in_methods() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_IN_METHODS);
+  const ::flatbuffers::Vector<uint64_t> *in_methods() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_METHODS);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *>(VT_MATCHERS);
@@ -421,10 +421,10 @@ struct BatchFindMethodUsingStringsBuilder {
   void add_find_package_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name) {
     fbb_.AddOffset(BatchFindMethodUsingStrings::VT_FIND_PACKAGE_NAME, find_package_name);
   }
-  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes) {
+  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
     fbb_.AddOffset(BatchFindMethodUsingStrings::VT_IN_CLASSES, in_classes);
   }
-  void add_in_methods(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_methods) {
+  void add_in_methods(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_methods) {
     fbb_.AddOffset(BatchFindMethodUsingStrings::VT_IN_METHODS, in_methods);
   }
   void add_matchers(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>> matchers) {
@@ -444,8 +444,8 @@ struct BatchFindMethodUsingStringsBuilder {
 inline ::flatbuffers::Offset<BatchFindMethodUsingStrings> CreateBatchFindMethodUsingStrings(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_classes = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> in_methods = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_methods = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>> matchers = 0) {
   BatchFindMethodUsingStringsBuilder builder_(_fbb);
   builder_.add_matchers(matchers);
@@ -463,11 +463,11 @@ struct BatchFindMethodUsingStrings::Traits {
 inline ::flatbuffers::Offset<BatchFindMethodUsingStrings> CreateBatchFindMethodUsingStringsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
-    const std::vector<int32_t> *in_classes = nullptr,
-    const std::vector<int32_t> *in_methods = nullptr,
+    const std::vector<uint64_t> *in_classes = nullptr,
+    const std::vector<uint64_t> *in_methods = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers = nullptr) {
-  auto in_classes__ = in_classes ? _fbb.CreateVector<int32_t>(*in_classes) : 0;
-  auto in_methods__ = in_methods ? _fbb.CreateVector<int32_t>(*in_methods) : 0;
+  auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
+  auto in_methods__ = in_methods ? _fbb.CreateVector<uint64_t>(*in_methods) : 0;
   auto matchers__ = matchers ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>(*matchers) : 0;
   return dexkit::schema::CreateBatchFindMethodUsingStrings(
       _fbb,

@@ -28,20 +28,20 @@ class AnnotationMeta : Table() {
         __init(_i, _bb)
         return this
     }
-    val id : Int
+    val id : UInt
         get() {
             val o = __offset(4)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val dexId : Int
+    val dexId : UInt
         get() {
             val o = __offset(6)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val classId : Int
+    val classId : UInt
         get() {
             val o = __offset(8)
-            return if(o != 0) bb.getInt(o + bb_pos) else 0
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun targetElementTypes(j: Int) : Byte {
         val o = __offset(10)
@@ -82,7 +82,7 @@ class AnnotationMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMeta(builder: FlatBufferBuilder, id: Int, dexId: Int, classId: Int, targetElementTypesOffset: Int, retentionPolicy: Byte, membersOffset: Int) : Int {
+        fun createAnnotationMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, targetElementTypesOffset: Int, retentionPolicy: Byte, membersOffset: Int) : Int {
             builder.startTable(6)
             addMembers(builder, membersOffset)
             addTargetElementTypes(builder, targetElementTypesOffset)
@@ -93,9 +93,9 @@ class AnnotationMeta : Table() {
             return endAnnotationMeta(builder)
         }
         fun startAnnotationMeta(builder: FlatBufferBuilder) = builder.startTable(6)
-        fun addId(builder: FlatBufferBuilder, id: Int) = builder.addInt(0, id, 0)
-        fun addDexId(builder: FlatBufferBuilder, dexId: Int) = builder.addInt(1, dexId, 0)
-        fun addClassId(builder: FlatBufferBuilder, classId: Int) = builder.addInt(2, classId, 0)
+        fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
+        fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
+        fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
         fun addTargetElementTypes(builder: FlatBufferBuilder, targetElementTypes: Int) = builder.addOffset(3, targetElementTypes, 0)
         fun createTargetElementTypesVector(builder: FlatBufferBuilder, data: ByteArray) : Int {
             builder.startVector(1, data.size, 1)

@@ -4,32 +4,32 @@ namespace dexkit.schema;
 
 table FindClass {
     unique_result: bool;
-    in_classes: [int32];
+    in_classes: [uint64];
     matcher: ClassMatcher;
 }
 
 table FindMethod {
     unique_result: bool;
-    in_classes: [int32];
-    in_methods: [int32];
+    in_classes: [uint64];
+    in_methods: [uint64];
     matcher: MethodMatcher;
 }
 
 table FindField {
     unique_result: bool;
-    in_fields: [int32];
+    in_fields: [uint64];
     matcher: FieldMatcher;
 }
 
 table BatchFindClassUsingStrings {
     find_package_name: StringMatcher;
-    in_classes: [int32];
+    in_classes: [uint64];
     matchers: [BatchUsingStringsMatcher];
 }
 
 table BatchFindMethodUsingStrings {
     find_package_name: StringMatcher;
-    in_classes: [int32];
-    in_methods: [int32];
+    in_classes: [uint64];
+    in_methods: [uint64];
     matchers: [BatchUsingStringsMatcher];
 }

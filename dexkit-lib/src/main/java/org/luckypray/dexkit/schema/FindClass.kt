@@ -33,20 +33,20 @@ class FindClass : Table() {
             val o = __offset(4)
             return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
         }
-    fun inClasses(j: Int) : Int {
+    fun inClasses(j: Int) : ULong {
         val o = __offset(6)
         return if (o != 0) {
-            bb.getInt(__vector(o) + j * 4)
+            bb.getLong(__vector(o) + j * 8).toULong()
         } else {
-            0
+            0uL
         }
     }
     val inClassesLength : Int
         get() {
             val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
-    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
-    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
     val matcher : ClassMatcher? get() = matcher(ClassMatcher())
     fun matcher(obj: ClassMatcher) : ClassMatcher? {
         val o = __offset(8)
@@ -73,14 +73,15 @@ class FindClass : Table() {
         fun startFindClass(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(0, uniqueResult, false)
         fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
-        fun createInClassesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
-            builder.startVector(4, data.size, 4)
+        @kotlin.ExperimentalUnsignedTypes
+        fun createInClassesVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
+            builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
-                builder.addInt(data[i])
+                builder.addLong(data[i].toLong())
             }
             return builder.endVector()
         }
-        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
         fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(2, matcher, 0)
         fun endFindClass(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()

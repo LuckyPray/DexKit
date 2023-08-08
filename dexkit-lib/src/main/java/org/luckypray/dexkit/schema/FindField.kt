@@ -33,20 +33,20 @@ class FindField : Table() {
             val o = __offset(4)
             return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
         }
-    fun inFields(j: Int) : Int {
+    fun inFields(j: Int) : ULong {
         val o = __offset(6)
         return if (o != 0) {
-            bb.getInt(__vector(o) + j * 4)
+            bb.getLong(__vector(o) + j * 8).toULong()
         } else {
-            0
+            0uL
         }
     }
     val inFieldsLength : Int
         get() {
             val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
-    val inFieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 4)
-    fun inFieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 4)
+    val inFieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
+    fun inFieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
     val matcher : FieldMatcher? get() = matcher(FieldMatcher())
     fun matcher(obj: FieldMatcher) : FieldMatcher? {
         val o = __offset(8)
@@ -73,14 +73,15 @@ class FindField : Table() {
         fun startFindField(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(0, uniqueResult, false)
         fun addInFields(builder: FlatBufferBuilder, inFields: Int) = builder.addOffset(1, inFields, 0)
-        fun createInFieldsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
-            builder.startVector(4, data.size, 4)
+        @kotlin.ExperimentalUnsignedTypes
+        fun createInFieldsVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
+            builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
-                builder.addInt(data[i])
+                builder.addLong(data[i].toLong())
             }
             return builder.endVector()
         }
-        fun startInFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startInFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
         fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(2, matcher, 0)
         fun endFindField(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()

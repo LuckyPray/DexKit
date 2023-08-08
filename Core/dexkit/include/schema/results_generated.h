@@ -184,11 +184,11 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FIELDS = 20,
     VT_METHODS = 22
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  int32_t dex_id() const {
-    return GetField<int32_t>(VT_DEX_ID, 0);
+  uint32_t dex_id() const {
+    return GetField<uint32_t>(VT_DEX_ID, 0);
   }
   const ::flatbuffers::String *source_file() const {
     return GetPointer<const ::flatbuffers::String *>(VT_SOURCE_FILE);
@@ -202,8 +202,8 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *dex_descriptor() const {
     return GetPointer<const ::flatbuffers::String *>(VT_DEX_DESCRIPTOR);
   }
-  int32_t super_class() const {
-    return GetField<int32_t>(VT_SUPER_CLASS, 0);
+  uint32_t super_class() const {
+    return GetField<uint32_t>(VT_SUPER_CLASS, 0);
   }
   const ::flatbuffers::Vector<int32_t> *interfaces() const {
     return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_INTERFACES);
@@ -216,8 +216,8 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_DEX_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DEX_ID, 4) &&
            VerifyOffset(verifier, VT_SOURCE_FILE) &&
            verifier.VerifyString(source_file()) &&
            VerifyOffset(verifier, VT_ANNOTATIONS) &&
@@ -225,7 +225,7 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_ACCESS_FLAGS, 4) &&
            VerifyOffset(verifier, VT_DEX_DESCRIPTOR) &&
            verifier.VerifyString(dex_descriptor()) &&
-           VerifyField<int32_t>(verifier, VT_SUPER_CLASS, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SUPER_CLASS, 4) &&
            VerifyOffset(verifier, VT_INTERFACES) &&
            verifier.VerifyVector(interfaces()) &&
            VerifyOffset(verifier, VT_FIELDS) &&
@@ -240,11 +240,11 @@ struct ClassMetaBuilder {
   typedef ClassMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(ClassMeta::VT_ID, id, 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(ClassMeta::VT_ID, id, 0);
   }
-  void add_dex_id(int32_t dex_id) {
-    fbb_.AddElement<int32_t>(ClassMeta::VT_DEX_ID, dex_id, 0);
+  void add_dex_id(uint32_t dex_id) {
+    fbb_.AddElement<uint32_t>(ClassMeta::VT_DEX_ID, dex_id, 0);
   }
   void add_source_file(::flatbuffers::Offset<::flatbuffers::String> source_file) {
     fbb_.AddOffset(ClassMeta::VT_SOURCE_FILE, source_file);
@@ -258,8 +258,8 @@ struct ClassMetaBuilder {
   void add_dex_descriptor(::flatbuffers::Offset<::flatbuffers::String> dex_descriptor) {
     fbb_.AddOffset(ClassMeta::VT_DEX_DESCRIPTOR, dex_descriptor);
   }
-  void add_super_class(int32_t super_class) {
-    fbb_.AddElement<int32_t>(ClassMeta::VT_SUPER_CLASS, super_class, 0);
+  void add_super_class(uint32_t super_class) {
+    fbb_.AddElement<uint32_t>(ClassMeta::VT_SUPER_CLASS, super_class, 0);
   }
   void add_interfaces(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> interfaces) {
     fbb_.AddOffset(ClassMeta::VT_INTERFACES, interfaces);
@@ -283,13 +283,13 @@ struct ClassMetaBuilder {
 
 inline ::flatbuffers::Offset<ClassMeta> CreateClassMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> source_file = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> annotations = 0,
     uint32_t access_flags = 0,
     ::flatbuffers::Offset<::flatbuffers::String> dex_descriptor = 0,
-    int32_t super_class = 0,
+    uint32_t super_class = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> interfaces = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> fields = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> methods = 0) {
@@ -314,13 +314,13 @@ struct ClassMeta::Traits {
 
 inline ::flatbuffers::Offset<ClassMeta> CreateClassMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
     const char *source_file = nullptr,
     const std::vector<int32_t> *annotations = nullptr,
     uint32_t access_flags = 0,
     const char *dex_descriptor = nullptr,
-    int32_t super_class = 0,
+    uint32_t super_class = 0,
     const std::vector<int32_t> *interfaces = nullptr,
     const std::vector<int32_t> *fields = nullptr,
     const std::vector<int32_t> *methods = nullptr) {
@@ -357,14 +357,14 @@ struct MethodMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RETURN_TYPE = 16,
     VT_PARAMETER_TYPES = 18
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  int32_t dex_id() const {
-    return GetField<int32_t>(VT_DEX_ID, 0);
+  uint32_t dex_id() const {
+    return GetField<uint32_t>(VT_DEX_ID, 0);
   }
-  int32_t class_id() const {
-    return GetField<int32_t>(VT_CLASS_ID, 0);
+  uint32_t class_id() const {
+    return GetField<uint32_t>(VT_CLASS_ID, 0);
   }
   const ::flatbuffers::Vector<int32_t> *annotations() const {
     return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_ANNOTATIONS);
@@ -375,23 +375,23 @@ struct MethodMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *dex_descriptor() const {
     return GetPointer<const ::flatbuffers::String *>(VT_DEX_DESCRIPTOR);
   }
-  int32_t return_type() const {
-    return GetField<int32_t>(VT_RETURN_TYPE, 0);
+  uint32_t return_type() const {
+    return GetField<uint32_t>(VT_RETURN_TYPE, 0);
   }
   const ::flatbuffers::Vector<int32_t> *parameter_types() const {
     return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_PARAMETER_TYPES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_DEX_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_CLASS_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DEX_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLASS_ID, 4) &&
            VerifyOffset(verifier, VT_ANNOTATIONS) &&
            verifier.VerifyVector(annotations()) &&
            VerifyField<uint32_t>(verifier, VT_ACCESS_FLAGS, 4) &&
            VerifyOffset(verifier, VT_DEX_DESCRIPTOR) &&
            verifier.VerifyString(dex_descriptor()) &&
-           VerifyField<int32_t>(verifier, VT_RETURN_TYPE, 4) &&
+           VerifyField<uint32_t>(verifier, VT_RETURN_TYPE, 4) &&
            VerifyOffset(verifier, VT_PARAMETER_TYPES) &&
            verifier.VerifyVector(parameter_types()) &&
            verifier.EndTable();
@@ -402,14 +402,14 @@ struct MethodMetaBuilder {
   typedef MethodMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(MethodMeta::VT_ID, id, 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(MethodMeta::VT_ID, id, 0);
   }
-  void add_dex_id(int32_t dex_id) {
-    fbb_.AddElement<int32_t>(MethodMeta::VT_DEX_ID, dex_id, 0);
+  void add_dex_id(uint32_t dex_id) {
+    fbb_.AddElement<uint32_t>(MethodMeta::VT_DEX_ID, dex_id, 0);
   }
-  void add_class_id(int32_t class_id) {
-    fbb_.AddElement<int32_t>(MethodMeta::VT_CLASS_ID, class_id, 0);
+  void add_class_id(uint32_t class_id) {
+    fbb_.AddElement<uint32_t>(MethodMeta::VT_CLASS_ID, class_id, 0);
   }
   void add_annotations(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> annotations) {
     fbb_.AddOffset(MethodMeta::VT_ANNOTATIONS, annotations);
@@ -420,8 +420,8 @@ struct MethodMetaBuilder {
   void add_dex_descriptor(::flatbuffers::Offset<::flatbuffers::String> dex_descriptor) {
     fbb_.AddOffset(MethodMeta::VT_DEX_DESCRIPTOR, dex_descriptor);
   }
-  void add_return_type(int32_t return_type) {
-    fbb_.AddElement<int32_t>(MethodMeta::VT_RETURN_TYPE, return_type, 0);
+  void add_return_type(uint32_t return_type) {
+    fbb_.AddElement<uint32_t>(MethodMeta::VT_RETURN_TYPE, return_type, 0);
   }
   void add_parameter_types(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> parameter_types) {
     fbb_.AddOffset(MethodMeta::VT_PARAMETER_TYPES, parameter_types);
@@ -439,13 +439,13 @@ struct MethodMetaBuilder {
 
 inline ::flatbuffers::Offset<MethodMeta> CreateMethodMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> annotations = 0,
     uint32_t access_flags = 0,
     ::flatbuffers::Offset<::flatbuffers::String> dex_descriptor = 0,
-    int32_t return_type = 0,
+    uint32_t return_type = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> parameter_types = 0) {
   MethodMetaBuilder builder_(_fbb);
   builder_.add_parameter_types(parameter_types);
@@ -466,13 +466,13 @@ struct MethodMeta::Traits {
 
 inline ::flatbuffers::Offset<MethodMeta> CreateMethodMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     const std::vector<int32_t> *annotations = nullptr,
     uint32_t access_flags = 0,
     const char *dex_descriptor = nullptr,
-    int32_t return_type = 0,
+    uint32_t return_type = 0,
     const std::vector<int32_t> *parameter_types = nullptr) {
   auto annotations__ = annotations ? _fbb.CreateVector<int32_t>(*annotations) : 0;
   auto dex_descriptor__ = dex_descriptor ? _fbb.CreateString(dex_descriptor) : 0;
@@ -501,14 +501,14 @@ struct FieldMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DEX_DESCRIPTOR = 14,
     VT_TYPE = 16
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  int32_t dex_id() const {
-    return GetField<int32_t>(VT_DEX_ID, 0);
+  uint32_t dex_id() const {
+    return GetField<uint32_t>(VT_DEX_ID, 0);
   }
-  int32_t class_id() const {
-    return GetField<int32_t>(VT_CLASS_ID, 0);
+  uint32_t class_id() const {
+    return GetField<uint32_t>(VT_CLASS_ID, 0);
   }
   const ::flatbuffers::Vector<int32_t> *annotations() const {
     return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_ANNOTATIONS);
@@ -519,20 +519,20 @@ struct FieldMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *dex_descriptor() const {
     return GetPointer<const ::flatbuffers::String *>(VT_DEX_DESCRIPTOR);
   }
-  int32_t type() const {
-    return GetField<int32_t>(VT_TYPE, 0);
+  uint32_t type() const {
+    return GetField<uint32_t>(VT_TYPE, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_DEX_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_CLASS_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DEX_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLASS_ID, 4) &&
            VerifyOffset(verifier, VT_ANNOTATIONS) &&
            verifier.VerifyVector(annotations()) &&
            VerifyField<uint32_t>(verifier, VT_ACCESS_FLAGS, 4) &&
            VerifyOffset(verifier, VT_DEX_DESCRIPTOR) &&
            verifier.VerifyString(dex_descriptor()) &&
-           VerifyField<int32_t>(verifier, VT_TYPE, 4) &&
+           VerifyField<uint32_t>(verifier, VT_TYPE, 4) &&
            verifier.EndTable();
   }
 };
@@ -541,14 +541,14 @@ struct FieldMetaBuilder {
   typedef FieldMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(FieldMeta::VT_ID, id, 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(FieldMeta::VT_ID, id, 0);
   }
-  void add_dex_id(int32_t dex_id) {
-    fbb_.AddElement<int32_t>(FieldMeta::VT_DEX_ID, dex_id, 0);
+  void add_dex_id(uint32_t dex_id) {
+    fbb_.AddElement<uint32_t>(FieldMeta::VT_DEX_ID, dex_id, 0);
   }
-  void add_class_id(int32_t class_id) {
-    fbb_.AddElement<int32_t>(FieldMeta::VT_CLASS_ID, class_id, 0);
+  void add_class_id(uint32_t class_id) {
+    fbb_.AddElement<uint32_t>(FieldMeta::VT_CLASS_ID, class_id, 0);
   }
   void add_annotations(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> annotations) {
     fbb_.AddOffset(FieldMeta::VT_ANNOTATIONS, annotations);
@@ -559,8 +559,8 @@ struct FieldMetaBuilder {
   void add_dex_descriptor(::flatbuffers::Offset<::flatbuffers::String> dex_descriptor) {
     fbb_.AddOffset(FieldMeta::VT_DEX_DESCRIPTOR, dex_descriptor);
   }
-  void add_type(int32_t type) {
-    fbb_.AddElement<int32_t>(FieldMeta::VT_TYPE, type, 0);
+  void add_type(uint32_t type) {
+    fbb_.AddElement<uint32_t>(FieldMeta::VT_TYPE, type, 0);
   }
   explicit FieldMetaBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -575,13 +575,13 @@ struct FieldMetaBuilder {
 
 inline ::flatbuffers::Offset<FieldMeta> CreateFieldMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> annotations = 0,
     uint32_t access_flags = 0,
     ::flatbuffers::Offset<::flatbuffers::String> dex_descriptor = 0,
-    int32_t type = 0) {
+    uint32_t type = 0) {
   FieldMetaBuilder builder_(_fbb);
   builder_.add_type(type);
   builder_.add_dex_descriptor(dex_descriptor);
@@ -600,13 +600,13 @@ struct FieldMeta::Traits {
 
 inline ::flatbuffers::Offset<FieldMeta> CreateFieldMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     const std::vector<int32_t> *annotations = nullptr,
     uint32_t access_flags = 0,
     const char *dex_descriptor = nullptr,
-    int32_t type = 0) {
+    uint32_t type = 0) {
   auto annotations__ = annotations ? _fbb.CreateVector<int32_t>(*annotations) : 0;
   auto dex_descriptor__ = dex_descriptor ? _fbb.CreateString(dex_descriptor) : 0;
   return dexkit::schema::CreateFieldMeta(
@@ -629,23 +629,23 @@ struct EnumValueMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CLASS_ID = 8,
     VT_VALUE_NAME = 10
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  int32_t dex_id() const {
-    return GetField<int32_t>(VT_DEX_ID, 0);
+  uint32_t dex_id() const {
+    return GetField<uint32_t>(VT_DEX_ID, 0);
   }
-  int32_t class_id() const {
-    return GetField<int32_t>(VT_CLASS_ID, 0);
+  uint32_t class_id() const {
+    return GetField<uint32_t>(VT_CLASS_ID, 0);
   }
   const ::flatbuffers::String *value_name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_VALUE_NAME);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_DEX_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_CLASS_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DEX_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLASS_ID, 4) &&
            VerifyOffset(verifier, VT_VALUE_NAME) &&
            verifier.VerifyString(value_name()) &&
            verifier.EndTable();
@@ -656,14 +656,14 @@ struct EnumValueMetaBuilder {
   typedef EnumValueMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(EnumValueMeta::VT_ID, id, 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(EnumValueMeta::VT_ID, id, 0);
   }
-  void add_dex_id(int32_t dex_id) {
-    fbb_.AddElement<int32_t>(EnumValueMeta::VT_DEX_ID, dex_id, 0);
+  void add_dex_id(uint32_t dex_id) {
+    fbb_.AddElement<uint32_t>(EnumValueMeta::VT_DEX_ID, dex_id, 0);
   }
-  void add_class_id(int32_t class_id) {
-    fbb_.AddElement<int32_t>(EnumValueMeta::VT_CLASS_ID, class_id, 0);
+  void add_class_id(uint32_t class_id) {
+    fbb_.AddElement<uint32_t>(EnumValueMeta::VT_CLASS_ID, class_id, 0);
   }
   void add_value_name(::flatbuffers::Offset<::flatbuffers::String> value_name) {
     fbb_.AddOffset(EnumValueMeta::VT_VALUE_NAME, value_name);
@@ -681,9 +681,9 @@ struct EnumValueMetaBuilder {
 
 inline ::flatbuffers::Offset<EnumValueMeta> CreateEnumValueMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> value_name = 0) {
   EnumValueMetaBuilder builder_(_fbb);
   builder_.add_value_name(value_name);
@@ -700,9 +700,9 @@ struct EnumValueMeta::Traits {
 
 inline ::flatbuffers::Offset<EnumValueMeta> CreateEnumValueMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     const char *value_name = nullptr) {
   auto value_name__ = value_name ? _fbb.CreateString(value_name) : 0;
   return dexkit::schema::CreateEnumValueMeta(
@@ -970,14 +970,14 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RETENTION_POLICY = 12,
     VT_MEMBERS = 14
   };
-  int32_t id() const {
-    return GetField<int32_t>(VT_ID, 0);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  int32_t dex_id() const {
-    return GetField<int32_t>(VT_DEX_ID, 0);
+  uint32_t dex_id() const {
+    return GetField<uint32_t>(VT_DEX_ID, 0);
   }
-  int32_t class_id() const {
-    return GetField<int32_t>(VT_CLASS_ID, 0);
+  uint32_t class_id() const {
+    return GetField<uint32_t>(VT_CLASS_ID, 0);
   }
   const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *target_element_types() const {
     return GetPointer<const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *>(VT_TARGET_ELEMENT_TYPES);
@@ -990,9 +990,9 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_DEX_ID, 4) &&
-           VerifyField<int32_t>(verifier, VT_CLASS_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DEX_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLASS_ID, 4) &&
            VerifyOffset(verifier, VT_TARGET_ELEMENT_TYPES) &&
            verifier.VerifyVector(target_element_types()) &&
            VerifyField<int8_t>(verifier, VT_RETENTION_POLICY, 1) &&
@@ -1007,14 +1007,14 @@ struct AnnotationMetaBuilder {
   typedef AnnotationMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(int32_t id) {
-    fbb_.AddElement<int32_t>(AnnotationMeta::VT_ID, id, 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(AnnotationMeta::VT_ID, id, 0);
   }
-  void add_dex_id(int32_t dex_id) {
-    fbb_.AddElement<int32_t>(AnnotationMeta::VT_DEX_ID, dex_id, 0);
+  void add_dex_id(uint32_t dex_id) {
+    fbb_.AddElement<uint32_t>(AnnotationMeta::VT_DEX_ID, dex_id, 0);
   }
-  void add_class_id(int32_t class_id) {
-    fbb_.AddElement<int32_t>(AnnotationMeta::VT_CLASS_ID, class_id, 0);
+  void add_class_id(uint32_t class_id) {
+    fbb_.AddElement<uint32_t>(AnnotationMeta::VT_CLASS_ID, class_id, 0);
   }
   void add_target_element_types(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> target_element_types) {
     fbb_.AddOffset(AnnotationMeta::VT_TARGET_ELEMENT_TYPES, target_element_types);
@@ -1038,9 +1038,9 @@ struct AnnotationMetaBuilder {
 
 inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> target_element_types = 0,
     dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::Source,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMemberMeta>>> members = 0) {
@@ -1061,9 +1061,9 @@ struct AnnotationMeta::Traits {
 
 inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t id = 0,
-    int32_t dex_id = 0,
-    int32_t class_id = 0,
+    uint32_t id = 0,
+    uint32_t dex_id = 0,
+    uint32_t class_id = 0,
     const std::vector<dexkit::schema::TargetElementType> *target_element_types = nullptr,
     dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::Source,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMemberMeta>> *members = nullptr) {
