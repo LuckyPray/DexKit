@@ -21,9 +21,9 @@ namespace dexkit {
 class DexItem {
 public:
 
-    explicit DexItem(uint8_t *data, size_t size);
+    explicit DexItem(uint32_t id, uint8_t *data, size_t size);
 
-    explicit DexItem(std::unique_ptr<MemMap> mmap);
+    explicit DexItem(uint32_t id, std::unique_ptr<MemMap> mmap);
 
     ~DexItem() = default;
 
@@ -70,11 +70,13 @@ private:
     dex::Reader reader;
 
     uint32_t dex_flag = 0;
+    uint32_t dex_id;
 
     // string constants, sorted by string value
     std::vector<std::string_view> strings;
     std::vector<std::string_view> type_names;
     phmap::flat_hash_map<std::string_view /*type_name*/, uint32_t /*type_id*/> type_ids_map;
+    phmap::flat_hash_map<std::uint32_t /*type_idx*/, uint32_t /*class_id*/> type_id_class_id_map;
     // dex declared types flag
     std::vector<bool /*declared_flag*/> type_declared_flag;
     // class source file name, eg. "HelloWorld.java", maybe obfuscated

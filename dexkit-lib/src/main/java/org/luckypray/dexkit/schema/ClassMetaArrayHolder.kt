@@ -19,29 +19,18 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class BatchFindClassItem : Table() {
+class ClassMetaArrayHolder : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : BatchFindClassItem {
+    fun __assign(_i: Int, _bb: ByteBuffer) : ClassMetaArrayHolder {
         __init(_i, _bb)
         return this
     }
-    val unionKey : String?
-        get() {
-            val o = __offset(4)
-            return if (o != 0) {
-                __string(o + bb_pos)
-            } else {
-                null
-            }
-        }
-    val unionKeyAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
-    fun unionKeyInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
     fun classes(j: Int) : ClassMeta? = classes(ClassMeta(), j)
     fun classes(obj: ClassMeta, j: Int) : ClassMeta? {
-        val o = __offset(6)
+        val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -50,24 +39,22 @@ class BatchFindClassItem : Table() {
     }
     val classesLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(4); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsBatchFindClassItem(_bb: ByteBuffer): BatchFindClassItem = getRootAsBatchFindClassItem(_bb, BatchFindClassItem())
-        fun getRootAsBatchFindClassItem(_bb: ByteBuffer, obj: BatchFindClassItem): BatchFindClassItem {
+        fun getRootAsClassMetaArrayHolder(_bb: ByteBuffer): ClassMetaArrayHolder = getRootAsClassMetaArrayHolder(_bb, ClassMetaArrayHolder())
+        fun getRootAsClassMetaArrayHolder(_bb: ByteBuffer, obj: ClassMetaArrayHolder): ClassMetaArrayHolder {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchFindClassItem(builder: FlatBufferBuilder, unionKeyOffset: Int, classesOffset: Int) : Int {
-            builder.startTable(2)
+        fun createClassMetaArrayHolder(builder: FlatBufferBuilder, classesOffset: Int) : Int {
+            builder.startTable(1)
             addClasses(builder, classesOffset)
-            addUnionKey(builder, unionKeyOffset)
-            return endBatchFindClassItem(builder)
+            return endClassMetaArrayHolder(builder)
         }
-        fun startBatchFindClassItem(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addUnionKey(builder: FlatBufferBuilder, unionKey: Int) = builder.addOffset(0, unionKey, 0)
-        fun addClasses(builder: FlatBufferBuilder, classes: Int) = builder.addOffset(1, classes, 0)
+        fun startClassMetaArrayHolder(builder: FlatBufferBuilder) = builder.startTable(1)
+        fun addClasses(builder: FlatBufferBuilder, classes: Int) = builder.addOffset(0, classes, 0)
         fun createClassesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -76,7 +63,7 @@ class BatchFindClassItem : Table() {
             return builder.endVector()
         }
         fun startClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun endBatchFindClassItem(builder: FlatBufferBuilder) : Int {
+        fun endClassMetaArrayHolder(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

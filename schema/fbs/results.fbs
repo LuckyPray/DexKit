@@ -18,6 +18,10 @@ table ClassMeta {
     // need to call the corresponding method to actively load
 }
 
+table ClassMetaArrayHolder {
+    classes: [ClassMeta];
+}
+
 table MethodMeta {
     id: uint32;
     dex_id: uint32;
@@ -29,6 +33,10 @@ table MethodMeta {
     parameter_types: [int32];
 }
 
+table MethodMetaArrayHolder {
+    methods: [MethodMeta];
+}
+
 table FieldMeta {
     id: uint32;
     dex_id: uint32;
@@ -37,6 +45,10 @@ table FieldMeta {
     access_flags: uint32;
     dex_descriptor: string;
     type: uint32;
+}
+
+table FieldMetaArrayHolder {
+    fields: [FieldMeta];
 }
 
 table EnumValueMeta {
@@ -81,12 +93,24 @@ table AnnotationMeta {
     members: [AnnotationMemberMeta];
 }
 
-table BatchFindClassItem {
+table AnnotationMetaArrayHolder {
+    annotations: [AnnotationMeta];
+}
+
+table BatchClassMeta {
     union_key: string;
     classes: [ClassMeta];
 }
 
-table BatchFindMethodItem {
+table BatchClassMetaArrayHolder {
+    items: [BatchClassMeta];
+}
+
+table BatchMethodMeta {
     union_key: string;
     methods: [MethodMeta];
+}
+
+table BatchMethodMetaArrayHolder {
+    items: [BatchMethodMeta];
 }

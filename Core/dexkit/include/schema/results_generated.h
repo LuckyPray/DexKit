@@ -22,11 +22,20 @@ namespace schema {
 struct ClassMeta;
 struct ClassMetaBuilder;
 
+struct ClassMetaArrayHolder;
+struct ClassMetaArrayHolderBuilder;
+
 struct MethodMeta;
 struct MethodMetaBuilder;
 
+struct MethodMetaArrayHolder;
+struct MethodMetaArrayHolderBuilder;
+
 struct FieldMeta;
 struct FieldMetaBuilder;
+
+struct FieldMetaArrayHolder;
+struct FieldMetaArrayHolderBuilder;
 
 struct EnumValueMeta;
 struct EnumValueMetaBuilder;
@@ -40,11 +49,20 @@ struct AnnotationMemberMetaBuilder;
 struct AnnotationMeta;
 struct AnnotationMetaBuilder;
 
-struct BatchFindClassItem;
-struct BatchFindClassItemBuilder;
+struct AnnotationMetaArrayHolder;
+struct AnnotationMetaArrayHolderBuilder;
 
-struct BatchFindMethodItem;
-struct BatchFindMethodItemBuilder;
+struct BatchClassMeta;
+struct BatchClassMetaBuilder;
+
+struct BatchClassMetaArrayHolder;
+struct BatchClassMetaArrayHolderBuilder;
+
+struct BatchMethodMeta;
+struct BatchMethodMetaBuilder;
+
+struct BatchMethodMetaArrayHolder;
+struct BatchMethodMetaArrayHolderBuilder;
 
 enum class AnnotationElementValue : uint8_t {
   NONE = 0,
@@ -344,6 +362,64 @@ inline ::flatbuffers::Offset<ClassMeta> CreateClassMetaDirect(
       methods__);
 }
 
+struct ClassMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ClassMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_CLASSES = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *classes() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *>(VT_CLASSES);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_CLASSES) &&
+           verifier.VerifyVector(classes()) &&
+           verifier.VerifyVectorOfTables(classes()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ClassMetaArrayHolderBuilder {
+  typedef ClassMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_classes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>> classes) {
+    fbb_.AddOffset(ClassMetaArrayHolder::VT_CLASSES, classes);
+  }
+  explicit ClassMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ClassMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ClassMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ClassMetaArrayHolder> CreateClassMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>> classes = 0) {
+  ClassMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_classes(classes);
+  return builder_.Finish();
+}
+
+struct ClassMetaArrayHolder::Traits {
+  using type = ClassMetaArrayHolder;
+  static auto constexpr Create = CreateClassMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<ClassMetaArrayHolder> CreateClassMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *classes = nullptr) {
+  auto classes__ = classes ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>(*classes) : 0;
+  return dexkit::schema::CreateClassMetaArrayHolder(
+      _fbb,
+      classes__);
+}
+
 struct MethodMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MethodMetaBuilder Builder;
   struct Traits;
@@ -489,6 +565,64 @@ inline ::flatbuffers::Offset<MethodMeta> CreateMethodMetaDirect(
       parameter_types__);
 }
 
+struct MethodMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MethodMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_METHODS = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *methods() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *>(VT_METHODS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_METHODS) &&
+           verifier.VerifyVector(methods()) &&
+           verifier.VerifyVectorOfTables(methods()) &&
+           verifier.EndTable();
+  }
+};
+
+struct MethodMetaArrayHolderBuilder {
+  typedef MethodMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>> methods) {
+    fbb_.AddOffset(MethodMetaArrayHolder::VT_METHODS, methods);
+  }
+  explicit MethodMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MethodMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MethodMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MethodMetaArrayHolder> CreateMethodMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>> methods = 0) {
+  MethodMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_methods(methods);
+  return builder_.Finish();
+}
+
+struct MethodMetaArrayHolder::Traits {
+  using type = MethodMetaArrayHolder;
+  static auto constexpr Create = CreateMethodMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<MethodMetaArrayHolder> CreateMethodMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *methods = nullptr) {
+  auto methods__ = methods ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>(*methods) : 0;
+  return dexkit::schema::CreateMethodMetaArrayHolder(
+      _fbb,
+      methods__);
+}
+
 struct FieldMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FieldMetaBuilder Builder;
   struct Traits;
@@ -618,6 +752,64 @@ inline ::flatbuffers::Offset<FieldMeta> CreateFieldMetaDirect(
       access_flags,
       dex_descriptor__,
       type);
+}
+
+struct FieldMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef FieldMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_FIELDS = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMeta>> *fields() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMeta>> *>(VT_FIELDS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_FIELDS) &&
+           verifier.VerifyVector(fields()) &&
+           verifier.VerifyVectorOfTables(fields()) &&
+           verifier.EndTable();
+  }
+};
+
+struct FieldMetaArrayHolderBuilder {
+  typedef FieldMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMeta>>> fields) {
+    fbb_.AddOffset(FieldMetaArrayHolder::VT_FIELDS, fields);
+  }
+  explicit FieldMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<FieldMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<FieldMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<FieldMetaArrayHolder> CreateFieldMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMeta>>> fields = 0) {
+  FieldMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_fields(fields);
+  return builder_.Finish();
+}
+
+struct FieldMetaArrayHolder::Traits {
+  using type = FieldMetaArrayHolder;
+  static auto constexpr Create = CreateFieldMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<FieldMetaArrayHolder> CreateFieldMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMeta>> *fields = nullptr) {
+  auto fields__ = fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMeta>>(*fields) : 0;
+  return dexkit::schema::CreateFieldMetaArrayHolder(
+      _fbb,
+      fields__);
 }
 
 struct EnumValueMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1079,8 +1271,66 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
       members__);
 }
 
-struct BatchFindClassItem FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef BatchFindClassItemBuilder Builder;
+struct AnnotationMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AnnotationMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ANNOTATIONS = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMeta>> *annotations() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMeta>> *>(VT_ANNOTATIONS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ANNOTATIONS) &&
+           verifier.VerifyVector(annotations()) &&
+           verifier.VerifyVectorOfTables(annotations()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AnnotationMetaArrayHolderBuilder {
+  typedef AnnotationMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_annotations(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMeta>>> annotations) {
+    fbb_.AddOffset(AnnotationMetaArrayHolder::VT_ANNOTATIONS, annotations);
+  }
+  explicit AnnotationMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AnnotationMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AnnotationMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AnnotationMetaArrayHolder> CreateAnnotationMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMeta>>> annotations = 0) {
+  AnnotationMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_annotations(annotations);
+  return builder_.Finish();
+}
+
+struct AnnotationMetaArrayHolder::Traits {
+  using type = AnnotationMetaArrayHolder;
+  static auto constexpr Create = CreateAnnotationMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<AnnotationMetaArrayHolder> CreateAnnotationMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMeta>> *annotations = nullptr) {
+  auto annotations__ = annotations ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationMeta>>(*annotations) : 0;
+  return dexkit::schema::CreateAnnotationMetaArrayHolder(
+      _fbb,
+      annotations__);
+}
+
+struct BatchClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BatchClassMetaBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_UNION_KEY = 4,
@@ -1103,56 +1353,114 @@ struct BatchFindClassItem FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   }
 };
 
-struct BatchFindClassItemBuilder {
-  typedef BatchFindClassItem Table;
+struct BatchClassMetaBuilder {
+  typedef BatchClassMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_union_key(::flatbuffers::Offset<::flatbuffers::String> union_key) {
-    fbb_.AddOffset(BatchFindClassItem::VT_UNION_KEY, union_key);
+    fbb_.AddOffset(BatchClassMeta::VT_UNION_KEY, union_key);
   }
   void add_classes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>> classes) {
-    fbb_.AddOffset(BatchFindClassItem::VT_CLASSES, classes);
+    fbb_.AddOffset(BatchClassMeta::VT_CLASSES, classes);
   }
-  explicit BatchFindClassItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit BatchClassMetaBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<BatchFindClassItem> Finish() {
+  ::flatbuffers::Offset<BatchClassMeta> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<BatchFindClassItem>(end);
+    auto o = ::flatbuffers::Offset<BatchClassMeta>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<BatchFindClassItem> CreateBatchFindClassItem(
+inline ::flatbuffers::Offset<BatchClassMeta> CreateBatchClassMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> union_key = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>> classes = 0) {
-  BatchFindClassItemBuilder builder_(_fbb);
+  BatchClassMetaBuilder builder_(_fbb);
   builder_.add_classes(classes);
   builder_.add_union_key(union_key);
   return builder_.Finish();
 }
 
-struct BatchFindClassItem::Traits {
-  using type = BatchFindClassItem;
-  static auto constexpr Create = CreateBatchFindClassItem;
+struct BatchClassMeta::Traits {
+  using type = BatchClassMeta;
+  static auto constexpr Create = CreateBatchClassMeta;
 };
 
-inline ::flatbuffers::Offset<BatchFindClassItem> CreateBatchFindClassItemDirect(
+inline ::flatbuffers::Offset<BatchClassMeta> CreateBatchClassMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *union_key = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMeta>> *classes = nullptr) {
   auto union_key__ = union_key ? _fbb.CreateString(union_key) : 0;
   auto classes__ = classes ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMeta>>(*classes) : 0;
-  return dexkit::schema::CreateBatchFindClassItem(
+  return dexkit::schema::CreateBatchClassMeta(
       _fbb,
       union_key__,
       classes__);
 }
 
-struct BatchFindMethodItem FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef BatchFindMethodItemBuilder Builder;
+struct BatchClassMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BatchClassMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ITEMS = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchClassMeta>> *items() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchClassMeta>> *>(VT_ITEMS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ITEMS) &&
+           verifier.VerifyVector(items()) &&
+           verifier.VerifyVectorOfTables(items()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BatchClassMetaArrayHolderBuilder {
+  typedef BatchClassMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchClassMeta>>> items) {
+    fbb_.AddOffset(BatchClassMetaArrayHolder::VT_ITEMS, items);
+  }
+  explicit BatchClassMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<BatchClassMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<BatchClassMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<BatchClassMetaArrayHolder> CreateBatchClassMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchClassMeta>>> items = 0) {
+  BatchClassMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_items(items);
+  return builder_.Finish();
+}
+
+struct BatchClassMetaArrayHolder::Traits {
+  using type = BatchClassMetaArrayHolder;
+  static auto constexpr Create = CreateBatchClassMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<BatchClassMetaArrayHolder> CreateBatchClassMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::BatchClassMeta>> *items = nullptr) {
+  auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::BatchClassMeta>>(*items) : 0;
+  return dexkit::schema::CreateBatchClassMetaArrayHolder(
+      _fbb,
+      items__);
+}
+
+struct BatchMethodMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BatchMethodMetaBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_UNION_KEY = 4,
@@ -1175,52 +1483,110 @@ struct BatchFindMethodItem FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   }
 };
 
-struct BatchFindMethodItemBuilder {
-  typedef BatchFindMethodItem Table;
+struct BatchMethodMetaBuilder {
+  typedef BatchMethodMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_union_key(::flatbuffers::Offset<::flatbuffers::String> union_key) {
-    fbb_.AddOffset(BatchFindMethodItem::VT_UNION_KEY, union_key);
+    fbb_.AddOffset(BatchMethodMeta::VT_UNION_KEY, union_key);
   }
   void add_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>> methods) {
-    fbb_.AddOffset(BatchFindMethodItem::VT_METHODS, methods);
+    fbb_.AddOffset(BatchMethodMeta::VT_METHODS, methods);
   }
-  explicit BatchFindMethodItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit BatchMethodMetaBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<BatchFindMethodItem> Finish() {
+  ::flatbuffers::Offset<BatchMethodMeta> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<BatchFindMethodItem>(end);
+    auto o = ::flatbuffers::Offset<BatchMethodMeta>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<BatchFindMethodItem> CreateBatchFindMethodItem(
+inline ::flatbuffers::Offset<BatchMethodMeta> CreateBatchMethodMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> union_key = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>> methods = 0) {
-  BatchFindMethodItemBuilder builder_(_fbb);
+  BatchMethodMetaBuilder builder_(_fbb);
   builder_.add_methods(methods);
   builder_.add_union_key(union_key);
   return builder_.Finish();
 }
 
-struct BatchFindMethodItem::Traits {
-  using type = BatchFindMethodItem;
-  static auto constexpr Create = CreateBatchFindMethodItem;
+struct BatchMethodMeta::Traits {
+  using type = BatchMethodMeta;
+  static auto constexpr Create = CreateBatchMethodMeta;
 };
 
-inline ::flatbuffers::Offset<BatchFindMethodItem> CreateBatchFindMethodItemDirect(
+inline ::flatbuffers::Offset<BatchMethodMeta> CreateBatchMethodMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *union_key = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMeta>> *methods = nullptr) {
   auto union_key__ = union_key ? _fbb.CreateString(union_key) : 0;
   auto methods__ = methods ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMeta>>(*methods) : 0;
-  return dexkit::schema::CreateBatchFindMethodItem(
+  return dexkit::schema::CreateBatchMethodMeta(
       _fbb,
       union_key__,
       methods__);
+}
+
+struct BatchMethodMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BatchMethodMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ITEMS = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchMethodMeta>> *items() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchMethodMeta>> *>(VT_ITEMS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ITEMS) &&
+           verifier.VerifyVector(items()) &&
+           verifier.VerifyVectorOfTables(items()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BatchMethodMetaArrayHolderBuilder {
+  typedef BatchMethodMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchMethodMeta>>> items) {
+    fbb_.AddOffset(BatchMethodMetaArrayHolder::VT_ITEMS, items);
+  }
+  explicit BatchMethodMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<BatchMethodMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<BatchMethodMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<BatchMethodMetaArrayHolder> CreateBatchMethodMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchMethodMeta>>> items = 0) {
+  BatchMethodMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_items(items);
+  return builder_.Finish();
+}
+
+struct BatchMethodMetaArrayHolder::Traits {
+  using type = BatchMethodMetaArrayHolder;
+  static auto constexpr Create = CreateBatchMethodMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<BatchMethodMetaArrayHolder> CreateBatchMethodMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::BatchMethodMeta>> *items = nullptr) {
+  auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::BatchMethodMeta>>(*items) : 0;
+  return dexkit::schema::CreateBatchMethodMetaArrayHolder(
+      _fbb,
+      items__);
 }
 
 inline bool VerifyAnnotationElementValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationElementValue type) {

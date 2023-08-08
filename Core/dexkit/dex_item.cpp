@@ -3,12 +3,15 @@
 
 namespace dexkit {
 
-DexItem::DexItem(uint8_t *data, size_t size) :
-        _image(std::make_unique<MemMap>(data, size)), reader(_image->addr(), _image->len()) {
+DexItem::DexItem(uint32_t id, uint8_t *data, size_t size) :
+        dex_id(id),
+        _image(std::make_unique<MemMap>(data, size)),
+        reader(_image->addr(), _image->len()) {
     InitCache();
 }
 
-DexItem::DexItem(std::unique_ptr<MemMap> mmap) :
+DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap) :
+        dex_id(id),
         _image(std::move(mmap)), reader(_image->addr(), _image->len()) {
     InitCache();
 }
@@ -56,10 +59,12 @@ int DexItem::InitCache() {
     field_access_flags.resize(reader.FieldIds().size());
     method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
 
+    auto class_def_idx = 0;
     for (auto &class_def: reader.ClassDefs()) {
         if (class_def.source_file_idx != dex::kNoIndex) {
             class_source_files[class_def.class_idx] = strings[class_def.source_file_idx];
         }
+        this->type_id_class_id_map[class_def.class_idx] = class_def_idx;
         type_declared_flag[class_def.class_idx] = true;
         if (class_def.class_data_off == 0) {
             continue;
@@ -104,6 +109,7 @@ int DexItem::InitCache() {
             }
             methods.emplace_back(class_method_idx);
         }
+        ++class_def_idx;
     }
 
     class_annotations.resize(reader.TypeIds().size(), nullptr);
@@ -244,6 +250,7 @@ DexItem::BatchFindClassUsingStrings(
                 matched_set.emplace(matcher->using_strings()->Get(j)->value()->string_view());
             }
             std::vector<std::string_view> vec;
+            // TODO: SimilarRegex 去重有 bug
             std::set_intersection(search_set.begin(), search_set.end(),
                                   matched_set.begin(), matched_set.end(),
                                   std::inserter(vec, vec.begin()));
@@ -271,6 +278,27 @@ DexItem::BatchFindClassUsingStrings(
 std::vector<BatchFindMethodItemBean>
 DexItem::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
     return {};
+}
+
+ClassBean DexItem::GetClassBean(uint32_t class_idx) {
+    auto &class_def = this->reader.ClassDefs()[this->type_id_class_id_map[class_idx]];
+    auto bean = ClassBean();
+    bean.id = class_idx;
+    bean.dex_id = this->dex_id;
+    bean.source_file = this->class_source_files[class_idx];
+    // TODO: this->class_annotations[class_idx]
+    bean.access_flags = class_def.access_flags;
+    bean.dex_descriptor = this->type_names[class_idx];
+    bean.super_class_id = class_def.superclass_idx;
+    if (class_def.interfaces_off) {
+        auto interface_type_list = this->reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
+        for (auto i = 0; i < interface_type_list->size; ++i) {
+            bean.interface_ids.push_back(interface_type_list->list[i].type_idx);
+        }
+    }
+    bean.field_ids = this->class_field_ids[class_idx];
+    bean.method_ids = this->class_method_ids[class_idx];
+    return bean;
 }
 
 }

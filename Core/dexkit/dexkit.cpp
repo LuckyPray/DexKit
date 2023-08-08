@@ -7,18 +7,18 @@ DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
 }
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
-    dex_items.emplace_back(std::make_unique<DexItem>(data, size));
+    dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size));
     return Error::SUCCESS;
 }
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
-    dex_items.emplace_back(std::make_unique<DexItem>(std::move(dex_image)));
+    dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
     return Error::SUCCESS;
 }
 
 Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
     for (auto &dex_image: dex_images) {
-        dex_items.emplace_back(std::make_unique<DexItem>(std::move(dex_image)));
+        dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
     }
     return Error::SUCCESS;
 }
@@ -51,11 +51,12 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
             if (!ptr->ok()) {
                 return;
             }
-            int idx = dex_pair.first - 1;
-            dex_items[ort_size + idx] = std::make_unique<DexItem>(std::move(ptr));
+            int idx = ort_size + dex_pair.first - 1;
+            dex_items[idx] = std::make_unique<DexItem>(idx, std::move(ptr));
         });
         futures.emplace_back(std::move(v));
     }
+    dex_cnt += (uint32_t) dex_pairs.size();
     for (auto &f: futures) {
         f.get();
     }
@@ -139,6 +140,7 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
             auto type = string_matcher->type();
             auto ignore_case = string_matcher->ignore_case();
             if (type == schema::StringMatchType::SimilarRegex) {
+                type = schema::StringMatchType::Contains;
                 int l = 0, r = (int) value.size();
                 if (value.starts_with('^')) {
                     l = 1;
@@ -161,16 +163,31 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
     acdat::Builder<std::string_view>().Build(keywords, &acTrie);
 
+    std::map<std::string_view, std::vector<ClassBean>> map;
     std::vector<BatchFindClassItemBean> result;
     for (auto &dex_item: dex_items) {
-        auto classes = dex_item->BatchFindClassUsingStrings(query, acTrie, match_type_map);
-        result.insert(result.end(), classes.begin(), classes.end());
+        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, match_type_map);
+        for (auto &item : items) {
+            auto &beans = map[item.union_key];
+            beans.insert(beans.end(), item.classes.begin(), item.classes.end());
+        }
+    }
+    for (auto &[key, value] : map) {
+        BatchFindClassItemBean bean;
+        bean.union_key = key;
+        bean.classes = value;
+        result.emplace_back(bean);
     }
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+
+    std::vector<flatbuffers::Offset<schema::BatchClassMeta>> offsets;
     for (auto &bean : result) {
         auto res = bean.CreateBatchFindClassItem(*builder);
         builder->Finish(res);
+        offsets.emplace_back(res);
     }
+    auto fbb_result = schema::CreateBatchClassMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(fbb_result);
     return builder;
 }
 

@@ -3,6 +3,7 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+#include <atomic>
 
 #include "dex_item.h"
 #include "file_helper.h"
@@ -35,6 +36,7 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
 
 private:
+    std::atomic<uint32_t> dex_cnt = 0;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
 };

@@ -48,7 +48,7 @@ FieldBean::CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             fbb.CreateVector(std::vector<int32_t>(this->annotation_ids.begin(), this->annotation_ids.end())),
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
-            this->type
+            this->type_id
     );
     fbb.Finish(field_meta);
     return field_meta;
@@ -180,14 +180,14 @@ AnnotationBean::CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const 
     return annotation_meta;
 }
 
-flatbuffers::Offset<schema::BatchFindClassItem>
+flatbuffers::Offset<schema::BatchClassMeta>
 BatchFindClassItemBean::CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder &fbb) const {
     std::vector<flatbuffers::Offset<schema::ClassMeta>> class_metas;
     class_metas.reserve(this->classes.size());
     for (auto &clazz : this->classes) {
         class_metas.push_back(clazz.CreateClassMeta(fbb));
     }
-    auto batch_find_class_item = schema::CreateBatchFindClassItem(
+    auto batch_find_class_item = schema::CreateBatchClassMeta(
             fbb,
             fbb.CreateString(this->union_key),
             fbb.CreateVector(class_metas)
@@ -196,14 +196,14 @@ BatchFindClassItemBean::CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder 
     return batch_find_class_item;
 }
 
-flatbuffers::Offset<schema::BatchFindMethodItem>
+flatbuffers::Offset<schema::BatchMethodMeta>
 BatchFindMethodItemBean::CreateBatchFindMethodItem(flatbuffers::FlatBufferBuilder &fbb) const {
     std::vector<flatbuffers::Offset<schema::MethodMeta>> method_metas;
     method_metas.reserve(this->methods.size());
     for (auto &method : this->methods) {
         method_metas.push_back(method.CreateMethodMeta(fbb));
     }
-    auto batch_find_method_item = schema::CreateBatchFindMethodItem(
+    auto batch_find_method_item = schema::CreateBatchMethodMeta(
             fbb,
             fbb.CreateString(this->union_key),
             fbb.CreateVector(method_metas)

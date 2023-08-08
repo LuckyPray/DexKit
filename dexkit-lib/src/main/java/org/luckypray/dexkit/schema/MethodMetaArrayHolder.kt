@@ -19,29 +19,18 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class BatchFindMethodItem : Table() {
+class MethodMetaArrayHolder : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : BatchFindMethodItem {
+    fun __assign(_i: Int, _bb: ByteBuffer) : MethodMetaArrayHolder {
         __init(_i, _bb)
         return this
     }
-    val unionKey : String?
-        get() {
-            val o = __offset(4)
-            return if (o != 0) {
-                __string(o + bb_pos)
-            } else {
-                null
-            }
-        }
-    val unionKeyAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
-    fun unionKeyInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
     fun methods(j: Int) : MethodMeta? = methods(MethodMeta(), j)
     fun methods(obj: MethodMeta, j: Int) : MethodMeta? {
-        val o = __offset(6)
+        val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -50,24 +39,22 @@ class BatchFindMethodItem : Table() {
     }
     val methodsLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(4); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsBatchFindMethodItem(_bb: ByteBuffer): BatchFindMethodItem = getRootAsBatchFindMethodItem(_bb, BatchFindMethodItem())
-        fun getRootAsBatchFindMethodItem(_bb: ByteBuffer, obj: BatchFindMethodItem): BatchFindMethodItem {
+        fun getRootAsMethodMetaArrayHolder(_bb: ByteBuffer): MethodMetaArrayHolder = getRootAsMethodMetaArrayHolder(_bb, MethodMetaArrayHolder())
+        fun getRootAsMethodMetaArrayHolder(_bb: ByteBuffer, obj: MethodMetaArrayHolder): MethodMetaArrayHolder {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchFindMethodItem(builder: FlatBufferBuilder, unionKeyOffset: Int, methodsOffset: Int) : Int {
-            builder.startTable(2)
+        fun createMethodMetaArrayHolder(builder: FlatBufferBuilder, methodsOffset: Int) : Int {
+            builder.startTable(1)
             addMethods(builder, methodsOffset)
-            addUnionKey(builder, unionKeyOffset)
-            return endBatchFindMethodItem(builder)
+            return endMethodMetaArrayHolder(builder)
         }
-        fun startBatchFindMethodItem(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addUnionKey(builder: FlatBufferBuilder, unionKey: Int) = builder.addOffset(0, unionKey, 0)
-        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(1, methods, 0)
+        fun startMethodMetaArrayHolder(builder: FlatBufferBuilder) = builder.startTable(1)
+        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(0, methods, 0)
         fun createMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -76,7 +63,7 @@ class BatchFindMethodItem : Table() {
             return builder.endVector()
         }
         fun startMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun endBatchFindMethodItem(builder: FlatBufferBuilder) : Int {
+        fun endMethodMetaArrayHolder(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

@@ -133,7 +133,7 @@ public:
     std::vector<ClassBean> classes;
 
 public:
-    flatbuffers::Offset<schema::BatchFindClassItem>
+    flatbuffers::Offset<schema::BatchClassMeta>
     CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
@@ -143,7 +143,7 @@ public:
     std::vector<MethodBean> methods;
 
 public:
-    flatbuffers::Offset<schema::BatchFindMethodItem>
+    flatbuffers::Offset<schema::BatchMethodMeta>
     CreateBatchFindMethodItem(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
