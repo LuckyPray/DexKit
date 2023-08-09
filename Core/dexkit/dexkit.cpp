@@ -162,7 +162,7 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
     std::vector<flatbuffers::Offset<schema::BatchClassMeta>> offsets;
     for (auto &bean: result) {
-        auto res = bean.CreateBatchFindClassItem(*fbb);
+        auto res = bean.CreateBatchClassMeta(*fbb);
         fbb->Finish(res);
         offsets.emplace_back(res);
     }
@@ -209,7 +209,7 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
     auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
     std::vector<flatbuffers::Offset<schema::BatchMethodMeta>> offsets;
     for (auto &bean: result) {
-        auto res = bean.CreateBatchFindMethodItem(*fbb);
+        auto res = bean.CreateBatchMethodMeta(*fbb);
         fbb->Finish(res);
         offsets.emplace_back(res);
     }

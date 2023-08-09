@@ -15,7 +15,7 @@ class AnnotationElementValue private constructor() {
         const val EncodeValueDouble: UByte = 7u
         const val EncodeValueString: UByte = 8u
         const val ClassMeta: UByte = 9u
-        const val EnumValueMeta: UByte = 10u
+        const val FieldMeta: UByte = 10u
         const val AnnotationElementValueArray: UByte = 11u
         const val AnnotationMeta: UByte = 12u
         const val EncodeValueBoolean: UByte = 13u

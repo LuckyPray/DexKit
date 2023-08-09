@@ -73,7 +73,7 @@ class FieldMeta : Table() {
         }
     val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
     fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
-    val type : UInt
+    val typeId : UInt
         get() {
             val o = __offset(16)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
@@ -85,9 +85,9 @@ class FieldMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, type: UInt) : Int {
+        fun createFieldMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, typeId: UInt) : Int {
             builder.startTable(7)
-            addType(builder, type)
+            addTypeId(builder, typeId)
             addDexDescriptor(builder, dexDescriptorOffset)
             addAccessFlags(builder, accessFlags)
             addAnnotations(builder, annotationsOffset)
@@ -111,7 +111,7 @@ class FieldMeta : Table() {
         fun startAnnotationsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
         fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
-        fun addType(builder: FlatBufferBuilder, type: UInt) = builder.addInt(6, type.toInt(), 0)
+        fun addTypeId(builder: FlatBufferBuilder, typeId: UInt) = builder.addInt(6, typeId.toInt(), 0)
         fun endFieldMeta(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

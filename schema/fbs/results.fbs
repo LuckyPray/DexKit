@@ -44,19 +44,11 @@ table FieldMeta {
     annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
-    type: uint32;
+    type_id: uint32;
 }
 
 table FieldMetaArrayHolder {
     fields: [FieldMeta];
-}
-
-table EnumValueMeta {
-    // field id
-    id: uint32;
-    dex_id: uint32;
-    class_id: uint32;
-    value_name: string;
 }
 
 union AnnotationElementValue {
@@ -69,7 +61,8 @@ union AnnotationElementValue {
     EncodeValueDouble,
     EncodeValueString,
     ClassMeta,
-    EnumValueMeta,
+    // enum use it
+    FieldMeta,
     AnnotationElementValueArray,
     AnnotationMeta,
     EncodeValueBoolean,
@@ -79,18 +72,18 @@ table AnnotationElementValueArray {
     values: [AnnotationElementValue];
 }
 
-table AnnotationMemberMeta {
+table AnnotationElementMeta {
     name: string;
     value: AnnotationElementValue;
 }
 
 table AnnotationMeta {
-    id: uint32;
     dex_id: uint32;
-    class_id: uint32;
+    type_id: uint32;
+    type_descriptor: string;
     target_element_types: [TargetElementType];
     retention_policy: RetentionPolicyType;
-    members: [AnnotationMemberMeta];
+    elements: [AnnotationElementMeta];
 }
 
 table AnnotationMetaArrayHolder {

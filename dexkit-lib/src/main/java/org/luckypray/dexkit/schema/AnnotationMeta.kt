@@ -28,21 +28,27 @@ class AnnotationMeta : Table() {
         __init(_i, _bb)
         return this
     }
-    val id : UInt
+    val dexId : UInt
         get() {
             val o = __offset(4)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val dexId : UInt
+    val typeId : UInt
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    val classId : UInt
+    val typeDescriptor : String?
         get() {
             val o = __offset(8)
-            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
+            return if (o != 0) {
+                __string(o + bb_pos)
+            } else {
+                null
+            }
         }
+    val typeDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 1)
+    fun typeDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 1)
     fun targetElementTypes(j: Int) : Byte {
         val o = __offset(10)
         return if (o != 0) {
@@ -62,8 +68,8 @@ class AnnotationMeta : Table() {
             val o = __offset(12)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun members(j: Int) : AnnotationMemberMeta? = members(AnnotationMemberMeta(), j)
-    fun members(obj: AnnotationMemberMeta, j: Int) : AnnotationMemberMeta? {
+    fun elements(j: Int) : AnnotationElementMeta? = elements(AnnotationElementMeta(), j)
+    fun elements(obj: AnnotationElementMeta, j: Int) : AnnotationElementMeta? {
         val o = __offset(14)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
@@ -71,7 +77,7 @@ class AnnotationMeta : Table() {
             null
         }
     }
-    val membersLength : Int
+    val elementsLength : Int
         get() {
             val o = __offset(14); return if (o != 0) __vector_len(o) else 0
         }
@@ -82,20 +88,20 @@ class AnnotationMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, targetElementTypesOffset: Int, retentionPolicy: Byte, membersOffset: Int) : Int {
+        fun createAnnotationMeta(builder: FlatBufferBuilder, dexId: UInt, typeId: UInt, typeDescriptorOffset: Int, targetElementTypesOffset: Int, retentionPolicy: Byte, elementsOffset: Int) : Int {
             builder.startTable(6)
-            addMembers(builder, membersOffset)
+            addElements(builder, elementsOffset)
             addTargetElementTypes(builder, targetElementTypesOffset)
-            addClassId(builder, classId)
+            addTypeDescriptor(builder, typeDescriptorOffset)
+            addTypeId(builder, typeId)
             addDexId(builder, dexId)
-            addId(builder, id)
             addRetentionPolicy(builder, retentionPolicy)
             return endAnnotationMeta(builder)
         }
         fun startAnnotationMeta(builder: FlatBufferBuilder) = builder.startTable(6)
-        fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
-        fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
-        fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
+        fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(0, dexId.toInt(), 0)
+        fun addTypeId(builder: FlatBufferBuilder, typeId: UInt) = builder.addInt(1, typeId.toInt(), 0)
+        fun addTypeDescriptor(builder: FlatBufferBuilder, typeDescriptor: Int) = builder.addOffset(2, typeDescriptor, 0)
         fun addTargetElementTypes(builder: FlatBufferBuilder, targetElementTypes: Int) = builder.addOffset(3, targetElementTypes, 0)
         fun createTargetElementTypesVector(builder: FlatBufferBuilder, data: ByteArray) : Int {
             builder.startVector(1, data.size, 1)
@@ -106,15 +112,15 @@ class AnnotationMeta : Table() {
         }
         fun startTargetElementTypesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(1, numElems, 1)
         fun addRetentionPolicy(builder: FlatBufferBuilder, retentionPolicy: Byte) = builder.addByte(4, retentionPolicy, 0)
-        fun addMembers(builder: FlatBufferBuilder, members: Int) = builder.addOffset(5, members, 0)
-        fun createMembersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+        fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(5, elements, 0)
+        fun createElementsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
                 builder.addOffset(data[i])
             }
             return builder.endVector()
         }
-        fun startMembersVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun startElementsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endAnnotationMeta(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

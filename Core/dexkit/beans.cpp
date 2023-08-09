@@ -73,19 +73,6 @@ AnnotationElementValueArray::CreateAnnotationElementValueArray(flatbuffers::Flat
     return annotation_element_value_array;
 }
 
-flatbuffers::Offset<schema::EnumValueMeta>
-EnumValueBean::CreateEnumValueMeta(flatbuffers::FlatBufferBuilder &fbb) const {
-    auto enum_value_meta = schema::CreateEnumValueMeta(
-            fbb,
-            this->id,
-            this->dex_id,
-            this->class_id,
-            fbb.CreateString(this->name)
-    );
-    fbb.Finish(enum_value_meta);
-    return enum_value_meta;
-}
-
 std::pair<dexkit::schema::AnnotationElementValue, flatbuffers::Offset<void>>
 AnnotationElementValue::CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type) const {
     schema::AnnotationElementValue value_type;
@@ -125,19 +112,19 @@ AnnotationElementValue::CreateAnnotationElementValue(flatbuffers::FlatBufferBuil
             break;
         case schema::AnnotationElementValueType::Type:
             value_type = schema::AnnotationElementValue::ClassMeta;
-            value = this->type_value.CreateClassMeta(fbb).Union();
+            value = this->type_value->CreateClassMeta(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Enum:
-            value_type = schema::AnnotationElementValue::EnumValueMeta;
-            value = this->enum_value.CreateEnumValueMeta(fbb).Union();
+            value_type = schema::AnnotationElementValue::FieldMeta;
+            value = this->enum_value->CreateFieldMeta(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Array:
             value_type = schema::AnnotationElementValue::AnnotationElementValueArray;
-            value = this->array_value.CreateAnnotationElementValueArray(fbb).Union();
+            value = this->array_value->CreateAnnotationElementValueArray(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Annotation:
             value_type = schema::AnnotationElementValue::AnnotationMeta;
-            value = this->annotation_value.CreateAnnotationMeta(fbb).Union();
+            value = this->annotation_value->CreateAnnotationMeta(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Bool:
             value_type = schema::AnnotationElementValue::EncodeValueBoolean;
@@ -147,10 +134,10 @@ AnnotationElementValue::CreateAnnotationElementValue(flatbuffers::FlatBufferBuil
     return std::make_pair(value_type, value);
 }
 
-flatbuffers::Offset<schema::AnnotationMemberMeta>
-AnnotationMemberBean::CreateAnnotationMember(flatbuffers::FlatBufferBuilder &fbb) const {
+flatbuffers::Offset<schema::AnnotationElementMeta>
+AnnotationElementBean::CreateAnnotationElementMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     auto enum_pair = this->value.CreateAnnotationElementValue(fbb, this->type);
-    auto annotation_member_meta = schema::CreateAnnotationMemberMeta(
+    auto annotation_member_meta = schema::CreateAnnotationElementMeta(
             fbb,
             fbb.CreateString(this->name),
             enum_pair.first,
@@ -162,16 +149,16 @@ AnnotationMemberBean::CreateAnnotationMember(flatbuffers::FlatBufferBuilder &fbb
 
 flatbuffers::Offset<schema::AnnotationMeta>
 AnnotationBean::CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const {
-    std::vector<flatbuffers::Offset<schema::AnnotationMemberMeta>> annotation_members;
+    std::vector<flatbuffers::Offset<schema::AnnotationElementMeta>> annotation_members;
     annotation_members.reserve(this->elements.size());
     for (auto &member : this->elements) {
-        annotation_members.push_back(member.CreateAnnotationMember(fbb));
+        annotation_members.push_back(member.CreateAnnotationElementMeta(fbb));
     }
     auto annotation_meta = schema::CreateAnnotationMeta(
             fbb,
-            this->id,
             this->dex_id,
-            this->class_id,
+            this->type_id,
+            fbb.CreateString(this->type_descriptor),
             fbb.CreateVector(this->target_element_types),
             this->retention_policy,
             fbb.CreateVector(annotation_members)
@@ -181,7 +168,7 @@ AnnotationBean::CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const 
 }
 
 flatbuffers::Offset<schema::BatchClassMeta>
-BatchFindClassItemBean::CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder &fbb) const {
+BatchFindClassItemBean::CreateBatchClassMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     std::vector<flatbuffers::Offset<schema::ClassMeta>> class_metas;
     class_metas.reserve(this->classes.size());
     for (auto &clazz : this->classes) {
@@ -197,7 +184,7 @@ BatchFindClassItemBean::CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder 
 }
 
 flatbuffers::Offset<schema::BatchMethodMeta>
-BatchFindMethodItemBean::CreateBatchFindMethodItem(flatbuffers::FlatBufferBuilder &fbb) const {
+BatchFindMethodItemBean::CreateBatchMethodMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     std::vector<flatbuffers::Offset<schema::MethodMeta>> method_metas;
     method_metas.reserve(this->methods.size());
     for (auto &method : this->methods) {

@@ -1,9 +1,16 @@
 #pragma once
 
+#include <variant>
 #include "schema/enums_generated.h"
 #include "schema/results_generated.h"
 
 namespace dexkit {
+
+enum AnnotationTargetType {
+    Class,
+    Method,
+    Field,
+};
 
 class ClassBean {
 public:
@@ -54,9 +61,24 @@ public:
     CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
-class AnnotationMemberBean;
+class AnnotationBean;
+class AnnotationElementBean;
 class AnnotationElementValueArray;
 union AnnotationElementValue;
+
+//using AnnotationElementValue = std::variant<
+//        int8_t,
+//        int16_t,
+//        int32_t,
+//        int64_t,
+//        float,
+//        double,
+//        std::string_view,
+//        ClassBean,
+//        FieldBean,
+//        AnnotationElementValueArray,
+//        AnnotationBean,
+//        bool>;
 
 class AnnotationElementValueArray {
 public:
@@ -68,26 +90,14 @@ public:
     CreateAnnotationElementValueArray(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
-class EnumValueBean {
-public:
-    uint32_t id;
-    uint32_t dex_id;
-    uint32_t class_id;
-    std::string_view name;
-
-public:
-    flatbuffers::Offset<schema::EnumValueMeta>
-    CreateEnumValueMeta(flatbuffers::FlatBufferBuilder &fbb) const;
-};
-
 class AnnotationBean {
 public:
-    uint32_t id;
     uint32_t dex_id;
-    uint32_t class_id;
+    uint32_t type_id;
+    std::string_view type_descriptor;
     std::vector<schema::TargetElementType> target_element_types;
     schema::RetentionPolicyType retention_policy;
-    std::vector<AnnotationMemberBean> elements;
+    std::vector<AnnotationElementBean> elements;
 
 public:
     flatbuffers::Offset<schema::AnnotationMeta>
@@ -98,17 +108,17 @@ union AnnotationElementValue {
     int8_t byte_value;
     int16_t short_value;
     int16_t char_value;
-    uint32_t int_value;
+    int32_t int_value;
     int64_t long_value;
     float float_value;
     double double_value;
     std::string_view string_value;
     // dex class id
-    ClassBean type_value;
+    ClassBean* type_value;
     // dex field id
-    EnumValueBean enum_value;
-    AnnotationElementValueArray array_value;
-    AnnotationBean annotation_value;
+    FieldBean* enum_value;
+    AnnotationElementValueArray* array_value;
+    AnnotationBean* annotation_value;
     bool bool_value;
 
 public:
@@ -116,15 +126,15 @@ public:
     CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type) const;
 };
 
-class AnnotationMemberBean {
+class AnnotationElementBean {
 public:
     std::string_view name;
     schema::AnnotationElementValueType type;
     AnnotationElementValue value;
 
 public:
-    flatbuffers::Offset<schema::AnnotationMemberMeta>
-    CreateAnnotationMember(flatbuffers::FlatBufferBuilder &fbb) const;
+    flatbuffers::Offset<schema::AnnotationElementMeta>
+    CreateAnnotationElementMeta(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
 class BatchFindClassItemBean {
@@ -134,7 +144,7 @@ public:
 
 public:
     flatbuffers::Offset<schema::BatchClassMeta>
-    CreateBatchFindClassItem(flatbuffers::FlatBufferBuilder &fbb) const;
+    CreateBatchClassMeta(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
 class BatchFindMethodItemBean {
@@ -144,7 +154,7 @@ public:
 
 public:
     flatbuffers::Offset<schema::BatchMethodMeta>
-    CreateBatchFindMethodItem(flatbuffers::FlatBufferBuilder &fbb) const;
+    CreateBatchMethodMeta(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
 }

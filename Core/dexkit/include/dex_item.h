@@ -11,6 +11,7 @@
 #include "constant.h"
 #include "error.h"
 #include "file_helper.h"
+#include "opcode_util.h"
 
 #include "schema/querys_generated.h"
 #include "schema/results_generated.h"
@@ -49,16 +50,16 @@ public:
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
 
-    ClassBean GetClassBean(dex::u4 class_idx);
-    MethodBean GetMethodBean(dex::u4 method_idx);
-    FieldBean GetFieldBean(dex::u4 field_idx);
-    AnnotationBean GetAnnotationBean(dex::u4 annotation_idx);
+    ClassBean GetClassBean(uint32_t class_idx);
+    MethodBean GetMethodBean(uint32_t method_idx);
+    FieldBean GetFieldBean(uint32_t field_idx);
+    AnnotationBean GetAnnotationBean(uint32_t target_id, AnnotationTargetType type);
 
 private:
 
     int InitCache();
 
-    phmap::flat_hash_map<dex::u4, std::vector<std::string_view>>
+    phmap::flat_hash_map<uint32_t, std::vector<std::string_view>>
     InitBatchFindStringsMap(
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
