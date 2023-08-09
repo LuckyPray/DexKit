@@ -12,7 +12,8 @@ DexItem::DexItem(uint32_t id, uint8_t *data, size_t size) :
 
 DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap) :
         dex_id(id),
-        _image(std::move(mmap)), reader(_image->addr(), _image->len()) {
+        _image(std::move(mmap)),
+        reader(_image->addr(), _image->len()) {
     InitCache();
 }
 
@@ -54,8 +55,10 @@ int DexItem::InitCache() {
     class_source_files.resize(reader.TypeIds().size());
     class_access_flags.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
+    method_descriptors.resize(reader.MethodIds().size());
     method_access_flags.resize(reader.MethodIds().size());
     method_codes.resize(reader.MethodIds().size(), nullptr);
+    field_descriptors.resize(reader.FieldIds().size());
     field_access_flags.resize(reader.FieldIds().size());
     method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
 
@@ -282,16 +285,99 @@ DexItem::BatchFindClassUsingStrings(
 std::vector<BatchFindMethodItemBean>
 DexItem::BatchFindMethodUsingStrings(
         const schema::BatchFindMethodUsingStrings *query,
-        acdat::AhoCorasickDoubleArrayTrie<std::string_view> &ac_trie,
+        acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
         std::map<std::string_view, std::set<std::string_view>> &keywords_map,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
 ) {
-    return {};
+    auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
+
+    if (strings_map.empty()) {
+        return {};
+    }
+
+    // TODO: check query->in_class
+
+    std::optional<std::string_view> find_package;
+    schema::StringMatchType package_match_type;
+    auto find_package_name = query->find_package_name();
+    if (find_package_name) {
+        // TODO: matcher
+        find_package = find_package_name->value()->string_view();
+        package_match_type = find_package_name->type();
+    }
+
+    std::map<std::string_view, std::vector<dex::u4>> find_result;
+    for (int class_idx = 0; class_idx < this->type_names.size(); ++class_idx) {
+        auto class_name = type_names[class_idx];
+        if (class_method_ids[class_idx].empty()) {
+            continue;
+        }
+        for (auto method_idx: class_method_ids[class_idx]) {
+            std::set<std::string_view> search_set;
+            auto code = this->method_codes[method_idx];
+            if (code == nullptr) {
+                continue;
+            }
+            auto p = code->insns;
+            auto end_p = p + code->insns_size;
+            while (p < end_p) {
+                auto op = *p & 0xff;
+                auto ptr = p;
+                auto width = GetBytecodeWidth(ptr++);
+                switch (op) {
+                    case 0x1a: {
+                        auto string_idx = ReadShort(ptr);
+                        if (strings_map.contains(string_idx)) {
+                            for (auto &string: strings_map[string_idx]) {
+                                search_set.emplace(string);
+                            }
+                        }
+                        break;
+                    }
+                    case 0x1b: {
+                        auto string_idx = ReadInt(ptr);
+                        if (strings_map.contains(string_idx)) {
+                            for (auto &string: strings_map[string_idx]) {
+                                search_set.emplace(string);
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                p += width;
+            }
+            if (search_set.empty()) continue;
+            for (auto &[key, matched_set]: keywords_map) {
+                std::vector<std::string_view> vec;
+                std::set_intersection(search_set.begin(), search_set.end(),
+                                      matched_set.begin(), matched_set.end(),
+                                      std::inserter(vec, vec.begin()));
+                if (vec.size() == matched_set.size()) {
+                    find_result[key].emplace_back(method_idx);
+                }
+            }
+        }
+    }
+
+    std::vector<BatchFindMethodItemBean> result;
+    for (auto &[key, values]: find_result) {
+        std::vector<MethodBean> methods;
+        for (auto id: values) {
+            methods.emplace_back(this->GetMethodBean(id));
+        }
+        BatchFindMethodItemBean itemBean;
+        itemBean.union_key = key;
+        itemBean.methods = methods;
+        result.emplace_back(itemBean);
+    }
+    return result;
 }
 
 ClassBean DexItem::GetClassBean(uint32_t class_idx) {
     auto &class_def = this->reader.ClassDefs()[this->type_id_class_id_map[class_idx]];
-    auto bean = ClassBean();
+    ClassBean bean;
     bean.id = class_idx;
     bean.dex_id = this->dex_id;
     bean.source_file = this->class_source_files[class_idx];
@@ -308,6 +394,71 @@ ClassBean DexItem::GetClassBean(uint32_t class_idx) {
     bean.field_ids = this->class_field_ids[class_idx];
     bean.method_ids = this->class_method_ids[class_idx];
     return bean;
+}
+
+MethodBean DexItem::GetMethodBean(dex::u4 method_idx) {
+    auto &method_def = this->reader.MethodIds()[method_idx];
+    auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
+    auto &type_list = this->proto_type_list[method_def.proto_idx];
+    MethodBean bean;
+    bean.id = method_idx;
+    bean.dex_id = this->dex_id;
+    bean.class_id = method_def.class_idx;
+    // TODO: this->method_annotations[method_idx]
+    bean.access_flags = this->method_access_flags[method_idx];
+    bean.dex_descriptor = this->GetMethodDescriptors(method_idx);
+    bean.return_type = proto_def.return_type_idx;
+    std::vector<uint32_t> parameter_type_ids;
+    auto len = type_list ? type_list->size : 0;
+    parameter_type_ids.reserve(len);
+    for (int i = 0; i < len; ++i) {
+        parameter_type_ids.emplace_back(type_list->list[i].type_idx);
+    }
+    bean.parameter_types = parameter_type_ids;
+    return bean;
+}
+
+std::string_view DexItem::GetMethodDescriptors(uint32_t method_idx) {
+    auto &method_desc = this->method_descriptors[method_idx];
+    if (method_desc != std::nullopt) {
+        return method_desc.value();
+    }
+    auto &method_def = this->reader.MethodIds()[method_idx];
+    auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
+    auto &type_list = this->proto_type_list[method_def.proto_idx];
+    auto type_defs = this->reader.TypeIds();
+
+    std::string descriptor(this->type_names[method_def.class_idx]);
+    descriptor += "->";
+    descriptor += this->strings[method_def.name_idx];
+    descriptor += "(";
+    auto len = type_list ? type_list->size : 0;
+    for (int i = 0; i < len; ++i) {
+        descriptor += strings[type_defs[type_list->list[i].type_idx].descriptor_idx];
+    }
+    descriptor += ')';
+    descriptor += strings[type_defs[proto_def.return_type_idx].descriptor_idx];
+
+    method_desc = descriptor;
+    return method_desc.value();
+}
+
+std::string_view DexItem::GetFieldDescriptors(uint32_t field_idx) {
+    auto &field_desc = this->field_descriptors[field_idx];
+    if (field_desc != std::nullopt) {
+        return field_desc.value();
+    }
+    auto &field_id = this->reader.FieldIds()[field_idx];
+    auto &type_id = this->reader.TypeIds()[field_id.type_idx];
+
+    std::string descriptor(this->type_names[field_id.class_idx]);
+    descriptor += "->";
+    descriptor += this->strings[field_id.name_idx];
+    descriptor += ":";
+    descriptor += this->strings[type_id.descriptor_idx];
+
+    field_desc = descriptor;
+    return field_desc.value();
 }
 
 }

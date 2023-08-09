@@ -47,14 +47,14 @@ public:
 
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
-            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &ac_trie,
+            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
 
     std::vector<BatchFindMethodItemBean> BatchFindMethodUsingStrings(
             const schema::BatchFindMethodUsingStrings *query,
-            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &ac_trie,
+            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
@@ -77,6 +77,9 @@ private:
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
 
+    std::string_view GetMethodDescriptors(uint32_t method_idx);
+    std::string_view GetFieldDescriptors(uint32_t field_idx);
+
 private:
     std::unique_ptr<MemMap> _image;
     dex::Reader reader;
@@ -94,8 +97,10 @@ private:
     // class source file name, eg. "HelloWorld.java", maybe obfuscated
     std::vector<std::string_view> class_source_files;
     std::vector<uint32_t /*access_flag*/> class_access_flags;
+    std::vector<std::optional<std::string>> method_descriptors;
     std::vector<std::vector<uint32_t /*method_id*/>> class_method_ids;
     std::vector<uint32_t /*access_flag*/> method_access_flags;
+    std::vector<std::optional<std::string>> field_descriptors;
     std::vector<std::vector<uint32_t /*field_id*/>> class_field_ids;
     std::vector<uint32_t /*access_flag*/> field_access_flags;
     std::vector<const dex::Code *> method_codes;

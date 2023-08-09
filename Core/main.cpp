@@ -57,9 +57,8 @@ int FlatBufferTest() {
 }
 
 
-int DexKitBatchFindTest() {
-    auto dexkit = dexkit::DexKit("../dex/qq-8.9.2.apk");
-    printf("DexCount: %d\n", dexkit.GetDexNum());
+int DexKitBatchFindClassTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitBatchFindClassTest Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     std::vector<flatbuffers::Offset<BatchUsingStringsMatcher>> matchers{
             CreateBatchUsingStringsMatcher(
@@ -119,9 +118,73 @@ int DexKitBatchFindTest() {
     return 0;
 }
 
+
+int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitBatchFindMethodTest Start-----------\n");
+    flatbuffers::FlatBufferBuilder fbb;
+    std::vector<flatbuffers::Offset<BatchUsingStringsMatcher>> matchers{
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("Lcom/tencent/mobileqq/activity/ChatActivityFacade;"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("reSendEmo"), StringMatchType::StartWith, false),
+                    })
+            ),
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("Lcooperation/qzone/PlatformInfor;"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("qimei="), StringMatchType::Equal, false)
+                    })
+            ),
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("TroopClockInHandler"), StringMatchType::Equal, false),
+                    })
+            ),
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("com.tencent.widget.CustomWidgetUtil"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("^NEW$"), StringMatchType::SimilarRegex, false),
+                    })
+            ),
+    };
+
+    auto find = CreateBatchFindMethodUsingStrings(fbb, 0, 0, 0, fbb.CreateVector(matchers));
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<BatchFindMethodUsingStrings>(buf);
+
+    auto builder = dexkit.BatchFindMethodUsingStrings(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<BatchMethodMetaArrayHolder>(buffer);
+    printf("result->items()->size() = %d\n", result->items()->size());
+    for (int i = 0; i < result->items()->size(); ++i) {
+        auto item = result->items()->Get(i);
+        auto key = item->union_key();
+        auto values = item->methods();
+        printf("union key: %s\n", key->string_view().data());
+        for (int j = 0; j < values->size(); ++j) {
+            auto cls = values->Get(j);
+            printf("\tdex: %02d, class: %s\n", cls->dex_id(), cls->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
 int main() {
+    auto dexkit = dexkit::DexKit("../dex/qq-8.9.2.apk");
+    printf("DexCount: %d\n", dexkit.GetDexNum());
 //    ACTrieTest();
 //    FlatBufferTest();
-    DexKitBatchFindTest();
+//    DexKitBatchFindClassTest(dexkit);
+    DexKitBatchFindMethodTest(dexkit);
     return 0;
 }
