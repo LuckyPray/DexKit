@@ -22,17 +22,11 @@ class DexItem {
 public:
 
     explicit DexItem(uint32_t id, uint8_t *data, size_t size);
-
     explicit DexItem(uint32_t id, std::unique_ptr<MemMap> mmap);
-
     ~DexItem() = default;
-
     DexItem(DexItem &&) = default;
-
     DexItem &operator=(DexItem &&) = default;
-
     DexItem(const DexItem &) = delete;
-
     DexItem &operator=(const DexItem &) = delete;
 
     [[nodiscard]] MemMap *GetImage() const {
@@ -40,18 +34,14 @@ public:
     }
 
     std::vector<ClassBean> FindClass(const schema::FindClass *query);
-
     std::vector<MethodBean> FindMethod(const schema::FindMethod *query);
-
     std::vector<FieldBean> FindField(const schema::FindField *query);
-
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
-
     std::vector<BatchFindMethodItemBean> BatchFindMethodUsingStrings(
             const schema::BatchFindMethodUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
@@ -60,11 +50,8 @@ public:
     );
 
     ClassBean GetClassBean(dex::u4 class_idx);
-
     MethodBean GetMethodBean(dex::u4 method_idx);
-
     FieldBean GetFieldBean(dex::u4 field_idx);
-
     AnnotationBean GetAnnotationBean(dex::u4 annotation_idx);
 
 private:
