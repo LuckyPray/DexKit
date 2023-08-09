@@ -89,7 +89,7 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
         result.insert(result.end(), classes.begin(), classes.end());
     }
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
-    for (auto &bean : result) {
+    for (auto &bean: result) {
         auto res = bean.CreateClassMeta(*builder);
         builder->Finish(res);
     }
@@ -103,7 +103,7 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
         result.insert(result.end(), methods.begin(), methods.end());
     }
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
-    for (auto &bean : result) {
+    for (auto &bean: result) {
         auto res = bean.CreateMethodMeta(*builder);
         builder->Finish(res);
     }
@@ -117,7 +117,7 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
         result.insert(result.end(), fields.begin(), fields.end());
     }
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
-    for (auto &bean : result) {
+    for (auto &bean: result) {
         auto res = bean.CreateFieldMeta(*builder);
         builder->Finish(res);
     }
@@ -129,12 +129,104 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
-    if (!query->matchers()) {
-        return {};
-    }
-    std::map<std::string_view, std::set<std::string_view>> keywords_map;
+    auto keywords_map = BuildBatchFindKeywordsMap(query->matchers(), keywords, match_type_map);
+    acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
+    acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+
+    std::map<std::string_view, std::vector<ClassBean>> find_result_map;
+    // init find_result_map keys
     for (int i = 0; i < query->matchers()->size(); ++i) {
-        auto matcher = query->matchers()->Get(i);
+        auto matchers = query->matchers();
+        for (int j = 0; j < matchers->size(); ++j) {
+            find_result_map[matchers->Get(j)->union_key()->string_view()] = {};
+        }
+    }
+
+    // fetch and merge result
+    for (auto &dex_item: dex_items) {
+        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map);
+        for (auto &item: items) {
+            auto &beans = find_result_map[item.union_key];
+            beans.insert(beans.end(), item.classes.begin(), item.classes.end());
+        }
+    }
+
+    std::vector<BatchFindClassItemBean> result;
+    for (auto &[key, value]: find_result_map) {
+        BatchFindClassItemBean bean;
+        bean.union_key = key;
+        bean.classes = value;
+        result.emplace_back(bean);
+    }
+
+    auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::BatchClassMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateBatchFindClassItem(*fbb);
+        fbb->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateBatchClassMetaArrayHolder(*fbb, fbb->CreateVector(offsets));
+    fbb->Finish(array_holder);
+    return fbb;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
+    // build keywords trie
+    std::vector<std::pair<std::string_view, bool>> keywords;
+    phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
+    auto keywords_map = BuildBatchFindKeywordsMap(query->matchers(), keywords, match_type_map);
+    acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
+    acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+
+    std::map<std::string_view, std::vector<MethodBean>> find_result_map;
+    // init find_result_map keys
+    for (int i = 0; i < query->matchers()->size(); ++i) {
+        auto matchers = query->matchers();
+        for (int j = 0; j < matchers->size(); ++j) {
+            find_result_map[matchers->Get(j)->union_key()->string_view()] = {};
+        }
+    }
+
+    // fetch and merge result
+    for (auto &dex_item: dex_items) {
+        auto items = dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map);
+        for (auto &item: items) {
+            auto &beans = find_result_map[item.union_key];
+            beans.insert(beans.end(), item.methods.begin(), item.methods.end());
+        }
+    }
+
+    std::vector<BatchFindMethodItemBean> result;
+    for (auto &[key, value]: find_result_map) {
+        BatchFindMethodItemBean bean;
+        bean.union_key = key;
+        bean.methods = value;
+        result.emplace_back(bean);
+    }
+
+    auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::BatchMethodMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateBatchFindMethodItem(*fbb);
+        fbb->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateBatchMethodMetaArrayHolder(*fbb, fbb->CreateVector(offsets));
+    fbb->Finish(array_holder);
+    return fbb;
+}
+
+std::map<std::string_view, std::set<std::string_view>>
+DexKit::BuildBatchFindKeywordsMap(
+        const flatbuffers::Vector<flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers,
+        std::vector<std::pair<std::string_view, bool>> &keywords,
+        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+) {
+    std::map<std::string_view, std::set<std::string_view>> keywords_map;
+    for (int i = 0; i < matchers->size(); ++i) {
+        auto matcher = matchers->Get(i);
         auto union_key = matcher->union_key()->string_view();
         for (int j = 0; j < matcher->using_strings()->size(); ++j) {
             auto string_matcher = matcher->using_strings()->Get(j);
@@ -163,50 +255,7 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
             match_type_map[value] = type;
         }
     }
-    acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
-    acdat::Builder<std::string_view>().Build(keywords, &acTrie);
-
-    std::map<std::string_view, std::vector<ClassBean>> map;
-    std::vector<BatchFindClassItemBean> result;
-    for (auto &dex_item: dex_items) {
-        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map);
-        for (auto &item : items) {
-            auto &beans = map[item.union_key];
-            beans.insert(beans.end(), item.classes.begin(), item.classes.end());
-        }
-    }
-    for (auto &[key, value] : map) {
-        BatchFindClassItemBean bean;
-        bean.union_key = key;
-        bean.classes = value;
-        result.emplace_back(bean);
-    }
-    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
-
-    std::vector<flatbuffers::Offset<schema::BatchClassMeta>> offsets;
-    for (auto &bean : result) {
-        auto res = bean.CreateBatchFindClassItem(*builder);
-        builder->Finish(res);
-        offsets.emplace_back(res);
-    }
-    auto fbb_result = schema::CreateBatchClassMetaArrayHolder(*builder, builder->CreateVector(offsets));
-    builder->Finish(fbb_result);
-    return builder;
-}
-
-std::unique_ptr<flatbuffers::FlatBufferBuilder>
-DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
-    std::vector<BatchFindMethodItemBean> result;
-    for (auto &dex_item: dex_items) {
-        auto methods = dex_item->BatchFindMethodUsingStrings(query);
-        result.insert(result.end(), methods.begin(), methods.end());
-    }
-    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
-    for (auto &bean : result) {
-        auto res = bean.CreateBatchFindMethodItem(*builder);
-        builder->Finish(res);
-    }
-    return builder;
+    return keywords_map;
 }
 
 } // namespace dexkit

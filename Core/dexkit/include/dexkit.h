@@ -39,6 +39,13 @@ private:
     std::atomic<uint32_t> dex_cnt = 0;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
+
+    std::map<std::string_view, std::set<std::string_view>>
+    BuildBatchFindKeywordsMap(
+            const flatbuffers::Vector<flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers,
+            std::vector<std::pair<std::string_view, bool>> &keywords,
+            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+    );
 };
 
 } // namespace dexkit

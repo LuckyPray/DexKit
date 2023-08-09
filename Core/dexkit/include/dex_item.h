@@ -47,12 +47,17 @@ public:
 
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
-            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acdat,
-            std::map<std::string_view, std::set<std::string_view>> keywords_map,
+            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &ac_trie,
+            std::map<std::string_view, std::set<std::string_view>> &keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
 
-    std::vector<BatchFindMethodItemBean> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
+    std::vector<BatchFindMethodItemBean> BatchFindMethodUsingStrings(
+            const schema::BatchFindMethodUsingStrings *query,
+            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &ac_trie,
+            std::map<std::string_view, std::set<std::string_view>> &keywords_map,
+            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+    );
 
     ClassBean GetClassBean(dex::u4 class_idx);
 
@@ -65,6 +70,12 @@ public:
 private:
 
     int InitCache();
+
+    phmap::flat_hash_map<dex::u4, std::vector<std::string_view>>
+    InitBatchFindStringsMap(
+            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
+            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+    );
 
 private:
     std::unique_ptr<MemMap> _image;

@@ -138,18 +138,17 @@ DexItem::FindField(const schema::FindField *query) {
     return {};
 }
 
-std::vector<BatchFindClassItemBean>
-DexItem::BatchFindClassUsingStrings(
-        const schema::BatchFindClassUsingStrings *query,
+phmap::flat_hash_map<dex::u4, std::vector<std::string_view>>
+DexItem::InitBatchFindStringsMap(
         acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
-        std::map<std::string_view, std::set<std::string_view>> keywords_map,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
 ) {
     phmap::flat_hash_map<dex::u4, std::vector<std::string_view>> strings_map;
+
     for (auto i = 0; i < this->strings.size(); ++i) {
         std::string_view string = this->strings[i];
         auto hits = acTrie.ParseText(string);
-        for (auto &hit : hits) {
+        for (auto &hit: hits) {
             auto match_type = match_type_map[hit.value];
             bool match = false;
             switch (match_type) {
@@ -183,6 +182,17 @@ DexItem::BatchFindClassUsingStrings(
             }
         }
     }
+    return strings_map;
+}
+
+std::vector<BatchFindClassItemBean>
+DexItem::BatchFindClassUsingStrings(
+        const schema::BatchFindClassUsingStrings *query,
+        acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
+        std::map<std::string_view, std::set<std::string_view>> &keywords_map,
+        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+) {
+    auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
 
     if (strings_map.empty()) {
         return {};
@@ -206,7 +216,7 @@ DexItem::BatchFindClassUsingStrings(
             continue;
         }
         std::set<std::string_view> search_set;
-        for (auto method_idx : class_method_ids[class_idx]) {
+        for (auto method_idx: class_method_ids[class_idx]) {
             auto code = this->method_codes[method_idx];
             if (code == nullptr) {
                 continue;
@@ -221,7 +231,7 @@ DexItem::BatchFindClassUsingStrings(
                     case 0x1a: {
                         auto string_idx = ReadShort(ptr);
                         if (strings_map.contains(string_idx)) {
-                            for (auto &string : strings_map[string_idx]) {
+                            for (auto &string: strings_map[string_idx]) {
                                 search_set.emplace(string);
                             }
                         }
@@ -230,7 +240,7 @@ DexItem::BatchFindClassUsingStrings(
                     case 0x1b: {
                         auto string_idx = ReadInt(ptr);
                         if (strings_map.contains(string_idx)) {
-                            for (auto &string : strings_map[string_idx]) {
+                            for (auto &string: strings_map[string_idx]) {
                                 search_set.emplace(string);
                             }
                         }
@@ -243,7 +253,7 @@ DexItem::BatchFindClassUsingStrings(
             }
         }
         if (search_set.empty()) continue;
-        for (auto &[key, matched_set] : keywords_map) {
+        for (auto &[key, matched_set]: keywords_map) {
             std::vector<std::string_view> vec;
             std::set_intersection(search_set.begin(), search_set.end(),
                                   matched_set.begin(), matched_set.end(),
@@ -255,14 +265,14 @@ DexItem::BatchFindClassUsingStrings(
     }
 
     std::vector<BatchFindClassItemBean> result;
-    for (auto &[key, values] : find_result) {
+    for (auto &[key, values]: find_result) {
         std::vector<ClassBean> classes;
-        for (auto id : values) {
+        for (auto id: values) {
             classes.emplace_back(this->GetClassBean(id));
         }
         BatchFindClassItemBean itemBean;
         itemBean.union_key = key;
-        itemBean.classes =classes;
+        itemBean.classes = classes;
         result.emplace_back(itemBean);
     }
 
@@ -270,7 +280,12 @@ DexItem::BatchFindClassUsingStrings(
 }
 
 std::vector<BatchFindMethodItemBean>
-DexItem::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
+DexItem::BatchFindMethodUsingStrings(
+        const schema::BatchFindMethodUsingStrings *query,
+        acdat::AhoCorasickDoubleArrayTrie<std::string_view> &ac_trie,
+        std::map<std::string_view, std::set<std::string_view>> &keywords_map,
+        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+) {
     return {};
 }
 
