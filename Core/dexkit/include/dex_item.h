@@ -48,6 +48,7 @@ public:
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acdat,
+            std::map<std::string_view, std::set<std::string_view>> keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
 

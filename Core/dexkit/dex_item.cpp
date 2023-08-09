@@ -142,6 +142,7 @@ std::vector<BatchFindClassItemBean>
 DexItem::BatchFindClassUsingStrings(
         const schema::BatchFindClassUsingStrings *query,
         acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
+        std::map<std::string_view, std::set<std::string_view>> keywords_map,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
 ) {
     phmap::flat_hash_map<dex::u4, std::vector<std::string_view>> strings_map;
@@ -242,20 +243,13 @@ DexItem::BatchFindClassUsingStrings(
             }
         }
         if (search_set.empty()) continue;
-        auto matchers = query->matchers();
-        for (int i = 0; i < matchers->size(); ++i) {
-            std::set<std::string_view> matched_set;
-            auto matcher = matchers->Get(i);
-            for (int j = 0; j < matcher->using_strings()->size(); ++j) {
-                matched_set.emplace(matcher->using_strings()->Get(j)->value()->string_view());
-            }
+        for (auto &[key, matched_set] : keywords_map) {
             std::vector<std::string_view> vec;
-            // TODO: SimilarRegex 去重有 bug
             std::set_intersection(search_set.begin(), search_set.end(),
                                   matched_set.begin(), matched_set.end(),
                                   std::inserter(vec, vec.begin()));
             if (vec.size() == matched_set.size()) {
-                find_result[matcher->union_key()->string_view()].emplace_back(class_idx);
+                find_result[key].emplace_back(class_idx);
             }
         }
     }

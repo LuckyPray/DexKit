@@ -62,28 +62,28 @@ int DexKitBatchFindTest() {
     printf("DexCount: %d\n", dexkit.GetDexNum());
     flatbuffers::FlatBufferBuilder fbb;
     std::vector<flatbuffers::Offset<BatchUsingStringsMatcher>> matchers{
-//            CreateBatchUsingStringsMatcher(
-//                    fbb,
-//                    fbb.CreateString("Lcom/tencent/mobileqq/activity/ChatActivityFacade;"),
-//                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
-//                            CreateStringMatcher(fbb, fbb.CreateString("reSendEmo"), StringMatchType::StartWith, false),
-//                    })
-//            ),
-//            CreateBatchUsingStringsMatcher(
-//                    fbb,
-//                    fbb.CreateString("Lcooperation/qzone/PlatformInfor;"),
-//                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
-//                            CreateStringMatcher(fbb, fbb.CreateString("52b7f2"), StringMatchType::Contains, false),
-//                            CreateStringMatcher(fbb, fbb.CreateString("qimei"), StringMatchType::Contains, false)
-//                    })
-//            ),
-//            CreateBatchUsingStringsMatcher(
-//                    fbb,
-//                    fbb.CreateString("Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;"),
-//                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
-//                            CreateStringMatcher(fbb, fbb.CreateString("TroopClockInHandler"), StringMatchType::Equal, false),
-//                    })
-//            ),
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("Lcom/tencent/mobileqq/activity/ChatActivityFacade;"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("reSendEmo"), StringMatchType::StartWith, false),
+                    })
+            ),
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("Lcooperation/qzone/PlatformInfor;"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("52b7f2"), StringMatchType::Contains, false),
+                            CreateStringMatcher(fbb, fbb.CreateString("qimei"), StringMatchType::Contains, false)
+                    })
+            ),
+            CreateBatchUsingStringsMatcher(
+                    fbb,
+                    fbb.CreateString("Lcom/tencent/mobileqq/troop/clockin/handler/TroopClockInHandler;"),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(fbb, fbb.CreateString("TroopClockInHandler"), StringMatchType::Equal, false),
+                    })
+            ),
             CreateBatchUsingStringsMatcher(
                     fbb,
                     fbb.CreateString("com.tencent.widget.CustomWidgetUtil"),

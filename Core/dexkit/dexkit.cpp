@@ -132,8 +132,10 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     if (!query->matchers()) {
         return {};
     }
+    std::map<std::string_view, std::set<std::string_view>> keywords_map;
     for (int i = 0; i < query->matchers()->size(); ++i) {
         auto matcher = query->matchers()->Get(i);
+        auto union_key = matcher->union_key()->string_view();
         for (int j = 0; j < matcher->using_strings()->size(); ++j) {
             auto string_matcher = matcher->using_strings()->Get(j);
             auto value = string_matcher->value()->string_view();
@@ -156,6 +158,7 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
                 }
                 value = value.substr(l, r - l);
             }
+            keywords_map[union_key].insert(value);
             keywords.emplace_back(value, ignore_case);
             match_type_map[value] = type;
         }
@@ -166,7 +169,7 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     std::map<std::string_view, std::vector<ClassBean>> map;
     std::vector<BatchFindClassItemBean> result;
     for (auto &dex_item: dex_items) {
-        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, match_type_map);
+        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map);
         for (auto &item : items) {
             auto &beans = map[item.union_key];
             beans.insert(beans.end(), item.classes.begin(), item.classes.end());
