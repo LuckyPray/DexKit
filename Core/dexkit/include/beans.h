@@ -64,21 +64,23 @@ public:
 class AnnotationBean;
 class AnnotationElementBean;
 class AnnotationElementValueArray;
-union AnnotationElementValue;
 
-//using AnnotationElementValue = std::variant<
-//        int8_t,
-//        int16_t,
-//        int32_t,
-//        int64_t,
-//        float,
-//        double,
-//        std::string_view,
-//        ClassBean,
-//        FieldBean,
-//        AnnotationElementValueArray,
-//        AnnotationBean,
-//        bool>;
+using AnnotationElementValue = std::variant<
+        int8_t /*byte_value*/,
+        int16_t /*short_value*/,
+        int32_t /*int_value*/,
+        int64_t /*long_value*/,
+        float /*float_value*/,
+        double /*double_value*/,
+        std::string_view /*string_value*/,
+        ClassBean /*type_value*/,
+        FieldBean /*enum_value*/,
+        AnnotationElementValueArray /*array_value*/,
+        AnnotationBean /*annotation_value*/,
+        bool /*bool_value*/>;
+
+std::pair<dexkit::schema::AnnotationElementValue, flatbuffers::Offset<void>>
+CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type, AnnotationElementValue value);
 
 class AnnotationElementValueArray {
 public:
@@ -102,28 +104,6 @@ public:
 public:
     flatbuffers::Offset<schema::AnnotationMeta>
     CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const;
-};
-
-union AnnotationElementValue {
-    int8_t byte_value;
-    int16_t short_value;
-    int16_t char_value;
-    int32_t int_value;
-    int64_t long_value;
-    float float_value;
-    double double_value;
-    std::string_view string_value;
-    // dex class id
-    ClassBean* type_value;
-    // dex field id
-    FieldBean* enum_value;
-    AnnotationElementValueArray* array_value;
-    AnnotationBean* annotation_value;
-    bool bool_value;
-
-public:
-    std::pair<dexkit::schema::AnnotationElementValue, flatbuffers::Offset<void>>
-    CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type) const;
 };
 
 class AnnotationElementBean {

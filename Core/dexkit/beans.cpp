@@ -54,12 +54,12 @@ FieldBean::CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     return field_meta;
 }
 
-flatbuffers::Offset<schema::AnnotationElementValueArray>
+flatbuffers::Offset<schema::AnnotationElementValueArray> // NOLINTNEXTLINE
 AnnotationElementValueArray::CreateAnnotationElementValueArray(flatbuffers::FlatBufferBuilder &fbb) const {
     std::vector<dexkit::schema::AnnotationElementValue> element_types;
     std::vector<flatbuffers::Offset<void>> element_values;
     for (auto &value : this->values) {
-        auto [element_type, element_value] = value.CreateAnnotationElementValue(fbb, this->type);
+        auto [element_type, element_value] = CreateAnnotationElementValue(fbb, this->type, value);
         element_types.push_back(element_type);
         element_values.push_back(element_value);
     }
@@ -73,70 +73,70 @@ AnnotationElementValueArray::CreateAnnotationElementValueArray(flatbuffers::Flat
     return annotation_element_value_array;
 }
 
-std::pair<dexkit::schema::AnnotationElementValue, flatbuffers::Offset<void>>
-AnnotationElementValue::CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type) const {
+std::pair<dexkit::schema::AnnotationElementValue, flatbuffers::Offset<void>> // NOLINTNEXTLINE
+CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type, AnnotationElementValue value) {
     schema::AnnotationElementValue value_type;
-    flatbuffers::Offset<void> value;
+    flatbuffers::Offset<void> fbb_value;
     switch (type) {
         case schema::AnnotationElementValueType::Byte:
             value_type = schema::AnnotationElementValue::EncodeValueByte;
-            value = schema::CreateEncodeValueByte(fbb, this->byte_value).Union();
+            fbb_value = schema::CreateEncodeValueByte(fbb, std::get<int8_t>(value)).Union();
             break;
         case schema::AnnotationElementValueType::Short:
             value_type = schema::AnnotationElementValue::EncodeValueShort;
-            value = schema::CreateEncodeValueShort(fbb, this->short_value).Union();
+            fbb_value = schema::CreateEncodeValueShort(fbb, std::get<int16_t>(value)).Union();
             break;
         case schema::AnnotationElementValueType::Char:
             value_type = schema::AnnotationElementValue::EncodeValueChar;
-            value = schema::CreateEncodeValueChar(fbb, this->char_value).Union();
+            fbb_value = schema::CreateEncodeValueChar(fbb, std::get<int16_t>(value)).Union();
             break;
         case schema::AnnotationElementValueType::Int:
             value_type = schema::AnnotationElementValue::EncodeValueInt;
-            value = schema::CreateEncodeValueInt(fbb, this->int_value).Union();
+            fbb_value = schema::CreateEncodeValueInt(fbb, std::get<int32_t>(value)).Union();
             break;
         case schema::AnnotationElementValueType::Long:
             value_type = schema::AnnotationElementValue::EncodeValueLong;
-            value = schema::CreateEncodeValueLong(fbb, this->long_value).Union();
+            fbb_value = schema::CreateEncodeValueLong(fbb, std::get<int64_t>(value)).Union();
             break;
         case schema::AnnotationElementValueType::Float:
             value_type = schema::AnnotationElementValue::EncodeValueFloat;
-            value = schema::CreateEncodeValueFloat(fbb, this->float_value).Union();
+            fbb_value = schema::CreateEncodeValueFloat(fbb, std::get<float>(value)).Union();
             break;
         case schema::AnnotationElementValueType::Double:
             value_type = schema::AnnotationElementValue::EncodeValueDouble;
-            value = schema::CreateEncodeValueDouble(fbb, this->double_value).Union();
+            fbb_value = schema::CreateEncodeValueDouble(fbb, std::get<double>(value)).Union();
             break;
         case schema::AnnotationElementValueType::String:
             value_type = schema::AnnotationElementValue::EncodeValueString;
-            value = schema::CreateEncodeValueString(fbb, fbb.CreateString(this->string_value)).Union();
+            fbb_value = schema::CreateEncodeValueString(fbb, fbb.CreateString(std::get<std::string_view>(value))).Union();
             break;
         case schema::AnnotationElementValueType::Type:
             value_type = schema::AnnotationElementValue::ClassMeta;
-            value = this->type_value->CreateClassMeta(fbb).Union();
+            fbb_value = std::get<ClassBean>(value).CreateClassMeta(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Enum:
             value_type = schema::AnnotationElementValue::FieldMeta;
-            value = this->enum_value->CreateFieldMeta(fbb).Union();
+            fbb_value = std::get<FieldBean>(value).CreateFieldMeta(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Array:
             value_type = schema::AnnotationElementValue::AnnotationElementValueArray;
-            value = this->array_value->CreateAnnotationElementValueArray(fbb).Union();
+            fbb_value = std::get<AnnotationElementValueArray>(value).CreateAnnotationElementValueArray(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Annotation:
             value_type = schema::AnnotationElementValue::AnnotationMeta;
-            value = this->annotation_value->CreateAnnotationMeta(fbb).Union();
+            fbb_value = std::get<AnnotationBean>(value).CreateAnnotationMeta(fbb).Union();
             break;
         case schema::AnnotationElementValueType::Bool:
             value_type = schema::AnnotationElementValue::EncodeValueBoolean;
-            value = schema::CreateEncodeValueBoolean(fbb, this->bool_value).Union();
+            fbb_value = schema::CreateEncodeValueBoolean(fbb, std::get<bool>(value)).Union();
             break;
     }
-    return std::make_pair(value_type, value);
+    return std::make_pair(value_type, fbb_value);
 }
 
-flatbuffers::Offset<schema::AnnotationElementMeta>
+flatbuffers::Offset<schema::AnnotationElementMeta> // NOLINTNEXTLINE
 AnnotationElementBean::CreateAnnotationElementMeta(flatbuffers::FlatBufferBuilder &fbb) const {
-    auto enum_pair = this->value.CreateAnnotationElementValue(fbb, this->type);
+    auto enum_pair = CreateAnnotationElementValue(fbb, this->type, this->value);
     auto annotation_member_meta = schema::CreateAnnotationElementMeta(
             fbb,
             fbb.CreateString(this->name),
@@ -147,7 +147,7 @@ AnnotationElementBean::CreateAnnotationElementMeta(flatbuffers::FlatBufferBuilde
     return annotation_member_meta;
 }
 
-flatbuffers::Offset<schema::AnnotationMeta>
+flatbuffers::Offset<schema::AnnotationMeta> // NOLINTNEXTLINE
 AnnotationBean::CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     std::vector<flatbuffers::Offset<schema::AnnotationElementMeta>> annotation_members;
     annotation_members.reserve(this->elements.size());
