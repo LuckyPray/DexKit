@@ -46,7 +46,7 @@ enum RetentionPolicyType:byte {
     Runtime,
 }
 
-enum AnnotationElementValueType: byte {
+enum AnnotationEncodeValueType: byte {
     Byte,
     Short,
     Char,

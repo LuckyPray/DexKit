@@ -51,7 +51,7 @@ table FieldMetaArrayHolder {
     fields: [FieldMeta];
 }
 
-union AnnotationElementValue {
+union AnnotationEncodeValue {
     EncodeValueByte,
     EncodeValueShort,
     EncodeValueChar,
@@ -63,25 +63,29 @@ union AnnotationElementValue {
     ClassMeta,
     // enum use it
     FieldMeta,
-    AnnotationElementValueArray,
+    AnnotationEncodeArray,
     AnnotationMeta,
     EncodeValueBoolean,
 }
 
-table AnnotationElementValueArray {
-    values: [AnnotationElementValue];
+table AnnotationEncodeValueMeta {
+    type: AnnotationEncodeValueType;
+    value: AnnotationEncodeValue;
+}
+
+table AnnotationEncodeArray {
+    values: [AnnotationEncodeValueMeta];
 }
 
 table AnnotationElementMeta {
     name: string;
-    value: AnnotationElementValue;
+    value: AnnotationEncodeValueMeta;
 }
 
 table AnnotationMeta {
     dex_id: uint32;
     type_id: uint32;
     type_descriptor: string;
-    target_element_types: [TargetElementType];
     retention_policy: RetentionPolicyType;
     elements: [AnnotationElementMeta];
 }

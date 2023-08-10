@@ -53,7 +53,19 @@ public:
     ClassBean GetClassBean(uint32_t class_idx);
     MethodBean GetMethodBean(uint32_t method_idx);
     FieldBean GetFieldBean(uint32_t field_idx);
-    AnnotationBean GetAnnotationBean(uint32_t target_id, AnnotationTargetType type);
+
+    AnnotationBean GetAnnotationBean(ir::Annotation *annotation);
+    AnnotationEncodeValueBean GetAnnotationEncodeValueBean(ir::EncodedValue *encoded_value);
+    AnnotationElementBean GetAnnotationElementBean(ir::AnnotationElement *annotation_element);
+    AnnotationEncodeArrayBean GetAnnotationEncodeArrayBean(ir::EncodedArray *encoded_array);
+
+    std::vector<AnnotationBean> GetClassAnnotationBeans(uint32_t class_idx);
+    std::vector<AnnotationBean> GetMethodAnnotationBeans(uint32_t method_idx);
+    std::vector<AnnotationBean> GetFieldAnnotationBeans(uint32_t field_idx);
+    std::vector<std::vector<AnnotationBean>> GetParameterAnnotationBeans(uint32_t method_idx);
+
+    std::string_view GetMethodDescriptor(uint32_t method_idx);
+    std::string_view GetFieldDescriptor(uint32_t field_idx);
 
 private:
 
@@ -65,15 +77,15 @@ private:
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
 
-    std::string_view GetMethodDescriptors(uint32_t method_idx);
-    std::string_view GetFieldDescriptors(uint32_t field_idx);
-
 private:
     std::unique_ptr<MemMap> _image;
     dex::Reader reader;
 
     uint32_t dex_flag = 0;
     uint32_t dex_id;
+
+    uint32_t annotation_target_class_id = dex::kNoIndex;
+    phmap::flat_hash_map<uint32_t /*field_id*/, schema::TargetElementType> target_element_map;
 
     // string constants, sorted by string value
     std::vector<std::string_view> strings;
@@ -94,7 +106,10 @@ private:
     std::vector<const dex::Code *> method_codes;
     std::vector<const dex::TypeList *> proto_type_list;
     std::vector<std::optional<std::vector<uint8_t /*opcode*/>>> method_opcode_seq;
-    std::vector<const ir::AnnotationsDirectory *> class_annotations;
+    std::vector<ir::AnnotationSet *> class_annotations;
+    std::vector<ir::AnnotationSet *> method_annotations;
+    std::vector<ir::AnnotationSet *> field_annotations;
+    std::vector<std::vector<ir::AnnotationSet *>> method_parameter_annotations;
 };
 
 } // namespace dexkit

@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.schema
 
 @Suppress("unused")
-class AnnotationElementValue private constructor() {
+class AnnotationEncodeValue private constructor() {
     companion object {
         const val NONE: UByte = 0u
         const val EncodeValueByte: UByte = 1u
@@ -16,7 +16,7 @@ class AnnotationElementValue private constructor() {
         const val EncodeValueString: UByte = 8u
         const val ClassMeta: UByte = 9u
         const val FieldMeta: UByte = 10u
-        const val AnnotationElementValueArray: UByte = 11u
+        const val AnnotationEncodeArray: UByte = 11u
         const val AnnotationMeta: UByte = 12u
         const val EncodeValueBoolean: UByte = 13u
     }

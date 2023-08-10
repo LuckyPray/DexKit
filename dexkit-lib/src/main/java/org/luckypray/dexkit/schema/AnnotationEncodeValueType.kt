@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.schema
 
 @Suppress("unused")
-class AnnotationElementValueType private constructor() {
+class AnnotationEncodeValueType private constructor() {
     companion object {
         const val Byte: Byte = 0
         const val Short: Byte = 1

@@ -229,7 +229,7 @@ inline const char *EnumNameRetentionPolicyType(RetentionPolicyType e) {
   return EnumNamesRetentionPolicyType()[index];
 }
 
-enum class AnnotationElementValueType : int8_t {
+enum class AnnotationEncodeValueType : int8_t {
   Byte = 0,
   Short = 1,
   Char = 2,
@@ -245,26 +245,26 @@ enum class AnnotationElementValueType : int8_t {
   Bool = 12
 };
 
-inline const AnnotationElementValueType (&EnumValuesAnnotationElementValueType())[13] {
-  static const AnnotationElementValueType values[] = {
-    AnnotationElementValueType::Byte,
-    AnnotationElementValueType::Short,
-    AnnotationElementValueType::Char,
-    AnnotationElementValueType::Int,
-    AnnotationElementValueType::Long,
-    AnnotationElementValueType::Float,
-    AnnotationElementValueType::Double,
-    AnnotationElementValueType::String,
-    AnnotationElementValueType::Type,
-    AnnotationElementValueType::Enum,
-    AnnotationElementValueType::Array,
-    AnnotationElementValueType::Annotation,
-    AnnotationElementValueType::Bool
+inline const AnnotationEncodeValueType (&EnumValuesAnnotationEncodeValueType())[13] {
+  static const AnnotationEncodeValueType values[] = {
+    AnnotationEncodeValueType::Byte,
+    AnnotationEncodeValueType::Short,
+    AnnotationEncodeValueType::Char,
+    AnnotationEncodeValueType::Int,
+    AnnotationEncodeValueType::Long,
+    AnnotationEncodeValueType::Float,
+    AnnotationEncodeValueType::Double,
+    AnnotationEncodeValueType::String,
+    AnnotationEncodeValueType::Type,
+    AnnotationEncodeValueType::Enum,
+    AnnotationEncodeValueType::Array,
+    AnnotationEncodeValueType::Annotation,
+    AnnotationEncodeValueType::Bool
   };
   return values;
 }
 
-inline const char * const *EnumNamesAnnotationElementValueType() {
+inline const char * const *EnumNamesAnnotationEncodeValueType() {
   static const char * const names[14] = {
     "Byte",
     "Short",
@@ -284,10 +284,10 @@ inline const char * const *EnumNamesAnnotationElementValueType() {
   return names;
 }
 
-inline const char *EnumNameAnnotationElementValueType(AnnotationElementValueType e) {
-  if (::flatbuffers::IsOutRange(e, AnnotationElementValueType::Byte, AnnotationElementValueType::Bool)) return "";
+inline const char *EnumNameAnnotationEncodeValueType(AnnotationEncodeValueType e) {
+  if (::flatbuffers::IsOutRange(e, AnnotationEncodeValueType::Byte, AnnotationEncodeValueType::Bool)) return "";
   const size_t index = static_cast<size_t>(e);
-  return EnumNamesAnnotationElementValueType()[index];
+  return EnumNamesAnnotationEncodeValueType()[index];
 }
 
 }  // namespace schema

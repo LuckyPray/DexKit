@@ -33,6 +33,16 @@ int DexItem::InitCache() {
         type_ids_map[*type_names_it++] = idx++;
     }
 
+    uint32_t element_type_idx = dex::kNoIndex;
+    auto element_type_class_desc = "Ljava/lang/annotation/ElementType;";
+    auto annotation_target_class_desc = "Ljava/lang/annotation/Target;";
+    if (type_ids_map.contains(element_type_class_desc)) {
+        element_type_idx = type_ids_map[element_type_class_desc];
+    }
+    if (type_ids_map.contains(annotation_target_class_desc)) {
+        annotation_target_class_id = type_ids_map[annotation_target_class_desc];
+    }
+
     proto_type_list.resize(reader.ProtoIds().size());
     auto proto_it = proto_type_list.begin();
     for (auto &proto: reader.ProtoIds()) {
@@ -46,6 +56,30 @@ int DexItem::InitCache() {
     class_field_ids.resize(reader.TypeIds().size());
     int field_idx = 0;
     for (auto &field: reader.FieldIds()) {
+        if (field.class_idx == element_type_idx) {
+            auto name = strings[field.name_idx];
+            if (name == "TYPE") {
+                target_element_map[field_idx] = schema::TargetElementType::Type;
+            } else if (name == "FIELD") {
+                target_element_map[field_idx] = schema::TargetElementType::Field;
+            } else if (name == "METHOD") {
+                target_element_map[field_idx] = schema::TargetElementType::Method;
+            } else if (name == "PARAMETER") {
+                target_element_map[field_idx] = schema::TargetElementType::Parameter;
+            } else if (name == "CONSTRUCTOR") {
+                target_element_map[field_idx] = schema::TargetElementType::Constructor;
+            } else if (name == "LOCAL_VARIABLE") {
+                target_element_map[field_idx] = schema::TargetElementType::LocalVariable;
+            } else if (name == "ANNOTATION_TYPE") {
+                target_element_map[field_idx] = schema::TargetElementType::AnnotationType;
+            } else if (name == "PACKAGE") {
+                target_element_map[field_idx] = schema::TargetElementType::Package;
+            } else if (name == "TYPE_PARAMETER") {
+                target_element_map[field_idx] = schema::TargetElementType::TypeParameter;
+            } else if (name == "TYPE_USE") {
+                target_element_map[field_idx] = schema::TargetElementType::TypeUse;
+            }
+        }
         class_field_ids[field.class_idx].emplace_back(field_idx);
         ++field_idx;
     }
@@ -114,13 +148,25 @@ int DexItem::InitCache() {
         ++class_def_idx;
     }
 
-    class_annotations.resize(reader.TypeIds().size(), nullptr);
+    class_annotations.resize(reader.TypeIds().size());
+    field_annotations.resize(reader.FieldIds().size());
+    method_annotations.resize(reader.MethodIds().size());
+    method_parameter_annotations.resize(reader.MethodIds().size());
     for (auto &class_def: reader.ClassDefs()) {
         if (class_def.annotations_off == 0) {
             continue;
         }
         auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
-        class_annotations[class_def.class_idx] = annotations;
+        class_annotations[class_def.class_idx] = annotations->class_annotation;
+        for (auto value: annotations->field_annotations) {
+            field_annotations[value->field_decl->orig_index] = value->annotations;
+        }
+        for (auto value: annotations->method_annotations) {
+            method_annotations[value->method_decl->orig_index] = value->annotations;
+        }
+        for (auto value: annotations->param_annotations) {
+            method_parameter_annotations[value->method_decl->orig_index] = value->annotations->annotations;
+        }
     }
     return 0;
 }
@@ -156,7 +202,7 @@ MethodBean DexItem::GetMethodBean(uint32_t method_idx) {
     bean.class_id = method_def.class_idx;
     // TODO: this->method_annotations[method_idx]
     bean.access_flags = this->method_access_flags[method_idx];
-    bean.dex_descriptor = this->GetMethodDescriptors(method_idx);
+    bean.dex_descriptor = this->GetMethodDescriptor(method_idx);
     bean.return_type = proto_def.return_type_idx;
     std::vector<uint32_t> parameter_type_ids;
     auto len = type_list ? type_list->size : 0;
@@ -169,14 +215,159 @@ MethodBean DexItem::GetMethodBean(uint32_t method_idx) {
 }
 
 FieldBean DexItem::GetFieldBean(uint32_t field_idx) {
-    return {};
+    auto &field_def = this->reader.FieldIds()[field_idx];
+    FieldBean bean;
+    bean.id = field_idx;
+    bean.dex_id = this->dex_id;
+    bean.class_id = field_def.class_idx;
+    // TODO: this->field_annotations[method_idx]
+    bean.access_flags = this->field_access_flags[field_idx];
+    bean.dex_descriptor = this->GetFieldDescriptor(field_idx);
+    bean.type_id = field_def.type_idx;
+    return bean;
 }
 
-AnnotationBean DexItem::GetAnnotationBean(uint32_t target_id, AnnotationTargetType type) {
-    return {};
+// NOLINTNEXTLINE
+AnnotationBean DexItem::GetAnnotationBean(ir::Annotation *annotation) {
+    AnnotationBean bean;
+    bean.dex_id = this->dex_id;
+    bean.type_id = annotation->type->orig_index;
+    bean.type_descriptor = type_names[annotation->type->orig_index];
+    bean.retention_policy = (schema::RetentionPolicyType) annotation->visibility;
+    for (auto &element : annotation->elements) {
+        bean.elements.emplace_back(GetAnnotationElementBean(element));
+    }
+    return bean;
 }
 
-std::string_view DexItem::GetMethodDescriptors(uint32_t method_idx) {
+// NOLINTNEXTLINE
+AnnotationEncodeValueBean DexItem::GetAnnotationEncodeValueBean(ir::EncodedValue *encoded_value) {
+    AnnotationEncodeValueBean bean;
+    switch (encoded_value->type) {
+        case 0x00: bean.type = schema::AnnotationEncodeValueType::Byte; break;
+        case 0x02: bean.type = schema::AnnotationEncodeValueType::Short; break;
+        case 0x03: bean.type = schema::AnnotationEncodeValueType::Char; break;
+        case 0x04: bean.type = schema::AnnotationEncodeValueType::Int; break;
+        case 0x06: bean.type = schema::AnnotationEncodeValueType::Long; break;
+        case 0x10: bean.type = schema::AnnotationEncodeValueType::Float; break;
+        case 0x11: bean.type = schema::AnnotationEncodeValueType::Double; break;
+        case 0x17: bean.type = schema::AnnotationEncodeValueType::String; break;
+        case 0x18: bean.type = schema::AnnotationEncodeValueType::Type; break;
+        case 0x1b: bean.type = schema::AnnotationEncodeValueType::Enum; break;
+        case 0x1c: bean.type = schema::AnnotationEncodeValueType::Array; break;
+        case 0x1d: bean.type = schema::AnnotationEncodeValueType::Annotation; break;
+        case 0x1f: bean.type = schema::AnnotationEncodeValueType::Bool; break;
+        default: break;
+    }
+    switch (encoded_value->type) {
+        case 0x00: bean.value = encoded_value->u.byte_value; break;
+        case 0x02: bean.value = encoded_value->u.short_value; break;
+        case 0x03: bean.value = encoded_value->u.char_value; break;
+        case 0x04: bean.value = encoded_value->u.int_value; break;
+        case 0x06: bean.value = encoded_value->u.long_value; break;
+        case 0x10: bean.value = encoded_value->u.float_value; break;
+        case 0x11: bean.value = encoded_value->u.double_value; break;
+        case 0x17: bean.value = encoded_value->u.string_value->c_str(); break;
+        case 0x18: bean.value = std::make_unique<ClassBean>(GetClassBean(encoded_value->u.type_value->orig_index)); break;
+        case 0x1b: bean.value = std::make_unique<FieldBean>(GetFieldBean(encoded_value->u.enum_value->orig_index)); break;
+        case 0x1c: bean.value = std::make_unique<AnnotationEncodeArrayBean>(GetAnnotationEncodeArrayBean(encoded_value->u.array_value)); break;
+        case 0x1d: bean.value = std::make_unique<AnnotationBean>(GetAnnotationBean(encoded_value->u.annotation_value)); break;
+        case 0x1f: bean.value = encoded_value->u.bool_value; break;
+        default: break;
+    }
+    return bean;
+}
+
+// NOLINTNEXTLINE
+AnnotationElementBean DexItem::GetAnnotationElementBean(ir::AnnotationElement *annotation_element) {
+    AnnotationElementBean bean;
+    bean.name = annotation_element->name->c_str();
+    bean.value = GetAnnotationEncodeValueBean(annotation_element->value);
+    return bean;
+}
+
+// NOLINTNEXTLINE
+AnnotationEncodeArrayBean DexItem::GetAnnotationEncodeArrayBean(ir::EncodedArray *encoded_array) {
+    AnnotationEncodeArrayBean array;
+    for (auto value: encoded_array->values) {
+        array.values.emplace_back(GetAnnotationEncodeValueBean(value));
+    }
+    return array;
+}
+
+std::vector<AnnotationBean>
+DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
+    auto annotationSet = this->class_annotations[class_idx];
+    std::vector<AnnotationBean> beans;
+    for (auto annotation: annotationSet->annotations) {
+        AnnotationBean bean;
+        bean.dex_id = this->dex_id;
+        bean.type_id = annotation->type->orig_index;
+        bean.type_descriptor = this->type_names[bean.type_id];
+        for (auto element: annotation->elements) {
+            bean.elements.emplace_back(GetAnnotationElementBean(element));
+        }
+        beans.emplace_back(std::move(bean));
+    }
+    return beans;
+}
+
+std::vector<AnnotationBean>
+DexItem::GetMethodAnnotationBeans(uint32_t class_idx) {
+    auto annotationSet = this->method_annotations[class_idx];
+    std::vector<AnnotationBean> beans;
+    for (auto annotation: annotationSet->annotations) {
+        AnnotationBean bean;
+        bean.dex_id = this->dex_id;
+        bean.type_id = annotation->type->orig_index;
+        bean.type_descriptor = this->type_names[bean.type_id];
+        for (auto element: annotation->elements) {
+            bean.elements.emplace_back(GetAnnotationElementBean(element));
+        }
+        beans.emplace_back(std::move(bean));
+    }
+    return beans;
+}
+
+std::vector<AnnotationBean>
+DexItem::GetFieldAnnotationBeans(uint32_t class_idx) {
+    auto annotationSet = this->field_annotations[class_idx];
+    std::vector<AnnotationBean> beans;
+    for (auto annotation: annotationSet->annotations) {
+        AnnotationBean bean;
+        bean.dex_id = this->dex_id;
+        bean.type_id = annotation->type->orig_index;
+        bean.type_descriptor = this->type_names[bean.type_id];
+        for (auto element: annotation->elements) {
+            bean.elements.emplace_back(GetAnnotationElementBean(element));
+        }
+        beans.emplace_back(std::move(bean));
+    }
+    return beans;
+}
+
+std::vector<std::vector<AnnotationBean>>
+DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
+    auto param_annotations = this->method_parameter_annotations[method_idx];
+    std::vector<std::vector<AnnotationBean>> beans;
+    for (auto annotationSet: param_annotations) {
+        std::vector<AnnotationBean> annotationBeans;
+        for (auto annotation: annotationSet->annotations) {
+            AnnotationBean bean;
+            bean.dex_id = this->dex_id;
+            bean.type_id = annotation->type->orig_index;
+            bean.type_descriptor = this->type_names[bean.type_id];
+            for (auto element: annotation->elements) {
+                bean.elements.emplace_back(GetAnnotationElementBean(element));
+            }
+            annotationBeans.emplace_back(std::move(bean));
+        }
+        beans.emplace_back(std::move(annotationBeans));
+    }
+    return beans;
+}
+
+std::string_view DexItem::GetMethodDescriptor(uint32_t method_idx) {
     auto &method_desc = this->method_descriptors[method_idx];
     if (method_desc != std::nullopt) {
         return method_desc.value();
@@ -201,7 +392,7 @@ std::string_view DexItem::GetMethodDescriptors(uint32_t method_idx) {
     return method_desc.value();
 }
 
-std::string_view DexItem::GetFieldDescriptors(uint32_t field_idx) {
+std::string_view DexItem::GetFieldDescriptor(uint32_t field_idx) {
     auto &field_desc = this->field_descriptors[field_idx];
     if (field_desc != std::nullopt) {
         return field_desc.value();

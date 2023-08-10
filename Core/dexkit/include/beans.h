@@ -1,16 +1,11 @@
 #pragma once
 
 #include <variant>
+
 #include "schema/enums_generated.h"
 #include "schema/results_generated.h"
 
 namespace dexkit {
-
-enum AnnotationTargetType {
-    Class,
-    Method,
-    Field,
-};
 
 class ClassBean {
 public:
@@ -63,9 +58,9 @@ public:
 
 class AnnotationBean;
 class AnnotationElementBean;
-class AnnotationElementValueArray;
+class AnnotationEncodeArrayBean;
 
-using AnnotationElementValue = std::variant<
+using AnnotationEncodeValue = std::variant<
         int8_t /*byte_value*/,
         int16_t /*short_value*/,
         int32_t /*int_value*/,
@@ -73,23 +68,31 @@ using AnnotationElementValue = std::variant<
         float /*float_value*/,
         double /*double_value*/,
         std::string_view /*string_value*/,
-        ClassBean /*type_value*/,
-        FieldBean /*enum_value*/,
-        AnnotationElementValueArray /*array_value*/,
-        AnnotationBean /*annotation_value*/,
+        std::unique_ptr<ClassBean> /*type_value*/,
+        std::unique_ptr<FieldBean> /*enum_value*/,
+        std::unique_ptr<AnnotationEncodeArrayBean> /*array_value*/,
+        std::unique_ptr<AnnotationBean> /*annotation_value*/,
         bool /*bool_value*/>;
 
-std::pair<dexkit::schema::AnnotationElementValue, flatbuffers::Offset<void>>
-CreateAnnotationElementValue(flatbuffers::FlatBufferBuilder &fbb, schema::AnnotationElementValueType type, AnnotationElementValue value);
-
-class AnnotationElementValueArray {
+class AnnotationEncodeValueBean {
 public:
-    schema::AnnotationElementValueType type;
-    std::vector<AnnotationElementValue> values;
+    // TODO: free value ptr
+
+    schema::AnnotationEncodeValueType type;
+    AnnotationEncodeValue value;
 
 public:
-    flatbuffers::Offset<schema::AnnotationElementValueArray>
-    CreateAnnotationElementValueArray(flatbuffers::FlatBufferBuilder &fbb) const;
+    flatbuffers::Offset<schema::AnnotationEncodeValueMeta>
+    CreateAnnotationEncodeValueMeta(flatbuffers::FlatBufferBuilder &fbb) const;
+};
+
+class AnnotationEncodeArrayBean {
+public:
+    std::vector<AnnotationEncodeValueBean> values;
+
+public:
+    flatbuffers::Offset<schema::AnnotationEncodeArray>
+    CreateAnnotationEncodeArray(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
 class AnnotationBean {
@@ -97,7 +100,6 @@ public:
     uint32_t dex_id;
     uint32_t type_id;
     std::string_view type_descriptor;
-    std::vector<schema::TargetElementType> target_element_types;
     schema::RetentionPolicyType retention_policy;
     std::vector<AnnotationElementBean> elements;
 
@@ -109,8 +111,7 @@ public:
 class AnnotationElementBean {
 public:
     std::string_view name;
-    schema::AnnotationElementValueType type;
-    AnnotationElementValue value;
+    AnnotationEncodeValueBean value;
 
 public:
     flatbuffers::Offset<schema::AnnotationElementMeta>

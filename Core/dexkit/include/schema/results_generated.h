@@ -37,8 +37,11 @@ struct FieldMetaBuilder;
 struct FieldMetaArrayHolder;
 struct FieldMetaArrayHolderBuilder;
 
-struct AnnotationElementValueArray;
-struct AnnotationElementValueArrayBuilder;
+struct AnnotationEncodeValueMeta;
+struct AnnotationEncodeValueMetaBuilder;
+
+struct AnnotationEncodeArray;
+struct AnnotationEncodeArrayBuilder;
 
 struct AnnotationElementMeta;
 struct AnnotationElementMetaBuilder;
@@ -61,7 +64,7 @@ struct BatchMethodMetaBuilder;
 struct BatchMethodMetaArrayHolder;
 struct BatchMethodMetaArrayHolderBuilder;
 
-enum class AnnotationElementValue : uint8_t {
+enum class AnnotationEncodeValue : uint8_t {
   NONE = 0,
   EncodeValueByte = 1,
   EncodeValueShort = 2,
@@ -73,32 +76,32 @@ enum class AnnotationElementValue : uint8_t {
   EncodeValueString = 8,
   ClassMeta = 9,
   FieldMeta = 10,
-  AnnotationElementValueArray = 11,
+  AnnotationEncodeArray = 11,
   AnnotationMeta = 12,
   EncodeValueBoolean = 13
 };
 
-inline const AnnotationElementValue (&EnumValuesAnnotationElementValue())[14] {
-  static const AnnotationElementValue values[] = {
-    AnnotationElementValue::NONE,
-    AnnotationElementValue::EncodeValueByte,
-    AnnotationElementValue::EncodeValueShort,
-    AnnotationElementValue::EncodeValueChar,
-    AnnotationElementValue::EncodeValueInt,
-    AnnotationElementValue::EncodeValueLong,
-    AnnotationElementValue::EncodeValueFloat,
-    AnnotationElementValue::EncodeValueDouble,
-    AnnotationElementValue::EncodeValueString,
-    AnnotationElementValue::ClassMeta,
-    AnnotationElementValue::FieldMeta,
-    AnnotationElementValue::AnnotationElementValueArray,
-    AnnotationElementValue::AnnotationMeta,
-    AnnotationElementValue::EncodeValueBoolean
+inline const AnnotationEncodeValue (&EnumValuesAnnotationEncodeValue())[14] {
+  static const AnnotationEncodeValue values[] = {
+    AnnotationEncodeValue::NONE,
+    AnnotationEncodeValue::EncodeValueByte,
+    AnnotationEncodeValue::EncodeValueShort,
+    AnnotationEncodeValue::EncodeValueChar,
+    AnnotationEncodeValue::EncodeValueInt,
+    AnnotationEncodeValue::EncodeValueLong,
+    AnnotationEncodeValue::EncodeValueFloat,
+    AnnotationEncodeValue::EncodeValueDouble,
+    AnnotationEncodeValue::EncodeValueString,
+    AnnotationEncodeValue::ClassMeta,
+    AnnotationEncodeValue::FieldMeta,
+    AnnotationEncodeValue::AnnotationEncodeArray,
+    AnnotationEncodeValue::AnnotationMeta,
+    AnnotationEncodeValue::EncodeValueBoolean
   };
   return values;
 }
 
-inline const char * const *EnumNamesAnnotationElementValue() {
+inline const char * const *EnumNamesAnnotationEncodeValue() {
   static const char * const names[15] = {
     "NONE",
     "EncodeValueByte",
@@ -111,7 +114,7 @@ inline const char * const *EnumNamesAnnotationElementValue() {
     "EncodeValueString",
     "ClassMeta",
     "FieldMeta",
-    "AnnotationElementValueArray",
+    "AnnotationEncodeArray",
     "AnnotationMeta",
     "EncodeValueBoolean",
     nullptr
@@ -119,70 +122,70 @@ inline const char * const *EnumNamesAnnotationElementValue() {
   return names;
 }
 
-inline const char *EnumNameAnnotationElementValue(AnnotationElementValue e) {
-  if (::flatbuffers::IsOutRange(e, AnnotationElementValue::NONE, AnnotationElementValue::EncodeValueBoolean)) return "";
+inline const char *EnumNameAnnotationEncodeValue(AnnotationEncodeValue e) {
+  if (::flatbuffers::IsOutRange(e, AnnotationEncodeValue::NONE, AnnotationEncodeValue::EncodeValueBoolean)) return "";
   const size_t index = static_cast<size_t>(e);
-  return EnumNamesAnnotationElementValue()[index];
+  return EnumNamesAnnotationEncodeValue()[index];
 }
 
-template<typename T> struct AnnotationElementValueTraits {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::NONE;
+template<typename T> struct AnnotationEncodeValueTraits {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::NONE;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueByte> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueByte;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueByte> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueByte;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueShort> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueShort;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueShort> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueShort;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueChar> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueChar;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueChar> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueChar;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueInt> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueInt;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueInt> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueInt;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueLong> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueLong;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueLong> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueLong;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueFloat> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueFloat;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueFloat> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueFloat;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueDouble> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueDouble;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueDouble> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueDouble;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueString> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueString;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueString> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueString;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::ClassMeta> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::ClassMeta;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::ClassMeta> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::ClassMeta;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::FieldMeta> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::FieldMeta;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::FieldMeta> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::FieldMeta;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::AnnotationElementValueArray> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::AnnotationElementValueArray;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::AnnotationEncodeArray> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::AnnotationEncodeArray;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::AnnotationMeta> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::AnnotationMeta;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::AnnotationMeta> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::AnnotationMeta;
 };
 
-template<> struct AnnotationElementValueTraits<dexkit::schema::EncodeValueBoolean> {
-  static const AnnotationElementValue enum_value = AnnotationElementValue::EncodeValueBoolean;
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueBoolean> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueBoolean;
 };
 
-bool VerifyAnnotationElementValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationElementValue type);
-bool VerifyAnnotationElementValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<AnnotationElementValue> *types);
+bool VerifyAnnotationEncodeValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationEncodeValue type);
+bool VerifyAnnotationEncodeValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<AnnotationEncodeValue> *types);
 
 struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ClassMetaBuilder Builder;
@@ -809,75 +812,221 @@ inline ::flatbuffers::Offset<FieldMetaArrayHolder> CreateFieldMetaArrayHolderDir
       fields__);
 }
 
-struct AnnotationElementValueArray FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef AnnotationElementValueArrayBuilder Builder;
+struct AnnotationEncodeValueMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AnnotationEncodeValueMetaBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUES_TYPE = 4,
-    VT_VALUES = 6
+    VT_TYPE = 4,
+    VT_VALUE_TYPE = 6,
+    VT_VALUE = 8
   };
-  const ::flatbuffers::Vector<dexkit::schema::AnnotationElementValue> *values_type() const {
-    return GetPointer<const ::flatbuffers::Vector<dexkit::schema::AnnotationElementValue> *>(VT_VALUES_TYPE);
+  dexkit::schema::AnnotationEncodeValueType type() const {
+    return static_cast<dexkit::schema::AnnotationEncodeValueType>(GetField<int8_t>(VT_TYPE, 0));
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *>(VT_VALUES);
+  dexkit::schema::AnnotationEncodeValue value_type() const {
+    return static_cast<dexkit::schema::AnnotationEncodeValue>(GetField<uint8_t>(VT_VALUE_TYPE, 0));
+  }
+  const void *value() const {
+    return GetPointer<const void *>(VT_VALUE);
+  }
+  template<typename T> const T *value_as() const;
+  const dexkit::schema::EncodeValueByte *value_as_EncodeValueByte() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueByte ? static_cast<const dexkit::schema::EncodeValueByte *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueShort *value_as_EncodeValueShort() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueShort ? static_cast<const dexkit::schema::EncodeValueShort *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueChar *value_as_EncodeValueChar() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueChar ? static_cast<const dexkit::schema::EncodeValueChar *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueInt *value_as_EncodeValueInt() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueInt ? static_cast<const dexkit::schema::EncodeValueInt *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueLong *value_as_EncodeValueLong() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueLong ? static_cast<const dexkit::schema::EncodeValueLong *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueFloat *value_as_EncodeValueFloat() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueFloat ? static_cast<const dexkit::schema::EncodeValueFloat *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueDouble *value_as_EncodeValueDouble() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueDouble ? static_cast<const dexkit::schema::EncodeValueDouble *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueString *value_as_EncodeValueString() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueString ? static_cast<const dexkit::schema::EncodeValueString *>(value()) : nullptr;
+  }
+  const dexkit::schema::ClassMeta *value_as_ClassMeta() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::ClassMeta ? static_cast<const dexkit::schema::ClassMeta *>(value()) : nullptr;
+  }
+  const dexkit::schema::FieldMeta *value_as_FieldMeta() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::FieldMeta ? static_cast<const dexkit::schema::FieldMeta *>(value()) : nullptr;
+  }
+  const dexkit::schema::AnnotationEncodeArray *value_as_AnnotationEncodeArray() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::AnnotationEncodeArray ? static_cast<const dexkit::schema::AnnotationEncodeArray *>(value()) : nullptr;
+  }
+  const dexkit::schema::AnnotationMeta *value_as_AnnotationMeta() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::AnnotationMeta ? static_cast<const dexkit::schema::AnnotationMeta *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueBoolean ? static_cast<const dexkit::schema::EncodeValueBoolean *>(value()) : nullptr;
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_VALUES_TYPE) &&
-           verifier.VerifyVector(values_type()) &&
-           VerifyOffset(verifier, VT_VALUES) &&
-           verifier.VerifyVector(values()) &&
-           VerifyAnnotationElementValueVector(verifier, values(), values_type()) &&
+           VerifyField<int8_t>(verifier, VT_TYPE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_VALUE_TYPE, 1) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           VerifyAnnotationEncodeValue(verifier, value(), value_type()) &&
            verifier.EndTable();
   }
 };
 
-struct AnnotationElementValueArrayBuilder {
-  typedef AnnotationElementValueArray Table;
+template<> inline const dexkit::schema::EncodeValueByte *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueByte>() const {
+  return value_as_EncodeValueByte();
+}
+
+template<> inline const dexkit::schema::EncodeValueShort *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueShort>() const {
+  return value_as_EncodeValueShort();
+}
+
+template<> inline const dexkit::schema::EncodeValueChar *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueChar>() const {
+  return value_as_EncodeValueChar();
+}
+
+template<> inline const dexkit::schema::EncodeValueInt *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueInt>() const {
+  return value_as_EncodeValueInt();
+}
+
+template<> inline const dexkit::schema::EncodeValueLong *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueLong>() const {
+  return value_as_EncodeValueLong();
+}
+
+template<> inline const dexkit::schema::EncodeValueFloat *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueFloat>() const {
+  return value_as_EncodeValueFloat();
+}
+
+template<> inline const dexkit::schema::EncodeValueDouble *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueDouble>() const {
+  return value_as_EncodeValueDouble();
+}
+
+template<> inline const dexkit::schema::EncodeValueString *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueString>() const {
+  return value_as_EncodeValueString();
+}
+
+template<> inline const dexkit::schema::ClassMeta *AnnotationEncodeValueMeta::value_as<dexkit::schema::ClassMeta>() const {
+  return value_as_ClassMeta();
+}
+
+template<> inline const dexkit::schema::FieldMeta *AnnotationEncodeValueMeta::value_as<dexkit::schema::FieldMeta>() const {
+  return value_as_FieldMeta();
+}
+
+template<> inline const dexkit::schema::AnnotationEncodeArray *AnnotationEncodeValueMeta::value_as<dexkit::schema::AnnotationEncodeArray>() const {
+  return value_as_AnnotationEncodeArray();
+}
+
+template<> inline const dexkit::schema::AnnotationMeta *AnnotationEncodeValueMeta::value_as<dexkit::schema::AnnotationMeta>() const {
+  return value_as_AnnotationMeta();
+}
+
+template<> inline const dexkit::schema::EncodeValueBoolean *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueBoolean>() const {
+  return value_as_EncodeValueBoolean();
+}
+
+struct AnnotationEncodeValueMetaBuilder {
+  typedef AnnotationEncodeValueMeta Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_values_type(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::AnnotationElementValue>> values_type) {
-    fbb_.AddOffset(AnnotationElementValueArray::VT_VALUES_TYPE, values_type);
+  void add_type(dexkit::schema::AnnotationEncodeValueType type) {
+    fbb_.AddElement<int8_t>(AnnotationEncodeValueMeta::VT_TYPE, static_cast<int8_t>(type), 0);
   }
-  void add_values(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values) {
-    fbb_.AddOffset(AnnotationElementValueArray::VT_VALUES, values);
+  void add_value_type(dexkit::schema::AnnotationEncodeValue value_type) {
+    fbb_.AddElement<uint8_t>(AnnotationEncodeValueMeta::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0);
   }
-  explicit AnnotationElementValueArrayBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  void add_value(::flatbuffers::Offset<void> value) {
+    fbb_.AddOffset(AnnotationEncodeValueMeta::VT_VALUE, value);
+  }
+  explicit AnnotationEncodeValueMetaBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<AnnotationElementValueArray> Finish() {
+  ::flatbuffers::Offset<AnnotationEncodeValueMeta> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<AnnotationElementValueArray>(end);
+    auto o = ::flatbuffers::Offset<AnnotationEncodeValueMeta>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<AnnotationElementValueArray> CreateAnnotationElementValueArray(
+inline ::flatbuffers::Offset<AnnotationEncodeValueMeta> CreateAnnotationEncodeValueMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::AnnotationElementValue>> values_type = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values = 0) {
-  AnnotationElementValueArrayBuilder builder_(_fbb);
-  builder_.add_values(values);
-  builder_.add_values_type(values_type);
+    dexkit::schema::AnnotationEncodeValueType type = dexkit::schema::AnnotationEncodeValueType::Byte,
+    dexkit::schema::AnnotationEncodeValue value_type = dexkit::schema::AnnotationEncodeValue::NONE,
+    ::flatbuffers::Offset<void> value = 0) {
+  AnnotationEncodeValueMetaBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_value_type(value_type);
+  builder_.add_type(type);
   return builder_.Finish();
 }
 
-struct AnnotationElementValueArray::Traits {
-  using type = AnnotationElementValueArray;
-  static auto constexpr Create = CreateAnnotationElementValueArray;
+struct AnnotationEncodeValueMeta::Traits {
+  using type = AnnotationEncodeValueMeta;
+  static auto constexpr Create = CreateAnnotationEncodeValueMeta;
 };
 
-inline ::flatbuffers::Offset<AnnotationElementValueArray> CreateAnnotationElementValueArrayDirect(
+struct AnnotationEncodeArray FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AnnotationEncodeArrayBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_VALUES = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta>> *values() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta>> *>(VT_VALUES);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_VALUES) &&
+           verifier.VerifyVector(values()) &&
+           verifier.VerifyVectorOfTables(values()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AnnotationEncodeArrayBuilder {
+  typedef AnnotationEncodeArray Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_values(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta>>> values) {
+    fbb_.AddOffset(AnnotationEncodeArray::VT_VALUES, values);
+  }
+  explicit AnnotationEncodeArrayBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AnnotationEncodeArray> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AnnotationEncodeArray>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AnnotationEncodeArray> CreateAnnotationEncodeArray(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<dexkit::schema::AnnotationElementValue> *values_type = nullptr,
-    const std::vector<::flatbuffers::Offset<void>> *values = nullptr) {
-  auto values_type__ = values_type ? _fbb.CreateVector<dexkit::schema::AnnotationElementValue>(*values_type) : 0;
-  auto values__ = values ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*values) : 0;
-  return dexkit::schema::CreateAnnotationElementValueArray(
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta>>> values = 0) {
+  AnnotationEncodeArrayBuilder builder_(_fbb);
+  builder_.add_values(values);
+  return builder_.Finish();
+}
+
+struct AnnotationEncodeArray::Traits {
+  using type = AnnotationEncodeArray;
+  static auto constexpr Create = CreateAnnotationEncodeArray;
+};
+
+inline ::flatbuffers::Offset<AnnotationEncodeArray> CreateAnnotationEncodeArrayDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta>> *values = nullptr) {
+  auto values__ = values ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta>>(*values) : 0;
+  return dexkit::schema::CreateAnnotationEncodeArray(
       _fbb,
-      values_type__,
       values__);
 }
 
@@ -886,120 +1035,23 @@ struct AnnotationElementMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
-    VT_VALUE_TYPE = 6,
-    VT_VALUE = 8
+    VT_VALUE = 6
   };
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
-  dexkit::schema::AnnotationElementValue value_type() const {
-    return static_cast<dexkit::schema::AnnotationElementValue>(GetField<uint8_t>(VT_VALUE_TYPE, 0));
-  }
-  const void *value() const {
-    return GetPointer<const void *>(VT_VALUE);
-  }
-  template<typename T> const T *value_as() const;
-  const dexkit::schema::EncodeValueByte *value_as_EncodeValueByte() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueByte ? static_cast<const dexkit::schema::EncodeValueByte *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueShort *value_as_EncodeValueShort() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueShort ? static_cast<const dexkit::schema::EncodeValueShort *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueChar *value_as_EncodeValueChar() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueChar ? static_cast<const dexkit::schema::EncodeValueChar *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueInt *value_as_EncodeValueInt() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueInt ? static_cast<const dexkit::schema::EncodeValueInt *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueLong *value_as_EncodeValueLong() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueLong ? static_cast<const dexkit::schema::EncodeValueLong *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueFloat *value_as_EncodeValueFloat() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueFloat ? static_cast<const dexkit::schema::EncodeValueFloat *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueDouble *value_as_EncodeValueDouble() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueDouble ? static_cast<const dexkit::schema::EncodeValueDouble *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueString *value_as_EncodeValueString() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueString ? static_cast<const dexkit::schema::EncodeValueString *>(value()) : nullptr;
-  }
-  const dexkit::schema::ClassMeta *value_as_ClassMeta() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::ClassMeta ? static_cast<const dexkit::schema::ClassMeta *>(value()) : nullptr;
-  }
-  const dexkit::schema::FieldMeta *value_as_FieldMeta() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::FieldMeta ? static_cast<const dexkit::schema::FieldMeta *>(value()) : nullptr;
-  }
-  const dexkit::schema::AnnotationElementValueArray *value_as_AnnotationElementValueArray() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::AnnotationElementValueArray ? static_cast<const dexkit::schema::AnnotationElementValueArray *>(value()) : nullptr;
-  }
-  const dexkit::schema::AnnotationMeta *value_as_AnnotationMeta() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::AnnotationMeta ? static_cast<const dexkit::schema::AnnotationMeta *>(value()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
-    return value_type() == dexkit::schema::AnnotationElementValue::EncodeValueBoolean ? static_cast<const dexkit::schema::EncodeValueBoolean *>(value()) : nullptr;
+  const dexkit::schema::AnnotationEncodeValueMeta *value() const {
+    return GetPointer<const dexkit::schema::AnnotationEncodeValueMeta *>(VT_VALUE);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyField<uint8_t>(verifier, VT_VALUE_TYPE, 1) &&
            VerifyOffset(verifier, VT_VALUE) &&
-           VerifyAnnotationElementValue(verifier, value(), value_type()) &&
+           verifier.VerifyTable(value()) &&
            verifier.EndTable();
   }
 };
-
-template<> inline const dexkit::schema::EncodeValueByte *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueByte>() const {
-  return value_as_EncodeValueByte();
-}
-
-template<> inline const dexkit::schema::EncodeValueShort *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueShort>() const {
-  return value_as_EncodeValueShort();
-}
-
-template<> inline const dexkit::schema::EncodeValueChar *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueChar>() const {
-  return value_as_EncodeValueChar();
-}
-
-template<> inline const dexkit::schema::EncodeValueInt *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueInt>() const {
-  return value_as_EncodeValueInt();
-}
-
-template<> inline const dexkit::schema::EncodeValueLong *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueLong>() const {
-  return value_as_EncodeValueLong();
-}
-
-template<> inline const dexkit::schema::EncodeValueFloat *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueFloat>() const {
-  return value_as_EncodeValueFloat();
-}
-
-template<> inline const dexkit::schema::EncodeValueDouble *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueDouble>() const {
-  return value_as_EncodeValueDouble();
-}
-
-template<> inline const dexkit::schema::EncodeValueString *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueString>() const {
-  return value_as_EncodeValueString();
-}
-
-template<> inline const dexkit::schema::ClassMeta *AnnotationElementMeta::value_as<dexkit::schema::ClassMeta>() const {
-  return value_as_ClassMeta();
-}
-
-template<> inline const dexkit::schema::FieldMeta *AnnotationElementMeta::value_as<dexkit::schema::FieldMeta>() const {
-  return value_as_FieldMeta();
-}
-
-template<> inline const dexkit::schema::AnnotationElementValueArray *AnnotationElementMeta::value_as<dexkit::schema::AnnotationElementValueArray>() const {
-  return value_as_AnnotationElementValueArray();
-}
-
-template<> inline const dexkit::schema::AnnotationMeta *AnnotationElementMeta::value_as<dexkit::schema::AnnotationMeta>() const {
-  return value_as_AnnotationMeta();
-}
-
-template<> inline const dexkit::schema::EncodeValueBoolean *AnnotationElementMeta::value_as<dexkit::schema::EncodeValueBoolean>() const {
-  return value_as_EncodeValueBoolean();
-}
 
 struct AnnotationElementMetaBuilder {
   typedef AnnotationElementMeta Table;
@@ -1008,10 +1060,7 @@ struct AnnotationElementMetaBuilder {
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(AnnotationElementMeta::VT_NAME, name);
   }
-  void add_value_type(dexkit::schema::AnnotationElementValue value_type) {
-    fbb_.AddElement<uint8_t>(AnnotationElementMeta::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0);
-  }
-  void add_value(::flatbuffers::Offset<void> value) {
+  void add_value(::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta> value) {
     fbb_.AddOffset(AnnotationElementMeta::VT_VALUE, value);
   }
   explicit AnnotationElementMetaBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
@@ -1028,12 +1077,10 @@ struct AnnotationElementMetaBuilder {
 inline ::flatbuffers::Offset<AnnotationElementMeta> CreateAnnotationElementMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    dexkit::schema::AnnotationElementValue value_type = dexkit::schema::AnnotationElementValue::NONE,
-    ::flatbuffers::Offset<void> value = 0) {
+    ::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta> value = 0) {
   AnnotationElementMetaBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_name(name);
-  builder_.add_value_type(value_type);
   return builder_.Finish();
 }
 
@@ -1045,13 +1092,11 @@ struct AnnotationElementMeta::Traits {
 inline ::flatbuffers::Offset<AnnotationElementMeta> CreateAnnotationElementMetaDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *name = nullptr,
-    dexkit::schema::AnnotationElementValue value_type = dexkit::schema::AnnotationElementValue::NONE,
-    ::flatbuffers::Offset<void> value = 0) {
+    ::flatbuffers::Offset<dexkit::schema::AnnotationEncodeValueMeta> value = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return dexkit::schema::CreateAnnotationElementMeta(
       _fbb,
       name__,
-      value_type,
       value);
 }
 
@@ -1062,9 +1107,8 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DEX_ID = 4,
     VT_TYPE_ID = 6,
     VT_TYPE_DESCRIPTOR = 8,
-    VT_TARGET_ELEMENT_TYPES = 10,
-    VT_RETENTION_POLICY = 12,
-    VT_ELEMENTS = 14
+    VT_RETENTION_POLICY = 10,
+    VT_ELEMENTS = 12
   };
   uint32_t dex_id() const {
     return GetField<uint32_t>(VT_DEX_ID, 0);
@@ -1074,9 +1118,6 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::String *type_descriptor() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TYPE_DESCRIPTOR);
-  }
-  const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *target_element_types() const {
-    return GetPointer<const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *>(VT_TARGET_ELEMENT_TYPES);
   }
   dexkit::schema::RetentionPolicyType retention_policy() const {
     return static_cast<dexkit::schema::RetentionPolicyType>(GetField<int8_t>(VT_RETENTION_POLICY, 0));
@@ -1090,8 +1131,6 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_TYPE_ID, 4) &&
            VerifyOffset(verifier, VT_TYPE_DESCRIPTOR) &&
            verifier.VerifyString(type_descriptor()) &&
-           VerifyOffset(verifier, VT_TARGET_ELEMENT_TYPES) &&
-           verifier.VerifyVector(target_element_types()) &&
            VerifyField<int8_t>(verifier, VT_RETENTION_POLICY, 1) &&
            VerifyOffset(verifier, VT_ELEMENTS) &&
            verifier.VerifyVector(elements()) &&
@@ -1112,9 +1151,6 @@ struct AnnotationMetaBuilder {
   }
   void add_type_descriptor(::flatbuffers::Offset<::flatbuffers::String> type_descriptor) {
     fbb_.AddOffset(AnnotationMeta::VT_TYPE_DESCRIPTOR, type_descriptor);
-  }
-  void add_target_element_types(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> target_element_types) {
-    fbb_.AddOffset(AnnotationMeta::VT_TARGET_ELEMENT_TYPES, target_element_types);
   }
   void add_retention_policy(dexkit::schema::RetentionPolicyType retention_policy) {
     fbb_.AddElement<int8_t>(AnnotationMeta::VT_RETENTION_POLICY, static_cast<int8_t>(retention_policy), 0);
@@ -1138,12 +1174,10 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMeta(
     uint32_t dex_id = 0,
     uint32_t type_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> type_descriptor = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> target_element_types = 0,
     dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::Source,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>> elements = 0) {
   AnnotationMetaBuilder builder_(_fbb);
   builder_.add_elements(elements);
-  builder_.add_target_element_types(target_element_types);
   builder_.add_type_descriptor(type_descriptor);
   builder_.add_type_id(type_id);
   builder_.add_dex_id(dex_id);
@@ -1161,18 +1195,15 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
     uint32_t dex_id = 0,
     uint32_t type_id = 0,
     const char *type_descriptor = nullptr,
-    const std::vector<dexkit::schema::TargetElementType> *target_element_types = nullptr,
     dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::Source,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>> *elements = nullptr) {
   auto type_descriptor__ = type_descriptor ? _fbb.CreateString(type_descriptor) : 0;
-  auto target_element_types__ = target_element_types ? _fbb.CreateVector<dexkit::schema::TargetElementType>(*target_element_types) : 0;
   auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>(*elements) : 0;
   return dexkit::schema::CreateAnnotationMeta(
       _fbb,
       dex_id,
       type_id,
       type_descriptor__,
-      target_element_types__,
       retention_policy,
       elements__);
 }
@@ -1495,60 +1526,60 @@ inline ::flatbuffers::Offset<BatchMethodMetaArrayHolder> CreateBatchMethodMetaAr
       items__);
 }
 
-inline bool VerifyAnnotationElementValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationElementValue type) {
+inline bool VerifyAnnotationEncodeValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationEncodeValue type) {
   switch (type) {
-    case AnnotationElementValue::NONE: {
+    case AnnotationEncodeValue::NONE: {
       return true;
     }
-    case AnnotationElementValue::EncodeValueByte: {
+    case AnnotationEncodeValue::EncodeValueByte: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueByte *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueShort: {
+    case AnnotationEncodeValue::EncodeValueShort: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueShort *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueChar: {
+    case AnnotationEncodeValue::EncodeValueChar: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueChar *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueInt: {
+    case AnnotationEncodeValue::EncodeValueInt: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueInt *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueLong: {
+    case AnnotationEncodeValue::EncodeValueLong: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueLong *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueFloat: {
+    case AnnotationEncodeValue::EncodeValueFloat: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueFloat *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueDouble: {
+    case AnnotationEncodeValue::EncodeValueDouble: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueDouble *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueString: {
+    case AnnotationEncodeValue::EncodeValueString: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueString *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::ClassMeta: {
+    case AnnotationEncodeValue::ClassMeta: {
       auto ptr = reinterpret_cast<const dexkit::schema::ClassMeta *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::FieldMeta: {
+    case AnnotationEncodeValue::FieldMeta: {
       auto ptr = reinterpret_cast<const dexkit::schema::FieldMeta *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::AnnotationElementValueArray: {
-      auto ptr = reinterpret_cast<const dexkit::schema::AnnotationElementValueArray *>(obj);
+    case AnnotationEncodeValue::AnnotationEncodeArray: {
+      auto ptr = reinterpret_cast<const dexkit::schema::AnnotationEncodeArray *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::AnnotationMeta: {
+    case AnnotationEncodeValue::AnnotationMeta: {
       auto ptr = reinterpret_cast<const dexkit::schema::AnnotationMeta *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationElementValue::EncodeValueBoolean: {
+    case AnnotationEncodeValue::EncodeValueBoolean: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueBoolean *>(obj);
       return verifier.VerifyTable(ptr);
     }
@@ -1556,12 +1587,12 @@ inline bool VerifyAnnotationElementValue(::flatbuffers::Verifier &verifier, cons
   }
 }
 
-inline bool VerifyAnnotationElementValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<AnnotationElementValue> *types) {
+inline bool VerifyAnnotationEncodeValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<AnnotationEncodeValue> *types) {
   if (!values || !types) return !values && !types;
   if (values->size() != types->size()) return false;
   for (::flatbuffers::uoffset_t i = 0; i < values->size(); ++i) {
-    if (!VerifyAnnotationElementValue(
-        verifier,  values->Get(i), types->GetEnum<AnnotationElementValue>(i))) {
+    if (!VerifyAnnotationEncodeValue(
+        verifier,  values->Get(i), types->GetEnum<AnnotationEncodeValue>(i))) {
       return false;
     }
   }
