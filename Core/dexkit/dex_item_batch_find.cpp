@@ -73,17 +73,17 @@ DexItem::BatchFindClassUsingStrings(
         }
     }
 
-    std::map<std::string_view, std::vector<dex::u4>> find_result;
-    for (int class_idx = 0; class_idx < this->type_names.size(); ++class_idx) {
-        auto class_name = type_names[class_idx];
-        if (class_method_ids[class_idx].empty()) {
+    std::map<std::string_view, std::vector<uint32_t>> find_result;
+    for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
+        auto class_name = type_names[type_idx];
+        if (class_method_ids[type_idx].empty()) {
             continue;
         }
         if (query->search_package() && !class_name.starts_with(search_package)) {
             continue;
         }
         std::set<std::string_view> search_set;
-        for (auto method_idx: class_method_ids[class_idx]) {
+        for (auto method_idx: class_method_ids[type_idx]) {
             auto code = this->method_codes[method_idx];
             if (code == nullptr) {
                 continue;
@@ -126,7 +126,7 @@ DexItem::BatchFindClassUsingStrings(
                                   matched_set.begin(), matched_set.end(),
                                   std::inserter(vec, vec.begin()));
             if (vec.size() == matched_set.size()) {
-                find_result[key].emplace_back(class_idx);
+                find_result[key].emplace_back(type_idx);
             }
         }
     }
@@ -170,16 +170,16 @@ DexItem::BatchFindMethodUsingStrings(
         }
     }
 
-    std::map<std::string_view, std::vector<dex::u4>> find_result;
-    for (int class_idx = 0; class_idx < this->type_names.size(); ++class_idx) {
-        auto class_name = type_names[class_idx];
-        if (class_method_ids[class_idx].empty()) {
+    std::map<std::string_view, std::vector<uint32_t>> find_result;
+    for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
+        auto class_name = type_names[type_idx];
+        if (class_method_ids[type_idx].empty()) {
             continue;
         }
         if (query->search_package() && !class_name.starts_with(search_package)) {
             continue;
         }
-        for (auto method_idx: class_method_ids[class_idx]) {
+        for (auto method_idx: class_method_ids[type_idx]) {
             std::set<std::string_view> search_set;
             auto code = this->method_codes[method_idx];
             if (code == nullptr) {

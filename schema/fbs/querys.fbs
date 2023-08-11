@@ -20,6 +20,7 @@ table FindMethod {
 table FindField {
     search_package: string;
     unique_result: bool;
+    in_classes: [uint64];
     in_fields: [uint64];
     matcher: FieldMatcher;
 }

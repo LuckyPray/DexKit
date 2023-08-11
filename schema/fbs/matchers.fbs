@@ -140,6 +140,7 @@ table InterfacesMatcher {
 }
 
 table FieldMatcher {
+    field_name: StringMatcher;
     access_flags: AccessFlagsMatcher;
     declaring_class: ClassMatcher;
     type_class: ClassMatcher;

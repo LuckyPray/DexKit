@@ -245,14 +245,18 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SEARCH_PACKAGE = 4,
     VT_UNIQUE_RESULT = 6,
-    VT_IN_FIELDS = 8,
-    VT_MATCHER = 10
+    VT_IN_CLASSES = 8,
+    VT_IN_FIELDS = 10,
+    VT_MATCHER = 12
   };
   const ::flatbuffers::String *search_package() const {
     return GetPointer<const ::flatbuffers::String *>(VT_SEARCH_PACKAGE);
   }
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
+  }
+  const ::flatbuffers::Vector<uint64_t> *in_classes() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
   }
   const ::flatbuffers::Vector<uint64_t> *in_fields() const {
     return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_FIELDS);
@@ -265,6 +269,8 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SEARCH_PACKAGE) &&
            verifier.VerifyString(search_package()) &&
            VerifyField<uint8_t>(verifier, VT_UNIQUE_RESULT, 1) &&
+           VerifyOffset(verifier, VT_IN_CLASSES) &&
+           verifier.VerifyVector(in_classes()) &&
            VerifyOffset(verifier, VT_IN_FIELDS) &&
            verifier.VerifyVector(in_fields()) &&
            VerifyOffset(verifier, VT_MATCHER) &&
@@ -282,6 +288,9 @@ struct FindFieldBuilder {
   }
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindField::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
+  }
+  void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
+    fbb_.AddOffset(FindField::VT_IN_CLASSES, in_classes);
   }
   void add_in_fields(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_fields) {
     fbb_.AddOffset(FindField::VT_IN_FIELDS, in_fields);
@@ -304,11 +313,13 @@ inline ::flatbuffers::Offset<FindField> CreateFindField(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> search_package = 0,
     bool unique_result = false,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_fields = 0,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
   FindFieldBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
   builder_.add_in_fields(in_fields);
+  builder_.add_in_classes(in_classes);
   builder_.add_search_package(search_package);
   builder_.add_unique_result(unique_result);
   return builder_.Finish();
@@ -323,14 +334,17 @@ inline ::flatbuffers::Offset<FindField> CreateFindFieldDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *search_package = nullptr,
     bool unique_result = false,
+    const std::vector<uint64_t> *in_classes = nullptr,
     const std::vector<uint64_t> *in_fields = nullptr,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
   auto search_package__ = search_package ? _fbb.CreateString(search_package) : 0;
+  auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   auto in_fields__ = in_fields ? _fbb.CreateVector<uint64_t>(*in_fields) : 0;
   return dexkit::schema::CreateFindField(
       _fbb,
       search_package__,
       unique_result,
+      in_classes__,
       in_fields__,
       matcher);
 }

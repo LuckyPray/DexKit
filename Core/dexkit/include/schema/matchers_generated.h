@@ -1855,13 +1855,17 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FieldMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ACCESS_FLAGS = 4,
-    VT_DECLARING_CLASS = 6,
-    VT_TYPE_CLASS = 8,
-    VT_ANNOTATIONS = 10,
-    VT_GET_METHODS = 12,
-    VT_PUT_METHODS = 14
+    VT_FIELD_NAME = 4,
+    VT_ACCESS_FLAGS = 6,
+    VT_DECLARING_CLASS = 8,
+    VT_TYPE_CLASS = 10,
+    VT_ANNOTATIONS = 12,
+    VT_GET_METHODS = 14,
+    VT_PUT_METHODS = 16
   };
+  const dexkit::schema::StringMatcher *field_name() const {
+    return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIELD_NAME);
+  }
   const dexkit::schema::AccessFlagsMatcher *access_flags() const {
     return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_ACCESS_FLAGS);
   }
@@ -1882,6 +1886,8 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_FIELD_NAME) &&
+           verifier.VerifyTable(field_name()) &&
            VerifyOffset(verifier, VT_ACCESS_FLAGS) &&
            verifier.VerifyTable(access_flags()) &&
            VerifyOffset(verifier, VT_DECLARING_CLASS) &&
@@ -1902,6 +1908,9 @@ struct FieldMatcherBuilder {
   typedef FieldMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_field_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> field_name) {
+    fbb_.AddOffset(FieldMatcher::VT_FIELD_NAME, field_name);
+  }
   void add_access_flags(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags) {
     fbb_.AddOffset(FieldMatcher::VT_ACCESS_FLAGS, access_flags);
   }
@@ -1933,6 +1942,7 @@ struct FieldMatcherBuilder {
 
 inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<dexkit::schema::StringMatcher> field_name = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> declaring_class = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type_class = 0,
@@ -1946,6 +1956,7 @@ inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcher(
   builder_.add_type_class(type_class);
   builder_.add_declaring_class(declaring_class);
   builder_.add_access_flags(access_flags);
+  builder_.add_field_name(field_name);
   return builder_.Finish();
 }
 

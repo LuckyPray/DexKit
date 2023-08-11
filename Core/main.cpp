@@ -21,6 +21,7 @@ int KmpTest() {
     assert(kmp::FindIndex("aBc", "AbC", true) == 0);
     assert(kmp::FindIndex("aBc", "Bc", true) == 1);
     assert(kmp::FindIndex("ABc", "d", true) == -1);
+    printf("%d", kmp::FindIndex("abc", ""));
     return 0;
 }
 
@@ -61,7 +62,7 @@ int FlatBufferTest() {
     std::cout << "using_strings * = " << matcher2->using_strings() << std::endl;
     if (matcher2->using_strings()) {
         for (auto value: *matcher2->using_strings()) {
-            std::cout << "value->type() = " << EnumNameStringMatchType(value->type()) << std::endl;
+            std::cout << "value->type() = " << EnumNameStringMatchType(value->match_type()) << std::endl;
             std::cout << "value->value()->c_str() = " << value->value()->c_str() << std::endl;
         }
     }

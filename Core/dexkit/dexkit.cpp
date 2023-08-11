@@ -83,11 +83,17 @@ Error DexKit::ExportDexFile(std::string_view path) {
 }
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::FindClass *query) {
+    std::map<uint32_t, std::set<uint32_t>> dex_class_map;
+    for (auto encode_idx: *query->in_classes()) {
+        dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    }
+
     std::vector<ClassBean> result;
     for (auto &dex_item: dex_items) {
-        auto classes = dex_item->FindClass(query);
+        auto classes = dex_item->FindClass(query, dex_class_map[dex_item->GetDexId()]);
         result.insert(result.end(), classes.begin(), classes.end());
     }
+
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     for (auto &bean: result) {
         auto res = bean.CreateClassMeta(*builder);
@@ -97,11 +103,23 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
 }
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema::FindMethod *query) {
+    std::map<uint32_t, std::set<uint32_t>> dex_class_map;
+    for (auto encode_idx: *query->in_classes()) {
+        dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    }
+    std::map<uint32_t, std::set<uint32_t>> dex_method_map;
+    for (auto encode_idx: *query->in_methods()) {
+        dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    }
+
     std::vector<MethodBean> result;
     for (auto &dex_item: dex_items) {
-        auto methods = dex_item->FindMethod(query);
+        auto &in_classes = dex_class_map[dex_item->GetDexId()];
+        auto &in_methods = dex_method_map[dex_item->GetDexId()];
+        auto methods = dex_item->FindMethod(query, in_classes, in_methods);
         result.insert(result.end(), methods.begin(), methods.end());
     }
+
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     for (auto &bean: result) {
         auto res = bean.CreateMethodMeta(*builder);
@@ -111,11 +129,23 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
 }
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::FindField *query) {
+    std::map<uint32_t, std::set<uint32_t>> dex_class_map;
+    for (auto encode_idx: *query->in_classes()) {
+        dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    }
+    std::map<uint32_t, std::set<uint32_t>> dex_field_map;
+    for (auto encode_idx: *query->in_fields()) {
+        dex_field_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    }
+
     std::vector<FieldBean> result;
     for (auto &dex_item: dex_items) {
-        auto fields = dex_item->FindField(query);
+        auto &in_classes = dex_class_map[dex_item->GetDexId()];
+        auto &in_fields = dex_field_map[dex_item->GetDexId()];
+        auto fields = dex_item->FindField(query, in_classes, in_fields);
         result.insert(result.end(), fields.begin(), fields.end());
     }
+
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     for (auto &bean: result) {
         auto res = bean.CreateFieldMeta(*builder);

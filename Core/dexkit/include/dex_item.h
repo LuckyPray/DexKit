@@ -8,6 +8,7 @@
 
 #include "beans.h"
 #include "byte_code_util.h"
+#include "common.h"
 #include "constant.h"
 #include "error.h"
 #include "file_helper.h"
@@ -34,10 +35,13 @@ public:
     [[nodiscard]] MemMap *GetImage() const {
         return _image.get();
     }
+    [[nodiscard]] uint32_t GetDexId() const {
+        return dex_id;
+    }
 
-    std::vector<ClassBean> FindClass(const schema::FindClass *query);
-    std::vector<MethodBean> FindMethod(const schema::FindMethod *query);
-    std::vector<FieldBean> FindField(const schema::FindField *query);
+    std::vector<ClassBean> FindClass(const schema::FindClass *query, std::set<uint32_t> &in_class_set);
+    std::vector<MethodBean> FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_method_set);
+    std::vector<FieldBean> FindField(const schema::FindField *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_field_set);
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
@@ -78,12 +82,14 @@ private:
     std::string_view GetMethodDescriptor(uint32_t method_idx);
     std::string_view GetFieldDescriptor(uint32_t field_idx);
 
-    bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
-    bool IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
-    bool IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationElementsMatcher *matcher);
+    static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
+    static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
+    static bool IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
+    static bool IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationElementsMatcher *matcher);
 
     bool IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
-    bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
+    bool IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
+    bool IsClassSmaliSourceMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
     bool IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMatcher *matcher);
     bool IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *matcher);
     bool IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher *matcher);
@@ -122,7 +128,7 @@ private:
     phmap::flat_hash_map<std::uint32_t /*type_idx*/, uint32_t /*class_id*/> type_id_class_id_map;
     // dex declared types flag
     std::vector<bool /*declared_flag*/> type_declared_flag;
-    // class source file name, eg. "HelloWorld.java", maybe obfuscated
+    // class source file name, eg: "HelloWorld.java", maybe obfuscated
     std::vector<std::string_view> class_source_files;
     std::vector<uint32_t /*access_flag*/> class_access_flags;
     std::vector<std::optional<std::string>> method_descriptors;
@@ -132,6 +138,7 @@ private:
     std::vector<std::vector<uint32_t /*field_id*/>> class_field_ids;
     std::vector<uint32_t /*access_flag*/> field_access_flags;
     std::vector<const dex::Code *> method_codes;
+    // method parameter types
     std::vector<const dex::TypeList *> proto_type_list;
     std::vector<std::optional<std::vector<uint8_t /*opcode*/>>> method_opcode_seq;
     std::vector<ir::AnnotationSet *> class_annotations;

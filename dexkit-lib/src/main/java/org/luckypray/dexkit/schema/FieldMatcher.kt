@@ -28,9 +28,18 @@ class FieldMatcher : Table() {
         __init(_i, _bb)
         return this
     }
+    val fieldName : StringMatcher? get() = fieldName(StringMatcher())
+    fun fieldName(obj: StringMatcher) : StringMatcher? {
+        val o = __offset(4)
+        return if (o != 0) {
+            obj.__assign(__indirect(o + bb_pos), bb)
+        } else {
+            null
+        }
+    }
     val accessFlags : AccessFlagsMatcher? get() = accessFlags(AccessFlagsMatcher())
     fun accessFlags(obj: AccessFlagsMatcher) : AccessFlagsMatcher? {
-        val o = __offset(4)
+        val o = __offset(6)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -39,7 +48,7 @@ class FieldMatcher : Table() {
     }
     val declaringClass : ClassMatcher? get() = declaringClass(ClassMatcher())
     fun declaringClass(obj: ClassMatcher) : ClassMatcher? {
-        val o = __offset(6)
+        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -48,7 +57,7 @@ class FieldMatcher : Table() {
     }
     val typeClass : ClassMatcher? get() = typeClass(ClassMatcher())
     fun typeClass(obj: ClassMatcher) : ClassMatcher? {
-        val o = __offset(8)
+        val o = __offset(10)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -57,7 +66,7 @@ class FieldMatcher : Table() {
     }
     val annotations : AnnotationsMatcher? get() = annotations(AnnotationsMatcher())
     fun annotations(obj: AnnotationsMatcher) : AnnotationsMatcher? {
-        val o = __offset(10)
+        val o = __offset(12)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -66,7 +75,7 @@ class FieldMatcher : Table() {
     }
     val getMethods : MethodsMatcher? get() = getMethods(MethodsMatcher())
     fun getMethods(obj: MethodsMatcher) : MethodsMatcher? {
-        val o = __offset(12)
+        val o = __offset(14)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -75,7 +84,7 @@ class FieldMatcher : Table() {
     }
     val putMethods : MethodsMatcher? get() = putMethods(MethodsMatcher())
     fun putMethods(obj: MethodsMatcher) : MethodsMatcher? {
-        val o = __offset(14)
+        val o = __offset(16)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -89,23 +98,25 @@ class FieldMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldMatcher(builder: FlatBufferBuilder, accessFlagsOffset: Int, declaringClassOffset: Int, typeClassOffset: Int, annotationsOffset: Int, getMethodsOffset: Int, putMethodsOffset: Int) : Int {
-            builder.startTable(6)
+        fun createFieldMatcher(builder: FlatBufferBuilder, fieldNameOffset: Int, accessFlagsOffset: Int, declaringClassOffset: Int, typeClassOffset: Int, annotationsOffset: Int, getMethodsOffset: Int, putMethodsOffset: Int) : Int {
+            builder.startTable(7)
             addPutMethods(builder, putMethodsOffset)
             addGetMethods(builder, getMethodsOffset)
             addAnnotations(builder, annotationsOffset)
             addTypeClass(builder, typeClassOffset)
             addDeclaringClass(builder, declaringClassOffset)
             addAccessFlags(builder, accessFlagsOffset)
+            addFieldName(builder, fieldNameOffset)
             return endFieldMatcher(builder)
         }
-        fun startFieldMatcher(builder: FlatBufferBuilder) = builder.startTable(6)
-        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(0, accessFlags, 0)
-        fun addDeclaringClass(builder: FlatBufferBuilder, declaringClass: Int) = builder.addOffset(1, declaringClass, 0)
-        fun addTypeClass(builder: FlatBufferBuilder, typeClass: Int) = builder.addOffset(2, typeClass, 0)
-        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)
-        fun addGetMethods(builder: FlatBufferBuilder, getMethods: Int) = builder.addOffset(4, getMethods, 0)
-        fun addPutMethods(builder: FlatBufferBuilder, putMethods: Int) = builder.addOffset(5, putMethods, 0)
+        fun startFieldMatcher(builder: FlatBufferBuilder) = builder.startTable(7)
+        fun addFieldName(builder: FlatBufferBuilder, fieldName: Int) = builder.addOffset(0, fieldName, 0)
+        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(1, accessFlags, 0)
+        fun addDeclaringClass(builder: FlatBufferBuilder, declaringClass: Int) = builder.addOffset(2, declaringClass, 0)
+        fun addTypeClass(builder: FlatBufferBuilder, typeClass: Int) = builder.addOffset(3, typeClass, 0)
+        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(4, annotations, 0)
+        fun addGetMethods(builder: FlatBufferBuilder, getMethods: Int) = builder.addOffset(5, getMethods, 0)
+        fun addPutMethods(builder: FlatBufferBuilder, putMethods: Int) = builder.addOffset(6, putMethods, 0)
         fun endFieldMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
