@@ -1432,8 +1432,8 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_USING_STRINGS = 18,
     VT_USING_FIELS = 20,
     VT_USING_NUMBERS = 22,
-    VT_INVOKE_METHODS = 24,
-    VT_CALL_METHODS = 26
+    VT_INVOKING_METHODS = 24,
+    VT_METHOD_CALLERS = 26
   };
   const dexkit::schema::StringMatcher *method_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_METHOD_NAME);
@@ -1465,11 +1465,11 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>> *using_numbers() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>> *>(VT_USING_NUMBERS);
   }
-  const dexkit::schema::MethodsMatcher *invoke_methods() const {
-    return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_INVOKE_METHODS);
+  const dexkit::schema::MethodsMatcher *invoking_methods() const {
+    return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_INVOKING_METHODS);
   }
-  const dexkit::schema::MethodsMatcher *call_methods() const {
-    return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_CALL_METHODS);
+  const dexkit::schema::MethodsMatcher *method_callers() const {
+    return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_METHOD_CALLERS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1496,10 +1496,10 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_USING_NUMBERS) &&
            verifier.VerifyVector(using_numbers()) &&
            verifier.VerifyVectorOfTables(using_numbers()) &&
-           VerifyOffset(verifier, VT_INVOKE_METHODS) &&
-           verifier.VerifyTable(invoke_methods()) &&
-           VerifyOffset(verifier, VT_CALL_METHODS) &&
-           verifier.VerifyTable(call_methods()) &&
+           VerifyOffset(verifier, VT_INVOKING_METHODS) &&
+           verifier.VerifyTable(invoking_methods()) &&
+           VerifyOffset(verifier, VT_METHOD_CALLERS) &&
+           verifier.VerifyTable(method_callers()) &&
            verifier.EndTable();
   }
 };
@@ -1538,11 +1538,11 @@ struct MethodMatcherBuilder {
   void add_using_numbers(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>>> using_numbers) {
     fbb_.AddOffset(MethodMatcher::VT_USING_NUMBERS, using_numbers);
   }
-  void add_invoke_methods(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoke_methods) {
-    fbb_.AddOffset(MethodMatcher::VT_INVOKE_METHODS, invoke_methods);
+  void add_invoking_methods(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods) {
+    fbb_.AddOffset(MethodMatcher::VT_INVOKING_METHODS, invoking_methods);
   }
-  void add_call_methods(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> call_methods) {
-    fbb_.AddOffset(MethodMatcher::VT_CALL_METHODS, call_methods);
+  void add_method_callers(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers) {
+    fbb_.AddOffset(MethodMatcher::VT_METHOD_CALLERS, method_callers);
   }
   explicit MethodMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1567,11 +1567,11 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcher(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>> using_fiels = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>>> using_numbers = 0,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoke_methods = 0,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> call_methods = 0) {
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0) {
   MethodMatcherBuilder builder_(_fbb);
-  builder_.add_call_methods(call_methods);
-  builder_.add_invoke_methods(invoke_methods);
+  builder_.add_method_callers(method_callers);
+  builder_.add_invoking_methods(invoking_methods);
   builder_.add_using_numbers(using_numbers);
   builder_.add_using_fiels(using_fiels);
   builder_.add_using_strings(using_strings);
@@ -1602,8 +1602,8 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
     const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *using_fiels = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>> *using_numbers = nullptr,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoke_methods = 0,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> call_methods = 0) {
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0) {
   auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
   auto using_fiels__ = using_fiels ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>(*using_fiels) : 0;
   auto using_numbers__ = using_numbers ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>>(*using_numbers) : 0;
@@ -1619,8 +1619,8 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
       using_strings__,
       using_fiels__,
       using_numbers__,
-      invoke_methods,
-      call_methods);
+      invoking_methods,
+      method_callers);
 }
 
 struct MethodsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -157,10 +157,10 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsOpCodesMatched(method_idx, matcher->op_codes())) {
         return false;
     }
-    if (!IsDexCodesMatched(method_idx, matcher->op_codes(), matcher->using_strings(), matcher->using_fiels(), matcher->using_numbers(), matcher->invoke_methods())) {
+    if (!IsDexCodesMatched(method_idx, matcher->op_codes(), matcher->using_strings(), matcher->using_fiels(), matcher->using_numbers(), matcher->invoking_methods())) {
         return false;
     }
-    if (!IsCallMethodsMatched(method_idx, matcher->call_methods())) {
+    if (!IsCallMethodsMatched(method_idx, matcher->method_callers())) {
         return false;
     }
     return true;

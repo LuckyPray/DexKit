@@ -118,8 +118,8 @@ table MethodMatcher {
     using_strings: [StringMatcher];
     using_fiels: [UsingFieldMatcher];
     using_numbers: [UsingNumberMatcher];
-    invoke_methods: MethodsMatcher;
-    call_methods: MethodsMatcher;
+    invoking_methods: MethodsMatcher;
+    method_callers: MethodsMatcher;
 }
 
 table MethodsMatcher {
