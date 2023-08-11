@@ -5,7 +5,7 @@ package org.luckypray.dexkit.schema
 @Suppress("unused")
 class MatchType private constructor() {
     companion object {
-        const val Equal: Byte = 0
-        const val Contain: Byte = 1
+        const val Contain: Byte = 0
+        const val Equal: Byte = 1
     }
 }

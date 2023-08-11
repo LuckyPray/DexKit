@@ -28,8 +28,8 @@ class ParameterMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val prameterType : ClassMatcher? get() = prameterType(ClassMatcher())
-    fun prameterType(obj: ClassMatcher) : ClassMatcher? {
+    val annotations : AnnotationsMatcher? get() = annotations(AnnotationsMatcher())
+    fun annotations(obj: AnnotationsMatcher) : AnnotationsMatcher? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -37,8 +37,8 @@ class ParameterMatcher : Table() {
             null
         }
     }
-    val annotations : AnnotationsMatcher? get() = annotations(AnnotationsMatcher())
-    fun annotations(obj: AnnotationsMatcher) : AnnotationsMatcher? {
+    val prameterType : ClassMatcher? get() = prameterType(ClassMatcher())
+    fun prameterType(obj: ClassMatcher) : ClassMatcher? {
         val o = __offset(6)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -53,15 +53,15 @@ class ParameterMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createParameterMatcher(builder: FlatBufferBuilder, prameterTypeOffset: Int, annotationsOffset: Int) : Int {
+        fun createParameterMatcher(builder: FlatBufferBuilder, annotationsOffset: Int, prameterTypeOffset: Int) : Int {
             builder.startTable(2)
-            addAnnotations(builder, annotationsOffset)
             addPrameterType(builder, prameterTypeOffset)
+            addAnnotations(builder, annotationsOffset)
             return endParameterMatcher(builder)
         }
         fun startParameterMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addPrameterType(builder: FlatBufferBuilder, prameterType: Int) = builder.addOffset(0, prameterType, 0)
-        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(1, annotations, 0)
+        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(0, annotations, 0)
+        fun addPrameterType(builder: FlatBufferBuilder, prameterType: Int) = builder.addOffset(1, prameterType, 0)
         fun endParameterMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

@@ -284,14 +284,14 @@ struct StringMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_VALUE = 4,
-    VT_TYPE = 6,
+    VT_MATCH_TYPE = 6,
     VT_IGNORE_CASE = 8
   };
   const ::flatbuffers::String *value() const {
     return GetPointer<const ::flatbuffers::String *>(VT_VALUE);
   }
-  dexkit::schema::StringMatchType type() const {
-    return static_cast<dexkit::schema::StringMatchType>(GetField<int8_t>(VT_TYPE, 0));
+  dexkit::schema::StringMatchType match_type() const {
+    return static_cast<dexkit::schema::StringMatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
   bool ignore_case() const {
     return GetField<uint8_t>(VT_IGNORE_CASE, 0) != 0;
@@ -300,7 +300,7 @@ struct StringMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_VALUE) &&
            verifier.VerifyString(value()) &&
-           VerifyField<int8_t>(verifier, VT_TYPE, 1) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyField<uint8_t>(verifier, VT_IGNORE_CASE, 1) &&
            verifier.EndTable();
   }
@@ -313,8 +313,8 @@ struct StringMatcherBuilder {
   void add_value(::flatbuffers::Offset<::flatbuffers::String> value) {
     fbb_.AddOffset(StringMatcher::VT_VALUE, value);
   }
-  void add_type(dexkit::schema::StringMatchType type) {
-    fbb_.AddElement<int8_t>(StringMatcher::VT_TYPE, static_cast<int8_t>(type), 0);
+  void add_match_type(dexkit::schema::StringMatchType match_type) {
+    fbb_.AddElement<int8_t>(StringMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   void add_ignore_case(bool ignore_case) {
     fbb_.AddElement<uint8_t>(StringMatcher::VT_IGNORE_CASE, static_cast<uint8_t>(ignore_case), 0);
@@ -333,12 +333,12 @@ struct StringMatcherBuilder {
 inline ::flatbuffers::Offset<StringMatcher> CreateStringMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> value = 0,
-    dexkit::schema::StringMatchType type = dexkit::schema::StringMatchType::Contains,
+    dexkit::schema::StringMatchType match_type = dexkit::schema::StringMatchType::Contains,
     bool ignore_case = false) {
   StringMatcherBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_ignore_case(ignore_case);
-  builder_.add_type(type);
+  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -350,13 +350,13 @@ struct StringMatcher::Traits {
 inline ::flatbuffers::Offset<StringMatcher> CreateStringMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *value = nullptr,
-    dexkit::schema::StringMatchType type = dexkit::schema::StringMatchType::Contains,
+    dexkit::schema::StringMatchType match_type = dexkit::schema::StringMatchType::Contains,
     bool ignore_case = false) {
   auto value__ = value ? _fbb.CreateString(value) : 0;
   return dexkit::schema::CreateStringMatcher(
       _fbb,
       value__,
-      type,
+      match_type,
       ignore_case);
 }
 
@@ -405,7 +405,7 @@ struct AccessFlagsMatcherBuilder {
 inline ::flatbuffers::Offset<AccessFlagsMatcher> CreateAccessFlagsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t flags = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Equal) {
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain) {
   AccessFlagsMatcherBuilder builder_(_fbb);
   builder_.add_flags(flags);
   builder_.add_match_type(match_type);
@@ -421,15 +421,20 @@ struct TargetElementTypesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   typedef TargetElementTypesMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CONTAIN_TYPES = 4
+    VT_TYPES = 4,
+    VT_MATCH_TYPE = 6
   };
-  const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *contain_types() const {
-    return GetPointer<const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *>(VT_CONTAIN_TYPES);
+  const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *types() const {
+    return GetPointer<const ::flatbuffers::Vector<dexkit::schema::TargetElementType> *>(VT_TYPES);
+  }
+  dexkit::schema::MatchType match_type() const {
+    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_CONTAIN_TYPES) &&
-           verifier.VerifyVector(contain_types()) &&
+           VerifyOffset(verifier, VT_TYPES) &&
+           verifier.VerifyVector(types()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            verifier.EndTable();
   }
 };
@@ -438,8 +443,11 @@ struct TargetElementTypesMatcherBuilder {
   typedef TargetElementTypesMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_contain_types(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> contain_types) {
-    fbb_.AddOffset(TargetElementTypesMatcher::VT_CONTAIN_TYPES, contain_types);
+  void add_types(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> types) {
+    fbb_.AddOffset(TargetElementTypesMatcher::VT_TYPES, types);
+  }
+  void add_match_type(dexkit::schema::MatchType match_type) {
+    fbb_.AddElement<int8_t>(TargetElementTypesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   explicit TargetElementTypesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -454,9 +462,11 @@ struct TargetElementTypesMatcherBuilder {
 
 inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> contain_types = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> types = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain) {
   TargetElementTypesMatcherBuilder builder_(_fbb);
-  builder_.add_contain_types(contain_types);
+  builder_.add_types(types);
+  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -467,11 +477,13 @@ struct TargetElementTypesMatcher::Traits {
 
 inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<dexkit::schema::TargetElementType> *contain_types = nullptr) {
-  auto contain_types__ = contain_types ? _fbb.CreateVector<dexkit::schema::TargetElementType>(*contain_types) : 0;
+    const std::vector<dexkit::schema::TargetElementType> *types = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain) {
+  auto types__ = types ? _fbb.CreateVector<dexkit::schema::TargetElementType>(*types) : 0;
   return dexkit::schema::CreateTargetElementTypesMatcher(
       _fbb,
-      contain_types__);
+      types__,
+      match_type);
 }
 
 struct EnumMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -794,27 +806,27 @@ struct AnnotationElementsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   typedef AnnotationElementsMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ELEMENT_COUNT = 4,
+    VT_ELEMENTS = 4,
     VT_MATCH_TYPE = 6,
-    VT_ELEMENTS = 8
+    VT_ELEMENT_COUNT = 8
   };
-  const dexkit::schema::IntRange *element_count() const {
-    return GetPointer<const dexkit::schema::IntRange *>(VT_ELEMENT_COUNT);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *elements() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *>(VT_ELEMENTS);
   }
   dexkit::schema::MatchType match_type() const {
     return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *elements() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *>(VT_ELEMENTS);
+  const dexkit::schema::IntRange *element_count() const {
+    return GetPointer<const dexkit::schema::IntRange *>(VT_ELEMENT_COUNT);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ELEMENT_COUNT) &&
-           verifier.VerifyTable(element_count()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_ELEMENTS) &&
            verifier.VerifyVector(elements()) &&
            verifier.VerifyVectorOfTables(elements()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
+           VerifyOffset(verifier, VT_ELEMENT_COUNT) &&
+           verifier.VerifyTable(element_count()) &&
            verifier.EndTable();
   }
 };
@@ -823,14 +835,14 @@ struct AnnotationElementsMatcherBuilder {
   typedef AnnotationElementsMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_element_count(::flatbuffers::Offset<dexkit::schema::IntRange> element_count) {
-    fbb_.AddOffset(AnnotationElementsMatcher::VT_ELEMENT_COUNT, element_count);
+  void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>> elements) {
+    fbb_.AddOffset(AnnotationElementsMatcher::VT_ELEMENTS, elements);
   }
   void add_match_type(dexkit::schema::MatchType match_type) {
     fbb_.AddElement<int8_t>(AnnotationElementsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
-  void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>> elements) {
-    fbb_.AddOffset(AnnotationElementsMatcher::VT_ELEMENTS, elements);
+  void add_element_count(::flatbuffers::Offset<dexkit::schema::IntRange> element_count) {
+    fbb_.AddOffset(AnnotationElementsMatcher::VT_ELEMENT_COUNT, element_count);
   }
   explicit AnnotationElementsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -845,12 +857,12 @@ struct AnnotationElementsMatcherBuilder {
 
 inline ::flatbuffers::Offset<AnnotationElementsMatcher> CreateAnnotationElementsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Equal,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>> elements = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>> elements = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0) {
   AnnotationElementsMatcherBuilder builder_(_fbb);
-  builder_.add_elements(elements);
   builder_.add_element_count(element_count);
+  builder_.add_elements(elements);
   builder_.add_match_type(match_type);
   return builder_.Finish();
 }
@@ -862,15 +874,15 @@ struct AnnotationElementsMatcher::Traits {
 
 inline ::flatbuffers::Offset<AnnotationElementsMatcher> CreateAnnotationElementsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Equal,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *elements = nullptr) {
+    const std::vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *elements = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0) {
   auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>(*elements) : 0;
   return dexkit::schema::CreateAnnotationElementsMatcher(
       _fbb,
-      element_count,
+      elements__,
       match_type,
-      elements__);
+      element_count);
 }
 
 struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -968,22 +980,27 @@ struct AnnotationsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   typedef AnnotationsMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ANNOTAION_COUNT = 4,
-    VT_CONTAIN_ANNOTATIONS = 6
+    VT_CONTAIN_ANNOTATIONS = 4,
+    VT_MATCH_TYPE = 6,
+    VT_ANNOTAION_COUNT = 8
   };
-  const dexkit::schema::IntRange *annotaion_count() const {
-    return GetPointer<const dexkit::schema::IntRange *>(VT_ANNOTAION_COUNT);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *contain_annotations() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *>(VT_CONTAIN_ANNOTATIONS);
   }
+  dexkit::schema::MatchType match_type() const {
+    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
+  }
+  const dexkit::schema::IntRange *annotaion_count() const {
+    return GetPointer<const dexkit::schema::IntRange *>(VT_ANNOTAION_COUNT);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ANNOTAION_COUNT) &&
-           verifier.VerifyTable(annotaion_count()) &&
            VerifyOffset(verifier, VT_CONTAIN_ANNOTATIONS) &&
            verifier.VerifyVector(contain_annotations()) &&
            verifier.VerifyVectorOfTables(contain_annotations()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
+           VerifyOffset(verifier, VT_ANNOTAION_COUNT) &&
+           verifier.VerifyTable(annotaion_count()) &&
            verifier.EndTable();
   }
 };
@@ -992,11 +1009,14 @@ struct AnnotationsMatcherBuilder {
   typedef AnnotationsMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_annotaion_count(::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count) {
-    fbb_.AddOffset(AnnotationsMatcher::VT_ANNOTAION_COUNT, annotaion_count);
-  }
   void add_contain_annotations(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>> contain_annotations) {
     fbb_.AddOffset(AnnotationsMatcher::VT_CONTAIN_ANNOTATIONS, contain_annotations);
+  }
+  void add_match_type(dexkit::schema::MatchType match_type) {
+    fbb_.AddElement<int8_t>(AnnotationsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
+  }
+  void add_annotaion_count(::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count) {
+    fbb_.AddOffset(AnnotationsMatcher::VT_ANNOTAION_COUNT, annotaion_count);
   }
   explicit AnnotationsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1011,11 +1031,13 @@ struct AnnotationsMatcherBuilder {
 
 inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>> contain_annotations = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>> contain_annotations = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count = 0) {
   AnnotationsMatcherBuilder builder_(_fbb);
-  builder_.add_contain_annotations(contain_annotations);
   builder_.add_annotaion_count(annotaion_count);
+  builder_.add_contain_annotations(contain_annotations);
+  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1026,34 +1048,36 @@ struct AnnotationsMatcher::Traits {
 
 inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count = 0,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *contain_annotations = nullptr) {
+    const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *contain_annotations = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count = 0) {
   auto contain_annotations__ = contain_annotations ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>(*contain_annotations) : 0;
   return dexkit::schema::CreateAnnotationsMatcher(
       _fbb,
-      annotaion_count,
-      contain_annotations__);
+      contain_annotations__,
+      match_type,
+      annotaion_count);
 }
 
 struct ParameterMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ParameterMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_PRAMETER_TYPE = 4,
-    VT_ANNOTATIONS = 6
+    VT_ANNOTATIONS = 4,
+    VT_PRAMETER_TYPE = 6
   };
-  const dexkit::schema::ClassMatcher *prameter_type() const {
-    return GetPointer<const dexkit::schema::ClassMatcher *>(VT_PRAMETER_TYPE);
-  }
   const dexkit::schema::AnnotationsMatcher *annotations() const {
     return GetPointer<const dexkit::schema::AnnotationsMatcher *>(VT_ANNOTATIONS);
   }
+  const dexkit::schema::ClassMatcher *prameter_type() const {
+    return GetPointer<const dexkit::schema::ClassMatcher *>(VT_PRAMETER_TYPE);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_PRAMETER_TYPE) &&
-           verifier.VerifyTable(prameter_type()) &&
            VerifyOffset(verifier, VT_ANNOTATIONS) &&
            verifier.VerifyTable(annotations()) &&
+           VerifyOffset(verifier, VT_PRAMETER_TYPE) &&
+           verifier.VerifyTable(prameter_type()) &&
            verifier.EndTable();
   }
 };
@@ -1062,11 +1086,11 @@ struct ParameterMatcherBuilder {
   typedef ParameterMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_prameter_type(::flatbuffers::Offset<dexkit::schema::ClassMatcher> prameter_type) {
-    fbb_.AddOffset(ParameterMatcher::VT_PRAMETER_TYPE, prameter_type);
-  }
   void add_annotations(::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations) {
     fbb_.AddOffset(ParameterMatcher::VT_ANNOTATIONS, annotations);
+  }
+  void add_prameter_type(::flatbuffers::Offset<dexkit::schema::ClassMatcher> prameter_type) {
+    fbb_.AddOffset(ParameterMatcher::VT_PRAMETER_TYPE, prameter_type);
   }
   explicit ParameterMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1081,11 +1105,11 @@ struct ParameterMatcherBuilder {
 
 inline ::flatbuffers::Offset<ParameterMatcher> CreateParameterMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> prameter_type = 0,
-    ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0) {
+    ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
+    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> prameter_type = 0) {
   ParameterMatcherBuilder builder_(_fbb);
-  builder_.add_annotations(annotations);
   builder_.add_prameter_type(prameter_type);
+  builder_.add_annotations(annotations);
   return builder_.Finish();
 }
 
@@ -1146,27 +1170,27 @@ struct ParametersMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   typedef ParametersMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_PARAMETER_COUNT = 4,
+    VT_PARAMETERS = 4,
     VT_MATCH_TYPE = 6,
-    VT_PARAMETERS = 8
+    VT_PARAMETER_COUNT = 8
   };
-  const dexkit::schema::IntRange *parameter_count() const {
-    return GetPointer<const dexkit::schema::IntRange *>(VT_PARAMETER_COUNT);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *parameters() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *>(VT_PARAMETERS);
   }
   dexkit::schema::MatchType match_type() const {
     return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *parameters() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *>(VT_PARAMETERS);
+  const dexkit::schema::IntRange *parameter_count() const {
+    return GetPointer<const dexkit::schema::IntRange *>(VT_PARAMETER_COUNT);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_PARAMETER_COUNT) &&
-           verifier.VerifyTable(parameter_count()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_PARAMETERS) &&
            verifier.VerifyVector(parameters()) &&
            verifier.VerifyVectorOfTables(parameters()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
+           VerifyOffset(verifier, VT_PARAMETER_COUNT) &&
+           verifier.VerifyTable(parameter_count()) &&
            verifier.EndTable();
   }
 };
@@ -1175,14 +1199,14 @@ struct ParametersMatcherBuilder {
   typedef ParametersMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_parameter_count(::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count) {
-    fbb_.AddOffset(ParametersMatcher::VT_PARAMETER_COUNT, parameter_count);
+  void add_parameters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>> parameters) {
+    fbb_.AddOffset(ParametersMatcher::VT_PARAMETERS, parameters);
   }
   void add_match_type(dexkit::schema::MatchType match_type) {
     fbb_.AddElement<int8_t>(ParametersMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
-  void add_parameters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>> parameters) {
-    fbb_.AddOffset(ParametersMatcher::VT_PARAMETERS, parameters);
+  void add_parameter_count(::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count) {
+    fbb_.AddOffset(ParametersMatcher::VT_PARAMETER_COUNT, parameter_count);
   }
   explicit ParametersMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1197,12 +1221,12 @@ struct ParametersMatcherBuilder {
 
 inline ::flatbuffers::Offset<ParametersMatcher> CreateParametersMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Equal,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>> parameters = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>> parameters = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count = 0) {
   ParametersMatcherBuilder builder_(_fbb);
-  builder_.add_parameters(parameters);
   builder_.add_parameter_count(parameter_count);
+  builder_.add_parameters(parameters);
   builder_.add_match_type(match_type);
   return builder_.Finish();
 }
@@ -1214,35 +1238,35 @@ struct ParametersMatcher::Traits {
 
 inline ::flatbuffers::Offset<ParametersMatcher> CreateParametersMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Equal,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *parameters = nullptr) {
+    const std::vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *parameters = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count = 0) {
   auto parameters__ = parameters ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>(*parameters) : 0;
   return dexkit::schema::CreateParametersMatcher(
       _fbb,
-      parameter_count,
+      parameters__,
       match_type,
-      parameters__);
+      parameter_count);
 }
 
 struct OpCodesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef OpCodesMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MATCH_TYPE = 4,
-    VT_OP_CODES = 6
+    VT_OP_CODES = 4,
+    VT_MATCH_TYPE = 6
   };
-  dexkit::schema::OpCodeMatchType match_type() const {
-    return static_cast<dexkit::schema::OpCodeMatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
-  }
   const ::flatbuffers::Vector<int16_t> *op_codes() const {
     return GetPointer<const ::flatbuffers::Vector<int16_t> *>(VT_OP_CODES);
   }
+  dexkit::schema::OpCodeMatchType match_type() const {
+    return static_cast<dexkit::schema::OpCodeMatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_OP_CODES) &&
            verifier.VerifyVector(op_codes()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            verifier.EndTable();
   }
 };
@@ -1251,11 +1275,11 @@ struct OpCodesMatcherBuilder {
   typedef OpCodesMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_match_type(dexkit::schema::OpCodeMatchType match_type) {
-    fbb_.AddElement<int8_t>(OpCodesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
-  }
   void add_op_codes(::flatbuffers::Offset<::flatbuffers::Vector<int16_t>> op_codes) {
     fbb_.AddOffset(OpCodesMatcher::VT_OP_CODES, op_codes);
+  }
+  void add_match_type(dexkit::schema::OpCodeMatchType match_type) {
+    fbb_.AddElement<int8_t>(OpCodesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   explicit OpCodesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1270,8 +1294,8 @@ struct OpCodesMatcherBuilder {
 
 inline ::flatbuffers::Offset<OpCodesMatcher> CreateOpCodesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int16_t>> op_codes = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<int16_t>> op_codes = 0,
+    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains) {
   OpCodesMatcherBuilder builder_(_fbb);
   builder_.add_op_codes(op_codes);
   builder_.add_match_type(match_type);
@@ -1285,33 +1309,33 @@ struct OpCodesMatcher::Traits {
 
 inline ::flatbuffers::Offset<OpCodesMatcher> CreateOpCodesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains,
-    const std::vector<int16_t> *op_codes = nullptr) {
+    const std::vector<int16_t> *op_codes = nullptr,
+    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains) {
   auto op_codes__ = op_codes ? _fbb.CreateVector<int16_t>(*op_codes) : 0;
   return dexkit::schema::CreateOpCodesMatcher(
       _fbb,
-      match_type,
-      op_codes__);
+      op_codes__,
+      match_type);
 }
 
 struct UsingFieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UsingFieldMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USING_TYPE = 4,
-    VT_FIELD = 6
+    VT_FIELD = 4,
+    VT_USING_TYPE = 6
   };
-  dexkit::schema::UsingType using_type() const {
-    return static_cast<dexkit::schema::UsingType>(GetField<int8_t>(VT_USING_TYPE, 0));
-  }
   const dexkit::schema::FieldMatcher *field() const {
     return GetPointer<const dexkit::schema::FieldMatcher *>(VT_FIELD);
   }
+  dexkit::schema::UsingType using_type() const {
+    return static_cast<dexkit::schema::UsingType>(GetField<int8_t>(VT_USING_TYPE, 0));
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int8_t>(verifier, VT_USING_TYPE, 1) &&
            VerifyOffset(verifier, VT_FIELD) &&
            verifier.VerifyTable(field()) &&
+           VerifyField<int8_t>(verifier, VT_USING_TYPE, 1) &&
            verifier.EndTable();
   }
 };
@@ -1320,11 +1344,11 @@ struct UsingFieldMatcherBuilder {
   typedef UsingFieldMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_using_type(dexkit::schema::UsingType using_type) {
-    fbb_.AddElement<int8_t>(UsingFieldMatcher::VT_USING_TYPE, static_cast<int8_t>(using_type), 0);
-  }
   void add_field(::flatbuffers::Offset<dexkit::schema::FieldMatcher> field) {
     fbb_.AddOffset(UsingFieldMatcher::VT_FIELD, field);
+  }
+  void add_using_type(dexkit::schema::UsingType using_type) {
+    fbb_.AddElement<int8_t>(UsingFieldMatcher::VT_USING_TYPE, static_cast<int8_t>(using_type), 0);
   }
   explicit UsingFieldMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1339,8 +1363,8 @@ struct UsingFieldMatcherBuilder {
 
 inline ::flatbuffers::Offset<UsingFieldMatcher> CreateUsingFieldMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    dexkit::schema::UsingType using_type = dexkit::schema::UsingType::Any,
-    ::flatbuffers::Offset<dexkit::schema::FieldMatcher> field = 0) {
+    ::flatbuffers::Offset<dexkit::schema::FieldMatcher> field = 0,
+    dexkit::schema::UsingType using_type = dexkit::schema::UsingType::Any) {
   UsingFieldMatcherBuilder builder_(_fbb);
   builder_.add_field(field);
   builder_.add_using_type(using_type);
@@ -1665,20 +1689,25 @@ struct MethodsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MethodsMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CONTAIN_METHODS = 4,
-    VT_METHOD_COUNT = 6
+    VT_METHODS = 4,
+    VT_MATCH_TYPE = 6,
+    VT_METHOD_COUNT = 8
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *contain_methods() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *>(VT_CONTAIN_METHODS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *methods() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *>(VT_METHODS);
+  }
+  dexkit::schema::MatchType match_type() const {
+    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
   const dexkit::schema::IntRange *method_count() const {
     return GetPointer<const dexkit::schema::IntRange *>(VT_METHOD_COUNT);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_CONTAIN_METHODS) &&
-           verifier.VerifyVector(contain_methods()) &&
-           verifier.VerifyVectorOfTables(contain_methods()) &&
+           VerifyOffset(verifier, VT_METHODS) &&
+           verifier.VerifyVector(methods()) &&
+           verifier.VerifyVectorOfTables(methods()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_METHOD_COUNT) &&
            verifier.VerifyTable(method_count()) &&
            verifier.EndTable();
@@ -1689,8 +1718,11 @@ struct MethodsMatcherBuilder {
   typedef MethodsMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_contain_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> contain_methods) {
-    fbb_.AddOffset(MethodsMatcher::VT_CONTAIN_METHODS, contain_methods);
+  void add_methods(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> methods) {
+    fbb_.AddOffset(MethodsMatcher::VT_METHODS, methods);
+  }
+  void add_match_type(dexkit::schema::MatchType match_type) {
+    fbb_.AddElement<int8_t>(MethodsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   void add_method_count(::flatbuffers::Offset<dexkit::schema::IntRange> method_count) {
     fbb_.AddOffset(MethodsMatcher::VT_METHOD_COUNT, method_count);
@@ -1708,11 +1740,13 @@ struct MethodsMatcherBuilder {
 
 inline ::flatbuffers::Offset<MethodsMatcher> CreateMethodsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> contain_methods = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> methods = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> method_count = 0) {
   MethodsMatcherBuilder builder_(_fbb);
   builder_.add_method_count(method_count);
-  builder_.add_contain_methods(contain_methods);
+  builder_.add_methods(methods);
+  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1723,12 +1757,14 @@ struct MethodsMatcher::Traits {
 
 inline ::flatbuffers::Offset<MethodsMatcher> CreateMethodsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *contain_methods = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *methods = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> method_count = 0) {
-  auto contain_methods__ = contain_methods ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>(*contain_methods) : 0;
+  auto methods__ = methods ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>(*methods) : 0;
   return dexkit::schema::CreateMethodsMatcher(
       _fbb,
-      contain_methods__,
+      methods__,
+      match_type,
       method_count);
 }
 
@@ -1736,20 +1772,25 @@ struct InterfacesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   typedef InterfacesMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CONTAIN_INTERFACES = 4,
-    VT_INTERFACE_COUNT = 6
+    VT_INTERFACES = 4,
+    VT_MATCH_TYPE = 6,
+    VT_INTERFACE_COUNT = 8
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *contain_interfaces() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *>(VT_CONTAIN_INTERFACES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *interfaces() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *>(VT_INTERFACES);
+  }
+  dexkit::schema::MatchType match_type() const {
+    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
   const dexkit::schema::IntRange *interface_count() const {
     return GetPointer<const dexkit::schema::IntRange *>(VT_INTERFACE_COUNT);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_CONTAIN_INTERFACES) &&
-           verifier.VerifyVector(contain_interfaces()) &&
-           verifier.VerifyVectorOfTables(contain_interfaces()) &&
+           VerifyOffset(verifier, VT_INTERFACES) &&
+           verifier.VerifyVector(interfaces()) &&
+           verifier.VerifyVectorOfTables(interfaces()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_INTERFACE_COUNT) &&
            verifier.VerifyTable(interface_count()) &&
            verifier.EndTable();
@@ -1760,8 +1801,11 @@ struct InterfacesMatcherBuilder {
   typedef InterfacesMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_contain_interfaces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> contain_interfaces) {
-    fbb_.AddOffset(InterfacesMatcher::VT_CONTAIN_INTERFACES, contain_interfaces);
+  void add_interfaces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> interfaces) {
+    fbb_.AddOffset(InterfacesMatcher::VT_INTERFACES, interfaces);
+  }
+  void add_match_type(dexkit::schema::MatchType match_type) {
+    fbb_.AddElement<int8_t>(InterfacesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   void add_interface_count(::flatbuffers::Offset<dexkit::schema::IntRange> interface_count) {
     fbb_.AddOffset(InterfacesMatcher::VT_INTERFACE_COUNT, interface_count);
@@ -1779,11 +1823,13 @@ struct InterfacesMatcherBuilder {
 
 inline ::flatbuffers::Offset<InterfacesMatcher> CreateInterfacesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> contain_interfaces = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> interfaces = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> interface_count = 0) {
   InterfacesMatcherBuilder builder_(_fbb);
   builder_.add_interface_count(interface_count);
-  builder_.add_contain_interfaces(contain_interfaces);
+  builder_.add_interfaces(interfaces);
+  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1794,12 +1840,14 @@ struct InterfacesMatcher::Traits {
 
 inline ::flatbuffers::Offset<InterfacesMatcher> CreateInterfacesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *contain_interfaces = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *interfaces = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> interface_count = 0) {
-  auto contain_interfaces__ = contain_interfaces ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>(*contain_interfaces) : 0;
+  auto interfaces__ = interfaces ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>(*interfaces) : 0;
   return dexkit::schema::CreateInterfacesMatcher(
       _fbb,
-      contain_interfaces__,
+      interfaces__,
+      match_type,
       interface_count);
 }
 
@@ -1911,10 +1959,14 @@ struct FieldsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CONTAIN_FIELDS = 4,
-    VT_FIELD_COUNT = 6
+    VT_MATCH_TYPE = 6,
+    VT_FIELD_COUNT = 8
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *contain_fields() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *>(VT_CONTAIN_FIELDS);
+  }
+  dexkit::schema::MatchType match_type() const {
+    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
   const dexkit::schema::IntRange *field_count() const {
     return GetPointer<const dexkit::schema::IntRange *>(VT_FIELD_COUNT);
@@ -1924,6 +1976,7 @@ struct FieldsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_CONTAIN_FIELDS) &&
            verifier.VerifyVector(contain_fields()) &&
            verifier.VerifyVectorOfTables(contain_fields()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_FIELD_COUNT) &&
            verifier.VerifyTable(field_count()) &&
            verifier.EndTable();
@@ -1936,6 +1989,9 @@ struct FieldsMatcherBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_contain_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> contain_fields) {
     fbb_.AddOffset(FieldsMatcher::VT_CONTAIN_FIELDS, contain_fields);
+  }
+  void add_match_type(dexkit::schema::MatchType match_type) {
+    fbb_.AddElement<int8_t>(FieldsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   void add_field_count(::flatbuffers::Offset<dexkit::schema::IntRange> field_count) {
     fbb_.AddOffset(FieldsMatcher::VT_FIELD_COUNT, field_count);
@@ -1954,10 +2010,12 @@ struct FieldsMatcherBuilder {
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> contain_fields = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> field_count = 0) {
   FieldsMatcherBuilder builder_(_fbb);
   builder_.add_field_count(field_count);
   builder_.add_contain_fields(contain_fields);
+  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1969,11 +2027,13 @@ struct FieldsMatcher::Traits {
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *contain_fields = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> field_count = 0) {
   auto contain_fields__ = contain_fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*contain_fields) : 0;
   return dexkit::schema::CreateFieldsMatcher(
       _fbb,
       contain_fields__,
+      match_type,
       field_count);
 }
 
@@ -1981,25 +2041,21 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ClassMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_PACKAGE_NAME = 4,
-    VT_SMALI_SOURCE = 6,
-    VT_SIMPLE_NAME = 8,
-    VT_ACCESS_FLAGS = 10,
-    VT_SUPER_CLASS = 12,
-    VT_INTERFACES = 14,
-    VT_ANNOTATIONS = 16,
-    VT_FIELDS = 18,
-    VT_METHODS = 20,
-    VT_USING_STRINGS = 22
+    VT_SMALI_SOURCE = 4,
+    VT_CLASS_NAME = 6,
+    VT_ACCESS_FLAGS = 8,
+    VT_SUPER_CLASS = 10,
+    VT_INTERFACES = 12,
+    VT_ANNOTATIONS = 14,
+    VT_FIELDS = 16,
+    VT_METHODS = 18,
+    VT_USING_STRINGS = 20
   };
-  const dexkit::schema::StringMatcher *package_name() const {
-    return GetPointer<const dexkit::schema::StringMatcher *>(VT_PACKAGE_NAME);
-  }
   const dexkit::schema::StringMatcher *smali_source() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_SMALI_SOURCE);
   }
-  const dexkit::schema::StringMatcher *simple_name() const {
-    return GetPointer<const dexkit::schema::StringMatcher *>(VT_SIMPLE_NAME);
+  const dexkit::schema::StringMatcher *class_name() const {
+    return GetPointer<const dexkit::schema::StringMatcher *>(VT_CLASS_NAME);
   }
   const dexkit::schema::AccessFlagsMatcher *access_flags() const {
     return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_ACCESS_FLAGS);
@@ -2024,12 +2080,10 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_PACKAGE_NAME) &&
-           verifier.VerifyTable(package_name()) &&
            VerifyOffset(verifier, VT_SMALI_SOURCE) &&
            verifier.VerifyTable(smali_source()) &&
-           VerifyOffset(verifier, VT_SIMPLE_NAME) &&
-           verifier.VerifyTable(simple_name()) &&
+           VerifyOffset(verifier, VT_CLASS_NAME) &&
+           verifier.VerifyTable(class_name()) &&
            VerifyOffset(verifier, VT_ACCESS_FLAGS) &&
            verifier.VerifyTable(access_flags()) &&
            VerifyOffset(verifier, VT_SUPER_CLASS) &&
@@ -2053,14 +2107,11 @@ struct ClassMatcherBuilder {
   typedef ClassMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_package_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> package_name) {
-    fbb_.AddOffset(ClassMatcher::VT_PACKAGE_NAME, package_name);
-  }
   void add_smali_source(::flatbuffers::Offset<dexkit::schema::StringMatcher> smali_source) {
     fbb_.AddOffset(ClassMatcher::VT_SMALI_SOURCE, smali_source);
   }
-  void add_simple_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> simple_name) {
-    fbb_.AddOffset(ClassMatcher::VT_SIMPLE_NAME, simple_name);
+  void add_class_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> class_name) {
+    fbb_.AddOffset(ClassMatcher::VT_CLASS_NAME, class_name);
   }
   void add_access_flags(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags) {
     fbb_.AddOffset(ClassMatcher::VT_ACCESS_FLAGS, access_flags);
@@ -2096,9 +2147,8 @@ struct ClassMatcherBuilder {
 
 inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> package_name = 0,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> smali_source = 0,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> simple_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::StringMatcher> class_name = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> super_class = 0,
     ::flatbuffers::Offset<dexkit::schema::InterfacesMatcher> interfaces = 0,
@@ -2114,9 +2164,8 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcher(
   builder_.add_interfaces(interfaces);
   builder_.add_super_class(super_class);
   builder_.add_access_flags(access_flags);
-  builder_.add_simple_name(simple_name);
+  builder_.add_class_name(class_name);
   builder_.add_smali_source(smali_source);
-  builder_.add_package_name(package_name);
   return builder_.Finish();
 }
 
@@ -2127,9 +2176,8 @@ struct ClassMatcher::Traits {
 
 inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> package_name = 0,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> smali_source = 0,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> simple_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::StringMatcher> class_name = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> super_class = 0,
     ::flatbuffers::Offset<dexkit::schema::InterfacesMatcher> interfaces = 0,
@@ -2140,9 +2188,8 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcherDirect(
   auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
   return dexkit::schema::CreateClassMatcher(
       _fbb,
-      package_name,
       smali_source,
-      simple_name,
+      class_name,
       access_flags,
       super_class,
       interfaces,

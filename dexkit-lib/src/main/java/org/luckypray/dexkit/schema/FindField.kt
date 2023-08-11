@@ -28,13 +28,24 @@ class FindField : Table() {
         __init(_i, _bb)
         return this
     }
-    val uniqueResult : Boolean
+    val searchPackage : String?
         get() {
             val o = __offset(4)
+            return if (o != 0) {
+                __string(o + bb_pos)
+            } else {
+                null
+            }
+        }
+    val searchPackageAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
+    fun searchPackageInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
+    val uniqueResult : Boolean
+        get() {
+            val o = __offset(6)
             return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
         }
     fun inFields(j: Int) : ULong {
-        val o = __offset(6)
+        val o = __offset(8)
         return if (o != 0) {
             bb.getLong(__vector(o) + j * 8).toULong()
         } else {
@@ -43,13 +54,13 @@ class FindField : Table() {
     }
     val inFieldsLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
         }
-    val inFieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
-    fun inFieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
+    val inFieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 8)
+    fun inFieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 8)
     val matcher : FieldMatcher? get() = matcher(FieldMatcher())
     fun matcher(obj: FieldMatcher) : FieldMatcher? {
-        val o = __offset(8)
+        val o = __offset(10)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -63,16 +74,18 @@ class FindField : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFindField(builder: FlatBufferBuilder, uniqueResult: Boolean, inFieldsOffset: Int, matcherOffset: Int) : Int {
-            builder.startTable(3)
+        fun createFindField(builder: FlatBufferBuilder, searchPackageOffset: Int, uniqueResult: Boolean, inFieldsOffset: Int, matcherOffset: Int) : Int {
+            builder.startTable(4)
             addMatcher(builder, matcherOffset)
             addInFields(builder, inFieldsOffset)
+            addSearchPackage(builder, searchPackageOffset)
             addUniqueResult(builder, uniqueResult)
             return endFindField(builder)
         }
-        fun startFindField(builder: FlatBufferBuilder) = builder.startTable(3)
-        fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(0, uniqueResult, false)
-        fun addInFields(builder: FlatBufferBuilder, inFields: Int) = builder.addOffset(1, inFields, 0)
+        fun startFindField(builder: FlatBufferBuilder) = builder.startTable(4)
+        fun addSearchPackage(builder: FlatBufferBuilder, searchPackage: Int) = builder.addOffset(0, searchPackage, 0)
+        fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(1, uniqueResult, false)
+        fun addInFields(builder: FlatBufferBuilder, inFields: Int) = builder.addOffset(2, inFields, 0)
         @kotlin.ExperimentalUnsignedTypes
         fun createInFieldsVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
             builder.startVector(8, data.size, 8)
@@ -82,7 +95,7 @@ class FindField : Table() {
             return builder.endVector()
         }
         fun startInFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
-        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(2, matcher, 0)
+        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(3, matcher, 0)
         fun endFindField(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

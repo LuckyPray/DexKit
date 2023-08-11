@@ -28,7 +28,7 @@ class TargetElementTypesMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    fun containTypes(j: Int) : Byte {
+    fun types(j: Int) : Byte {
         val o = __offset(4)
         return if (o != 0) {
             bb.get(__vector(o) + j * 1)
@@ -36,12 +36,17 @@ class TargetElementTypesMatcher : Table() {
             0
         }
     }
-    val containTypesLength : Int
+    val typesLength : Int
         get() {
             val o = __offset(4); return if (o != 0) __vector_len(o) else 0
         }
-    val containTypesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
-    fun containTypesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
+    val typesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
+    fun typesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
+    val matchType : Byte
+        get() {
+            val o = __offset(6)
+            return if(o != 0) bb.get(o + bb_pos) else 0
+        }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsTargetElementTypesMatcher(_bb: ByteBuffer): TargetElementTypesMatcher = getRootAsTargetElementTypesMatcher(_bb, TargetElementTypesMatcher())
@@ -49,21 +54,23 @@ class TargetElementTypesMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createTargetElementTypesMatcher(builder: FlatBufferBuilder, containTypesOffset: Int) : Int {
-            builder.startTable(1)
-            addContainTypes(builder, containTypesOffset)
+        fun createTargetElementTypesMatcher(builder: FlatBufferBuilder, typesOffset: Int, matchType: Byte) : Int {
+            builder.startTable(2)
+            addTypes(builder, typesOffset)
+            addMatchType(builder, matchType)
             return endTargetElementTypesMatcher(builder)
         }
-        fun startTargetElementTypesMatcher(builder: FlatBufferBuilder) = builder.startTable(1)
-        fun addContainTypes(builder: FlatBufferBuilder, containTypes: Int) = builder.addOffset(0, containTypes, 0)
-        fun createContainTypesVector(builder: FlatBufferBuilder, data: ByteArray) : Int {
+        fun startTargetElementTypesMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun addTypes(builder: FlatBufferBuilder, types: Int) = builder.addOffset(0, types, 0)
+        fun createTypesVector(builder: FlatBufferBuilder, data: ByteArray) : Int {
             builder.startVector(1, data.size, 1)
             for (i in data.size - 1 downTo 0) {
                 builder.addByte(data[i])
             }
             return builder.endVector()
         }
-        fun startContainTypesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(1, numElems, 1)
+        fun startTypesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(1, numElems, 1)
+        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
         fun endTargetElementTypesMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

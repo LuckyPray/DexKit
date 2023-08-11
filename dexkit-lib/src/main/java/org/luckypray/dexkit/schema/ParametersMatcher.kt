@@ -28,23 +28,9 @@ class ParametersMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val parameterCount : IntRange? get() = parameterCount(IntRange())
-    fun parameterCount(obj: IntRange) : IntRange? {
-        val o = __offset(4)
-        return if (o != 0) {
-            obj.__assign(__indirect(o + bb_pos), bb)
-        } else {
-            null
-        }
-    }
-    val matchType : Byte
-        get() {
-            val o = __offset(6)
-            return if(o != 0) bb.get(o + bb_pos) else 0
-        }
     fun parameters(j: Int) : OptionalParameterMatcher? = parameters(OptionalParameterMatcher(), j)
     fun parameters(obj: OptionalParameterMatcher, j: Int) : OptionalParameterMatcher? {
-        val o = __offset(8)
+        val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -53,8 +39,22 @@ class ParametersMatcher : Table() {
     }
     val parametersLength : Int
         get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(4); return if (o != 0) __vector_len(o) else 0
         }
+    val matchType : Byte
+        get() {
+            val o = __offset(6)
+            return if(o != 0) bb.get(o + bb_pos) else 0
+        }
+    val parameterCount : IntRange? get() = parameterCount(IntRange())
+    fun parameterCount(obj: IntRange) : IntRange? {
+        val o = __offset(8)
+        return if (o != 0) {
+            obj.__assign(__indirect(o + bb_pos), bb)
+        } else {
+            null
+        }
+    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsParametersMatcher(_bb: ByteBuffer): ParametersMatcher = getRootAsParametersMatcher(_bb, ParametersMatcher())
@@ -62,17 +62,15 @@ class ParametersMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createParametersMatcher(builder: FlatBufferBuilder, parameterCountOffset: Int, matchType: Byte, parametersOffset: Int) : Int {
+        fun createParametersMatcher(builder: FlatBufferBuilder, parametersOffset: Int, matchType: Byte, parameterCountOffset: Int) : Int {
             builder.startTable(3)
-            addParameters(builder, parametersOffset)
             addParameterCount(builder, parameterCountOffset)
+            addParameters(builder, parametersOffset)
             addMatchType(builder, matchType)
             return endParametersMatcher(builder)
         }
         fun startParametersMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
-        fun addParameterCount(builder: FlatBufferBuilder, parameterCount: Int) = builder.addOffset(0, parameterCount, 0)
-        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
-        fun addParameters(builder: FlatBufferBuilder, parameters: Int) = builder.addOffset(2, parameters, 0)
+        fun addParameters(builder: FlatBufferBuilder, parameters: Int) = builder.addOffset(0, parameters, 0)
         fun createParametersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -81,6 +79,8 @@ class ParametersMatcher : Table() {
             return builder.endVector()
         }
         fun startParametersVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
+        fun addParameterCount(builder: FlatBufferBuilder, parameterCount: Int) = builder.addOffset(2, parameterCount, 0)
         fun endParametersMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

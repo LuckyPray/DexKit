@@ -6,7 +6,7 @@ namespace dexkit.schema;
 
 table StringMatcher {
     value: string;
-    type: StringMatchType;
+    match_type: StringMatchType;
     ignore_case: bool;
 }
 
@@ -16,7 +16,8 @@ table AccessFlagsMatcher {
 }
 
 table TargetElementTypesMatcher {
-    contain_types: [TargetElementType];
+    types: [TargetElementType];
+    match_type: MatchType;
 }
 
 table EnumMatcher {
@@ -54,9 +55,9 @@ table OptionalAnnotationElementMatcher {
 }
 
 table AnnotationElementsMatcher {
-    element_count: IntRange;
-    match_type: MatchType;
     elements: [OptionalAnnotationElementMatcher];
+    match_type: MatchType;
+    element_count: IntRange;
 }
 
 table AnnotationMatcher {
@@ -68,13 +69,14 @@ table AnnotationMatcher {
 }
 
 table AnnotationsMatcher {
-    annotaion_count: IntRange;
     contain_annotations: [AnnotationMatcher];
+    match_type: MatchType;
+    annotaion_count: IntRange;
 }
 
 table ParameterMatcher {
-    prameter_type: ClassMatcher;
     annotations: AnnotationsMatcher;
+    prameter_type: ClassMatcher;
 }
 
 table OptionalParameterMatcher {
@@ -82,19 +84,19 @@ table OptionalParameterMatcher {
 }
 
 table ParametersMatcher {
-    parameter_count: IntRange;
-    match_type: MatchType;
     parameters: [OptionalParameterMatcher];
+    match_type: MatchType;
+    parameter_count: IntRange;
 }
 
 table OpCodesMatcher {
-    match_type: OpCodeMatchType;
     op_codes: [int16];
+    match_type: OpCodeMatchType;
 }
 
 table UsingFieldMatcher {
-    using_type: UsingType;
     field: FieldMatcher;
+    using_type: UsingType;
 }
 
 union Number {
@@ -126,12 +128,14 @@ table MethodMatcher {
 }
 
 table MethodsMatcher {
-    contain_methods: [MethodMatcher];
+    methods: [MethodMatcher];
+    match_type: MatchType;
     method_count: IntRange;
 }
 
 table InterfacesMatcher {
-    contain_interfaces: [ClassMatcher];
+    interfaces: [ClassMatcher];
+    match_type: MatchType;
     interface_count: IntRange;
 }
 
@@ -146,13 +150,13 @@ table FieldMatcher {
 
 table FieldsMatcher {
     contain_fields: [FieldMatcher];
+    match_type: MatchType;
     field_count: IntRange;
 }
 
 table ClassMatcher {
-    package_name: StringMatcher;
     smali_source: StringMatcher;
-    simple_name: StringMatcher;
+    class_name: StringMatcher;
     access_flags: AccessFlagsMatcher;
     super_class: ClassMatcher;
     interfaces: InterfacesMatcher;

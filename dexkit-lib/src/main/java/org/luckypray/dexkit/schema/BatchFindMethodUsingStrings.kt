@@ -28,15 +28,17 @@ class BatchFindMethodUsingStrings : Table() {
         __init(_i, _bb)
         return this
     }
-    val findPackageName : StringMatcher? get() = findPackageName(StringMatcher())
-    fun findPackageName(obj: StringMatcher) : StringMatcher? {
-        val o = __offset(4)
-        return if (o != 0) {
-            obj.__assign(__indirect(o + bb_pos), bb)
-        } else {
-            null
+    val searchPackage : String?
+        get() {
+            val o = __offset(4)
+            return if (o != 0) {
+                __string(o + bb_pos)
+            } else {
+                null
+            }
         }
-    }
+    val searchPackageAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
+    fun searchPackageInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
     fun inClasses(j: Int) : ULong {
         val o = __offset(6)
         return if (o != 0) {
@@ -85,16 +87,16 @@ class BatchFindMethodUsingStrings : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchFindMethodUsingStrings(builder: FlatBufferBuilder, findPackageNameOffset: Int, inClassesOffset: Int, inMethodsOffset: Int, matchersOffset: Int) : Int {
+        fun createBatchFindMethodUsingStrings(builder: FlatBufferBuilder, searchPackageOffset: Int, inClassesOffset: Int, inMethodsOffset: Int, matchersOffset: Int) : Int {
             builder.startTable(4)
             addMatchers(builder, matchersOffset)
             addInMethods(builder, inMethodsOffset)
             addInClasses(builder, inClassesOffset)
-            addFindPackageName(builder, findPackageNameOffset)
+            addSearchPackage(builder, searchPackageOffset)
             return endBatchFindMethodUsingStrings(builder)
         }
         fun startBatchFindMethodUsingStrings(builder: FlatBufferBuilder) = builder.startTable(4)
-        fun addFindPackageName(builder: FlatBufferBuilder, findPackageName: Int) = builder.addOffset(0, findPackageName, 0)
+        fun addSearchPackage(builder: FlatBufferBuilder, searchPackage: Int) = builder.addOffset(0, searchPackage, 0)
         fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
         @kotlin.ExperimentalUnsignedTypes
         fun createInClassesVector(builder: FlatBufferBuilder, data: ULongArray) : Int {

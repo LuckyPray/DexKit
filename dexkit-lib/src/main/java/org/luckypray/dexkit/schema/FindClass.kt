@@ -28,13 +28,24 @@ class FindClass : Table() {
         __init(_i, _bb)
         return this
     }
-    val uniqueResult : Boolean
+    val searchPackage : String?
         get() {
             val o = __offset(4)
+            return if (o != 0) {
+                __string(o + bb_pos)
+            } else {
+                null
+            }
+        }
+    val searchPackageAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
+    fun searchPackageInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
+    val uniqueResult : Boolean
+        get() {
+            val o = __offset(6)
             return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
         }
     fun inClasses(j: Int) : ULong {
-        val o = __offset(6)
+        val o = __offset(8)
         return if (o != 0) {
             bb.getLong(__vector(o) + j * 8).toULong()
         } else {
@@ -43,13 +54,13 @@ class FindClass : Table() {
     }
     val inClassesLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
         }
-    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
-    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 8)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 8)
     val matcher : ClassMatcher? get() = matcher(ClassMatcher())
     fun matcher(obj: ClassMatcher) : ClassMatcher? {
-        val o = __offset(8)
+        val o = __offset(10)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -63,16 +74,18 @@ class FindClass : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFindClass(builder: FlatBufferBuilder, uniqueResult: Boolean, inClassesOffset: Int, matcherOffset: Int) : Int {
-            builder.startTable(3)
+        fun createFindClass(builder: FlatBufferBuilder, searchPackageOffset: Int, uniqueResult: Boolean, inClassesOffset: Int, matcherOffset: Int) : Int {
+            builder.startTable(4)
             addMatcher(builder, matcherOffset)
             addInClasses(builder, inClassesOffset)
+            addSearchPackage(builder, searchPackageOffset)
             addUniqueResult(builder, uniqueResult)
             return endFindClass(builder)
         }
-        fun startFindClass(builder: FlatBufferBuilder) = builder.startTable(3)
-        fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(0, uniqueResult, false)
-        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
+        fun startFindClass(builder: FlatBufferBuilder) = builder.startTable(4)
+        fun addSearchPackage(builder: FlatBufferBuilder, searchPackage: Int) = builder.addOffset(0, searchPackage, 0)
+        fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(1, uniqueResult, false)
+        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(2, inClasses, 0)
         @kotlin.ExperimentalUnsignedTypes
         fun createInClassesVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
             builder.startVector(8, data.size, 8)
@@ -82,7 +95,7 @@ class FindClass : Table() {
             return builder.endVector()
         }
         fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
-        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(2, matcher, 0)
+        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(3, matcher, 0)
         fun endFindClass(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

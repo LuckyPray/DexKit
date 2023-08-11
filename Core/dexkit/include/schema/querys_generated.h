@@ -37,10 +37,14 @@ struct FindClass FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FindClassBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UNIQUE_RESULT = 4,
-    VT_IN_CLASSES = 6,
-    VT_MATCHER = 8
+    VT_SEARCH_PACKAGE = 4,
+    VT_UNIQUE_RESULT = 6,
+    VT_IN_CLASSES = 8,
+    VT_MATCHER = 10
   };
+  const ::flatbuffers::String *search_package() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SEARCH_PACKAGE);
+  }
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
   }
@@ -52,6 +56,8 @@ struct FindClass FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SEARCH_PACKAGE) &&
+           verifier.VerifyString(search_package()) &&
            VerifyField<uint8_t>(verifier, VT_UNIQUE_RESULT, 1) &&
            VerifyOffset(verifier, VT_IN_CLASSES) &&
            verifier.VerifyVector(in_classes()) &&
@@ -65,6 +71,9 @@ struct FindClassBuilder {
   typedef FindClass Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_search_package(::flatbuffers::Offset<::flatbuffers::String> search_package) {
+    fbb_.AddOffset(FindClass::VT_SEARCH_PACKAGE, search_package);
+  }
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindClass::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
   }
@@ -87,12 +96,14 @@ struct FindClassBuilder {
 
 inline ::flatbuffers::Offset<FindClass> CreateFindClass(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> search_package = 0,
     bool unique_result = false,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher = 0) {
   FindClassBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
   builder_.add_in_classes(in_classes);
+  builder_.add_search_package(search_package);
   builder_.add_unique_result(unique_result);
   return builder_.Finish();
 }
@@ -104,12 +115,15 @@ struct FindClass::Traits {
 
 inline ::flatbuffers::Offset<FindClass> CreateFindClassDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *search_package = nullptr,
     bool unique_result = false,
     const std::vector<uint64_t> *in_classes = nullptr,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher = 0) {
+  auto search_package__ = search_package ? _fbb.CreateString(search_package) : 0;
   auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   return dexkit::schema::CreateFindClass(
       _fbb,
+      search_package__,
       unique_result,
       in_classes__,
       matcher);
@@ -119,11 +133,15 @@ struct FindMethod FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FindMethodBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UNIQUE_RESULT = 4,
-    VT_IN_CLASSES = 6,
-    VT_IN_METHODS = 8,
-    VT_MATCHER = 10
+    VT_SEARCH_PACKAGE = 4,
+    VT_UNIQUE_RESULT = 6,
+    VT_IN_CLASSES = 8,
+    VT_IN_METHODS = 10,
+    VT_MATCHER = 12
   };
+  const ::flatbuffers::String *search_package() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SEARCH_PACKAGE);
+  }
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
   }
@@ -138,6 +156,8 @@ struct FindMethod FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SEARCH_PACKAGE) &&
+           verifier.VerifyString(search_package()) &&
            VerifyField<uint8_t>(verifier, VT_UNIQUE_RESULT, 1) &&
            VerifyOffset(verifier, VT_IN_CLASSES) &&
            verifier.VerifyVector(in_classes()) &&
@@ -153,6 +173,9 @@ struct FindMethodBuilder {
   typedef FindMethod Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_search_package(::flatbuffers::Offset<::flatbuffers::String> search_package) {
+    fbb_.AddOffset(FindMethod::VT_SEARCH_PACKAGE, search_package);
+  }
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindMethod::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
   }
@@ -178,6 +201,7 @@ struct FindMethodBuilder {
 
 inline ::flatbuffers::Offset<FindMethod> CreateFindMethod(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> search_package = 0,
     bool unique_result = false,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_methods = 0,
@@ -186,6 +210,7 @@ inline ::flatbuffers::Offset<FindMethod> CreateFindMethod(
   builder_.add_matcher(matcher);
   builder_.add_in_methods(in_methods);
   builder_.add_in_classes(in_classes);
+  builder_.add_search_package(search_package);
   builder_.add_unique_result(unique_result);
   return builder_.Finish();
 }
@@ -197,14 +222,17 @@ struct FindMethod::Traits {
 
 inline ::flatbuffers::Offset<FindMethod> CreateFindMethodDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *search_package = nullptr,
     bool unique_result = false,
     const std::vector<uint64_t> *in_classes = nullptr,
     const std::vector<uint64_t> *in_methods = nullptr,
     ::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher = 0) {
+  auto search_package__ = search_package ? _fbb.CreateString(search_package) : 0;
   auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   auto in_methods__ = in_methods ? _fbb.CreateVector<uint64_t>(*in_methods) : 0;
   return dexkit::schema::CreateFindMethod(
       _fbb,
+      search_package__,
       unique_result,
       in_classes__,
       in_methods__,
@@ -215,10 +243,14 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FindFieldBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UNIQUE_RESULT = 4,
-    VT_IN_FIELDS = 6,
-    VT_MATCHER = 8
+    VT_SEARCH_PACKAGE = 4,
+    VT_UNIQUE_RESULT = 6,
+    VT_IN_FIELDS = 8,
+    VT_MATCHER = 10
   };
+  const ::flatbuffers::String *search_package() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SEARCH_PACKAGE);
+  }
   bool unique_result() const {
     return GetField<uint8_t>(VT_UNIQUE_RESULT, 0) != 0;
   }
@@ -230,6 +262,8 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SEARCH_PACKAGE) &&
+           verifier.VerifyString(search_package()) &&
            VerifyField<uint8_t>(verifier, VT_UNIQUE_RESULT, 1) &&
            VerifyOffset(verifier, VT_IN_FIELDS) &&
            verifier.VerifyVector(in_fields()) &&
@@ -243,6 +277,9 @@ struct FindFieldBuilder {
   typedef FindField Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_search_package(::flatbuffers::Offset<::flatbuffers::String> search_package) {
+    fbb_.AddOffset(FindField::VT_SEARCH_PACKAGE, search_package);
+  }
   void add_unique_result(bool unique_result) {
     fbb_.AddElement<uint8_t>(FindField::VT_UNIQUE_RESULT, static_cast<uint8_t>(unique_result), 0);
   }
@@ -265,12 +302,14 @@ struct FindFieldBuilder {
 
 inline ::flatbuffers::Offset<FindField> CreateFindField(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> search_package = 0,
     bool unique_result = false,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_fields = 0,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
   FindFieldBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
   builder_.add_in_fields(in_fields);
+  builder_.add_search_package(search_package);
   builder_.add_unique_result(unique_result);
   return builder_.Finish();
 }
@@ -282,12 +321,15 @@ struct FindField::Traits {
 
 inline ::flatbuffers::Offset<FindField> CreateFindFieldDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *search_package = nullptr,
     bool unique_result = false,
     const std::vector<uint64_t> *in_fields = nullptr,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
+  auto search_package__ = search_package ? _fbb.CreateString(search_package) : 0;
   auto in_fields__ = in_fields ? _fbb.CreateVector<uint64_t>(*in_fields) : 0;
   return dexkit::schema::CreateFindField(
       _fbb,
+      search_package__,
       unique_result,
       in_fields__,
       matcher);
@@ -297,12 +339,12 @@ struct BatchFindClassUsingStrings FLATBUFFERS_FINAL_CLASS : private ::flatbuffer
   typedef BatchFindClassUsingStringsBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_FIND_PACKAGE_NAME = 4,
+    VT_SEARCH_PACKAGE = 4,
     VT_IN_CLASSES = 6,
     VT_MATCHERS = 8
   };
-  const dexkit::schema::StringMatcher *find_package_name() const {
-    return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIND_PACKAGE_NAME);
+  const ::flatbuffers::String *search_package() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SEARCH_PACKAGE);
   }
   const ::flatbuffers::Vector<uint64_t> *in_classes() const {
     return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
@@ -312,8 +354,8 @@ struct BatchFindClassUsingStrings FLATBUFFERS_FINAL_CLASS : private ::flatbuffer
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_FIND_PACKAGE_NAME) &&
-           verifier.VerifyTable(find_package_name()) &&
+           VerifyOffset(verifier, VT_SEARCH_PACKAGE) &&
+           verifier.VerifyString(search_package()) &&
            VerifyOffset(verifier, VT_IN_CLASSES) &&
            verifier.VerifyVector(in_classes()) &&
            VerifyOffset(verifier, VT_MATCHERS) &&
@@ -327,8 +369,8 @@ struct BatchFindClassUsingStringsBuilder {
   typedef BatchFindClassUsingStrings Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_find_package_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name) {
-    fbb_.AddOffset(BatchFindClassUsingStrings::VT_FIND_PACKAGE_NAME, find_package_name);
+  void add_search_package(::flatbuffers::Offset<::flatbuffers::String> search_package) {
+    fbb_.AddOffset(BatchFindClassUsingStrings::VT_SEARCH_PACKAGE, search_package);
   }
   void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
     fbb_.AddOffset(BatchFindClassUsingStrings::VT_IN_CLASSES, in_classes);
@@ -349,13 +391,13 @@ struct BatchFindClassUsingStringsBuilder {
 
 inline ::flatbuffers::Offset<BatchFindClassUsingStrings> CreateBatchFindClassUsingStrings(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> search_package = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>> matchers = 0) {
   BatchFindClassUsingStringsBuilder builder_(_fbb);
   builder_.add_matchers(matchers);
   builder_.add_in_classes(in_classes);
-  builder_.add_find_package_name(find_package_name);
+  builder_.add_search_package(search_package);
   return builder_.Finish();
 }
 
@@ -366,14 +408,15 @@ struct BatchFindClassUsingStrings::Traits {
 
 inline ::flatbuffers::Offset<BatchFindClassUsingStrings> CreateBatchFindClassUsingStringsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
+    const char *search_package = nullptr,
     const std::vector<uint64_t> *in_classes = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers = nullptr) {
+  auto search_package__ = search_package ? _fbb.CreateString(search_package) : 0;
   auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   auto matchers__ = matchers ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>(*matchers) : 0;
   return dexkit::schema::CreateBatchFindClassUsingStrings(
       _fbb,
-      find_package_name,
+      search_package__,
       in_classes__,
       matchers__);
 }
@@ -382,13 +425,13 @@ struct BatchFindMethodUsingStrings FLATBUFFERS_FINAL_CLASS : private ::flatbuffe
   typedef BatchFindMethodUsingStringsBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_FIND_PACKAGE_NAME = 4,
+    VT_SEARCH_PACKAGE = 4,
     VT_IN_CLASSES = 6,
     VT_IN_METHODS = 8,
     VT_MATCHERS = 10
   };
-  const dexkit::schema::StringMatcher *find_package_name() const {
-    return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIND_PACKAGE_NAME);
+  const ::flatbuffers::String *search_package() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SEARCH_PACKAGE);
   }
   const ::flatbuffers::Vector<uint64_t> *in_classes() const {
     return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_IN_CLASSES);
@@ -401,8 +444,8 @@ struct BatchFindMethodUsingStrings FLATBUFFERS_FINAL_CLASS : private ::flatbuffe
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_FIND_PACKAGE_NAME) &&
-           verifier.VerifyTable(find_package_name()) &&
+           VerifyOffset(verifier, VT_SEARCH_PACKAGE) &&
+           verifier.VerifyString(search_package()) &&
            VerifyOffset(verifier, VT_IN_CLASSES) &&
            verifier.VerifyVector(in_classes()) &&
            VerifyOffset(verifier, VT_IN_METHODS) &&
@@ -418,8 +461,8 @@ struct BatchFindMethodUsingStringsBuilder {
   typedef BatchFindMethodUsingStrings Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_find_package_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name) {
-    fbb_.AddOffset(BatchFindMethodUsingStrings::VT_FIND_PACKAGE_NAME, find_package_name);
+  void add_search_package(::flatbuffers::Offset<::flatbuffers::String> search_package) {
+    fbb_.AddOffset(BatchFindMethodUsingStrings::VT_SEARCH_PACKAGE, search_package);
   }
   void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes) {
     fbb_.AddOffset(BatchFindMethodUsingStrings::VT_IN_CLASSES, in_classes);
@@ -443,7 +486,7 @@ struct BatchFindMethodUsingStringsBuilder {
 
 inline ::flatbuffers::Offset<BatchFindMethodUsingStrings> CreateBatchFindMethodUsingStrings(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> search_package = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> in_methods = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>> matchers = 0) {
@@ -451,7 +494,7 @@ inline ::flatbuffers::Offset<BatchFindMethodUsingStrings> CreateBatchFindMethodU
   builder_.add_matchers(matchers);
   builder_.add_in_methods(in_methods);
   builder_.add_in_classes(in_classes);
-  builder_.add_find_package_name(find_package_name);
+  builder_.add_search_package(search_package);
   return builder_.Finish();
 }
 
@@ -462,16 +505,17 @@ struct BatchFindMethodUsingStrings::Traits {
 
 inline ::flatbuffers::Offset<BatchFindMethodUsingStrings> CreateBatchFindMethodUsingStringsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::StringMatcher> find_package_name = 0,
+    const char *search_package = nullptr,
     const std::vector<uint64_t> *in_classes = nullptr,
     const std::vector<uint64_t> *in_methods = nullptr,
     const std::vector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers = nullptr) {
+  auto search_package__ = search_package ? _fbb.CreateString(search_package) : 0;
   auto in_classes__ = in_classes ? _fbb.CreateVector<uint64_t>(*in_classes) : 0;
   auto in_methods__ = in_methods ? _fbb.CreateVector<uint64_t>(*in_methods) : 0;
   auto matchers__ = matchers ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>>(*matchers) : 0;
   return dexkit::schema::CreateBatchFindMethodUsingStrings(
       _fbb,
-      find_package_name,
+      search_package__,
       in_classes__,
       in_methods__,
       matchers__);

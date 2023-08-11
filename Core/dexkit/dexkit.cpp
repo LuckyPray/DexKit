@@ -231,7 +231,7 @@ DexKit::BuildBatchFindKeywordsMap(
         for (int j = 0; j < matcher->using_strings()->size(); ++j) {
             auto string_matcher = matcher->using_strings()->Get(j);
             auto value = string_matcher->value()->string_view();
-            auto type = string_matcher->type();
+            auto type = string_matcher->match_type();
             auto ignore_case = string_matcher->ignore_case();
             if (type == schema::StringMatchType::SimilarRegex) {
                 type = schema::StringMatchType::Contains;

@@ -28,8 +28,8 @@ class MethodsMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    fun containMethods(j: Int) : MethodMatcher? = containMethods(MethodMatcher(), j)
-    fun containMethods(obj: MethodMatcher, j: Int) : MethodMatcher? {
+    fun methods(j: Int) : MethodMatcher? = methods(MethodMatcher(), j)
+    fun methods(obj: MethodMatcher, j: Int) : MethodMatcher? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
@@ -37,13 +37,18 @@ class MethodsMatcher : Table() {
             null
         }
     }
-    val containMethodsLength : Int
+    val methodsLength : Int
         get() {
             val o = __offset(4); return if (o != 0) __vector_len(o) else 0
         }
+    val matchType : Byte
+        get() {
+            val o = __offset(6)
+            return if(o != 0) bb.get(o + bb_pos) else 0
+        }
     val methodCount : IntRange? get() = methodCount(IntRange())
     fun methodCount(obj: IntRange) : IntRange? {
-        val o = __offset(6)
+        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -57,23 +62,25 @@ class MethodsMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createMethodsMatcher(builder: FlatBufferBuilder, containMethodsOffset: Int, methodCountOffset: Int) : Int {
-            builder.startTable(2)
+        fun createMethodsMatcher(builder: FlatBufferBuilder, methodsOffset: Int, matchType: Byte, methodCountOffset: Int) : Int {
+            builder.startTable(3)
             addMethodCount(builder, methodCountOffset)
-            addContainMethods(builder, containMethodsOffset)
+            addMethods(builder, methodsOffset)
+            addMatchType(builder, matchType)
             return endMethodsMatcher(builder)
         }
-        fun startMethodsMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
-        fun addContainMethods(builder: FlatBufferBuilder, containMethods: Int) = builder.addOffset(0, containMethods, 0)
-        fun createContainMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+        fun startMethodsMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(0, methods, 0)
+        fun createMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
                 builder.addOffset(data[i])
             }
             return builder.endVector()
         }
-        fun startContainMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addMethodCount(builder: FlatBufferBuilder, methodCount: Int) = builder.addOffset(1, methodCount, 0)
+        fun startMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
+        fun addMethodCount(builder: FlatBufferBuilder, methodCount: Int) = builder.addOffset(2, methodCount, 0)
         fun endMethodsMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

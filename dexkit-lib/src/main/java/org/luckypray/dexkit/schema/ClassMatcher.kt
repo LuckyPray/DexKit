@@ -28,8 +28,8 @@ class ClassMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    val packageName : StringMatcher? get() = packageName(StringMatcher())
-    fun packageName(obj: StringMatcher) : StringMatcher? {
+    val smaliSource : StringMatcher? get() = smaliSource(StringMatcher())
+    fun smaliSource(obj: StringMatcher) : StringMatcher? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -37,18 +37,9 @@ class ClassMatcher : Table() {
             null
         }
     }
-    val smaliSource : StringMatcher? get() = smaliSource(StringMatcher())
-    fun smaliSource(obj: StringMatcher) : StringMatcher? {
+    val className : StringMatcher? get() = className(StringMatcher())
+    fun className(obj: StringMatcher) : StringMatcher? {
         val o = __offset(6)
-        return if (o != 0) {
-            obj.__assign(__indirect(o + bb_pos), bb)
-        } else {
-            null
-        }
-    }
-    val simpleName : StringMatcher? get() = simpleName(StringMatcher())
-    fun simpleName(obj: StringMatcher) : StringMatcher? {
-        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -57,7 +48,7 @@ class ClassMatcher : Table() {
     }
     val accessFlags : AccessFlagsMatcher? get() = accessFlags(AccessFlagsMatcher())
     fun accessFlags(obj: AccessFlagsMatcher) : AccessFlagsMatcher? {
-        val o = __offset(10)
+        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -66,7 +57,7 @@ class ClassMatcher : Table() {
     }
     val superClass : ClassMatcher? get() = superClass(ClassMatcher())
     fun superClass(obj: ClassMatcher) : ClassMatcher? {
-        val o = __offset(12)
+        val o = __offset(10)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -75,7 +66,7 @@ class ClassMatcher : Table() {
     }
     val interfaces : InterfacesMatcher? get() = interfaces(InterfacesMatcher())
     fun interfaces(obj: InterfacesMatcher) : InterfacesMatcher? {
-        val o = __offset(14)
+        val o = __offset(12)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -84,7 +75,7 @@ class ClassMatcher : Table() {
     }
     val annotations : AnnotationsMatcher? get() = annotations(AnnotationsMatcher())
     fun annotations(obj: AnnotationsMatcher) : AnnotationsMatcher? {
-        val o = __offset(16)
+        val o = __offset(14)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -93,7 +84,7 @@ class ClassMatcher : Table() {
     }
     val fields : FieldsMatcher? get() = fields(FieldsMatcher())
     fun fields(obj: FieldsMatcher) : FieldsMatcher? {
-        val o = __offset(18)
+        val o = __offset(16)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -102,7 +93,7 @@ class ClassMatcher : Table() {
     }
     val methods : MethodsMatcher? get() = methods(MethodsMatcher())
     fun methods(obj: MethodsMatcher) : MethodsMatcher? {
-        val o = __offset(20)
+        val o = __offset(18)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -111,7 +102,7 @@ class ClassMatcher : Table() {
     }
     fun usingStrings(j: Int) : StringMatcher? = usingStrings(StringMatcher(), j)
     fun usingStrings(obj: StringMatcher, j: Int) : StringMatcher? {
-        val o = __offset(22)
+        val o = __offset(20)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -120,7 +111,7 @@ class ClassMatcher : Table() {
     }
     val usingStringsLength : Int
         get() {
-            val o = __offset(22); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(20); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -129,8 +120,8 @@ class ClassMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createClassMatcher(builder: FlatBufferBuilder, packageNameOffset: Int, smaliSourceOffset: Int, simpleNameOffset: Int, accessFlagsOffset: Int, superClassOffset: Int, interfacesOffset: Int, annotationsOffset: Int, fieldsOffset: Int, methodsOffset: Int, usingStringsOffset: Int) : Int {
-            builder.startTable(10)
+        fun createClassMatcher(builder: FlatBufferBuilder, smaliSourceOffset: Int, classNameOffset: Int, accessFlagsOffset: Int, superClassOffset: Int, interfacesOffset: Int, annotationsOffset: Int, fieldsOffset: Int, methodsOffset: Int, usingStringsOffset: Int) : Int {
+            builder.startTable(9)
             addUsingStrings(builder, usingStringsOffset)
             addMethods(builder, methodsOffset)
             addFields(builder, fieldsOffset)
@@ -138,22 +129,20 @@ class ClassMatcher : Table() {
             addInterfaces(builder, interfacesOffset)
             addSuperClass(builder, superClassOffset)
             addAccessFlags(builder, accessFlagsOffset)
-            addSimpleName(builder, simpleNameOffset)
+            addClassName(builder, classNameOffset)
             addSmaliSource(builder, smaliSourceOffset)
-            addPackageName(builder, packageNameOffset)
             return endClassMatcher(builder)
         }
-        fun startClassMatcher(builder: FlatBufferBuilder) = builder.startTable(10)
-        fun addPackageName(builder: FlatBufferBuilder, packageName: Int) = builder.addOffset(0, packageName, 0)
-        fun addSmaliSource(builder: FlatBufferBuilder, smaliSource: Int) = builder.addOffset(1, smaliSource, 0)
-        fun addSimpleName(builder: FlatBufferBuilder, simpleName: Int) = builder.addOffset(2, simpleName, 0)
-        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(3, accessFlags, 0)
-        fun addSuperClass(builder: FlatBufferBuilder, superClass: Int) = builder.addOffset(4, superClass, 0)
-        fun addInterfaces(builder: FlatBufferBuilder, interfaces: Int) = builder.addOffset(5, interfaces, 0)
-        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(6, annotations, 0)
-        fun addFields(builder: FlatBufferBuilder, fields: Int) = builder.addOffset(7, fields, 0)
-        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(8, methods, 0)
-        fun addUsingStrings(builder: FlatBufferBuilder, usingStrings: Int) = builder.addOffset(9, usingStrings, 0)
+        fun startClassMatcher(builder: FlatBufferBuilder) = builder.startTable(9)
+        fun addSmaliSource(builder: FlatBufferBuilder, smaliSource: Int) = builder.addOffset(0, smaliSource, 0)
+        fun addClassName(builder: FlatBufferBuilder, className: Int) = builder.addOffset(1, className, 0)
+        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(2, accessFlags, 0)
+        fun addSuperClass(builder: FlatBufferBuilder, superClass: Int) = builder.addOffset(3, superClass, 0)
+        fun addInterfaces(builder: FlatBufferBuilder, interfaces: Int) = builder.addOffset(4, interfaces, 0)
+        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(5, annotations, 0)
+        fun addFields(builder: FlatBufferBuilder, fields: Int) = builder.addOffset(6, fields, 0)
+        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(7, methods, 0)
+        fun addUsingStrings(builder: FlatBufferBuilder, usingStrings: Int) = builder.addOffset(8, usingStrings, 0)
         fun createUsingStringsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

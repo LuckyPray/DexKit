@@ -39,7 +39,7 @@ class StringMatcher : Table() {
         }
     val valueAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
     fun valueInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
-    val type : Byte
+    val matchType : Byte
         get() {
             val o = __offset(6)
             return if(o != 0) bb.get(o + bb_pos) else 0
@@ -56,16 +56,16 @@ class StringMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createStringMatcher(builder: FlatBufferBuilder, valueOffset: Int, type: Byte, ignoreCase: Boolean) : Int {
+        fun createStringMatcher(builder: FlatBufferBuilder, valueOffset: Int, matchType: Byte, ignoreCase: Boolean) : Int {
             builder.startTable(3)
             addValue(builder, valueOffset)
             addIgnoreCase(builder, ignoreCase)
-            addType(builder, type)
+            addMatchType(builder, matchType)
             return endStringMatcher(builder)
         }
         fun startStringMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(0, value, 0)
-        fun addType(builder: FlatBufferBuilder, type: Byte) = builder.addByte(1, type, 0)
+        fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
         fun addIgnoreCase(builder: FlatBufferBuilder, ignoreCase: Boolean) = builder.addBoolean(2, ignoreCase, false)
         fun endStringMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()

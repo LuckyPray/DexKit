@@ -64,19 +64,22 @@ DexItem::BatchFindClassUsingStrings(
 
     // TODO: check query->in_class
 
-    std::optional<std::string_view> find_package;
-    schema::StringMatchType package_match_type;
-    auto find_package_name = query->find_package_name();
-    if (find_package_name) {
-        // TODO: matcher
-        find_package = find_package_name->value()->string_view();
-        package_match_type = find_package_name->type();
+    std::string search_package;
+    if (query->search_package()) {
+        search_package = query->search_package()->string_view();
+        std::replace(search_package.begin(), search_package.end(), '.', '/');
+        if (search_package[0] != 'L') {
+            search_package = "L" + search_package;
+        }
     }
 
     std::map<std::string_view, std::vector<dex::u4>> find_result;
     for (int class_idx = 0; class_idx < this->type_names.size(); ++class_idx) {
         auto class_name = type_names[class_idx];
         if (class_method_ids[class_idx].empty()) {
+            continue;
+        }
+        if (query->search_package() && !class_name.starts_with(search_package)) {
             continue;
         }
         std::set<std::string_view> search_set;
@@ -158,19 +161,22 @@ DexItem::BatchFindMethodUsingStrings(
 
     // TODO: check query->in_class
 
-    std::optional<std::string_view> find_package;
-    schema::StringMatchType package_match_type;
-    auto find_package_name = query->find_package_name();
-    if (find_package_name) {
-        // TODO: matcher
-        find_package = find_package_name->value()->string_view();
-        package_match_type = find_package_name->type();
+    std::string search_package;
+    if (query->search_package()) {
+        search_package = query->search_package()->string_view();
+        std::replace(search_package.begin(), search_package.end(), '.', '/');
+        if (search_package[0] != 'L') {
+            search_package = "L" + search_package;
+        }
     }
 
     std::map<std::string_view, std::vector<dex::u4>> find_result;
     for (int class_idx = 0; class_idx < this->type_names.size(); ++class_idx) {
         auto class_name = type_names[class_idx];
         if (class_method_ids[class_idx].empty()) {
+            continue;
+        }
+        if (query->search_package() && !class_name.starts_with(search_package)) {
             continue;
         }
         for (auto method_idx: class_method_ids[class_idx]) {
