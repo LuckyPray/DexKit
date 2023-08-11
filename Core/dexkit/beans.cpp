@@ -9,7 +9,6 @@ ClassBean::CreateClassMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             this->id,
             this->dex_id,
             fbb.CreateString(this->source_file),
-            fbb.CreateVector(std::vector<int32_t>(this->annotation_ids.begin(), this->annotation_ids.end())),
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
             this->super_class_id,
@@ -28,7 +27,6 @@ MethodBean::CreateMethodMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             this->id,
             this->dex_id,
             this->class_id,
-            fbb.CreateVector(std::vector<int32_t>(this->annotation_ids.begin(), this->annotation_ids.end())),
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
             this->return_type,
@@ -45,7 +43,6 @@ FieldBean::CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             this->id,
             this->dex_id,
             this->class_id,
-            fbb.CreateVector(std::vector<int32_t>(this->annotation_ids.begin(), this->annotation_ids.end())),
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
             this->type_id

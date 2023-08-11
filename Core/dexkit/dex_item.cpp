@@ -177,7 +177,6 @@ ClassBean DexItem::GetClassBean(uint32_t class_idx) {
     bean.id = class_idx;
     bean.dex_id = this->dex_id;
     bean.source_file = this->class_source_files[class_idx];
-    // TODO: this->class_annotations[class_idx]
     bean.access_flags = class_def.access_flags;
     bean.dex_descriptor = this->type_names[class_idx];
     bean.super_class_id = class_def.superclass_idx;
@@ -200,7 +199,6 @@ MethodBean DexItem::GetMethodBean(uint32_t method_idx) {
     bean.id = method_idx;
     bean.dex_id = this->dex_id;
     bean.class_id = method_def.class_idx;
-    // TODO: this->method_annotations[method_idx]
     bean.access_flags = this->method_access_flags[method_idx];
     bean.dex_descriptor = this->GetMethodDescriptor(method_idx);
     bean.return_type = proto_def.return_type_idx;
@@ -220,7 +218,6 @@ FieldBean DexItem::GetFieldBean(uint32_t field_idx) {
     bean.id = field_idx;
     bean.dex_id = this->dex_id;
     bean.class_id = field_def.class_idx;
-    // TODO: this->field_annotations[method_idx]
     bean.access_flags = this->field_access_flags[field_idx];
     bean.dex_descriptor = this->GetFieldDescriptor(field_idx);
     bean.type_id = field_def.type_idx;

@@ -12,7 +12,6 @@ public:
     uint32_t id;
     uint32_t dex_id;
     std::string_view source_file;
-    std::vector<uint32_t> annotation_ids;
     uint32_t access_flags;
     std::string_view dex_descriptor;
     uint32_t super_class_id;
@@ -30,7 +29,6 @@ public:
     uint32_t id;
     uint32_t dex_id;
     uint32_t class_id;
-    std::vector<uint32_t> annotation_ids;
     uint32_t access_flags;
     std::string_view dex_descriptor;
     uint32_t return_type;
@@ -46,7 +44,6 @@ public:
     uint32_t id;
     uint32_t dex_id;
     uint32_t class_id;
-    std::vector<uint32_t> annotation_ids;
     uint32_t access_flags;
     std::string_view dex_descriptor;
     uint32_t type_id;
@@ -76,8 +73,6 @@ using AnnotationEncodeValue = std::variant<
 
 class AnnotationEncodeValueBean {
 public:
-    // TODO: free value ptr
-
     schema::AnnotationEncodeValueType type;
     AnnotationEncodeValue value;
 

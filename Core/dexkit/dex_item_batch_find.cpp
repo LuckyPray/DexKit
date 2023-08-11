@@ -14,28 +14,13 @@ DexItem::InitBatchFindStringsMap(
         auto hits = acTrie.ParseText(string);
         for (auto &hit: hits) {
             auto match_type = match_type_map[hit.value];
-            bool match = false;
+            bool match;
             switch (match_type) {
-                case schema::StringMatchType::Contains:
-                    match = true;
-                    break;
-                case schema::StringMatchType::StartWith:
-                    if (hit.begin == 0) {
-                        match = true;
-                    }
-                    break;
-                case schema::StringMatchType::EndWith:
-                    if (hit.end == string.size()) {
-                        match = true;
-                    }
-                    break;
-                case schema::StringMatchType::Equal:
-                    if (hit.begin == 0 && hit.end == string.size()) {
-                        match = true;
-                    }
-                    break;
-                default:
-                    break;
+                case schema::StringMatchType::Contains: match = true; break;
+                case schema::StringMatchType::StartWith: match = (hit.begin == 0); break;
+                case schema::StringMatchType::EndWith: match = (hit.end == string.size()); break;
+                case schema::StringMatchType::Equal: match = (hit.begin == 0 && hit.end == string.size()); break;
+                case schema::StringMatchType::SimilarRegex: abort();
             }
             if (match) {
                 if (strings_map.contains(i)) {
@@ -54,15 +39,11 @@ DexItem::BatchFindClassUsingStrings(
         const schema::BatchFindClassUsingStrings *query,
         acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
         std::map<std::string_view, std::set<std::string_view>> &keywords_map,
-        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
+        std::set<uint32_t> &in_class_set
 ) {
     auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
-
-    if (strings_map.empty()) {
-        return {};
-    }
-
-    // TODO: check query->in_class
+    if (strings_map.empty()) return {};
 
     std::string search_package;
     if (query->search_package()) {
@@ -75,19 +56,15 @@ DexItem::BatchFindClassUsingStrings(
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
-        auto class_name = type_names[type_idx];
-        if (class_method_ids[type_idx].empty()) {
-            continue;
-        }
-        if (query->search_package() && !class_name.starts_with(search_package)) {
-            continue;
-        }
+        if (class_method_ids[type_idx].empty()) continue;
+        if (query->in_classes() && in_class_set.contains(type_idx)) continue;
+        if (query->search_package() && !type_names[type_idx].starts_with(search_package)) continue;
+
         std::set<std::string_view> search_set;
         for (auto method_idx: class_method_ids[type_idx]) {
             auto code = this->method_codes[method_idx];
-            if (code == nullptr) {
-                continue;
-            }
+            if (code == nullptr) continue;
+
             auto p = code->insns;
             auto end_p = p + code->insns_size;
             while (p < end_p) {
@@ -120,6 +97,7 @@ DexItem::BatchFindClassUsingStrings(
             }
         }
         if (search_set.empty()) continue;
+
         for (auto &[key, matched_set]: keywords_map) {
             std::vector<std::string_view> vec;
             std::set_intersection(search_set.begin(), search_set.end(),
@@ -151,15 +129,12 @@ DexItem::BatchFindMethodUsingStrings(
         const schema::BatchFindMethodUsingStrings *query,
         acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
         std::map<std::string_view, std::set<std::string_view>> &keywords_map,
-        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
+        std::set<uint32_t> &in_class_set,
+        std::set<uint32_t> &in_method_set
 ) {
     auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
-
-    if (strings_map.empty()) {
-        return {};
-    }
-
-    // TODO: check query->in_class
+    if (strings_map.empty()) return {};
 
     std::string search_package;
     if (query->search_package()) {
@@ -172,19 +147,17 @@ DexItem::BatchFindMethodUsingStrings(
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
-        auto class_name = type_names[type_idx];
-        if (class_method_ids[type_idx].empty()) {
-            continue;
-        }
-        if (query->search_package() && !class_name.starts_with(search_package)) {
-            continue;
-        }
+        if (class_method_ids[type_idx].empty()) continue;
+        if (query->in_classes() && in_class_set.contains(type_idx)) continue;
+        if (query->search_package() && !type_names[type_idx].starts_with(search_package)) continue;
+
         for (auto method_idx: class_method_ids[type_idx]) {
+            if (query->in_methods() && in_method_set.contains(method_idx)) continue;
+
             std::set<std::string_view> search_set;
             auto code = this->method_codes[method_idx];
-            if (code == nullptr) {
-                continue;
-            }
+            if (code == nullptr) continue;
+
             auto p = code->insns;
             auto end_p = p + code->insns_size;
             while (p < end_p) {
@@ -216,6 +189,7 @@ DexItem::BatchFindMethodUsingStrings(
                 p += width;
             }
             if (search_set.empty()) continue;
+
             for (auto &[key, matched_set]: keywords_map) {
                 std::vector<std::string_view> vec;
                 std::set_intersection(search_set.begin(), search_set.end(),

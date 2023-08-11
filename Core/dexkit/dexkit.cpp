@@ -84,8 +84,10 @@ Error DexKit::ExportDexFile(std::string_view path) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::FindClass *query) {
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
-    for (auto encode_idx: *query->in_classes()) {
-        dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    if (query->in_classes()) {
+        for (auto encode_idx: *query->in_classes()) {
+            dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
     }
 
     std::vector<ClassBean> result;
@@ -104,12 +106,16 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema::FindMethod *query) {
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
-    for (auto encode_idx: *query->in_classes()) {
-        dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
-    }
     std::map<uint32_t, std::set<uint32_t>> dex_method_map;
-    for (auto encode_idx: *query->in_methods()) {
-        dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    if (query->in_classes()) {
+        for (auto encode_idx: *query->in_classes()) {
+            dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
+    }
+    if (query->in_methods()) {
+        for (auto encode_idx: *query->in_methods()) {
+            dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
     }
 
     std::vector<MethodBean> result;
@@ -130,12 +136,16 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::FindField *query) {
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
-    for (auto encode_idx: *query->in_classes()) {
-        dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
-    }
     std::map<uint32_t, std::set<uint32_t>> dex_field_map;
-    for (auto encode_idx: *query->in_fields()) {
-        dex_field_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+    if (query->in_classes()) {
+        for (auto encode_idx: *query->in_classes()) {
+            dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
+    }
+    if (query->in_fields()) {
+        for (auto encode_idx: *query->in_fields()) {
+            dex_field_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
     }
 
     std::vector<FieldBean> result;
@@ -156,6 +166,13 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query) {
+    std::map<uint32_t, std::set<uint32_t>> dex_class_map;
+    if (query->in_classes()) {
+        for (auto encode_idx: *query->in_classes()) {
+            dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
+    }
+
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
@@ -174,7 +191,7 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
 
     // fetch and merge result
     for (auto &dex_item: dex_items) {
-        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map);
+        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()]);
         for (auto &item: items) {
             auto &beans = find_result_map[item.union_key];
             beans.insert(beans.end(), item.classes.begin(), item.classes.end());
@@ -203,6 +220,19 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query) {
+    std::map<uint32_t, std::set<uint32_t>> dex_class_map;
+    std::map<uint32_t, std::set<uint32_t>> dex_method_map;
+    if (query->in_classes()) {
+        for (auto encode_idx: *query->in_classes()) {
+            dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
+    }
+    if (query->in_methods()) {
+        for (auto encode_idx: *query->in_methods()) {
+            dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
+        }
+    }
+
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
@@ -221,7 +251,7 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
 
     // fetch and merge result
     for (auto &dex_item: dex_items) {
-        auto items = dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map);
+        auto items = dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()], dex_method_map[dex_item->GetDexId()]);
         for (auto &item: items) {
             auto &beans = find_result_map[item.union_key];
             beans.insert(beans.end(), item.methods.begin(), item.methods.end());

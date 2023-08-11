@@ -105,7 +105,7 @@ int DexKitBatchFindClassTest(dexkit::DexKit &dexkit) {
             ),
     };
 
-    auto find = CreateBatchFindClassUsingStrings(fbb, 0, 0, fbb.CreateVector(matchers));
+    auto find = CreateBatchFindClassUsingStrings(fbb, fbb.CreateString("com.tencent"), 0, fbb.CreateVector(matchers));
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
@@ -166,7 +166,7 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
             ),
     };
 
-    auto find = CreateBatchFindMethodUsingStrings(fbb, 0, 0, 0, fbb.CreateVector(matchers));
+    auto find = CreateBatchFindMethodUsingStrings(fbb, fbb.CreateString("com.tencent"), 0, 0, fbb.CreateVector(matchers));
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
@@ -195,10 +195,10 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
 int main() {
     auto dexkit = dexkit::DexKit("../apks/qq-8.9.2.apk");
     printf("DexCount: %d\n", dexkit.GetDexNum());
-    KmpTest();
+//    KmpTest();
 //    ACTrieTest();
 //    FlatBufferTest();
-//    DexKitBatchFindClassTest(dexkit);
-//    DexKitBatchFindMethodTest(dexkit);
+    DexKitBatchFindClassTest(dexkit);
+    DexKitBatchFindMethodTest(dexkit);
     return 0;
 }

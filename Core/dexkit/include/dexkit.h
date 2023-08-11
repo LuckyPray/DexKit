@@ -27,7 +27,7 @@ public:
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
     Error ExportDexFile(std::string_view path);
-    int GetDexNum() const { return (int) dex_items.size(); }
+    [[nodiscard]] int GetDexNum() const { return (int) dex_items.size(); }
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindMethod(const schema::FindMethod *query);
@@ -40,7 +40,7 @@ private:
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
 
-    std::map<std::string_view, std::set<std::string_view>>
+    static std::map<std::string_view, std::set<std::string_view>>
     BuildBatchFindKeywordsMap(
             const flatbuffers::Vector<flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers,
             std::vector<std::pair<std::string_view, bool>> &keywords,

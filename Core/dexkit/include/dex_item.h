@@ -46,13 +46,16 @@ public:
             const schema::BatchFindClassUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
-            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
+            std::set<uint32_t> &in_class_set
     );
     std::vector<BatchFindMethodItemBean> BatchFindMethodUsingStrings(
             const schema::BatchFindMethodUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
-            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
+            std::set<uint32_t> &in_class_set,
+            std::set<uint32_t> &in_method_set
     );
 
     ClassBean GetClassBean(uint32_t class_idx);

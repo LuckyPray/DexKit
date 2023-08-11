@@ -49,43 +49,29 @@ class ClassMeta : Table() {
         }
     val sourceFileAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 1)
     fun sourceFileInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 1)
-    fun annotations(j: Int) : Int {
-        val o = __offset(10)
-        return if (o != 0) {
-            bb.getInt(__vector(o) + j * 4)
-        } else {
-            0
-        }
-    }
-    val annotationsLength : Int
-        get() {
-            val o = __offset(10); return if (o != 0) __vector_len(o) else 0
-        }
-    val annotationsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(10, 4)
-    fun annotationsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 10, 4)
     val accessFlags : UInt
         get() {
-            val o = __offset(12)
+            val o = __offset(10)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     val dexDescriptor : String?
         get() {
-            val o = __offset(14)
+            val o = __offset(12)
             return if (o != 0) {
                 __string(o + bb_pos)
             } else {
                 null
             }
         }
-    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
-    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
+    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(12, 1)
+    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 12, 1)
     val superClass : UInt
         get() {
-            val o = __offset(16)
+            val o = __offset(14)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun interfaces(j: Int) : Int {
-        val o = __offset(18)
+        val o = __offset(16)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -94,12 +80,12 @@ class ClassMeta : Table() {
     }
     val interfacesLength : Int
         get() {
-            val o = __offset(18); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(16); return if (o != 0) __vector_len(o) else 0
         }
-    val interfacesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(18, 4)
-    fun interfacesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 18, 4)
+    val interfacesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(16, 4)
+    fun interfacesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 16, 4)
     fun fields(j: Int) : Int {
-        val o = __offset(20)
+        val o = __offset(18)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -108,12 +94,12 @@ class ClassMeta : Table() {
     }
     val fieldsLength : Int
         get() {
-            val o = __offset(20); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(18); return if (o != 0) __vector_len(o) else 0
         }
-    val fieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(20, 4)
-    fun fieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 20, 4)
+    val fieldsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(18, 4)
+    fun fieldsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 18, 4)
     fun methods(j: Int) : Int {
-        val o = __offset(22)
+        val o = __offset(20)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -122,10 +108,10 @@ class ClassMeta : Table() {
     }
     val methodsLength : Int
         get() {
-            val o = __offset(22); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(20); return if (o != 0) __vector_len(o) else 0
         }
-    val methodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(22, 4)
-    fun methodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 22, 4)
+    val methodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(20, 4)
+    fun methodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 20, 4)
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsClassMeta(_bb: ByteBuffer): ClassMeta = getRootAsClassMeta(_bb, ClassMeta())
@@ -133,37 +119,27 @@ class ClassMeta : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createClassMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, sourceFileOffset: Int, annotationsOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, superClass: UInt, interfacesOffset: Int, fieldsOffset: Int, methodsOffset: Int) : Int {
-            builder.startTable(10)
+        fun createClassMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, sourceFileOffset: Int, accessFlags: UInt, dexDescriptorOffset: Int, superClass: UInt, interfacesOffset: Int, fieldsOffset: Int, methodsOffset: Int) : Int {
+            builder.startTable(9)
             addMethods(builder, methodsOffset)
             addFields(builder, fieldsOffset)
             addInterfaces(builder, interfacesOffset)
             addSuperClass(builder, superClass)
             addDexDescriptor(builder, dexDescriptorOffset)
             addAccessFlags(builder, accessFlags)
-            addAnnotations(builder, annotationsOffset)
             addSourceFile(builder, sourceFileOffset)
             addDexId(builder, dexId)
             addId(builder, id)
             return endClassMeta(builder)
         }
-        fun startClassMeta(builder: FlatBufferBuilder) = builder.startTable(10)
+        fun startClassMeta(builder: FlatBufferBuilder) = builder.startTable(9)
         fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
         fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
         fun addSourceFile(builder: FlatBufferBuilder, sourceFile: Int) = builder.addOffset(2, sourceFile, 0)
-        fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)
-        fun createAnnotationsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
-            builder.startVector(4, data.size, 4)
-            for (i in data.size - 1 downTo 0) {
-                builder.addInt(data[i])
-            }
-            return builder.endVector()
-        }
-        fun startAnnotationsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
-        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
-        fun addSuperClass(builder: FlatBufferBuilder, superClass: UInt) = builder.addInt(6, superClass.toInt(), 0)
-        fun addInterfaces(builder: FlatBufferBuilder, interfaces: Int) = builder.addOffset(7, interfaces, 0)
+        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(3, accessFlags.toInt(), 0)
+        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(4, dexDescriptor, 0)
+        fun addSuperClass(builder: FlatBufferBuilder, superClass: UInt) = builder.addInt(5, superClass.toInt(), 0)
+        fun addInterfaces(builder: FlatBufferBuilder, interfaces: Int) = builder.addOffset(6, interfaces, 0)
         fun createInterfacesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -172,7 +148,7 @@ class ClassMeta : Table() {
             return builder.endVector()
         }
         fun startInterfacesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addFields(builder: FlatBufferBuilder, fields: Int) = builder.addOffset(8, fields, 0)
+        fun addFields(builder: FlatBufferBuilder, fields: Int) = builder.addOffset(7, fields, 0)
         fun createFieldsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -181,7 +157,7 @@ class ClassMeta : Table() {
             return builder.endVector()
         }
         fun startFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(9, methods, 0)
+        fun addMethods(builder: FlatBufferBuilder, methods: Int) = builder.addOffset(8, methods, 0)
         fun createMethodsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

@@ -7,7 +7,6 @@ table ClassMeta {
     id: uint32;
     dex_id: uint32;
     source_file: string;
-    annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
     super_class: uint32;
@@ -26,7 +25,6 @@ table MethodMeta {
     id: uint32;
     dex_id: uint32;
     class_id: uint32;
-    annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
     return_type: uint32;
@@ -41,7 +39,6 @@ table FieldMeta {
     id: uint32;
     dex_id: uint32;
     class_id: uint32;
-    annotations: [int32];
     access_flags: uint32;
     dex_descriptor: string;
     type_id: uint32;
