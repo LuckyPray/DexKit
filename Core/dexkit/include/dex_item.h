@@ -12,6 +12,7 @@
 #include "error.h"
 #include "file_helper.h"
 #include "opcode_util.h"
+#include "kmp.h"
 
 #include "schema/querys_generated.h"
 #include "schema/results_generated.h"
@@ -64,9 +65,6 @@ public:
     std::vector<AnnotationBean> GetFieldAnnotationBeans(uint32_t field_idx);
     std::vector<std::vector<AnnotationBean>> GetParameterAnnotationBeans(uint32_t method_idx);
 
-    std::string_view GetMethodDescriptor(uint32_t method_idx);
-    std::string_view GetFieldDescriptor(uint32_t field_idx);
-
 private:
 
     int InitCache();
@@ -76,6 +74,36 @@ private:
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
+
+    std::string_view GetMethodDescriptor(uint32_t method_idx);
+    std::string_view GetFieldDescriptor(uint32_t field_idx);
+
+    bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
+    bool IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
+    bool IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationElementsMatcher *matcher);
+
+    bool IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
+    bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
+    bool IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMatcher *matcher);
+    bool IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *matcher);
+    bool IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher *matcher);
+
+    bool IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
+    bool IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher);
+    bool IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher *matcher);
+    bool IsDexCodesMatched(
+            uint32_t method_idx,
+            const schema::OpCodesMatcher *op_codes_matcher,
+            const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher,
+            const flatbuffers::Vector<flatbuffers::Offset<schema::UsingFieldMatcher>> *using_fields_matcher,
+            const flatbuffers::Vector<flatbuffers::Offset<schema::UsingNumberMatcher>> *using_numbers_matcher,
+            const schema::MethodsMatcher *invoke_methods_matcher
+    );
+    bool IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMatcher *matcher);
+
+    bool IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *matcher);
+    bool IsFieldGetMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
+    bool IsFieldPutMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
 
 private:
     std::unique_ptr<MemMap> _image;
