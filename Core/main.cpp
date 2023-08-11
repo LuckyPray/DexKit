@@ -12,6 +12,18 @@ const T *From(const void *buf) {
     return ::flatbuffers::GetRoot<T>(buf);
 }
 
+int KmpTest() {
+    assert(kmp::FindIndex("abc", "abc") == 0);
+    assert(kmp::FindIndex("abc", "bc") == 1);
+    assert(kmp::FindIndex("abc", "c") == 2);
+    assert(kmp::FindIndex("abc", "d") == -1);
+    assert(kmp::FindIndex("ABc", "abc", true) == 0);
+    assert(kmp::FindIndex("aBc", "AbC", true) == 0);
+    assert(kmp::FindIndex("aBc", "Bc", true) == 1);
+    assert(kmp::FindIndex("ABc", "d", true) == -1);
+    return 0;
+}
+
 int ACTrieTest() {
     auto acTrie = acdat::AhoCorasickDoubleArrayTrie<std::string_view>();
     auto keywords = std::vector<std::pair<std::string_view, bool>>();
@@ -180,11 +192,12 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
 }
 
 int main() {
-    auto dexkit = dexkit::DexKit("../dex/qq-8.9.2.apk");
+    auto dexkit = dexkit::DexKit("../apks/qq-8.9.2.apk");
     printf("DexCount: %d\n", dexkit.GetDexNum());
+    KmpTest();
 //    ACTrieTest();
 //    FlatBufferTest();
 //    DexKitBatchFindClassTest(dexkit);
-    DexKitBatchFindMethodTest(dexkit);
+//    DexKitBatchFindMethodTest(dexkit);
     return 0;
 }
