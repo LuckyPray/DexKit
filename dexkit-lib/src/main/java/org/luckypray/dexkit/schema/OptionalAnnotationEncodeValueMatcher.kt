@@ -19,12 +19,12 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class OptionalAnnotationElementValueMatcher : Table() {
+class OptionalAnnotationEncodeValueMatcher : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : OptionalAnnotationElementValueMatcher {
+    fun __assign(_i: Int, _bb: ByteBuffer) : OptionalAnnotationEncodeValueMatcher {
         __init(_i, _bb)
         return this
     }
@@ -38,21 +38,21 @@ class OptionalAnnotationElementValueMatcher : Table() {
     }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsOptionalAnnotationElementValueMatcher(_bb: ByteBuffer): OptionalAnnotationElementValueMatcher = getRootAsOptionalAnnotationElementValueMatcher(_bb, OptionalAnnotationElementValueMatcher())
-        fun getRootAsOptionalAnnotationElementValueMatcher(_bb: ByteBuffer, obj: OptionalAnnotationElementValueMatcher): OptionalAnnotationElementValueMatcher {
+        fun getRootAsOptionalAnnotationEncodeValueMatcher(_bb: ByteBuffer): OptionalAnnotationEncodeValueMatcher = getRootAsOptionalAnnotationEncodeValueMatcher(_bb, OptionalAnnotationEncodeValueMatcher())
+        fun getRootAsOptionalAnnotationEncodeValueMatcher(_bb: ByteBuffer, obj: OptionalAnnotationEncodeValueMatcher): OptionalAnnotationEncodeValueMatcher {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createOptionalAnnotationElementValueMatcher(builder: FlatBufferBuilder, valueType: UByte, valueOffset: Int) : Int {
+        fun createOptionalAnnotationEncodeValueMatcher(builder: FlatBufferBuilder, valueType: UByte, valueOffset: Int) : Int {
             builder.startTable(2)
             addValue(builder, valueOffset)
             addValueType(builder, valueType)
-            return endOptionalAnnotationElementValueMatcher(builder)
+            return endOptionalAnnotationEncodeValueMatcher(builder)
         }
-        fun startOptionalAnnotationElementValueMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun startOptionalAnnotationEncodeValueMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
         fun addValueType(builder: FlatBufferBuilder, valueType: UByte) = builder.addByte(0, valueType.toByte(), 0)
         fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(1, value, 0)
-        fun endOptionalAnnotationElementValueMatcher(builder: FlatBufferBuilder) : Int {
+        fun endOptionalAnnotationEncodeValueMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }

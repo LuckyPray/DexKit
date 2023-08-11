@@ -51,7 +51,7 @@ bool DexItem::IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schem
     return true;
 }
 
-bool DexItem::IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationElementsMatcher *matcher) {
+bool DexItem::IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationEncodeValueMatcher *matcher) {
     // TODO
     return true;
 }

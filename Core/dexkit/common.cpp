@@ -1,6 +1,7 @@
 #include "common.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 namespace dexkit {
 

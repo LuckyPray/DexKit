@@ -37,8 +37,8 @@ class AnnotationElementMatcher : Table() {
             null
         }
     }
-    val value : OptionalAnnotationElementValueMatcher? get() = value(OptionalAnnotationElementValueMatcher())
-    fun value(obj: OptionalAnnotationElementValueMatcher) : OptionalAnnotationElementValueMatcher? {
+    val value : OptionalAnnotationEncodeValueMatcher? get() = value(OptionalAnnotationEncodeValueMatcher())
+    fun value(obj: OptionalAnnotationEncodeValueMatcher) : OptionalAnnotationEncodeValueMatcher? {
         val o = __offset(6)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)

@@ -60,8 +60,8 @@ class AnnotationMatcher : Table() {
             null
         }
     }
-    val elements : AnnotationElementsMatcher? get() = elements(AnnotationElementsMatcher())
-    fun elements(obj: AnnotationElementsMatcher) : AnnotationElementsMatcher? {
+    val elements : AnnotationEncodeArrayMatcher? get() = elements(AnnotationEncodeArrayMatcher())
+    fun elements(obj: AnnotationEncodeArrayMatcher) : AnnotationEncodeArrayMatcher? {
         val o = __offset(12)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)

@@ -85,7 +85,7 @@ private:
     static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
     static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
     static bool IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
-    static bool IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationElementsMatcher *matcher);
+    static bool IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationEncodeValueMatcher *matcher);
 
     bool IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
     bool IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher *matcher);

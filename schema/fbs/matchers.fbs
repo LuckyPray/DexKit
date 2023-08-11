@@ -20,12 +20,7 @@ table TargetElementTypesMatcher {
     match_type: MatchType;
 }
 
-table EnumMatcher {
-    enum_class: ClassMatcher;
-    enum_name: StringMatcher;
-}
-
-union AnnotationElementValueMatcher {
+union AnnotationEncodeValueMatcher {
     EncodeValueBoolean,
     EncodeValueByte,
     EncodeValueShort,
@@ -36,25 +31,25 @@ union AnnotationElementValueMatcher {
     EncodeValueDouble,
     StringMatcher,
     ClassMatcher,
-    EnumMatcher,
-    AnnotationElementsMatcher,
+    FieldMatcher,
+    AnnotationEncodeArrayMatcher,
     AnnotationMatcher,
 }
 
-table OptionalAnnotationElementValueMatcher {
-    value: AnnotationElementValueMatcher;
+table OptionalAnnotationEncodeValueMatcher {
+    value: AnnotationEncodeValueMatcher;
 }
 
 table AnnotationElementMatcher {
     name: StringMatcher;
-    value: OptionalAnnotationElementValueMatcher;
+    value: OptionalAnnotationEncodeValueMatcher;
 }
 
 table OptionalAnnotationElementMatcher {
     element: AnnotationElementMatcher;
 }
 
-table AnnotationElementsMatcher {
+table AnnotationEncodeArrayMatcher {
     elements: [OptionalAnnotationElementMatcher];
     match_type: MatchType;
     element_count: IntRange;
@@ -65,11 +60,11 @@ table AnnotationMatcher {
     target_element_types: TargetElementTypesMatcher;
     policy: RetentionPolicyType;
     annotations: AnnotationsMatcher;
-    elements: AnnotationElementsMatcher;
+    elements: AnnotationEncodeArrayMatcher;
 }
 
 table AnnotationsMatcher {
-    contain_annotations: [AnnotationMatcher];
+    annotations: [AnnotationMatcher];
     match_type: MatchType;
     annotaion_count: IntRange;
 }

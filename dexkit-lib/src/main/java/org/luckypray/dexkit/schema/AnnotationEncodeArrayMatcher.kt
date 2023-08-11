@@ -19,12 +19,12 @@ import java.nio.ByteOrder
 import kotlin.math.sign
 
 @Suppress("unused")
-class AnnotationElementsMatcher : Table() {
+class AnnotationEncodeArrayMatcher : Table() {
 
     fun __init(_i: Int, _bb: ByteBuffer)  {
         __reset(_i, _bb)
     }
-    fun __assign(_i: Int, _bb: ByteBuffer) : AnnotationElementsMatcher {
+    fun __assign(_i: Int, _bb: ByteBuffer) : AnnotationEncodeArrayMatcher {
         __init(_i, _bb)
         return this
     }
@@ -57,19 +57,19 @@ class AnnotationElementsMatcher : Table() {
     }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
-        fun getRootAsAnnotationElementsMatcher(_bb: ByteBuffer): AnnotationElementsMatcher = getRootAsAnnotationElementsMatcher(_bb, AnnotationElementsMatcher())
-        fun getRootAsAnnotationElementsMatcher(_bb: ByteBuffer, obj: AnnotationElementsMatcher): AnnotationElementsMatcher {
+        fun getRootAsAnnotationEncodeArrayMatcher(_bb: ByteBuffer): AnnotationEncodeArrayMatcher = getRootAsAnnotationEncodeArrayMatcher(_bb, AnnotationEncodeArrayMatcher())
+        fun getRootAsAnnotationEncodeArrayMatcher(_bb: ByteBuffer, obj: AnnotationEncodeArrayMatcher): AnnotationEncodeArrayMatcher {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationElementsMatcher(builder: FlatBufferBuilder, elementsOffset: Int, matchType: Byte, elementCountOffset: Int) : Int {
+        fun createAnnotationEncodeArrayMatcher(builder: FlatBufferBuilder, elementsOffset: Int, matchType: Byte, elementCountOffset: Int) : Int {
             builder.startTable(3)
             addElementCount(builder, elementCountOffset)
             addElements(builder, elementsOffset)
             addMatchType(builder, matchType)
-            return endAnnotationElementsMatcher(builder)
+            return endAnnotationEncodeArrayMatcher(builder)
         }
-        fun startAnnotationElementsMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun startAnnotationEncodeArrayMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(0, elements, 0)
         fun createElementsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
@@ -81,7 +81,7 @@ class AnnotationElementsMatcher : Table() {
         fun startElementsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
         fun addElementCount(builder: FlatBufferBuilder, elementCount: Int) = builder.addOffset(2, elementCount, 0)
-        fun endAnnotationElementsMatcher(builder: FlatBufferBuilder) : Int {
+        fun endAnnotationEncodeArrayMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
         }
