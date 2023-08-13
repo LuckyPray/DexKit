@@ -33,7 +33,7 @@ class IntRange : Table() {
             val o = __offset(4)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
         }
-    val end : Int
+    val max : Int
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getInt(o + bb_pos) else 0
@@ -45,15 +45,15 @@ class IntRange : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createIntRange(builder: FlatBufferBuilder, min: Int, end: Int) : Int {
+        fun createIntRange(builder: FlatBufferBuilder, min: Int, max: Int) : Int {
             builder.startTable(2)
-            addEnd(builder, end)
+            addMax(builder, max)
             addMin(builder, min)
             return endIntRange(builder)
         }
         fun startIntRange(builder: FlatBufferBuilder) = builder.startTable(2)
         fun addMin(builder: FlatBufferBuilder, min: Int) = builder.addInt(0, min, 0)
-        fun addEnd(builder: FlatBufferBuilder, end: Int) = builder.addInt(1, end, 0)
+        fun addMax(builder: FlatBufferBuilder, max: Int) = builder.addInt(1, max, 0)
         fun endIntRange(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

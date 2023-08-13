@@ -21,7 +21,6 @@ table TargetElementTypesMatcher {
 }
 
 union AnnotationEncodeValueMatcher {
-    EncodeValueBoolean,
     EncodeValueByte,
     EncodeValueShort,
     EncodeValueChar,
@@ -31,26 +30,27 @@ union AnnotationEncodeValueMatcher {
     EncodeValueDouble,
     StringMatcher,
     ClassMatcher,
+    // enum
     FieldMatcher,
-    AnnotationEncodeArrayMatcher,
+    AnnotationEncodeValuesMatcher,
     AnnotationMatcher,
+    EncodeValueBoolean,
 }
 
-table OptionalAnnotationEncodeValueMatcher {
-    value: AnnotationEncodeValueMatcher;
+table AnnotationEncodeValuesMatcher {
+    values: [AnnotationEncodeValueMatcher];
+    match_type: MatchType;
+    value_count: IntRange;
 }
 
 table AnnotationElementMatcher {
     name: StringMatcher;
-    value: OptionalAnnotationEncodeValueMatcher;
-}
-
-table OptionalAnnotationElementMatcher {
-    element: AnnotationElementMatcher;
+    value: AnnotationEncodeValueMatcher;
 }
 
 table AnnotationEncodeArrayMatcher {
-    elements: [OptionalAnnotationElementMatcher];
+    // maybe has null
+    elements: [AnnotationElementMatcher];
     match_type: MatchType;
     element_count: IntRange;
 }
@@ -66,7 +66,7 @@ table AnnotationMatcher {
 table AnnotationsMatcher {
     annotations: [AnnotationMatcher];
     match_type: MatchType;
-    annotaion_count: IntRange;
+    annotation_count: IntRange;
 }
 
 table ParameterMatcher {
@@ -74,19 +74,16 @@ table ParameterMatcher {
     prameter_type: ClassMatcher;
 }
 
-table OptionalParameterMatcher {
-    parameter: ParameterMatcher;
-}
-
 table ParametersMatcher {
-    parameters: [OptionalParameterMatcher];
-    match_type: MatchType;
+    // maybe has null
+    parameters: [ParameterMatcher];
     parameter_count: IntRange;
 }
 
 table OpCodesMatcher {
     op_codes: [int16];
     match_type: OpCodeMatchType;
+    op_code_count: IntRange;
 }
 
 table UsingFieldMatcher {
@@ -145,7 +142,7 @@ table FieldMatcher {
 }
 
 table FieldsMatcher {
-    contain_fields: [FieldMatcher];
+    fields: [FieldMatcher];
     match_type: MatchType;
     field_count: IntRange;
 }

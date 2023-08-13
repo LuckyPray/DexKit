@@ -87,13 +87,17 @@ int DexItem::InitCache() {
     type_declared_flag.resize(reader.TypeIds().size(), false);
     class_source_files.resize(reader.TypeIds().size());
     class_access_flags.resize(reader.TypeIds().size());
+    class_interface_ids.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
     method_descriptors.resize(reader.MethodIds().size());
     method_access_flags.resize(reader.MethodIds().size());
     method_codes.resize(reader.MethodIds().size(), nullptr);
+    method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
+    method_caller_ids.resize(reader.MethodIds().size());
     field_descriptors.resize(reader.FieldIds().size());
     field_access_flags.resize(reader.FieldIds().size());
-    method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
+    field_get_method_ids.resize(reader.FieldIds().size());
+    field_put_method_ids.resize(reader.FieldIds().size());
 
     auto class_def_idx = 0;
     for (auto &class_def: reader.ClassDefs()) {
@@ -105,28 +109,40 @@ int DexItem::InitCache() {
         if (class_def.class_data_off == 0) {
             continue;
         }
+
+        if (class_def.interfaces_off) {
+            auto interface_type_list = this->reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
+            if (interface_type_list != nullptr) {
+                auto &interfaces = this->class_interface_ids[class_def.class_idx];
+                interfaces.reserve(interface_type_list->size);
+                for (auto i = 0; i < interface_type_list->size; ++i) {
+                    interfaces.emplace_back(interface_type_list->list[i].type_idx);
+                }
+            }
+        }
+
         const auto *class_data = reader.dataPtr<dex::u1>(class_def.class_data_off);
-        dex::u4 static_fields_size = ReadULeb128(&class_data);
-        dex::u4 instance_fields_count = ReadULeb128(&class_data);
-        dex::u4 direct_methods_count = ReadULeb128(&class_data);
-        dex::u4 virtual_methods_count = ReadULeb128(&class_data);
+        uint32_t static_fields_size = ReadULeb128(&class_data);
+        uint32_t instance_fields_count = ReadULeb128(&class_data);
+        uint32_t direct_methods_count = ReadULeb128(&class_data);
+        uint32_t virtual_methods_count = ReadULeb128(&class_data);
 
         auto &methods = class_method_ids[class_def.class_idx];
 
-        for (dex::u4 i = 0, class_field_idx = 0; i < static_fields_size; ++i) {
+        for (uint32_t i = 0, class_field_idx = 0; i < static_fields_size; ++i) {
             class_field_idx += ReadULeb128(&class_data);
             field_access_flags[class_field_idx] = ReadULeb128(&class_data);
         }
 
-        for (dex::u4 i = 0, class_field_idx = 0; i < instance_fields_count; ++i) {
+        for (uint32_t i = 0, class_field_idx = 0; i < instance_fields_count; ++i) {
             class_field_idx += ReadULeb128(&class_data);
             field_access_flags[class_field_idx] = ReadULeb128(&class_data);
         }
 
-        for (dex::u4 i = 0, class_method_idx = 0; i < direct_methods_count; ++i) {
+        for (uint32_t i = 0, class_method_idx = 0; i < direct_methods_count; ++i) {
             class_method_idx += ReadULeb128(&class_data);
             method_access_flags[class_method_idx] = ReadULeb128(&class_data);
-            dex::u4 code_off = ReadULeb128(&class_data);
+            uint32_t code_off = ReadULeb128(&class_data);
             if (code_off == 0) {
                 method_codes[class_method_idx] = &emptyCode;
             } else {
@@ -134,16 +150,65 @@ int DexItem::InitCache() {
             }
             methods.emplace_back(class_method_idx);
         }
-        for (dex::u4 i = 0, class_method_idx = 0; i < virtual_methods_count; ++i) {
+        for (uint32_t i = 0, class_method_idx = 0; i < virtual_methods_count; ++i) {
             class_method_idx += ReadULeb128(&class_data);
             method_access_flags[class_method_idx] = ReadULeb128(&class_data);
-            dex::u4 code_off = ReadULeb128(&class_data);
+            uint32_t code_off = ReadULeb128(&class_data);
             if (code_off == 0) {
                 method_codes[class_method_idx] = &emptyCode;
             } else {
                 method_codes[class_method_idx] = reader.dataPtr<const dex::Code>(code_off);
             }
             methods.emplace_back(class_method_idx);
+        }
+
+        for (auto method_id: methods) {
+            auto code = method_codes[method_id];
+            if (code == &emptyCode) {
+                continue;
+            }
+            auto &op_seq = method_opcode_seq[method_id];
+            op_seq = std::vector<uint8_t>();
+            auto p = code->insns;
+            auto end_p = p + code->insns_size;
+            while (p < end_p) {
+                auto op = (uint8_t) *p;
+                op_seq->emplace_back(op);
+                auto ptr = p;
+                auto width = GetBytecodeWidth(ptr++);
+                auto op_format = ins_formats[op];
+                switch (op_format) {
+                    case dex::k22c: // iinstanceop
+                    case dex::k21c: // sstaticop
+                    {
+                        // iget, iget-wide, iget-object, iget-boolean, iget-byte, iget-char, iget-short
+                        // sget, sget-wide, sget-object, sget-boolean, sget-byte, sget-char, sget-short
+                        auto is_getter = ((op >= 0x52 && op <= 0x58) ||
+                                          (op >= 0x60 && op <= 0x66));
+                        // iput, iput-wide, iput-object, iput-boolean, iput-byte, iput-char, iput-short
+                        // sput, sput-wide, sput-object, sput-boolean, sput-byte, sput-char, sput-short
+                        auto is_setter = ((op >= 0x59 && op <= 0x5f) ||
+                                          (op >= 0x67 && op <= 0x6d));
+                        auto index = ReadShort(ptr);
+                        if (is_getter) {
+                            field_get_method_ids[index].emplace_back(method_id);
+                        }
+                        if (is_setter) {
+                            field_put_method_ids[index].emplace_back(method_id);
+                        }
+                        break;
+                    }
+                    case dex::k35c: // invoke-kind,
+                    case dex::k3rc: // invoke-kind/range
+                    {
+                        auto index = ReadShort(ptr);
+                        method_caller_ids[index].emplace_back(method_id);
+                        break;
+                    }
+                    default: break;
+                }
+                p += width;
+            }
         }
         ++class_def_idx;
     }

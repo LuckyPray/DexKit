@@ -2,10 +2,10 @@ namespace dexkit.schema;
 
 table IntRange {
     min: int;
-    end: int;
+    max: int;
 }
 
 table LongRange {
     min: long;
-    end: long;
+    max: long;
 }

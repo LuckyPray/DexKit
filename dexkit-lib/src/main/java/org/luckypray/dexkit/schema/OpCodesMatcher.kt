@@ -47,6 +47,15 @@ class OpCodesMatcher : Table() {
             val o = __offset(6)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
+    val opCodeCount : IntRange? get() = opCodeCount(IntRange())
+    fun opCodeCount(obj: IntRange) : IntRange? {
+        val o = __offset(8)
+        return if (o != 0) {
+            obj.__assign(__indirect(o + bb_pos), bb)
+        } else {
+            null
+        }
+    }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsOpCodesMatcher(_bb: ByteBuffer): OpCodesMatcher = getRootAsOpCodesMatcher(_bb, OpCodesMatcher())
@@ -54,13 +63,14 @@ class OpCodesMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createOpCodesMatcher(builder: FlatBufferBuilder, opCodesOffset: Int, matchType: Byte) : Int {
-            builder.startTable(2)
+        fun createOpCodesMatcher(builder: FlatBufferBuilder, opCodesOffset: Int, matchType: Byte, opCodeCountOffset: Int) : Int {
+            builder.startTable(3)
+            addOpCodeCount(builder, opCodeCountOffset)
             addOpCodes(builder, opCodesOffset)
             addMatchType(builder, matchType)
             return endOpCodesMatcher(builder)
         }
-        fun startOpCodesMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun startOpCodesMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addOpCodes(builder: FlatBufferBuilder, opCodes: Int) = builder.addOffset(0, opCodes, 0)
         fun createOpCodesVector(builder: FlatBufferBuilder, data: ShortArray) : Int {
             builder.startVector(2, data.size, 2)
@@ -71,6 +81,7 @@ class OpCodesMatcher : Table() {
         }
         fun startOpCodesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(2, numElems, 2)
         fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
+        fun addOpCodeCount(builder: FlatBufferBuilder, opCodeCount: Int) = builder.addOffset(2, opCodeCount, 0)
         fun endOpCodesMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

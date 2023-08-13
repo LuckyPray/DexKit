@@ -2,6 +2,56 @@
 
 namespace dexkit {
 
+template<typename T, typename U>
+class Hungarian {
+private:
+    std::vector<U> left;
+    std::vector<T> right;
+    std::vector<std::vector<bool>> map;
+    std::vector<int> p;
+    std::vector<bool> vis;
+    std::function<bool(T, U)> judge;
+public:
+    Hungarian(const std::vector<T> &targets, const std::vector<U> &matchers, std::function<bool(T, U)> match) {
+        this->left = matchers;
+        this->right = targets;
+        map.resize(left.size());
+        for (int i = 0; i < left.size(); ++i) {
+            map[i].resize(right.size());
+        }
+        p.resize(matchers.size());
+        vis.resize(matchers.size());
+        this->judge = match;
+    }
+
+    // NOLINTNEXTLINE
+    bool dfs(int i) {
+        for (int j = 0; j < right.size(); ++j) {
+            if (!map[i][j]) map[i][j] = judge(right[j], left[i]);
+            if (map[i][j] && !vis[j]) {
+                vis[j] = true;
+                if (!p[j] || dfs(p[j])) {
+                    p[j] = i;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    int solve() {
+        int ans = 0;
+        for (int i = 0; i < left.size(); ++i) {
+            std::fill(vis.begin(), vis.end(), false);
+            if (dfs(i)) {
+                ans++;
+            }
+        }
+        return ans;
+    }
+
+};
+
 void ConvertSimilarRegex(std::string_view &str, schema::StringMatchType &type) {
     if (type == schema::StringMatchType::SimilarRegex) {
         type = schema::StringMatchType::Contains;
@@ -46,17 +96,199 @@ bool DexItem::IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFl
     }
 }
 
-bool DexItem::IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher) {
-    // TODO
+bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema::AnnotationMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (!IsClassNameMatched(annotation->type->orig_index, matcher->type_name())) {
+        return false;
+    }
+    auto type_annotations = this->class_annotations[annotation->type->orig_index];
+    if (matcher->target_element_types()) {
+        // TODO TargetElementTypesMatcher
+        return false;
+    }
+    if (!IsAnnotationsMatched(type_annotations, matcher->annotations())) {
+        return false;
+    }
+    if (!IsAnnotationElementsMatched(annotation->elements, matcher->elements())) {
+        return false;
+    }
     return true;
 }
 
-bool DexItem::IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationEncodeValueMatcher *matcher) {
-    // TODO
+bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto &annotations = annotationSet->annotations;
+    if (matcher->annotation_count()) {
+        if (annotations.size() < matcher->annotation_count()->min()
+        || annotations.size() > matcher->annotation_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->annotations()) {
+        std::vector<const schema::AnnotationMatcher *> annotation_matches;
+        for (auto annotation : *matcher->annotations()) {
+            annotation_matches.push_back(annotation);
+        }
+        static auto IsAnnotationMatched = [this](ir::Annotation *annotation, const schema::AnnotationMatcher *matcher) {
+            return this->IsAnnotationMatched(annotation, matcher);
+        };
+        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotationSet->annotations, annotation_matches, IsAnnotationMatched);
+        auto count = hungarian.solve();
+        if (count != annotation_matches.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            if (count != annotationSet->annotations.size()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+static uint8_t AnnotationEncodeValueTypeCvt(schema::AnnotationEncodeValueMatcher value_type) {
+    switch (value_type) {
+        case schema::AnnotationEncodeValueMatcher::EncodeValueByte: return dex::kEncodedByte;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueShort: return dex::kEncodedShort;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueChar: return dex::kEncodedChar;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueInt: return dex::kEncodedInt;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueLong: return dex::kEncodedLong;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueFloat: return dex::kEncodedFloat;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueDouble: return dex::kEncodedDouble;
+        case schema::AnnotationEncodeValueMatcher::StringMatcher: return dex::kEncodedString;
+        case schema::AnnotationEncodeValueMatcher::ClassMatcher: return dex::kEncodedType;
+        case schema::AnnotationEncodeValueMatcher::FieldMatcher: return dex::kEncodedEnum;
+        case schema::AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher: return dex::kEncodedArray;
+        case schema::AnnotationEncodeValueMatcher::AnnotationMatcher: return dex::kEncodedAnnotation;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueBoolean: return dex::kEncodedBoolean;
+        default: abort();
+    }
+}
+
+template<typename T>
+T NonNullCase(const void *value) {
+    if (value) {
+        return static_cast<T>(value);
+    }
+    abort();
+}
+
+bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValue, const schema::AnnotationEncodeValueMatcher type, const void *value) {
+    auto value_type = AnnotationEncodeValueTypeCvt(type);
+    if (encodedValue->type != value_type) {
+        return false;
+    }
+    switch (value_type) {
+        case dex::kEncodedByte: return encodedValue->u.byte_value == NonNullCase<const dexkit::schema::EncodeValueByte *>(value)->value();
+        case dex::kEncodedShort: return encodedValue->u.short_value == NonNullCase<const dexkit::schema::EncodeValueShort *>(value)->value();
+        case dex::kEncodedChar: return encodedValue->u.char_value == NonNullCase<const dexkit::schema::EncodeValueChar *>(value)->value();
+        case dex::kEncodedInt: return encodedValue->u.int_value == NonNullCase<const dexkit::schema::EncodeValueInt *>(value)->value();
+        case dex::kEncodedLong: return encodedValue->u.long_value == NonNullCase<const dexkit::schema::EncodeValueLong *>(value)->value();
+        case dex::kEncodedFloat: return encodedValue->u.float_value == NonNullCase<const dexkit::schema::EncodeValueFloat *>(value)->value();
+        case dex::kEncodedDouble: return encodedValue->u.double_value == NonNullCase<const dexkit::schema::EncodeValueDouble *>(value)->value();
+        case dex::kEncodedString: return IsStringMatched(encodedValue->u.string_value->c_str(), NonNullCase<const dexkit::schema::StringMatcher *>(value));
+        case dex::kEncodedType: return IsClassMatched(encodedValue->u.type_value->orig_index, NonNullCase<const dexkit::schema::ClassMatcher *>(value));
+        case dex::kEncodedEnum: return IsFieldMatched(encodedValue->u.enum_value->orig_index, NonNullCase<const dexkit::schema::FieldMatcher *>(value));
+        case dex::kEncodedArray: return IsAnnotationEncodeValuesMatched(encodedValue->u.array_value->values, NonNullCase<const dexkit::schema::AnnotationEncodeValuesMatcher *>(value));
+        case dex::kEncodedAnnotation: return IsAnnotationMatched(encodedValue->u.annotation_value, NonNullCase<const dexkit::schema::AnnotationMatcher *>(value));
+        case dex::kEncodedBoolean: return encodedValue->u.bool_value == NonNullCase<const dexkit::schema::EncodeValueBoolean *>(value)->value();
+        default: abort();
+    }
+}
+
+bool DexItem::IsAnnotationEncodeValuesMatched(const std::vector<ir::EncodedValue *> &encodedValues, const dexkit::schema::AnnotationEncodeValuesMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (matcher->value_count()) {
+        if (encodedValues.size() < matcher->value_count()->min()
+        || encodedValues.size() > matcher->value_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->values()) {
+        if (matcher->values()->size() > encodedValues.size()) {
+            return false;
+        }
+        std::vector<std::pair<schema::AnnotationEncodeValueMatcher, const void *>> values;
+        for (auto i = 0; i < matcher->values()->size(); ++i) {
+            auto type = matcher->values_type()->Get(i);
+            auto value = matcher->values()->GetAs<void>(i);
+            values.emplace_back(type, value);
+        }
+        static auto IsAnnotationEncodeValueMatched = [this](const ir::EncodedValue *encodedValue, const std::pair<schema::AnnotationEncodeValueMatcher, const void *> &value) {
+            return this->IsAnnotationEncodeValueMatched(encodedValue, value.first, value.second);
+        };
+        Hungarian<ir::EncodedValue *, std::pair<schema::AnnotationEncodeValueMatcher, const void *>> hungarian(encodedValues, values, IsAnnotationEncodeValueMatched);
+        int count = hungarian.solve();
+        if (count != matcher->values()->size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            if (count != encodedValues.size()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool DexItem::IsAnnotationElementMatched(const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (!IsStringMatched(annotationElement->name->c_str(), matcher->name())) {
+        return false;
+    }
+    if (matcher->value()) {
+        DEXKIT_CHECK(matcher->value_type() == schema::AnnotationEncodeValueMatcher::NONE);
+        if (!IsAnnotationEncodeValueMatched(annotationElement->value, matcher->value_type(), matcher->value())) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElement *> &annotationElement, const schema::AnnotationEncodeArrayMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (matcher->element_count()) {
+        if (annotationElement.size() < matcher->element_count()->min()
+        || annotationElement.size() > matcher->element_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->elements()) {
+        static auto IsAnnotationElementMatched = [this](const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher) {
+            return this->IsAnnotationElementMatched(annotationElement, matcher);
+        };
+        std::vector<const schema::AnnotationElementMatcher *> matchers;
+        for (auto element : *matcher->elements()) {
+            matchers.push_back(element);
+        }
+        Hungarian<ir::AnnotationElement *, const schema::AnnotationElementMatcher *> hungarian(annotationElement, matchers, IsAnnotationElementMatched);
+        auto count = hungarian.solve();
+        if (count != matcher->elements()->size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            if (count != annotationElement.size()) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
 bool DexItem::IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
     if (!IsClassSmaliSourceMatched(class_idx, matcher->smali_source())) {
         return false;
     }
@@ -121,14 +353,101 @@ bool DexItem::IsClassSmaliSourceMatched(uint32_t class_idx, const schema::String
 }
 
 bool DexItem::IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto &interfaces = this->class_interface_ids[class_idx];
+    if (matcher->interface_count()) {
+        if (interfaces.size() < matcher->interface_count()->min()
+        || interfaces.size() > matcher->interface_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->interfaces()) {
+        std::vector<const schema::ClassMatcher *> interface_matchers;
+        for (auto interface_matcher: *matcher->interfaces()) {
+            interface_matchers.push_back(interface_matcher);
+        }
+        static auto IsClassMatched = [this](uint32_t class_idx, const schema::ClassMatcher *matcher) {
+            return this->IsClassMatched(class_idx, matcher);
+        };
+        Hungarian<uint32_t, const schema::ClassMatcher *> hungarian(interfaces, interface_matchers, IsClassMatched);
+        auto count = hungarian.solve();
+        if (count != interfaces.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            if (count != interface_matchers.size()) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
 bool DexItem::IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto &fields = this->class_field_ids[class_idx];
+    if (matcher->field_count()) {
+        if (fields.size() < matcher->field_count()->min()
+        || fields.size() > matcher->field_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->fields()) {
+        std::vector<const schema::FieldMatcher *> field_matchers;
+        for (auto field_matcher: *matcher->fields()) {
+            field_matchers.push_back(field_matcher);
+        }
+        static auto IsFieldMatched = [this](uint32_t field_idx, const schema::FieldMatcher *matcher) {
+            return this->IsFieldMatched(field_idx, matcher);
+        };
+        Hungarian<uint32_t, const schema::FieldMatcher *> hungarian(fields, field_matchers, IsFieldMatched);
+        auto count = hungarian.solve();
+        if (count != fields.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            if (count != field_matchers.size()) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
 bool DexItem::IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto &methods = this->class_method_ids[class_idx];
+    if (matcher->method_count()) {
+        if (methods.size() < matcher->method_count()->min()
+        || methods.size() > matcher->method_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->methods()) {
+        std::vector<const schema::MethodMatcher *> method_matchers;
+        for (auto method_matcher: *matcher->methods()) {
+            method_matchers.push_back(method_matcher);
+        }
+        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+            return this->IsMethodMatched(method_idx, matcher);
+        };
+        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(methods, method_matchers, IsMethodMatched);
+        auto count = hungarian.solve();
+        if (count != methods.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            if (count != method_matchers.size()) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
@@ -167,12 +486,74 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
 }
 
 bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher) {
-    // TODO
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto type_list = proto_type_list[method_idx];
+    if (matcher->parameter_count()) {
+        if (type_list->size < matcher->parameter_count()->min()
+        || type_list->size > matcher->parameter_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->parameters()) {
+        if (type_list->size != matcher->parameters()->size()) {
+            return false;
+        }
+        auto &parameter_annotations = this->method_parameter_annotations[method_idx];
+        for (size_t i = 0; i < type_list->size; ++i) {
+            auto parameter_matcher = matcher->parameters()->Get(i);
+            if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->prameter_type())) {
+                return false;
+            }
+            if (!IsAnnotationsMatched(parameter_annotations[i], parameter_matcher->annotations())) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
 bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher *matcher) {
-    // TODO
+    if (matcher == nullptr) {
+        return true;
+    }
+    auto &opt_opcodes = this->method_opcode_seq[method_idx];
+    DEXKIT_CHECK(opt_opcodes == std::nullopt);
+    const auto opcodes = opt_opcodes.value();
+    if (matcher->op_code_count()) {
+        if (opcodes.size() < matcher->op_code_count()->min()
+        || opcodes.size() > matcher->op_code_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->op_codes()) {
+        if (matcher->op_codes()->size() > opcodes.size()) {
+            return false;
+        }
+        std::vector<std::optional<uint8_t>> matcher_opcodes;
+        for (auto opcode: *matcher->op_codes()) {
+            if (opcode < 0) {
+                matcher_opcodes.emplace_back(std::nullopt);
+            } else {
+                matcher_opcodes.emplace_back(opcode);
+            }
+        }
+        auto index = kmp::FindIndex(opcodes, matcher_opcodes);
+        if (index == -1) {
+            return false;
+        }
+        bool condition = false;
+        switch (matcher->match_type()) {
+            case schema::OpCodeMatchType::Equal: condition = index == 0 && matcher_opcodes.size() == opcodes.size(); break;
+            case schema::OpCodeMatchType::StartWith: condition = index == 0; break;
+            case schema::OpCodeMatchType::EndWith: condition = index + matcher_opcodes.size() == opcodes.size(); break;
+            case schema::OpCodeMatchType::Contains: condition = true; break;
+        }
+        if (!condition) {
+            return false;
+        }
+    }
     return true;
 }
 
@@ -184,16 +565,50 @@ bool DexItem::IsDexCodesMatched(
         const flatbuffers::Vector<flatbuffers::Offset<schema::UsingNumberMatcher>> *using_numbers_matcher,
         const schema::MethodsMatcher *invoke_methods_matcher
 ) {
+    if (!IsOpCodesMatched(method_idx, op_codes_matcher)) {
+        return false;
+    }
     // TODO
     return true;
 }
 
 bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMatcher *matcher) {
-    // TODO
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto &ids = method_caller_ids[method_idx];
+    if (matcher->method_count()) {
+        if (ids.size() < matcher->method_count()->min() || ids.size() > matcher->method_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->methods()) {
+        if (matcher->methods()->size() > ids.size()) {
+            return false;
+        }
+        std::vector<const schema::MethodMatcher *> method_matchers;
+        for (auto method_matcher: *matcher->methods()) {
+            method_matchers.push_back(method_matcher);
+        }
+        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+            return this->IsMethodMatched(method_idx, matcher);
+        };
+        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
+        auto count = hungarian.solve();
+        if (count != method_matchers.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            return count == ids.size();
+        }
+    }
     return true;
 }
 
 bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
     auto &field_def = this->reader.FieldIds()[field_idx];
     auto field_name = this->type_names[field_def.name_idx];
     if (!IsStringMatched(field_name, matcher->field_name())) {
@@ -221,12 +636,68 @@ bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *mat
 }
 
 bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher) {
-    // TODO
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto ids = field_get_method_ids[field_idx];
+    if (matcher->method_count()) {
+        if (ids.size() < matcher->method_count()->min() || ids.size() > matcher->method_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->methods()) {
+        if (matcher->methods()->size() > ids.size()) {
+            return false;
+        }
+        std::vector<const schema::MethodMatcher *> method_matchers;
+        for (auto method_matcher: *matcher->methods()) {
+            method_matchers.push_back(method_matcher);
+        }
+        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+            return this->IsMethodMatched(method_idx, matcher);
+        };
+        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
+        auto count = hungarian.solve();
+        if (count != method_matchers.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            return count == ids.size();
+        }
+    }
     return true;
 }
 
 bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher) {
-    // TODO
+    if (matcher == nullptr) {
+        return true;
+    }
+    const auto ids = field_put_method_ids[field_idx];
+    if (matcher->method_count()) {
+        if (ids.size() < matcher->method_count()->min() || ids.size() > matcher->method_count()->max()) {
+            return false;
+        }
+    }
+    if (matcher->methods()) {
+        if (matcher->methods()->size() > ids.size()) {
+            return false;
+        }
+        std::vector<const schema::MethodMatcher *> method_matchers;
+        for (auto method_matcher: *matcher->methods()) {
+            method_matchers.push_back(method_matcher);
+        }
+        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+            return this->IsMethodMatched(method_idx, matcher);
+        };
+        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
+        auto count = hungarian.solve();
+        if (count != method_matchers.size()) {
+            return false;
+        }
+        if (matcher->match_type() == schema::MatchType::Equal) {
+            return count == ids.size();
+        }
+    }
     return true;
 }
 

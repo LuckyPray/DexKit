@@ -27,18 +27,18 @@ struct IntRange FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MIN = 4,
-    VT_END = 6
+    VT_MAX = 6
   };
   int32_t min() const {
     return GetField<int32_t>(VT_MIN, 0);
   }
-  int32_t end() const {
-    return GetField<int32_t>(VT_END, 0);
+  int32_t max() const {
+    return GetField<int32_t>(VT_MAX, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int32_t>(verifier, VT_MIN, 4) &&
-           VerifyField<int32_t>(verifier, VT_END, 4) &&
+           VerifyField<int32_t>(verifier, VT_MAX, 4) &&
            verifier.EndTable();
   }
 };
@@ -50,8 +50,8 @@ struct IntRangeBuilder {
   void add_min(int32_t min) {
     fbb_.AddElement<int32_t>(IntRange::VT_MIN, min, 0);
   }
-  void add_end(int32_t end) {
-    fbb_.AddElement<int32_t>(IntRange::VT_END, end, 0);
+  void add_max(int32_t max) {
+    fbb_.AddElement<int32_t>(IntRange::VT_MAX, max, 0);
   }
   explicit IntRangeBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -67,9 +67,9 @@ struct IntRangeBuilder {
 inline ::flatbuffers::Offset<IntRange> CreateIntRange(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     int32_t min = 0,
-    int32_t end = 0) {
+    int32_t max = 0) {
   IntRangeBuilder builder_(_fbb);
-  builder_.add_end(end);
+  builder_.add_max(max);
   builder_.add_min(min);
   return builder_.Finish();
 }
@@ -84,18 +84,18 @@ struct LongRange FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MIN = 4,
-    VT_END = 6
+    VT_MAX = 6
   };
   int64_t min() const {
     return GetField<int64_t>(VT_MIN, 0);
   }
-  int64_t end() const {
-    return GetField<int64_t>(VT_END, 0);
+  int64_t max() const {
+    return GetField<int64_t>(VT_MAX, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int64_t>(verifier, VT_MIN, 8) &&
-           VerifyField<int64_t>(verifier, VT_END, 8) &&
+           VerifyField<int64_t>(verifier, VT_MAX, 8) &&
            verifier.EndTable();
   }
 };
@@ -107,8 +107,8 @@ struct LongRangeBuilder {
   void add_min(int64_t min) {
     fbb_.AddElement<int64_t>(LongRange::VT_MIN, min, 0);
   }
-  void add_end(int64_t end) {
-    fbb_.AddElement<int64_t>(LongRange::VT_END, end, 0);
+  void add_max(int64_t max) {
+    fbb_.AddElement<int64_t>(LongRange::VT_MAX, max, 0);
   }
   explicit LongRangeBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -124,9 +124,9 @@ struct LongRangeBuilder {
 inline ::flatbuffers::Offset<LongRange> CreateLongRange(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     int64_t min = 0,
-    int64_t end = 0) {
+    int64_t max = 0) {
   LongRangeBuilder builder_(_fbb);
-  builder_.add_end(end);
+  builder_.add_max(max);
   builder_.add_min(min);
   return builder_.Finish();
 }

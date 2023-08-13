@@ -12,6 +12,18 @@ const T *From(const void *buf) {
     return ::flatbuffers::GetRoot<T>(buf);
 }
 
+int SharedPtrVoidCast(dexkit::DexKit &dexkit) {
+    std::map<void *, std::shared_ptr<void>> map;
+    auto ptr = &dexkit;
+    auto vector = std::vector<int>{114, 514};
+    map[ptr] = std::make_shared<std::vector<int>>(vector);
+    printf("map size: %lld\n", map.size());
+    auto q = *reinterpret_cast<std::shared_ptr<std::vector<int>>*>(&map[ptr]);
+    printf("map[ptr]: %d\n", (*q)[0]);
+    assert((*q)[0] == vector[0]);
+    return 0;
+}
+
 int KmpTest() {
     assert(kmp::FindIndex("abc", "abc") == 0);
     assert(kmp::FindIndex("abc", "bc") == 1);
@@ -195,10 +207,12 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
 int main() {
     auto dexkit = dexkit::DexKit("../apks/qq-8.9.2.apk");
     printf("DexCount: %d\n", dexkit.GetDexNum());
+    SharedPtrVoidCast(dexkit);
 //    KmpTest();
 //    ACTrieTest();
 //    FlatBufferTest();
-    DexKitBatchFindClassTest(dexkit);
-    DexKitBatchFindMethodTest(dexkit);
+//    DexKitBatchFindClassTest(dexkit);
+//    DexKitBatchFindMethodTest(dexkit);
+
     return 0;
 }

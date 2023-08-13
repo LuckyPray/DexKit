@@ -33,7 +33,7 @@ class LongRange : Table() {
             val o = __offset(4)
             return if(o != 0) bb.getLong(o + bb_pos) else 0L
         }
-    val end : Long
+    val max : Long
         get() {
             val o = __offset(6)
             return if(o != 0) bb.getLong(o + bb_pos) else 0L
@@ -45,15 +45,15 @@ class LongRange : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createLongRange(builder: FlatBufferBuilder, min: Long, end: Long) : Int {
+        fun createLongRange(builder: FlatBufferBuilder, min: Long, max: Long) : Int {
             builder.startTable(2)
-            addEnd(builder, end)
+            addMax(builder, max)
             addMin(builder, min)
             return endLongRange(builder)
         }
         fun startLongRange(builder: FlatBufferBuilder) = builder.startTable(2)
         fun addMin(builder: FlatBufferBuilder, min: Long) = builder.addLong(0, min, 0L)
-        fun addEnd(builder: FlatBufferBuilder, end: Long) = builder.addLong(1, end, 0L)
+        fun addMax(builder: FlatBufferBuilder, max: Long) = builder.addLong(1, max, 0L)
         fun endLongRange(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

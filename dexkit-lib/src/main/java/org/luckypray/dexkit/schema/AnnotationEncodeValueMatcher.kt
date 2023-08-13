@@ -6,18 +6,18 @@ package org.luckypray.dexkit.schema
 class AnnotationEncodeValueMatcher private constructor() {
     companion object {
         const val NONE: UByte = 0u
-        const val EncodeValueBoolean: UByte = 1u
-        const val EncodeValueByte: UByte = 2u
-        const val EncodeValueShort: UByte = 3u
-        const val EncodeValueChar: UByte = 4u
-        const val EncodeValueInt: UByte = 5u
-        const val EncodeValueLong: UByte = 6u
-        const val EncodeValueFloat: UByte = 7u
-        const val EncodeValueDouble: UByte = 8u
-        const val StringMatcher: UByte = 9u
-        const val ClassMatcher: UByte = 10u
-        const val FieldMatcher: UByte = 11u
-        const val AnnotationEncodeArrayMatcher: UByte = 12u
-        const val AnnotationMatcher: UByte = 13u
+        const val EncodeValueByte: UByte = 1u
+        const val EncodeValueShort: UByte = 2u
+        const val EncodeValueChar: UByte = 3u
+        const val EncodeValueInt: UByte = 4u
+        const val EncodeValueLong: UByte = 5u
+        const val EncodeValueFloat: UByte = 6u
+        const val EncodeValueDouble: UByte = 7u
+        const val StringMatcher: UByte = 8u
+        const val ClassMatcher: UByte = 9u
+        const val FieldMatcher: UByte = 10u
+        const val AnnotationEncodeValuesMatcher: UByte = 11u
+        const val AnnotationMatcher: UByte = 12u
+        const val EncodeValueBoolean: UByte = 13u
     }
 }

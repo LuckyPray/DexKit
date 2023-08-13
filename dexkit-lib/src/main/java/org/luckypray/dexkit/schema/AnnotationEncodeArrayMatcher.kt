@@ -28,8 +28,8 @@ class AnnotationEncodeArrayMatcher : Table() {
         __init(_i, _bb)
         return this
     }
-    fun elements(j: Int) : OptionalAnnotationElementMatcher? = elements(OptionalAnnotationElementMatcher(), j)
-    fun elements(obj: OptionalAnnotationElementMatcher, j: Int) : OptionalAnnotationElementMatcher? {
+    fun elements(j: Int) : AnnotationElementMatcher? = elements(AnnotationElementMatcher(), j)
+    fun elements(obj: AnnotationElementMatcher, j: Int) : AnnotationElementMatcher? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)

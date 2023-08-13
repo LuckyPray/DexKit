@@ -87,8 +87,13 @@ private:
 
     static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
     static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
-    static bool IsAnnotationsMatched(ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
-    static bool IsAnnotationElementsMatched(ir::AnnotationElement *annotationElement, const schema::AnnotationEncodeValueMatcher *matcher);
+
+    bool IsAnnotationMatched(const ir::Annotation *annotation, const schema::AnnotationMatcher *matcher);
+    bool IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
+    bool IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValue, const schema::AnnotationEncodeValueMatcher type, const void *value);
+    bool IsAnnotationEncodeValuesMatched(const std::vector<ir::EncodedValue *> &encodedValues, const dexkit::schema::AnnotationEncodeValuesMatcher *matcher);
+    bool IsAnnotationElementMatched(const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher);
+    bool IsAnnotationElementsMatched(const std::vector<ir::AnnotationElement *> &annotationElement, const schema::AnnotationEncodeArrayMatcher *matcher);
 
     bool IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
     bool IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
@@ -134,6 +139,7 @@ private:
     // class source file name, eg: "HelloWorld.java", maybe obfuscated
     std::vector<std::string_view> class_source_files;
     std::vector<uint32_t /*access_flag*/> class_access_flags;
+    std::vector<std::vector<uint32_t>> class_interface_ids;
     std::vector<std::optional<std::string>> method_descriptors;
     std::vector<std::vector<uint32_t /*method_id*/>> class_method_ids;
     std::vector<uint32_t /*access_flag*/> method_access_flags;
@@ -148,6 +154,10 @@ private:
     std::vector<ir::AnnotationSet *> method_annotations;
     std::vector<ir::AnnotationSet *> field_annotations;
     std::vector<std::vector<ir::AnnotationSet *>> method_parameter_annotations;
+
+    std::vector<std::vector<uint32_t>> method_caller_ids;
+    std::vector<std::vector<uint32_t>> field_get_method_ids;
+    std::vector<std::vector<uint32_t>> field_put_method_ids;
 };
 
 } // namespace dexkit

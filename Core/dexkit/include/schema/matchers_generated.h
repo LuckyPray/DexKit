@@ -29,14 +29,11 @@ struct AccessFlagsMatcherBuilder;
 struct TargetElementTypesMatcher;
 struct TargetElementTypesMatcherBuilder;
 
-struct OptionalAnnotationEncodeValueMatcher;
-struct OptionalAnnotationEncodeValueMatcherBuilder;
+struct AnnotationEncodeValuesMatcher;
+struct AnnotationEncodeValuesMatcherBuilder;
 
 struct AnnotationElementMatcher;
 struct AnnotationElementMatcherBuilder;
-
-struct OptionalAnnotationElementMatcher;
-struct OptionalAnnotationElementMatcherBuilder;
 
 struct AnnotationEncodeArrayMatcher;
 struct AnnotationEncodeArrayMatcherBuilder;
@@ -49,9 +46,6 @@ struct AnnotationsMatcherBuilder;
 
 struct ParameterMatcher;
 struct ParameterMatcherBuilder;
-
-struct OptionalParameterMatcher;
-struct OptionalParameterMatcherBuilder;
 
 struct ParametersMatcher;
 struct ParametersMatcherBuilder;
@@ -88,25 +82,24 @@ struct BatchUsingStringsMatcherBuilder;
 
 enum class AnnotationEncodeValueMatcher : uint8_t {
   NONE = 0,
-  EncodeValueBoolean = 1,
-  EncodeValueByte = 2,
-  EncodeValueShort = 3,
-  EncodeValueChar = 4,
-  EncodeValueInt = 5,
-  EncodeValueLong = 6,
-  EncodeValueFloat = 7,
-  EncodeValueDouble = 8,
-  StringMatcher = 9,
-  ClassMatcher = 10,
-  FieldMatcher = 11,
-  AnnotationEncodeArrayMatcher = 12,
-  AnnotationMatcher = 13
+  EncodeValueByte = 1,
+  EncodeValueShort = 2,
+  EncodeValueChar = 3,
+  EncodeValueInt = 4,
+  EncodeValueLong = 5,
+  EncodeValueFloat = 6,
+  EncodeValueDouble = 7,
+  StringMatcher = 8,
+  ClassMatcher = 9,
+  FieldMatcher = 10,
+  AnnotationEncodeValuesMatcher = 11,
+  AnnotationMatcher = 12,
+  EncodeValueBoolean = 13
 };
 
 inline const AnnotationEncodeValueMatcher (&EnumValuesAnnotationEncodeValueMatcher())[14] {
   static const AnnotationEncodeValueMatcher values[] = {
     AnnotationEncodeValueMatcher::NONE,
-    AnnotationEncodeValueMatcher::EncodeValueBoolean,
     AnnotationEncodeValueMatcher::EncodeValueByte,
     AnnotationEncodeValueMatcher::EncodeValueShort,
     AnnotationEncodeValueMatcher::EncodeValueChar,
@@ -117,8 +110,9 @@ inline const AnnotationEncodeValueMatcher (&EnumValuesAnnotationEncodeValueMatch
     AnnotationEncodeValueMatcher::StringMatcher,
     AnnotationEncodeValueMatcher::ClassMatcher,
     AnnotationEncodeValueMatcher::FieldMatcher,
-    AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher,
-    AnnotationEncodeValueMatcher::AnnotationMatcher
+    AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher,
+    AnnotationEncodeValueMatcher::AnnotationMatcher,
+    AnnotationEncodeValueMatcher::EncodeValueBoolean
   };
   return values;
 }
@@ -126,7 +120,6 @@ inline const AnnotationEncodeValueMatcher (&EnumValuesAnnotationEncodeValueMatch
 inline const char * const *EnumNamesAnnotationEncodeValueMatcher() {
   static const char * const names[15] = {
     "NONE",
-    "EncodeValueBoolean",
     "EncodeValueByte",
     "EncodeValueShort",
     "EncodeValueChar",
@@ -137,25 +130,22 @@ inline const char * const *EnumNamesAnnotationEncodeValueMatcher() {
     "StringMatcher",
     "ClassMatcher",
     "FieldMatcher",
-    "AnnotationEncodeArrayMatcher",
+    "AnnotationEncodeValuesMatcher",
     "AnnotationMatcher",
+    "EncodeValueBoolean",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameAnnotationEncodeValueMatcher(AnnotationEncodeValueMatcher e) {
-  if (::flatbuffers::IsOutRange(e, AnnotationEncodeValueMatcher::NONE, AnnotationEncodeValueMatcher::AnnotationMatcher)) return "";
+  if (::flatbuffers::IsOutRange(e, AnnotationEncodeValueMatcher::NONE, AnnotationEncodeValueMatcher::EncodeValueBoolean)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesAnnotationEncodeValueMatcher()[index];
 }
 
 template<typename T> struct AnnotationEncodeValueMatcherTraits {
   static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::NONE;
-};
-
-template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::EncodeValueBoolean> {
-  static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::EncodeValueBoolean;
 };
 
 template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::EncodeValueByte> {
@@ -198,12 +188,16 @@ template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::FieldMatche
   static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::FieldMatcher;
 };
 
-template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::AnnotationEncodeArrayMatcher> {
-  static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher;
+template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::AnnotationEncodeValuesMatcher> {
+  static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher;
 };
 
 template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::AnnotationMatcher> {
   static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::AnnotationMatcher;
+};
+
+template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::EncodeValueBoolean> {
+  static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::EncodeValueBoolean;
 };
 
 bool VerifyAnnotationEncodeValueMatcher(::flatbuffers::Verifier &verifier, const void *obj, AnnotationEncodeValueMatcher type);
@@ -483,13 +477,114 @@ inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypes
       match_type);
 }
 
-struct OptionalAnnotationEncodeValueMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef OptionalAnnotationEncodeValueMatcherBuilder Builder;
+struct AnnotationEncodeValuesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AnnotationEncodeValuesMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE_TYPE = 4,
-    VT_VALUE = 6
+    VT_VALUES_TYPE = 4,
+    VT_VALUES = 6,
+    VT_MATCH_TYPE = 8,
+    VT_VALUE_COUNT = 10
   };
+  const ::flatbuffers::Vector<dexkit::schema::AnnotationEncodeValueMatcher> *values_type() const {
+    return GetPointer<const ::flatbuffers::Vector<dexkit::schema::AnnotationEncodeValueMatcher> *>(VT_VALUES_TYPE);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *>(VT_VALUES);
+  }
+  dexkit::schema::MatchType match_type() const {
+    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
+  }
+  const dexkit::schema::IntRange *value_count() const {
+    return GetPointer<const dexkit::schema::IntRange *>(VT_VALUE_COUNT);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_VALUES_TYPE) &&
+           verifier.VerifyVector(values_type()) &&
+           VerifyOffset(verifier, VT_VALUES) &&
+           verifier.VerifyVector(values()) &&
+           VerifyAnnotationEncodeValueMatcherVector(verifier, values(), values_type()) &&
+           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
+           VerifyOffset(verifier, VT_VALUE_COUNT) &&
+           verifier.VerifyTable(value_count()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AnnotationEncodeValuesMatcherBuilder {
+  typedef AnnotationEncodeValuesMatcher Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_values_type(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::AnnotationEncodeValueMatcher>> values_type) {
+    fbb_.AddOffset(AnnotationEncodeValuesMatcher::VT_VALUES_TYPE, values_type);
+  }
+  void add_values(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values) {
+    fbb_.AddOffset(AnnotationEncodeValuesMatcher::VT_VALUES, values);
+  }
+  void add_match_type(dexkit::schema::MatchType match_type) {
+    fbb_.AddElement<int8_t>(AnnotationEncodeValuesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
+  }
+  void add_value_count(::flatbuffers::Offset<dexkit::schema::IntRange> value_count) {
+    fbb_.AddOffset(AnnotationEncodeValuesMatcher::VT_VALUE_COUNT, value_count);
+  }
+  explicit AnnotationEncodeValuesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AnnotationEncodeValuesMatcher> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AnnotationEncodeValuesMatcher>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AnnotationEncodeValuesMatcher> CreateAnnotationEncodeValuesMatcher(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::AnnotationEncodeValueMatcher>> values_type = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values = 0,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> value_count = 0) {
+  AnnotationEncodeValuesMatcherBuilder builder_(_fbb);
+  builder_.add_value_count(value_count);
+  builder_.add_values(values);
+  builder_.add_values_type(values_type);
+  builder_.add_match_type(match_type);
+  return builder_.Finish();
+}
+
+struct AnnotationEncodeValuesMatcher::Traits {
+  using type = AnnotationEncodeValuesMatcher;
+  static auto constexpr Create = CreateAnnotationEncodeValuesMatcher;
+};
+
+inline ::flatbuffers::Offset<AnnotationEncodeValuesMatcher> CreateAnnotationEncodeValuesMatcherDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<dexkit::schema::AnnotationEncodeValueMatcher> *values_type = nullptr,
+    const std::vector<::flatbuffers::Offset<void>> *values = nullptr,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> value_count = 0) {
+  auto values_type__ = values_type ? _fbb.CreateVector<dexkit::schema::AnnotationEncodeValueMatcher>(*values_type) : 0;
+  auto values__ = values ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*values) : 0;
+  return dexkit::schema::CreateAnnotationEncodeValuesMatcher(
+      _fbb,
+      values_type__,
+      values__,
+      match_type,
+      value_count);
+}
+
+struct AnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AnnotationElementMatcherBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_NAME = 4,
+    VT_VALUE_TYPE = 6,
+    VT_VALUE = 8
+  };
+  const dexkit::schema::StringMatcher *name() const {
+    return GetPointer<const dexkit::schema::StringMatcher *>(VT_NAME);
+  }
   dexkit::schema::AnnotationEncodeValueMatcher value_type() const {
     return static_cast<dexkit::schema::AnnotationEncodeValueMatcher>(GetField<uint8_t>(VT_VALUE_TYPE, 0));
   }
@@ -497,9 +592,6 @@ struct OptionalAnnotationEncodeValueMatcher FLATBUFFERS_FINAL_CLASS : private ::
     return GetPointer<const void *>(VT_VALUE);
   }
   template<typename T> const T *value_as() const;
-  const dexkit::schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
-    return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::EncodeValueBoolean ? static_cast<const dexkit::schema::EncodeValueBoolean *>(value()) : nullptr;
-  }
   const dexkit::schema::EncodeValueByte *value_as_EncodeValueByte() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::EncodeValueByte ? static_cast<const dexkit::schema::EncodeValueByte *>(value()) : nullptr;
   }
@@ -530,14 +622,19 @@ struct OptionalAnnotationEncodeValueMatcher FLATBUFFERS_FINAL_CLASS : private ::
   const dexkit::schema::FieldMatcher *value_as_FieldMatcher() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::FieldMatcher ? static_cast<const dexkit::schema::FieldMatcher *>(value()) : nullptr;
   }
-  const dexkit::schema::AnnotationEncodeArrayMatcher *value_as_AnnotationEncodeArrayMatcher() const {
-    return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher ? static_cast<const dexkit::schema::AnnotationEncodeArrayMatcher *>(value()) : nullptr;
+  const dexkit::schema::AnnotationEncodeValuesMatcher *value_as_AnnotationEncodeValuesMatcher() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher ? static_cast<const dexkit::schema::AnnotationEncodeValuesMatcher *>(value()) : nullptr;
   }
   const dexkit::schema::AnnotationMatcher *value_as_AnnotationMatcher() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::AnnotationMatcher ? static_cast<const dexkit::schema::AnnotationMatcher *>(value()) : nullptr;
   }
+  const dexkit::schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::EncodeValueBoolean ? static_cast<const dexkit::schema::EncodeValueBoolean *>(value()) : nullptr;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyTable(name()) &&
            VerifyField<uint8_t>(verifier, VT_VALUE_TYPE, 1) &&
            VerifyOffset(verifier, VT_VALUE) &&
            VerifyAnnotationEncodeValueMatcher(verifier, value(), value_type()) &&
@@ -545,116 +642,57 @@ struct OptionalAnnotationEncodeValueMatcher FLATBUFFERS_FINAL_CLASS : private ::
   }
 };
 
-template<> inline const dexkit::schema::EncodeValueBoolean *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueBoolean>() const {
-  return value_as_EncodeValueBoolean();
-}
-
-template<> inline const dexkit::schema::EncodeValueByte *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueByte>() const {
+template<> inline const dexkit::schema::EncodeValueByte *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueByte>() const {
   return value_as_EncodeValueByte();
 }
 
-template<> inline const dexkit::schema::EncodeValueShort *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueShort>() const {
+template<> inline const dexkit::schema::EncodeValueShort *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueShort>() const {
   return value_as_EncodeValueShort();
 }
 
-template<> inline const dexkit::schema::EncodeValueChar *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueChar>() const {
+template<> inline const dexkit::schema::EncodeValueChar *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueChar>() const {
   return value_as_EncodeValueChar();
 }
 
-template<> inline const dexkit::schema::EncodeValueInt *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueInt>() const {
+template<> inline const dexkit::schema::EncodeValueInt *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueInt>() const {
   return value_as_EncodeValueInt();
 }
 
-template<> inline const dexkit::schema::EncodeValueLong *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueLong>() const {
+template<> inline const dexkit::schema::EncodeValueLong *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueLong>() const {
   return value_as_EncodeValueLong();
 }
 
-template<> inline const dexkit::schema::EncodeValueFloat *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueFloat>() const {
+template<> inline const dexkit::schema::EncodeValueFloat *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueFloat>() const {
   return value_as_EncodeValueFloat();
 }
 
-template<> inline const dexkit::schema::EncodeValueDouble *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::EncodeValueDouble>() const {
+template<> inline const dexkit::schema::EncodeValueDouble *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueDouble>() const {
   return value_as_EncodeValueDouble();
 }
 
-template<> inline const dexkit::schema::StringMatcher *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::StringMatcher>() const {
+template<> inline const dexkit::schema::StringMatcher *AnnotationElementMatcher::value_as<dexkit::schema::StringMatcher>() const {
   return value_as_StringMatcher();
 }
 
-template<> inline const dexkit::schema::ClassMatcher *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::ClassMatcher>() const {
+template<> inline const dexkit::schema::ClassMatcher *AnnotationElementMatcher::value_as<dexkit::schema::ClassMatcher>() const {
   return value_as_ClassMatcher();
 }
 
-template<> inline const dexkit::schema::FieldMatcher *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::FieldMatcher>() const {
+template<> inline const dexkit::schema::FieldMatcher *AnnotationElementMatcher::value_as<dexkit::schema::FieldMatcher>() const {
   return value_as_FieldMatcher();
 }
 
-template<> inline const dexkit::schema::AnnotationEncodeArrayMatcher *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::AnnotationEncodeArrayMatcher>() const {
-  return value_as_AnnotationEncodeArrayMatcher();
+template<> inline const dexkit::schema::AnnotationEncodeValuesMatcher *AnnotationElementMatcher::value_as<dexkit::schema::AnnotationEncodeValuesMatcher>() const {
+  return value_as_AnnotationEncodeValuesMatcher();
 }
 
-template<> inline const dexkit::schema::AnnotationMatcher *OptionalAnnotationEncodeValueMatcher::value_as<dexkit::schema::AnnotationMatcher>() const {
+template<> inline const dexkit::schema::AnnotationMatcher *AnnotationElementMatcher::value_as<dexkit::schema::AnnotationMatcher>() const {
   return value_as_AnnotationMatcher();
 }
 
-struct OptionalAnnotationEncodeValueMatcherBuilder {
-  typedef OptionalAnnotationEncodeValueMatcher Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_value_type(dexkit::schema::AnnotationEncodeValueMatcher value_type) {
-    fbb_.AddElement<uint8_t>(OptionalAnnotationEncodeValueMatcher::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0);
-  }
-  void add_value(::flatbuffers::Offset<void> value) {
-    fbb_.AddOffset(OptionalAnnotationEncodeValueMatcher::VT_VALUE, value);
-  }
-  explicit OptionalAnnotationEncodeValueMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<OptionalAnnotationEncodeValueMatcher> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<OptionalAnnotationEncodeValueMatcher>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<OptionalAnnotationEncodeValueMatcher> CreateOptionalAnnotationEncodeValueMatcher(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    dexkit::schema::AnnotationEncodeValueMatcher value_type = dexkit::schema::AnnotationEncodeValueMatcher::NONE,
-    ::flatbuffers::Offset<void> value = 0) {
-  OptionalAnnotationEncodeValueMatcherBuilder builder_(_fbb);
-  builder_.add_value(value);
-  builder_.add_value_type(value_type);
-  return builder_.Finish();
+template<> inline const dexkit::schema::EncodeValueBoolean *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueBoolean>() const {
+  return value_as_EncodeValueBoolean();
 }
-
-struct OptionalAnnotationEncodeValueMatcher::Traits {
-  using type = OptionalAnnotationEncodeValueMatcher;
-  static auto constexpr Create = CreateOptionalAnnotationEncodeValueMatcher;
-};
-
-struct AnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef AnnotationElementMatcherBuilder Builder;
-  struct Traits;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_NAME = 4,
-    VT_VALUE = 6
-  };
-  const dexkit::schema::StringMatcher *name() const {
-    return GetPointer<const dexkit::schema::StringMatcher *>(VT_NAME);
-  }
-  const dexkit::schema::OptionalAnnotationEncodeValueMatcher *value() const {
-    return GetPointer<const dexkit::schema::OptionalAnnotationEncodeValueMatcher *>(VT_VALUE);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_NAME) &&
-           verifier.VerifyTable(name()) &&
-           VerifyOffset(verifier, VT_VALUE) &&
-           verifier.VerifyTable(value()) &&
-           verifier.EndTable();
-  }
-};
 
 struct AnnotationElementMatcherBuilder {
   typedef AnnotationElementMatcher Table;
@@ -663,7 +701,10 @@ struct AnnotationElementMatcherBuilder {
   void add_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> name) {
     fbb_.AddOffset(AnnotationElementMatcher::VT_NAME, name);
   }
-  void add_value(::flatbuffers::Offset<dexkit::schema::OptionalAnnotationEncodeValueMatcher> value) {
+  void add_value_type(dexkit::schema::AnnotationEncodeValueMatcher value_type) {
+    fbb_.AddElement<uint8_t>(AnnotationElementMatcher::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0);
+  }
+  void add_value(::flatbuffers::Offset<void> value) {
     fbb_.AddOffset(AnnotationElementMatcher::VT_VALUE, value);
   }
   explicit AnnotationElementMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
@@ -680,64 +721,18 @@ struct AnnotationElementMatcherBuilder {
 inline ::flatbuffers::Offset<AnnotationElementMatcher> CreateAnnotationElementMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> name = 0,
-    ::flatbuffers::Offset<dexkit::schema::OptionalAnnotationEncodeValueMatcher> value = 0) {
+    dexkit::schema::AnnotationEncodeValueMatcher value_type = dexkit::schema::AnnotationEncodeValueMatcher::NONE,
+    ::flatbuffers::Offset<void> value = 0) {
   AnnotationElementMatcherBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_name(name);
+  builder_.add_value_type(value_type);
   return builder_.Finish();
 }
 
 struct AnnotationElementMatcher::Traits {
   using type = AnnotationElementMatcher;
   static auto constexpr Create = CreateAnnotationElementMatcher;
-};
-
-struct OptionalAnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef OptionalAnnotationElementMatcherBuilder Builder;
-  struct Traits;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ELEMENT = 4
-  };
-  const dexkit::schema::AnnotationElementMatcher *element() const {
-    return GetPointer<const dexkit::schema::AnnotationElementMatcher *>(VT_ELEMENT);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ELEMENT) &&
-           verifier.VerifyTable(element()) &&
-           verifier.EndTable();
-  }
-};
-
-struct OptionalAnnotationElementMatcherBuilder {
-  typedef OptionalAnnotationElementMatcher Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_element(::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher> element) {
-    fbb_.AddOffset(OptionalAnnotationElementMatcher::VT_ELEMENT, element);
-  }
-  explicit OptionalAnnotationElementMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<OptionalAnnotationElementMatcher> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<OptionalAnnotationElementMatcher>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<OptionalAnnotationElementMatcher> CreateOptionalAnnotationElementMatcher(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher> element = 0) {
-  OptionalAnnotationElementMatcherBuilder builder_(_fbb);
-  builder_.add_element(element);
-  return builder_.Finish();
-}
-
-struct OptionalAnnotationElementMatcher::Traits {
-  using type = OptionalAnnotationElementMatcher;
-  static auto constexpr Create = CreateOptionalAnnotationElementMatcher;
 };
 
 struct AnnotationEncodeArrayMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -748,8 +743,8 @@ struct AnnotationEncodeArrayMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuff
     VT_MATCH_TYPE = 6,
     VT_ELEMENT_COUNT = 8
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *elements() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *>(VT_ELEMENTS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>> *elements() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>> *>(VT_ELEMENTS);
   }
   dexkit::schema::MatchType match_type() const {
     return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
@@ -773,7 +768,7 @@ struct AnnotationEncodeArrayMatcherBuilder {
   typedef AnnotationEncodeArrayMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>> elements) {
+  void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>>> elements) {
     fbb_.AddOffset(AnnotationEncodeArrayMatcher::VT_ELEMENTS, elements);
   }
   void add_match_type(dexkit::schema::MatchType match_type) {
@@ -795,7 +790,7 @@ struct AnnotationEncodeArrayMatcherBuilder {
 
 inline ::flatbuffers::Offset<AnnotationEncodeArrayMatcher> CreateAnnotationEncodeArrayMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>> elements = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>>> elements = 0,
     dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0) {
   AnnotationEncodeArrayMatcherBuilder builder_(_fbb);
@@ -812,10 +807,10 @@ struct AnnotationEncodeArrayMatcher::Traits {
 
 inline ::flatbuffers::Offset<AnnotationEncodeArrayMatcher> CreateAnnotationEncodeArrayMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>> *elements = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>> *elements = nullptr,
     dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0) {
-  auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::OptionalAnnotationElementMatcher>>(*elements) : 0;
+  auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>>(*elements) : 0;
   return dexkit::schema::CreateAnnotationEncodeArrayMatcher(
       _fbb,
       elements__,
@@ -920,7 +915,7 @@ struct AnnotationsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ANNOTATIONS = 4,
     VT_MATCH_TYPE = 6,
-    VT_ANNOTAION_COUNT = 8
+    VT_ANNOTATION_COUNT = 8
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *annotations() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *>(VT_ANNOTATIONS);
@@ -928,8 +923,8 @@ struct AnnotationsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   dexkit::schema::MatchType match_type() const {
     return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
-  const dexkit::schema::IntRange *annotaion_count() const {
-    return GetPointer<const dexkit::schema::IntRange *>(VT_ANNOTAION_COUNT);
+  const dexkit::schema::IntRange *annotation_count() const {
+    return GetPointer<const dexkit::schema::IntRange *>(VT_ANNOTATION_COUNT);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -937,8 +932,8 @@ struct AnnotationsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
            verifier.VerifyVector(annotations()) &&
            verifier.VerifyVectorOfTables(annotations()) &&
            VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
-           VerifyOffset(verifier, VT_ANNOTAION_COUNT) &&
-           verifier.VerifyTable(annotaion_count()) &&
+           VerifyOffset(verifier, VT_ANNOTATION_COUNT) &&
+           verifier.VerifyTable(annotation_count()) &&
            verifier.EndTable();
   }
 };
@@ -953,8 +948,8 @@ struct AnnotationsMatcherBuilder {
   void add_match_type(dexkit::schema::MatchType match_type) {
     fbb_.AddElement<int8_t>(AnnotationsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
-  void add_annotaion_count(::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count) {
-    fbb_.AddOffset(AnnotationsMatcher::VT_ANNOTAION_COUNT, annotaion_count);
+  void add_annotation_count(::flatbuffers::Offset<dexkit::schema::IntRange> annotation_count) {
+    fbb_.AddOffset(AnnotationsMatcher::VT_ANNOTATION_COUNT, annotation_count);
   }
   explicit AnnotationsMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -971,9 +966,9 @@ inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>> annotations = 0,
     dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count = 0) {
+    ::flatbuffers::Offset<dexkit::schema::IntRange> annotation_count = 0) {
   AnnotationsMatcherBuilder builder_(_fbb);
-  builder_.add_annotaion_count(annotaion_count);
+  builder_.add_annotation_count(annotation_count);
   builder_.add_annotations(annotations);
   builder_.add_match_type(match_type);
   return builder_.Finish();
@@ -988,13 +983,13 @@ inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *annotations = nullptr,
     dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
-    ::flatbuffers::Offset<dexkit::schema::IntRange> annotaion_count = 0) {
+    ::flatbuffers::Offset<dexkit::schema::IntRange> annotation_count = 0) {
   auto annotations__ = annotations ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>(*annotations) : 0;
   return dexkit::schema::CreateAnnotationsMatcher(
       _fbb,
       annotations__,
       match_type,
-      annotaion_count);
+      annotation_count);
 }
 
 struct ParameterMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1056,67 +1051,15 @@ struct ParameterMatcher::Traits {
   static auto constexpr Create = CreateParameterMatcher;
 };
 
-struct OptionalParameterMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef OptionalParameterMatcherBuilder Builder;
-  struct Traits;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_PARAMETER = 4
-  };
-  const dexkit::schema::ParameterMatcher *parameter() const {
-    return GetPointer<const dexkit::schema::ParameterMatcher *>(VT_PARAMETER);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_PARAMETER) &&
-           verifier.VerifyTable(parameter()) &&
-           verifier.EndTable();
-  }
-};
-
-struct OptionalParameterMatcherBuilder {
-  typedef OptionalParameterMatcher Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_parameter(::flatbuffers::Offset<dexkit::schema::ParameterMatcher> parameter) {
-    fbb_.AddOffset(OptionalParameterMatcher::VT_PARAMETER, parameter);
-  }
-  explicit OptionalParameterMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<OptionalParameterMatcher> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<OptionalParameterMatcher>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<OptionalParameterMatcher> CreateOptionalParameterMatcher(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<dexkit::schema::ParameterMatcher> parameter = 0) {
-  OptionalParameterMatcherBuilder builder_(_fbb);
-  builder_.add_parameter(parameter);
-  return builder_.Finish();
-}
-
-struct OptionalParameterMatcher::Traits {
-  using type = OptionalParameterMatcher;
-  static auto constexpr Create = CreateOptionalParameterMatcher;
-};
-
 struct ParametersMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ParametersMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PARAMETERS = 4,
-    VT_MATCH_TYPE = 6,
-    VT_PARAMETER_COUNT = 8
+    VT_PARAMETER_COUNT = 6
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *parameters() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *>(VT_PARAMETERS);
-  }
-  dexkit::schema::MatchType match_type() const {
-    return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ParameterMatcher>> *parameters() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ParameterMatcher>> *>(VT_PARAMETERS);
   }
   const dexkit::schema::IntRange *parameter_count() const {
     return GetPointer<const dexkit::schema::IntRange *>(VT_PARAMETER_COUNT);
@@ -1126,7 +1069,6 @@ struct ParametersMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
            VerifyOffset(verifier, VT_PARAMETERS) &&
            verifier.VerifyVector(parameters()) &&
            verifier.VerifyVectorOfTables(parameters()) &&
-           VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_PARAMETER_COUNT) &&
            verifier.VerifyTable(parameter_count()) &&
            verifier.EndTable();
@@ -1137,11 +1079,8 @@ struct ParametersMatcherBuilder {
   typedef ParametersMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_parameters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>> parameters) {
+  void add_parameters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ParameterMatcher>>> parameters) {
     fbb_.AddOffset(ParametersMatcher::VT_PARAMETERS, parameters);
-  }
-  void add_match_type(dexkit::schema::MatchType match_type) {
-    fbb_.AddElement<int8_t>(ParametersMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
   }
   void add_parameter_count(::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count) {
     fbb_.AddOffset(ParametersMatcher::VT_PARAMETER_COUNT, parameter_count);
@@ -1159,13 +1098,11 @@ struct ParametersMatcherBuilder {
 
 inline ::flatbuffers::Offset<ParametersMatcher> CreateParametersMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>> parameters = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ParameterMatcher>>> parameters = 0,
     ::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count = 0) {
   ParametersMatcherBuilder builder_(_fbb);
   builder_.add_parameter_count(parameter_count);
   builder_.add_parameters(parameters);
-  builder_.add_match_type(match_type);
   return builder_.Finish();
 }
 
@@ -1176,14 +1113,12 @@ struct ParametersMatcher::Traits {
 
 inline ::flatbuffers::Offset<ParametersMatcher> CreateParametersMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>> *parameters = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ParameterMatcher>> *parameters = nullptr,
     ::flatbuffers::Offset<dexkit::schema::IntRange> parameter_count = 0) {
-  auto parameters__ = parameters ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::OptionalParameterMatcher>>(*parameters) : 0;
+  auto parameters__ = parameters ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ParameterMatcher>>(*parameters) : 0;
   return dexkit::schema::CreateParametersMatcher(
       _fbb,
       parameters__,
-      match_type,
       parameter_count);
 }
 
@@ -1192,7 +1127,8 @@ struct OpCodesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_OP_CODES = 4,
-    VT_MATCH_TYPE = 6
+    VT_MATCH_TYPE = 6,
+    VT_OP_CODE_COUNT = 8
   };
   const ::flatbuffers::Vector<int16_t> *op_codes() const {
     return GetPointer<const ::flatbuffers::Vector<int16_t> *>(VT_OP_CODES);
@@ -1200,11 +1136,16 @@ struct OpCodesMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   dexkit::schema::OpCodeMatchType match_type() const {
     return static_cast<dexkit::schema::OpCodeMatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
   }
+  const dexkit::schema::IntRange *op_code_count() const {
+    return GetPointer<const dexkit::schema::IntRange *>(VT_OP_CODE_COUNT);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_OP_CODES) &&
            verifier.VerifyVector(op_codes()) &&
            VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
+           VerifyOffset(verifier, VT_OP_CODE_COUNT) &&
+           verifier.VerifyTable(op_code_count()) &&
            verifier.EndTable();
   }
 };
@@ -1218,6 +1159,9 @@ struct OpCodesMatcherBuilder {
   }
   void add_match_type(dexkit::schema::OpCodeMatchType match_type) {
     fbb_.AddElement<int8_t>(OpCodesMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
+  }
+  void add_op_code_count(::flatbuffers::Offset<dexkit::schema::IntRange> op_code_count) {
+    fbb_.AddOffset(OpCodesMatcher::VT_OP_CODE_COUNT, op_code_count);
   }
   explicit OpCodesMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1233,8 +1177,10 @@ struct OpCodesMatcherBuilder {
 inline ::flatbuffers::Offset<OpCodesMatcher> CreateOpCodesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<int16_t>> op_codes = 0,
-    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains) {
+    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> op_code_count = 0) {
   OpCodesMatcherBuilder builder_(_fbb);
+  builder_.add_op_code_count(op_code_count);
   builder_.add_op_codes(op_codes);
   builder_.add_match_type(match_type);
   return builder_.Finish();
@@ -1248,12 +1194,14 @@ struct OpCodesMatcher::Traits {
 inline ::flatbuffers::Offset<OpCodesMatcher> CreateOpCodesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<int16_t> *op_codes = nullptr,
-    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains) {
+    dexkit::schema::OpCodeMatchType match_type = dexkit::schema::OpCodeMatchType::Contains,
+    ::flatbuffers::Offset<dexkit::schema::IntRange> op_code_count = 0) {
   auto op_codes__ = op_codes ? _fbb.CreateVector<int16_t>(*op_codes) : 0;
   return dexkit::schema::CreateOpCodesMatcher(
       _fbb,
       op_codes__,
-      match_type);
+      match_type,
+      op_code_count);
 }
 
 struct UsingFieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1907,12 +1855,12 @@ struct FieldsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FieldsMatcherBuilder Builder;
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CONTAIN_FIELDS = 4,
+    VT_FIELDS = 4,
     VT_MATCH_TYPE = 6,
     VT_FIELD_COUNT = 8
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *contain_fields() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *>(VT_CONTAIN_FIELDS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *fields() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *>(VT_FIELDS);
   }
   dexkit::schema::MatchType match_type() const {
     return static_cast<dexkit::schema::MatchType>(GetField<int8_t>(VT_MATCH_TYPE, 0));
@@ -1922,9 +1870,9 @@ struct FieldsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_CONTAIN_FIELDS) &&
-           verifier.VerifyVector(contain_fields()) &&
-           verifier.VerifyVectorOfTables(contain_fields()) &&
+           VerifyOffset(verifier, VT_FIELDS) &&
+           verifier.VerifyVector(fields()) &&
+           verifier.VerifyVectorOfTables(fields()) &&
            VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyOffset(verifier, VT_FIELD_COUNT) &&
            verifier.VerifyTable(field_count()) &&
@@ -1936,8 +1884,8 @@ struct FieldsMatcherBuilder {
   typedef FieldsMatcher Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_contain_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> contain_fields) {
-    fbb_.AddOffset(FieldsMatcher::VT_CONTAIN_FIELDS, contain_fields);
+  void add_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> fields) {
+    fbb_.AddOffset(FieldsMatcher::VT_FIELDS, fields);
   }
   void add_match_type(dexkit::schema::MatchType match_type) {
     fbb_.AddElement<int8_t>(FieldsMatcher::VT_MATCH_TYPE, static_cast<int8_t>(match_type), 0);
@@ -1958,12 +1906,12 @@ struct FieldsMatcherBuilder {
 
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> contain_fields = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> fields = 0,
     dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> field_count = 0) {
   FieldsMatcherBuilder builder_(_fbb);
   builder_.add_field_count(field_count);
-  builder_.add_contain_fields(contain_fields);
+  builder_.add_fields(fields);
   builder_.add_match_type(match_type);
   return builder_.Finish();
 }
@@ -1975,13 +1923,13 @@ struct FieldsMatcher::Traits {
 
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *contain_fields = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *fields = nullptr,
     dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
     ::flatbuffers::Offset<dexkit::schema::IntRange> field_count = 0) {
-  auto contain_fields__ = contain_fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*contain_fields) : 0;
+  auto fields__ = fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*fields) : 0;
   return dexkit::schema::CreateFieldsMatcher(
       _fbb,
-      contain_fields__,
+      fields__,
       match_type,
       field_count);
 }
@@ -2225,10 +2173,6 @@ inline bool VerifyAnnotationEncodeValueMatcher(::flatbuffers::Verifier &verifier
     case AnnotationEncodeValueMatcher::NONE: {
       return true;
     }
-    case AnnotationEncodeValueMatcher::EncodeValueBoolean: {
-      auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueBoolean *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
     case AnnotationEncodeValueMatcher::EncodeValueByte: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueByte *>(obj);
       return verifier.VerifyTable(ptr);
@@ -2269,12 +2213,16 @@ inline bool VerifyAnnotationEncodeValueMatcher(::flatbuffers::Verifier &verifier
       auto ptr = reinterpret_cast<const dexkit::schema::FieldMatcher *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher: {
-      auto ptr = reinterpret_cast<const dexkit::schema::AnnotationEncodeArrayMatcher *>(obj);
+    case AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher: {
+      auto ptr = reinterpret_cast<const dexkit::schema::AnnotationEncodeValuesMatcher *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case AnnotationEncodeValueMatcher::AnnotationMatcher: {
       auto ptr = reinterpret_cast<const dexkit::schema::AnnotationMatcher *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case AnnotationEncodeValueMatcher::EncodeValueBoolean: {
+      auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueBoolean *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

@@ -37,14 +37,13 @@ class AnnotationElementMatcher : Table() {
             null
         }
     }
-    val value : OptionalAnnotationEncodeValueMatcher? get() = value(OptionalAnnotationEncodeValueMatcher())
-    fun value(obj: OptionalAnnotationEncodeValueMatcher) : OptionalAnnotationEncodeValueMatcher? {
-        val o = __offset(6)
-        return if (o != 0) {
-            obj.__assign(__indirect(o + bb_pos), bb)
-        } else {
-            null
+    val valueType : UByte
+        get() {
+            val o = __offset(6)
+            return if(o != 0) bb.get(o + bb_pos).toUByte() else 0u
         }
+    fun value(obj: Table) : Table? {
+        val o = __offset(8); return if (o != 0) __union(obj, o + bb_pos) else null
     }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -53,15 +52,17 @@ class AnnotationElementMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationElementMatcher(builder: FlatBufferBuilder, nameOffset: Int, valueOffset: Int) : Int {
-            builder.startTable(2)
+        fun createAnnotationElementMatcher(builder: FlatBufferBuilder, nameOffset: Int, valueType: UByte, valueOffset: Int) : Int {
+            builder.startTable(3)
             addValue(builder, valueOffset)
             addName(builder, nameOffset)
+            addValueType(builder, valueType)
             return endAnnotationElementMatcher(builder)
         }
-        fun startAnnotationElementMatcher(builder: FlatBufferBuilder) = builder.startTable(2)
+        fun startAnnotationElementMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addName(builder: FlatBufferBuilder, name: Int) = builder.addOffset(0, name, 0)
-        fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(1, value, 0)
+        fun addValueType(builder: FlatBufferBuilder, valueType: UByte) = builder.addByte(1, valueType.toByte(), 0)
+        fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(2, value, 0)
         fun endAnnotationElementMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o
