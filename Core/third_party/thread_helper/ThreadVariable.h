@@ -36,5 +36,5 @@ public:
 
 private:
     inline static std::shared_mutex _lock;
-    inline static std::map<std::__thread_id, std::map<uint32_t, std::shared_ptr<void>>> _thread_variables;
+    inline static std::map<std::thread::id, std::map<uint32_t, std::shared_ptr<void>>> _thread_variables;
 };
