@@ -30,6 +30,7 @@
 #include <functional>
 #include <stdexcept>
 
+#include "ThreadVariable.h"
 
 class ThreadPool {
 public:
@@ -97,7 +98,10 @@ auto ThreadPool::enqueue(F &&f, Args &&... args)
             abort();
 //            throw std::runtime_error("enqueue on stopped thread_pool");
 
-        tasks.emplace([task]() { (*task)(); });
+        tasks.emplace([task]() {
+            (*task)();
+            ThreadVariable::ClearThreadVariables();
+        });
     }
     condition.notify_one();
     return res;

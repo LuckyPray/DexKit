@@ -24,6 +24,20 @@ int SharedPtrVoidCast(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int ThreadVariableTest() {
+    std::vector<std::future<void>> results;
+    ThreadPool pool(2);
+    for (int i = 0; i < 10000; ++i) {
+        results.push_back(pool.enqueue([i]() {
+            ThreadVariable::SetThreadVariable<int>(i, i);
+            auto thread_id = std::this_thread::get_id();
+            auto p = ThreadVariable::GetThreadVariable<int>(i);
+            printf("thread id: %p, idx: %d, %d\n", thread_id, i, *p);
+        }));
+    }
+    return 0;
+}
+
 int KmpTest() {
     assert(kmp::FindIndex("abc", "abc") == 0);
     assert(kmp::FindIndex("abc", "bc") == 1);

@@ -3,23 +3,31 @@
 namespace dexkit {
 
 DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
+    std::lock_guard<std::mutex> lock(_mutex);
     AddZipPath(apk_path, unzip_thread_num);
+    std::sort(dex_items.begin(), dex_items.end());
 }
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
+    std::lock_guard<std::mutex> lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size));
+    std::sort(dex_items.begin(), dex_items.end());
     return Error::SUCCESS;
 }
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
+    std::lock_guard<std::mutex> lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
+    std::sort(dex_items.begin(), dex_items.end());
     return Error::SUCCESS;
 }
 
 Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
+    std::lock_guard<std::mutex> lock(_mutex);
     for (auto &dex_image: dex_images) {
         dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
     }
+    std::sort(dex_items.begin(), dex_items.end());
     return Error::SUCCESS;
 }
 

@@ -36,6 +36,7 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
 
 private:
+    std::mutex _mutex;
     std::atomic<uint32_t> dex_cnt = 0;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
