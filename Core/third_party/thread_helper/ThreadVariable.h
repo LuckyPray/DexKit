@@ -1,7 +1,10 @@
 #pragma once
 
 #include <map>
+#include <thread>
 #include <shared_mutex>
+
+#define POINT_CASE(X) reinterpret_cast<std::uintptr_t>(X)
 
 class ThreadVariable {
 public:

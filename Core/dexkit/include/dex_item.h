@@ -18,6 +18,7 @@
 #include "schema/querys_generated.h"
 #include "schema/results_generated.h"
 #include "acdat/Builder.h"
+#include "ThreadVariable.h"
 
 namespace dexkit {
 

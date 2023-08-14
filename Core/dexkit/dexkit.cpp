@@ -3,6 +3,9 @@
 namespace dexkit {
 
 DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
+    if (unzip_thread_num > 0) {
+        _thread_num = unzip_thread_num;
+    }
     std::lock_guard<std::mutex> lock(_mutex);
     AddZipPath(apk_path, unzip_thread_num);
     std::sort(dex_items.begin(), dex_items.end());
@@ -98,10 +101,18 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
         }
     }
 
-    std::vector<ClassBean> result;
+    ThreadPool pool(_thread_num);
+    std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
-        auto classes = dex_item->FindClass(query, dex_class_map[dex_item->GetDexId()]);
-        result.insert(result.end(), classes.begin(), classes.end());
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &dex_class_map]() {
+            return dex_item->FindClass(query, dex_class_map[dex_item->GetDexId()]);
+        }));
+    }
+
+    std::vector<ClassBean> result;
+    for (auto &f: futures) {
+        auto vec = f.get();
+        result.insert(result.end(), vec.begin(), vec.end());
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
@@ -126,12 +137,18 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
         }
     }
 
-    std::vector<MethodBean> result;
+    ThreadPool pool(_thread_num);
+    std::vector<std::future<std::vector<MethodBean>>> futures;
     for (auto &dex_item: dex_items) {
-        auto &in_classes = dex_class_map[dex_item->GetDexId()];
-        auto &in_methods = dex_method_map[dex_item->GetDexId()];
-        auto methods = dex_item->FindMethod(query, in_classes, in_methods);
-        result.insert(result.end(), methods.begin(), methods.end());
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &dex_class_map, &dex_method_map]() {
+            return dex_item->FindMethod(query, dex_class_map[dex_item->GetDexId()], dex_method_map[dex_item->GetDexId()]);
+        }));
+    }
+
+    std::vector<MethodBean> result;
+    for (auto &f: futures) {
+        auto vec = f.get();
+        result.insert(result.end(), vec.begin(), vec.end());
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
@@ -156,12 +173,18 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
         }
     }
 
-    std::vector<FieldBean> result;
+    ThreadPool pool(_thread_num);
+    std::vector<std::future<std::vector<FieldBean>>> futures;
     for (auto &dex_item: dex_items) {
-        auto &in_classes = dex_class_map[dex_item->GetDexId()];
-        auto &in_fields = dex_field_map[dex_item->GetDexId()];
-        auto fields = dex_item->FindField(query, in_classes, in_fields);
-        result.insert(result.end(), fields.begin(), fields.end());
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &dex_class_map, &dex_field_map]() {
+            return dex_item->FindField(query, dex_class_map[dex_item->GetDexId()], dex_field_map[dex_item->GetDexId()]);
+        }));
+    }
+
+    std::vector<FieldBean> result;
+    for (auto &f: futures) {
+        auto vec = f.get();
+        result.insert(result.end(), vec.begin(), vec.end());
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
@@ -197,9 +220,17 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
         }
     }
 
-    // fetch and merge result
+    ThreadPool pool(_thread_num);
+    std::vector<std::future<std::vector<BatchFindClassItemBean>>> futures;
     for (auto &dex_item: dex_items) {
-        auto items = dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()]);
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &acTrie, &keywords_map, &match_type_map, &dex_class_map]() {
+            return dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()]);
+        }));
+    }
+
+    // fetch and merge result
+    for (auto &f: futures) {
+        auto items = f.get();
         for (auto &item: items) {
             auto &beans = find_result_map[item.union_key];
             beans.insert(beans.end(), item.classes.begin(), item.classes.end());
@@ -257,9 +288,17 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
         }
     }
 
-    // fetch and merge result
+    ThreadPool pool(_thread_num);
+    std::vector<std::future<std::vector<BatchFindMethodItemBean>>> futures;
     for (auto &dex_item: dex_items) {
-        auto items = dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()], dex_method_map[dex_item->GetDexId()]);
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &acTrie, &keywords_map, &match_type_map, &dex_class_map, &dex_method_map]() {
+            return dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()], dex_method_map[dex_item->GetDexId()]);
+        }));
+    }
+
+    // fetch and merge result
+    for (auto &f: futures) {
+        auto items = f.get();
         for (auto &item: items) {
             auto &beans = find_result_map[item.union_key];
             beans.insert(beans.end(), item.methods.begin(), item.methods.end());

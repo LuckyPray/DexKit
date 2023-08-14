@@ -129,13 +129,22 @@ bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const
         }
     }
     if (matcher->annotations()) {
-        std::vector<const schema::AnnotationMatcher *> annotation_matches;
-        for (auto annotation : *matcher->annotations()) {
-            annotation_matches.push_back(annotation);
-        }
         static auto IsAnnotationMatched = [this](ir::Annotation *annotation, const schema::AnnotationMatcher *matcher) {
             return this->IsAnnotationMatched(annotation, matcher);
         };
+
+        typedef std::vector<const schema::AnnotationMatcher *> AnnotationMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<AnnotationMatcher *>(POINT_CASE(matcher->annotations()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::AnnotationMatcher *>();
+            for (auto annotation : *matcher->annotations()) {
+                vec->push_back(annotation);
+            }
+            ThreadVariable::SetThreadVariable<AnnotationMatcher *>(POINT_CASE(matcher->annotations()), vec);
+            ptr = ThreadVariable::GetThreadVariable<AnnotationMatcher *>(POINT_CASE(matcher->annotations()));
+        }
+
+        auto annotation_matches = **ptr;
         Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotationSet->annotations, annotation_matches, IsAnnotationMatched);
         auto count = hungarian.solve();
         if (count != annotation_matches.size()) {
@@ -214,15 +223,24 @@ bool DexItem::IsAnnotationEncodeValuesMatched(const std::vector<ir::EncodedValue
         if (matcher->values()->size() > encodedValues.size()) {
             return false;
         }
-        std::vector<std::pair<schema::AnnotationEncodeValueMatcher, const void *>> values;
-        for (auto i = 0; i < matcher->values()->size(); ++i) {
-            auto type = matcher->values_type()->Get(i);
-            auto value = matcher->values()->GetAs<void>(i);
-            values.emplace_back(type, value);
-        }
         static auto IsAnnotationEncodeValueMatched = [this](const ir::EncodedValue *encodedValue, const std::pair<schema::AnnotationEncodeValueMatcher, const void *> &value) {
             return this->IsAnnotationEncodeValueMatched(encodedValue, value.first, value.second);
         };
+
+        typedef std::vector<std::pair<schema::AnnotationEncodeValueMatcher, const void *>> AnnotationEncodeValueMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<AnnotationEncodeValueMatcher *>(POINT_CASE(matcher->values()));
+        if (ptr == nullptr) {
+            auto values = new std::vector<std::pair<schema::AnnotationEncodeValueMatcher, const void *>>();
+            for (auto i = 0; i < matcher->values()->size(); ++i) {
+                auto type = matcher->values_type()->Get(i);
+                auto value = matcher->values()->GetAs<void>(i);
+                values->emplace_back(type, value);
+            }
+            ThreadVariable::SetThreadVariable<AnnotationEncodeValueMatcher *>(POINT_CASE(matcher), values);
+            ptr = ThreadVariable::GetThreadVariable<AnnotationEncodeValueMatcher *>(POINT_CASE(matcher));
+        }
+
+        auto values = **ptr;
         Hungarian<ir::EncodedValue *, std::pair<schema::AnnotationEncodeValueMatcher, const void *>> hungarian(encodedValues, values, IsAnnotationEncodeValueMatched);
         int count = hungarian.solve();
         if (count != matcher->values()->size()) {
@@ -267,10 +285,19 @@ bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElemen
         static auto IsAnnotationElementMatched = [this](const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher) {
             return this->IsAnnotationElementMatched(annotationElement, matcher);
         };
-        std::vector<const schema::AnnotationElementMatcher *> matchers;
-        for (auto element : *matcher->elements()) {
-            matchers.push_back(element);
+
+        typedef std::vector<const schema::AnnotationElementMatcher *> AnnotationElementMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<AnnotationElementMatcher *>(POINT_CASE(matcher->elements()));
+        if (ptr == nullptr) {
+            auto matchers = new std::vector<const schema::AnnotationElementMatcher *>();
+            for (auto element : *matcher->elements()) {
+                matchers->push_back(element);
+            }
+            ThreadVariable::SetThreadVariable<std::vector<const schema::AnnotationElementMatcher *> *>(POINT_CASE(matcher->elements()), matchers);
+            ptr = ThreadVariable::GetThreadVariable<std::vector<const schema::AnnotationElementMatcher *> *>(POINT_CASE(matcher->elements()));
         }
+
+        auto matchers = **ptr;
         Hungarian<ir::AnnotationElement *, const schema::AnnotationElementMatcher *> hungarian(annotationElement, matchers, IsAnnotationElementMatched);
         auto count = hungarian.solve();
         if (count != matcher->elements()->size()) {
@@ -364,13 +391,22 @@ bool DexItem::IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMa
         }
     }
     if (matcher->interfaces()) {
-        std::vector<const schema::ClassMatcher *> interface_matchers;
-        for (auto interface_matcher: *matcher->interfaces()) {
-            interface_matchers.push_back(interface_matcher);
-        }
         static auto IsClassMatched = [this](uint32_t class_idx, const schema::ClassMatcher *matcher) {
             return this->IsClassMatched(class_idx, matcher);
         };
+
+        typedef std::vector<const schema::ClassMatcher *> ClassMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<ClassMatcher *>(POINT_CASE(matcher->interfaces()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::ClassMatcher *>();
+            for (auto interface_matcher : *matcher->interfaces()) {
+                vec->push_back(interface_matcher);
+            }
+            ThreadVariable::SetThreadVariable<ClassMatcher *>(POINT_CASE(matcher->interfaces()), vec);
+            ptr = ThreadVariable::GetThreadVariable<ClassMatcher *>(POINT_CASE(matcher->interfaces()));
+        }
+
+        auto interface_matchers = **ptr;
         Hungarian<uint32_t, const schema::ClassMatcher *> hungarian(interfaces, interface_matchers, IsClassMatched);
         auto count = hungarian.solve();
         if (count != interfaces.size()) {
@@ -397,13 +433,22 @@ bool DexItem::IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *m
         }
     }
     if (matcher->fields()) {
-        std::vector<const schema::FieldMatcher *> field_matchers;
-        for (auto field_matcher: *matcher->fields()) {
-            field_matchers.push_back(field_matcher);
-        }
         static auto IsFieldMatched = [this](uint32_t field_idx, const schema::FieldMatcher *matcher) {
             return this->IsFieldMatched(field_idx, matcher);
         };
+
+        typedef std::vector<const schema::FieldMatcher *> FieldMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<FieldMatcher *>(POINT_CASE(matcher->fields()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::FieldMatcher *>();
+            for (auto field_matcher : *matcher->fields()) {
+                vec->push_back(field_matcher);
+            }
+            ThreadVariable::SetThreadVariable<FieldMatcher *>(POINT_CASE(matcher->fields()), vec);
+            ptr = ThreadVariable::GetThreadVariable<FieldMatcher *>(POINT_CASE(matcher->fields()));
+        }
+
+        auto field_matchers = **ptr;
         Hungarian<uint32_t, const schema::FieldMatcher *> hungarian(fields, field_matchers, IsFieldMatched);
         auto count = hungarian.solve();
         if (count != fields.size()) {
@@ -430,13 +475,22 @@ bool DexItem::IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher 
         }
     }
     if (matcher->methods()) {
-        std::vector<const schema::MethodMatcher *> method_matchers;
-        for (auto method_matcher: *matcher->methods()) {
-            method_matchers.push_back(method_matcher);
-        }
         static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
+
+        typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::MethodMatcher *>();
+            for (auto method_matcher : *matcher->methods()) {
+                vec->push_back(method_matcher);
+            }
+            ThreadVariable::SetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()), vec);
+            ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        }
+
+        auto method_matchers = **ptr;
         Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(methods, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != methods.size()) {
@@ -531,14 +585,23 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
         if (matcher->op_codes()->size() > opcodes.size()) {
             return false;
         }
-        std::vector<std::optional<uint8_t>> matcher_opcodes;
-        for (auto opcode: *matcher->op_codes()) {
-            if (opcode < 0) {
-                matcher_opcodes.emplace_back(std::nullopt);
-            } else {
-                matcher_opcodes.emplace_back(opcode);
+
+        typedef std::vector<std::optional<uint8_t>> OpCodeMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<OpCodeMatcher *>(POINT_CASE(matcher->op_codes()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<std::optional<uint8_t>>();
+            for (auto opcode : *matcher->op_codes()) {
+                if (opcode < 0) {
+                    vec->emplace_back(std::nullopt);
+                } else {
+                    vec->emplace_back(opcode);
+                }
             }
+            ThreadVariable::SetThreadVariable<OpCodeMatcher *>(POINT_CASE(matcher->op_codes()), vec);
+            ptr = ThreadVariable::GetThreadVariable<OpCodeMatcher *>(POINT_CASE(matcher->op_codes()));
         }
+
+        auto matcher_opcodes = **ptr;
         auto index = kmp::FindIndex(opcodes, matcher_opcodes);
         if (index == -1) {
             return false;
@@ -557,6 +620,42 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
     return true;
 }
 
+std::set<std::string_view> *
+BuildBatchFindKeywordsMap(
+        const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher,
+        std::vector<std::pair<std::string_view, bool>> &keywords,
+        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+) {
+    auto result = new std::set<std::string_view>();
+    for (int i = 0; i < using_strings_matcher->size(); ++i) {
+        auto string_matcher = using_strings_matcher->Get(i);
+        auto value = string_matcher->value()->string_view();
+        auto type = string_matcher->match_type();
+        auto ignore_case = string_matcher->ignore_case();
+        if (type == schema::StringMatchType::SimilarRegex) {
+            type = schema::StringMatchType::Contains;
+            int l = 0, r = (int) value.size();
+            if (value.starts_with('^')) {
+                l = 1;
+                type = schema::StringMatchType::StartWith;
+            }
+            if (value.ends_with('$')) {
+                r = (int) value.size() - 1;
+                if (type == schema::StringMatchType::StartWith) {
+                    type = schema::StringMatchType::Equal;
+                } else {
+                    type = schema::StringMatchType::EndWith;
+                }
+            }
+            value = value.substr(l, r - l);
+        }
+        result->insert(value);
+        keywords.emplace_back(value, ignore_case);
+        match_type_map[value] = type;
+    }
+    return result;
+}
+
 bool DexItem::IsDexCodesMatched(
         uint32_t method_idx,
         const schema::OpCodesMatcher *op_codes_matcher,
@@ -568,7 +667,35 @@ bool DexItem::IsDexCodesMatched(
     if (!IsOpCodesMatched(method_idx, op_codes_matcher)) {
         return false;
     }
-    // TODO
+    typedef acdat::AhoCorasickDoubleArrayTrie<std::string_view> KeywordTrie;
+    typedef phmap::flat_hash_map<std::string_view, schema::StringMatchType> KeywordMap;
+    KeywordTrie *acTrie;
+    KeywordMap *match_type_map;
+    std::set<std::string_view> *real_keywords;
+    if (using_strings_matcher) {
+        typedef std::tuple<KeywordTrie *, KeywordMap *, std::set<std::string_view> *> KeywordTrieMap;
+        std::vector<std::pair<std::string_view, bool>> keywords;
+        auto ptr = ThreadVariable::GetThreadVariable<KeywordTrieMap *>(POINT_CASE(using_strings_matcher));
+
+        if (ptr == nullptr) {
+            auto trie = new KeywordTrie();
+            auto map = new KeywordMap();
+            auto result = BuildBatchFindKeywordsMap(using_strings_matcher, keywords, *map);
+            acdat::Builder<std::string_view>().Build(keywords, acTrie);
+            auto pair = new KeywordTrieMap(trie, map, result);
+            ThreadVariable::SetThreadVariable<KeywordTrieMap *>(POINT_CASE(using_strings_matcher), pair);
+            ptr = ThreadVariable::GetThreadVariable<KeywordTrieMap *>(POINT_CASE(using_strings_matcher));
+        }
+        acTrie = std::get<0>(**ptr);
+        match_type_map = std::get<1>(**ptr);
+        real_keywords = std::get<2>(**ptr);
+    }
+    if (using_fields_matcher) {
+        // TODO
+    }
+    if (using_numbers_matcher) {
+        // TODO
+    }
     return true;
 }
 
@@ -586,13 +713,22 @@ bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMat
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        std::vector<const schema::MethodMatcher *> method_matchers;
-        for (auto method_matcher: *matcher->methods()) {
-            method_matchers.push_back(method_matcher);
-        }
         static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
+
+        typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::MethodMatcher *>();
+            for (auto method_matcher : *matcher->methods()) {
+                vec->push_back(method_matcher);
+            }
+            ThreadVariable::SetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()), vec);
+            ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        }
+
+        auto method_matchers = **ptr;
         Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != method_matchers.size()) {
@@ -649,13 +785,22 @@ bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::Methods
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        std::vector<const schema::MethodMatcher *> method_matchers;
-        for (auto method_matcher: *matcher->methods()) {
-            method_matchers.push_back(method_matcher);
-        }
         static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
+
+        typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::MethodMatcher *>();
+            for (auto method_matcher : *matcher->methods()) {
+                vec->push_back(method_matcher);
+            }
+            ThreadVariable::SetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()), vec);
+            ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        }
+
+        auto method_matchers = **ptr;
         Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != method_matchers.size()) {
@@ -682,13 +827,22 @@ bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::Methods
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        std::vector<const schema::MethodMatcher *> method_matchers;
-        for (auto method_matcher: *matcher->methods()) {
-            method_matchers.push_back(method_matcher);
-        }
         static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
+
+        typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
+        auto ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        if (ptr == nullptr) {
+            auto vec = new std::vector<const schema::MethodMatcher *>();
+            for (auto method_matcher : *matcher->methods()) {
+                vec->push_back(method_matcher);
+            }
+            ThreadVariable::SetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()), vec);
+            ptr = ThreadVariable::GetThreadVariable<MethodMatcher *>(POINT_CASE(matcher->methods()));
+        }
+
+        auto method_matchers = **ptr;
         Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != method_matchers.size()) {

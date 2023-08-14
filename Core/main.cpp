@@ -131,7 +131,7 @@ int DexKitBatchFindClassTest(dexkit::DexKit &dexkit) {
             ),
     };
 
-    auto find = CreateBatchFindClassUsingStrings(fbb, fbb.CreateString("com.tencent"), 0, fbb.CreateVector(matchers));
+    auto find = CreateBatchFindClassUsingStrings(fbb, 0, 0, fbb.CreateVector(matchers));
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
@@ -192,7 +192,7 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
             ),
     };
 
-    auto find = CreateBatchFindMethodUsingStrings(fbb, fbb.CreateString("com.tencent"), 0, 0, fbb.CreateVector(matchers));
+    auto find = CreateBatchFindMethodUsingStrings(fbb, 0, 0, 0, fbb.CreateVector(matchers));
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
@@ -219,14 +219,26 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
 }
 
 int main() {
+    auto now = std::chrono::system_clock::now();
+    auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
     auto dexkit = dexkit::DexKit("../apks/qq-8.9.2.apk");
+    auto now1 = std::chrono::system_clock::now();
+    auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
+    std::cout << "unzip and init full cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
+
     printf("DexCount: %d\n", dexkit.GetDexNum());
-    SharedPtrVoidCast(dexkit);
+//    SharedPtrVoidCast(dexkit);
+//    ThreadVariableTest();
 //    KmpTest();
 //    ACTrieTest();
 //    FlatBufferTest();
-//    DexKitBatchFindClassTest(dexkit);
-//    DexKitBatchFindMethodTest(dexkit);
-
+    DexKitBatchFindClassTest(dexkit);
+    DexKitBatchFindMethodTest(dexkit);
+    dexkit.FindClass(nullptr);
+    dexkit.FindMethod(nullptr);
+    dexkit.FindField(nullptr);
+    auto now2 = std::chrono::system_clock::now();
+    auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());
+    std::cout << "find used time: " << now_ms2.count() - now_ms1.count() << " ms" << std::endl;
     return 0;
 }
