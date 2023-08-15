@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(dex_kit)
+project(dexkit)
 
 find_program(CCACHE ccache)
 
@@ -16,6 +16,11 @@ file(GLOB_RECURSE DEXKIT_SRC_FILES dexkit/*.cpp)
 set(SLICER_SOURCES
         ${SLICER_SRC_FILES}
 )
+
+set(CFLAGS -flto -fvisibility=default)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -fPIC")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 add_library(${PROJECT_NAME}_static
         STATIC

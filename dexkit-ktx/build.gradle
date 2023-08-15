@@ -38,7 +38,7 @@ android {
                         "-Wno-unused-variable",
                         "-Wno-unused-command-line-argument",
                 ]
-                cppFlags = ["-std=c++17"] + flags
+                cppFlags = ["-std=c++2a"] + flags
                 cFlags = ["-std=c18"] + flags
             }
         }
@@ -95,6 +95,10 @@ android {
             path file("CMakeLists.txt")
             version "3.18.1"
         }
+    }
+
+    buildFeatures {
+        prefab true
     }
 }
 
