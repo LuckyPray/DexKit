@@ -1,5 +1,9 @@
 #include "include/dexkit.h"
 
+#include "ThreadPool.h"
+#include "schema/querys_generated.h"
+#include "schema/results_generated.h"
+
 namespace dexkit {
 
 DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
@@ -9,6 +13,10 @@ DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
     std::lock_guard<std::mutex> lock(_mutex);
     AddZipPath(apk_path, unzip_thread_num);
     std::sort(dex_items.begin(), dex_items.end());
+}
+
+void DexKit::SetThreadNum(int num) {
+    _thread_num = num;
 }
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
@@ -91,6 +99,10 @@ Error DexKit::ExportDexFile(std::string_view path) {
         fclose(fp);
     }
     return Error::SUCCESS;
+}
+
+int DexKit::GetDexNum() const {
+    return (int) dex_items.size();
 }
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::FindClass *query) {

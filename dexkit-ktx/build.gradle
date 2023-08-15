@@ -10,7 +10,7 @@ def signingPropFile = new File(projectDir, "signing.properties")
 def performSigning = signingPropFile.exists()
 def KDockRepoName = "LuckyPray/DexKit-Doc"
 
-def libVersion = "1.1.8"
+def libVersion = "2.0.0-rc1"
 
 android {
     namespace "io.luckypray.dexkit"
@@ -79,16 +79,6 @@ android {
         }
 
     }
-
-//    sourceSets {
-//        main {
-//            manifest.srcFile("AndroidManifest.xml")
-//            java.setSrcDirs([
-//                    "${project(':dexkit-lib').projectDir}/src/main/java",
-//                    "${projectDir}/src/main/java"
-//            ])
-//        }
-//    }
 
     externalNativeBuild {
         cmake {

@@ -5,12 +5,10 @@
 #include <vector>
 #include <atomic>
 
-#include "dex_item.h"
+#include "flatbuffers/flatbuffers.h"
 #include "file_helper.h"
-#include "ThreadPool.h"
 #include "error.h"
-#include "schema/querys_generated.h"
-#include "schema/results_generated.h"
+#include "dex_item.h"
 
 namespace dexkit {
 
@@ -21,13 +19,13 @@ public:
     explicit DexKit(std::string_view apk_path, int unzip_thread_num = 0);
     ~DexKit() = default;
 
-    void SetThreadNum(int num)  { _thread_num = num; }
+    void SetThreadNum(int num);
     Error AddDex(uint8_t *data, size_t size);
     Error AddImage(std::unique_ptr<MemMap> dex_image);
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
     Error ExportDexFile(std::string_view path);
-    [[nodiscard]] int GetDexNum() const { return (int) dex_items.size(); }
+    [[nodiscard]] int GetDexNum() const;
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindMethod(const schema::FindMethod *query);

@@ -1,18 +1,21 @@
 #include "dex_item.h"
 
+#include "utils/byte_code_util.h"
+#include "utils/opcode_util.h"
+
 namespace dexkit {
 
 DexItem::DexItem(uint32_t id, uint8_t *data, size_t size) :
-        dex_id(id),
         _image(std::make_unique<MemMap>(data, size)),
-        reader(_image->addr(), _image->len()) {
+        reader(_image->addr(), _image->len()),
+        dex_id(id) {
     InitCache();
 }
 
 DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap) :
-        dex_id(id),
         _image(std::move(mmap)),
-        reader(_image->addr(), _image->len()) {
+        reader(_image->addr(), _image->len()),
+        dex_id(id) {
     InitCache();
 }
 

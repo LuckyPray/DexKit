@@ -3,22 +3,20 @@
 #include <string_view>
 #include <vector>
 
-#include "parallel_hashmap/phmap.h"
-#include "slicer/reader.h"
 
 #include "beans.h"
-#include "byte_code_util.h"
 #include "common.h"
 #include "constant.h"
 #include "error.h"
-#include "file_helper.h"
-#include "opcode_util.h"
 #include "kmp.h"
 
+#include "parallel_hashmap/phmap.h"
+#include "slicer/reader.h"
 #include "schema/querys_generated.h"
 #include "schema/results_generated.h"
 #include "acdat/Builder.h"
 #include "ThreadVariable.h"
+#include "file_helper.h"
 
 namespace dexkit {
 
