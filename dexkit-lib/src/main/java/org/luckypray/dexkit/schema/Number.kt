@@ -6,10 +6,11 @@ package org.luckypray.dexkit.schema
 class Number private constructor() {
     companion object {
         const val NONE: UByte = 0u
-        const val EncodeValueShort: UByte = 1u
-        const val EncodeValueInt: UByte = 2u
-        const val EncodeValueLong: UByte = 3u
-        const val EncodeValueFloat: UByte = 4u
-        const val EncodeValueDouble: UByte = 5u
+        const val EncodeValueByte: UByte = 1u
+        const val EncodeValueShort: UByte = 2u
+        const val EncodeValueInt: UByte = 3u
+        const val EncodeValueLong: UByte = 4u
+        const val EncodeValueFloat: UByte = 5u
+        const val EncodeValueDouble: UByte = 6u
     }
 }

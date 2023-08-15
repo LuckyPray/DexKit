@@ -11,14 +11,14 @@ public:
     template<typename T, typename Arg>
     static void SetThreadVariable(uint32_t key, Arg &&arg) {
         auto shared_ptr = std::make_shared<T>(std::forward<Arg>(arg));
-        std::unique_lock<std::shared_mutex> lock(_lock);
+        std::unique_lock lock(_lock);
         _thread_variables[std::this_thread::get_id()][key] = shared_ptr;
     }
 
     template<typename T>
     static std::shared_ptr<T> GetThreadVariable(uint32_t key) {
         auto thread_id = std::this_thread::get_id();
-        std::shared_lock<std::shared_mutex> lock(_lock);
+        std::shared_lock lock(_lock);
         if (_thread_variables.find(thread_id) != _thread_variables.end()) {
             auto &map = _thread_variables[thread_id];
             if (map.find(key) != map.end()) {

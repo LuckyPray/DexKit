@@ -94,6 +94,10 @@ int DexItem::InitCache() {
     method_codes.resize(reader.MethodIds().size(), nullptr);
     method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
     method_caller_ids.resize(reader.MethodIds().size());
+    method_invoking_ids.resize(reader.MethodIds().size());
+    method_using_number.resize(reader.MethodIds().size());
+    method_using_string_ids.resize(reader.MethodIds().size());
+    method_using_field_ids.resize(reader.MethodIds().size());
     field_descriptors.resize(reader.FieldIds().size());
     field_access_flags.resize(reader.FieldIds().size());
     field_get_method_ids.resize(reader.FieldIds().size());
@@ -167,6 +171,10 @@ int DexItem::InitCache() {
             if (code == &emptyCode) {
                 continue;
             }
+            auto &method_invoking = method_invoking_ids[method_id];
+            auto &method_using_numbers = method_using_number[method_id];
+            auto &method_using_strings = method_using_string_ids[method_id];
+            auto &method_using_fields = method_using_field_ids[method_id];
             auto &op_seq = method_opcode_seq[method_id];
             op_seq = std::vector<uint8_t>();
             auto p = code->insns;
@@ -177,10 +185,23 @@ int DexItem::InitCache() {
                 auto ptr = p;
                 auto width = GetBytecodeWidth(ptr++);
                 auto op_format = ins_formats[op];
-                switch (op_format) {
+                // using string
+                if (op == 0x1a || op == 0x1b) {
+                    uint32_t index;
+                    if (op == 0x1a) { // const-string
+                        index = ReadShort(ptr);
+                    } else { // const-string-jumbo
+                        index = ReadInt(ptr);
+                    }
+                    method_using_strings.emplace_back(index);
+                } else switch (op_format) {
+                    // using field
                     case dex::k22c: // iinstanceop
                     case dex::k21c: // sstaticop
                     {
+                        if (op < 0x52 || op > 0x6d) {
+                            break;
+                        }
                         // iget, iget-wide, iget-object, iget-boolean, iget-byte, iget-char, iget-short
                         // sget, sget-wide, sget-object, sget-boolean, sget-byte, sget-char, sget-short
                         auto is_getter = ((op >= 0x52 && op <= 0x58) ||
@@ -192,19 +213,49 @@ int DexItem::InitCache() {
                         auto index = ReadShort(ptr);
                         if (is_getter) {
                             field_get_method_ids[index].emplace_back(method_id);
-                        }
-                        if (is_setter) {
+                        } else {
                             field_put_method_ids[index].emplace_back(method_id);
                         }
+                        method_using_fields.emplace_back(index, is_getter);
                         break;
                     }
-                    case dex::k35c: // invoke-kind,
+                    // invoke method
+                    case dex::k35c: // invoke-kind
                     case dex::k3rc: // invoke-kind/range
                     {
                         auto index = ReadShort(ptr);
                         method_caller_ids[index].emplace_back(method_id);
+                        method_invoking.emplace_back(index);
                         break;
                     }
+                    // using number
+                    case dex::k11n: // const/4
+                        method_using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) *ptr}});
+                        break;
+                    case dex::k21s: // const/16, const-wide/16
+                        method_using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) ReadShort(ptr)}});
+                        break;
+                    case dex::k21h: // const/high16, const-wide/high16
+                    {
+                        if (op == 0x15) {
+                            method_using_numbers.emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadShort(ptr) << 16}}});
+                        } else { // 0x19
+                            method_using_numbers.emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadShort(ptr) << 48}}});
+                        }
+                        break;
+                    }
+                    case dex::k31i: // const, const-wide/32
+                        method_using_numbers.emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
+                        break;
+                    case dex::k51l: // const-wide
+                        method_using_numbers.emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadLong(ptr)}}});
+                        break;
+                    case dex::k22s: // binop/lit16
+                        method_using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) ReadShort(ptr)}});
+                        break;
+                    case dex::k22b: // binop/lit8
+                        method_using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) *ptr}});
+                        break;
                     default: break;
                 }
                 p += width;

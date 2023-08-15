@@ -92,6 +92,11 @@ private:
 
     static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
     static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
+    static std::set<std::string_view> BuildBatchFindKeywordsMap(
+            const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher,
+            std::vector<std::pair<std::string_view, bool>> &keywords,
+            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
+    );
 
     bool IsAnnotationMatched(const ir::Annotation *annotation, const schema::AnnotationMatcher *matcher);
     bool IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
@@ -103,6 +108,7 @@ private:
     bool IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
     bool IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
     bool IsClassSmaliSourceMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
+    bool IsClassUsingStringsMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
     bool IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMatcher *matcher);
     bool IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *matcher);
     bool IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher *matcher);
@@ -110,16 +116,13 @@ private:
     bool IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
     bool IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher);
     bool IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher *matcher);
-    bool IsDexCodesMatched(
-            uint32_t method_idx,
-            const schema::OpCodesMatcher *op_codes_matcher,
-            const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher,
-            const flatbuffers::Vector<flatbuffers::Offset<schema::UsingFieldMatcher>> *using_fields_matcher,
-            const flatbuffers::Vector<flatbuffers::Offset<schema::UsingNumberMatcher>> *using_numbers_matcher,
-            const schema::MethodsMatcher *invoke_methods_matcher
-    );
+    bool IsMethodUsingStringsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
+    bool IsUsingFieldsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
+    bool IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
+    bool IsInvokingMethodsMatched(uint32_t method_idx, const schema::MethodsMatcher *matcher);
     bool IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMatcher *matcher);
 
+    bool IsUsingFieldMatched(std::pair<uint32_t, bool> field, const schema::UsingFieldMatcher *matcher);
     bool IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *matcher);
     bool IsFieldGetMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
     bool IsFieldPutMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
@@ -160,9 +163,13 @@ private:
     std::vector<ir::AnnotationSet *> field_annotations;
     std::vector<std::vector<ir::AnnotationSet *>> method_parameter_annotations;
 
-    std::vector<std::vector<uint32_t>> method_caller_ids;
-    std::vector<std::vector<uint32_t>> field_get_method_ids;
-    std::vector<std::vector<uint32_t>> field_put_method_ids;
+    std::vector<std::vector<uint32_t /*call_method_id*/>> method_caller_ids;
+    std::vector<std::vector<uint32_t /*invoke_method_id*/>> method_invoking_ids;
+    std::vector<std::vector<EncodeNumber /*using_number*/>> method_using_number;
+    std::vector<std::vector<uint32_t /*using_string*/>> method_using_string_ids;
+    std::vector<std::vector<std::pair<uint32_t /*method_id*/, bool /*is_getting*/>>> method_using_field_ids;
+    std::vector<std::vector<uint32_t /*field_id*/>> field_get_method_ids;
+    std::vector<std::vector<uint32_t /*field_id*/>> field_put_method_ids;
 };
 
 } // namespace dexkit

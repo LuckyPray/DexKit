@@ -104,8 +104,8 @@ class MethodMatcher : Table() {
         get() {
             val o = __offset(18); return if (o != 0) __vector_len(o) else 0
         }
-    fun usingFiels(j: Int) : UsingFieldMatcher? = usingFiels(UsingFieldMatcher(), j)
-    fun usingFiels(obj: UsingFieldMatcher, j: Int) : UsingFieldMatcher? {
+    fun usingFields(j: Int) : UsingFieldMatcher? = usingFields(UsingFieldMatcher(), j)
+    fun usingFields(obj: UsingFieldMatcher, j: Int) : UsingFieldMatcher? {
         val o = __offset(20)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
@@ -113,26 +113,39 @@ class MethodMatcher : Table() {
             null
         }
     }
-    val usingFielsLength : Int
+    val usingFieldsLength : Int
         get() {
             val o = __offset(20); return if (o != 0) __vector_len(o) else 0
         }
-    fun usingNumbers(j: Int) : UsingNumberMatcher? = usingNumbers(UsingNumberMatcher(), j)
-    fun usingNumbers(obj: UsingNumberMatcher, j: Int) : UsingNumberMatcher? {
+    fun usingNumbersType(j: Int) : UByte {
         val o = __offset(22)
         return if (o != 0) {
-            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+            bb.get(__vector(o) + j * 1).toUByte()
+        } else {
+            0u
+        }
+    }
+    val usingNumbersTypeLength : Int
+        get() {
+            val o = __offset(22); return if (o != 0) __vector_len(o) else 0
+        }
+    val usingNumbersTypeAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(22, 1)
+    fun usingNumbersTypeInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 22, 1)
+    fun usingNumbers(obj: Table, j: Int) : Table? {
+        val o = __offset(24)
+        return if (o != 0) {
+            __union(obj, __vector(o) + j * 4)
         } else {
             null
         }
     }
     val usingNumbersLength : Int
         get() {
-            val o = __offset(22); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(24); return if (o != 0) __vector_len(o) else 0
         }
     val invokingMethods : MethodsMatcher? get() = invokingMethods(MethodsMatcher())
     fun invokingMethods(obj: MethodsMatcher) : MethodsMatcher? {
-        val o = __offset(24)
+        val o = __offset(26)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -141,7 +154,7 @@ class MethodMatcher : Table() {
     }
     val methodCallers : MethodsMatcher? get() = methodCallers(MethodsMatcher())
     fun methodCallers(obj: MethodsMatcher) : MethodsMatcher? {
-        val o = __offset(26)
+        val o = __offset(28)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -155,12 +168,13 @@ class MethodMatcher : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createMethodMatcher(builder: FlatBufferBuilder, methodNameOffset: Int, accessFlagsOffset: Int, declaringClassOffset: Int, returnTypeOffset: Int, parametersOffset: Int, annotationsOffset: Int, opCodesOffset: Int, usingStringsOffset: Int, usingFielsOffset: Int, usingNumbersOffset: Int, invokingMethodsOffset: Int, methodCallersOffset: Int) : Int {
-            builder.startTable(12)
+        fun createMethodMatcher(builder: FlatBufferBuilder, methodNameOffset: Int, accessFlagsOffset: Int, declaringClassOffset: Int, returnTypeOffset: Int, parametersOffset: Int, annotationsOffset: Int, opCodesOffset: Int, usingStringsOffset: Int, usingFieldsOffset: Int, usingNumbersTypeOffset: Int, usingNumbersOffset: Int, invokingMethodsOffset: Int, methodCallersOffset: Int) : Int {
+            builder.startTable(13)
             addMethodCallers(builder, methodCallersOffset)
             addInvokingMethods(builder, invokingMethodsOffset)
             addUsingNumbers(builder, usingNumbersOffset)
-            addUsingFiels(builder, usingFielsOffset)
+            addUsingNumbersType(builder, usingNumbersTypeOffset)
+            addUsingFields(builder, usingFieldsOffset)
             addUsingStrings(builder, usingStringsOffset)
             addOpCodes(builder, opCodesOffset)
             addAnnotations(builder, annotationsOffset)
@@ -171,7 +185,7 @@ class MethodMatcher : Table() {
             addMethodName(builder, methodNameOffset)
             return endMethodMatcher(builder)
         }
-        fun startMethodMatcher(builder: FlatBufferBuilder) = builder.startTable(12)
+        fun startMethodMatcher(builder: FlatBufferBuilder) = builder.startTable(13)
         fun addMethodName(builder: FlatBufferBuilder, methodName: Int) = builder.addOffset(0, methodName, 0)
         fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(1, accessFlags, 0)
         fun addDeclaringClass(builder: FlatBufferBuilder, declaringClass: Int) = builder.addOffset(2, declaringClass, 0)
@@ -188,16 +202,26 @@ class MethodMatcher : Table() {
             return builder.endVector()
         }
         fun startUsingStringsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addUsingFiels(builder: FlatBufferBuilder, usingFiels: Int) = builder.addOffset(8, usingFiels, 0)
-        fun createUsingFielsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+        fun addUsingFields(builder: FlatBufferBuilder, usingFields: Int) = builder.addOffset(8, usingFields, 0)
+        fun createUsingFieldsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
                 builder.addOffset(data[i])
             }
             return builder.endVector()
         }
-        fun startUsingFielsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addUsingNumbers(builder: FlatBufferBuilder, usingNumbers: Int) = builder.addOffset(9, usingNumbers, 0)
+        fun startUsingFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addUsingNumbersType(builder: FlatBufferBuilder, usingNumbersType: Int) = builder.addOffset(9, usingNumbersType, 0)
+        @kotlin.ExperimentalUnsignedTypes
+        fun createUsingNumbersTypeVector(builder: FlatBufferBuilder, data: UByteArray) : Int {
+            builder.startVector(1, data.size, 1)
+            for (i in data.size - 1 downTo 0) {
+                builder.addByte(data[i].toByte())
+            }
+            return builder.endVector()
+        }
+        fun startUsingNumbersTypeVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(1, numElems, 1)
+        fun addUsingNumbers(builder: FlatBufferBuilder, usingNumbers: Int) = builder.addOffset(10, usingNumbers, 0)
         fun createUsingNumbersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {
@@ -206,8 +230,8 @@ class MethodMatcher : Table() {
             return builder.endVector()
         }
         fun startUsingNumbersVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
-        fun addInvokingMethods(builder: FlatBufferBuilder, invokingMethods: Int) = builder.addOffset(10, invokingMethods, 0)
-        fun addMethodCallers(builder: FlatBufferBuilder, methodCallers: Int) = builder.addOffset(11, methodCallers, 0)
+        fun addInvokingMethods(builder: FlatBufferBuilder, invokingMethods: Int) = builder.addOffset(11, invokingMethods, 0)
+        fun addMethodCallers(builder: FlatBufferBuilder, methodCallers: Int) = builder.addOffset(12, methodCallers, 0)
         fun endMethodMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

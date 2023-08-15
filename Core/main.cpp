@@ -1,6 +1,5 @@
 #include <iostream>
 #include <sstream>
-#include "slicer/reader.h"
 #include "schema/querys_generated.h"
 #include "dexkit.h"
 #include "beans.h"
@@ -18,7 +17,7 @@ int SharedPtrVoidCast(dexkit::DexKit &dexkit) {
     auto ptr = &dexkit;
     auto vector = std::vector<int>{114, 514};
     map[ptr] = std::make_shared<std::vector<int>>(vector);
-    printf("map size: %lld\n", map.size());
+    printf("map size: %lu\n", map.size());
     auto q = *reinterpret_cast<std::shared_ptr<std::vector<int>>*>(&map[ptr]);
     printf("map[ptr]: %d\n", (*q)[0]);
     assert((*q)[0] == vector[0]);

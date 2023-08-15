@@ -92,16 +92,12 @@ table UsingFieldMatcher {
 }
 
 union Number {
+    EncodeValueByte,
     EncodeValueShort,
     EncodeValueInt,
     EncodeValueLong,
     EncodeValueFloat,
     EncodeValueDouble,
-}
-
-table UsingNumberMatcher {
-    number: Number;
-    using_type: UsingType;
 }
 
 table MethodMatcher {
@@ -113,8 +109,8 @@ table MethodMatcher {
     annotations: AnnotationsMatcher;
     op_codes: OpCodesMatcher;
     using_strings: [StringMatcher];
-    using_fiels: [UsingFieldMatcher];
-    using_numbers: [UsingNumberMatcher];
+    using_fields: [UsingFieldMatcher];
+    using_numbers: [Number];
     invoking_methods: MethodsMatcher;
     method_callers: MethodsMatcher;
 }

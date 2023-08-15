@@ -7,7 +7,7 @@ DexItem::InitBatchFindStringsMap(
         acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
 ) {
-    phmap::flat_hash_map<uint32_t, std::vector<std::string_view>> strings_map;
+    phmap::flat_hash_map<uint32_t /*string_idx*/, std::vector<std::string_view>> strings_map;
 
     for (auto i = 0; i < this->strings.size(); ++i) {
         std::string_view string = this->strings[i];
@@ -62,38 +62,12 @@ DexItem::BatchFindClassUsingStrings(
 
         std::set<std::string_view> search_set;
         for (auto method_idx: class_method_ids[type_idx]) {
-            auto code = this->method_codes[method_idx];
-            if (code == nullptr) continue;
-
-            auto p = code->insns;
-            auto end_p = p + code->insns_size;
-            while (p < end_p) {
-                auto op = *p & 0xff;
-                auto ptr = p;
-                auto width = GetBytecodeWidth(ptr++);
-                switch (op) {
-                    case 0x1a: {
-                        auto string_idx = ReadShort(ptr);
-                        if (strings_map.contains(string_idx)) {
-                            for (auto &string: strings_map[string_idx]) {
-                                search_set.emplace(string);
-                            }
-                        }
-                        break;
+            for (auto string_idx: method_using_string_ids[method_idx]) {
+                if (strings_map.contains(string_idx)) {
+                    for (auto &string: strings_map[string_idx]) {
+                        search_set.emplace(string);
                     }
-                    case 0x1b: {
-                        auto string_idx = ReadInt(ptr);
-                        if (strings_map.contains(string_idx)) {
-                            for (auto &string: strings_map[string_idx]) {
-                                search_set.emplace(string);
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        break;
                 }
-                p += width;
             }
         }
         if (search_set.empty()) continue;
@@ -153,40 +127,16 @@ DexItem::BatchFindMethodUsingStrings(
 
         for (auto method_idx: class_method_ids[type_idx]) {
             if (query->in_methods() && in_method_set.contains(method_idx)) continue;
-
-            std::set<std::string_view> search_set;
             auto code = this->method_codes[method_idx];
             if (code == nullptr) continue;
 
-            auto p = code->insns;
-            auto end_p = p + code->insns_size;
-            while (p < end_p) {
-                auto op = *p & 0xff;
-                auto ptr = p;
-                auto width = GetBytecodeWidth(ptr++);
-                switch (op) {
-                    case 0x1a: {
-                        auto string_idx = ReadShort(ptr);
-                        if (strings_map.contains(string_idx)) {
-                            for (auto &string: strings_map[string_idx]) {
-                                search_set.emplace(string);
-                            }
-                        }
-                        break;
+            std::set<std::string_view> search_set;
+            for (auto string_idx: method_using_string_ids[method_idx]) {
+                if (strings_map.contains(string_idx)) {
+                    for (auto &string: strings_map[string_idx]) {
+                        search_set.emplace(string);
                     }
-                    case 0x1b: {
-                        auto string_idx = ReadInt(ptr);
-                        if (strings_map.contains(string_idx)) {
-                            for (auto &string: strings_map[string_idx]) {
-                                search_set.emplace(string);
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        break;
                 }
-                p += width;
             }
             if (search_set.empty()) continue;
 

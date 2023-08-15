@@ -56,9 +56,6 @@ struct OpCodesMatcherBuilder;
 struct UsingFieldMatcher;
 struct UsingFieldMatcherBuilder;
 
-struct UsingNumberMatcher;
-struct UsingNumberMatcherBuilder;
-
 struct MethodMatcher;
 struct MethodMatcherBuilder;
 
@@ -205,16 +202,18 @@ bool VerifyAnnotationEncodeValueMatcherVector(::flatbuffers::Verifier &verifier,
 
 enum class Number : uint8_t {
   NONE = 0,
-  EncodeValueShort = 1,
-  EncodeValueInt = 2,
-  EncodeValueLong = 3,
-  EncodeValueFloat = 4,
-  EncodeValueDouble = 5
+  EncodeValueByte = 1,
+  EncodeValueShort = 2,
+  EncodeValueInt = 3,
+  EncodeValueLong = 4,
+  EncodeValueFloat = 5,
+  EncodeValueDouble = 6
 };
 
-inline const Number (&EnumValuesNumber())[6] {
+inline const Number (&EnumValuesNumber())[7] {
   static const Number values[] = {
     Number::NONE,
+    Number::EncodeValueByte,
     Number::EncodeValueShort,
     Number::EncodeValueInt,
     Number::EncodeValueLong,
@@ -225,8 +224,9 @@ inline const Number (&EnumValuesNumber())[6] {
 }
 
 inline const char * const *EnumNamesNumber() {
-  static const char * const names[7] = {
+  static const char * const names[8] = {
     "NONE",
+    "EncodeValueByte",
     "EncodeValueShort",
     "EncodeValueInt",
     "EncodeValueLong",
@@ -245,6 +245,10 @@ inline const char *EnumNameNumber(Number e) {
 
 template<typename T> struct NumberTraits {
   static const Number enum_value = Number::NONE;
+};
+
+template<> struct NumberTraits<dexkit::schema::EncodeValueByte> {
+  static const Number enum_value = Number::EncodeValueByte;
 };
 
 template<> struct NumberTraits<dexkit::schema::EncodeValueShort> {
@@ -1262,110 +1266,6 @@ struct UsingFieldMatcher::Traits {
   static auto constexpr Create = CreateUsingFieldMatcher;
 };
 
-struct UsingNumberMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef UsingNumberMatcherBuilder Builder;
-  struct Traits;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_NUMBER_TYPE = 4,
-    VT_NUMBER = 6,
-    VT_USING_TYPE = 8
-  };
-  dexkit::schema::Number number_type() const {
-    return static_cast<dexkit::schema::Number>(GetField<uint8_t>(VT_NUMBER_TYPE, 0));
-  }
-  const void *number() const {
-    return GetPointer<const void *>(VT_NUMBER);
-  }
-  template<typename T> const T *number_as() const;
-  const dexkit::schema::EncodeValueShort *number_as_EncodeValueShort() const {
-    return number_type() == dexkit::schema::Number::EncodeValueShort ? static_cast<const dexkit::schema::EncodeValueShort *>(number()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueInt *number_as_EncodeValueInt() const {
-    return number_type() == dexkit::schema::Number::EncodeValueInt ? static_cast<const dexkit::schema::EncodeValueInt *>(number()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueLong *number_as_EncodeValueLong() const {
-    return number_type() == dexkit::schema::Number::EncodeValueLong ? static_cast<const dexkit::schema::EncodeValueLong *>(number()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueFloat *number_as_EncodeValueFloat() const {
-    return number_type() == dexkit::schema::Number::EncodeValueFloat ? static_cast<const dexkit::schema::EncodeValueFloat *>(number()) : nullptr;
-  }
-  const dexkit::schema::EncodeValueDouble *number_as_EncodeValueDouble() const {
-    return number_type() == dexkit::schema::Number::EncodeValueDouble ? static_cast<const dexkit::schema::EncodeValueDouble *>(number()) : nullptr;
-  }
-  dexkit::schema::UsingType using_type() const {
-    return static_cast<dexkit::schema::UsingType>(GetField<int8_t>(VT_USING_TYPE, 0));
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_NUMBER_TYPE, 1) &&
-           VerifyOffset(verifier, VT_NUMBER) &&
-           VerifyNumber(verifier, number(), number_type()) &&
-           VerifyField<int8_t>(verifier, VT_USING_TYPE, 1) &&
-           verifier.EndTable();
-  }
-};
-
-template<> inline const dexkit::schema::EncodeValueShort *UsingNumberMatcher::number_as<dexkit::schema::EncodeValueShort>() const {
-  return number_as_EncodeValueShort();
-}
-
-template<> inline const dexkit::schema::EncodeValueInt *UsingNumberMatcher::number_as<dexkit::schema::EncodeValueInt>() const {
-  return number_as_EncodeValueInt();
-}
-
-template<> inline const dexkit::schema::EncodeValueLong *UsingNumberMatcher::number_as<dexkit::schema::EncodeValueLong>() const {
-  return number_as_EncodeValueLong();
-}
-
-template<> inline const dexkit::schema::EncodeValueFloat *UsingNumberMatcher::number_as<dexkit::schema::EncodeValueFloat>() const {
-  return number_as_EncodeValueFloat();
-}
-
-template<> inline const dexkit::schema::EncodeValueDouble *UsingNumberMatcher::number_as<dexkit::schema::EncodeValueDouble>() const {
-  return number_as_EncodeValueDouble();
-}
-
-struct UsingNumberMatcherBuilder {
-  typedef UsingNumberMatcher Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_number_type(dexkit::schema::Number number_type) {
-    fbb_.AddElement<uint8_t>(UsingNumberMatcher::VT_NUMBER_TYPE, static_cast<uint8_t>(number_type), 0);
-  }
-  void add_number(::flatbuffers::Offset<void> number) {
-    fbb_.AddOffset(UsingNumberMatcher::VT_NUMBER, number);
-  }
-  void add_using_type(dexkit::schema::UsingType using_type) {
-    fbb_.AddElement<int8_t>(UsingNumberMatcher::VT_USING_TYPE, static_cast<int8_t>(using_type), 0);
-  }
-  explicit UsingNumberMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<UsingNumberMatcher> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<UsingNumberMatcher>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<UsingNumberMatcher> CreateUsingNumberMatcher(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    dexkit::schema::Number number_type = dexkit::schema::Number::NONE,
-    ::flatbuffers::Offset<void> number = 0,
-    dexkit::schema::UsingType using_type = dexkit::schema::UsingType::Any) {
-  UsingNumberMatcherBuilder builder_(_fbb);
-  builder_.add_number(number);
-  builder_.add_using_type(using_type);
-  builder_.add_number_type(number_type);
-  return builder_.Finish();
-}
-
-struct UsingNumberMatcher::Traits {
-  using type = UsingNumberMatcher;
-  static auto constexpr Create = CreateUsingNumberMatcher;
-};
-
 struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MethodMatcherBuilder Builder;
   struct Traits;
@@ -1378,10 +1278,11 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ANNOTATIONS = 14,
     VT_OP_CODES = 16,
     VT_USING_STRINGS = 18,
-    VT_USING_FIELS = 20,
-    VT_USING_NUMBERS = 22,
-    VT_INVOKING_METHODS = 24,
-    VT_METHOD_CALLERS = 26
+    VT_USING_FIELDS = 20,
+    VT_USING_NUMBERS_TYPE = 22,
+    VT_USING_NUMBERS = 24,
+    VT_INVOKING_METHODS = 26,
+    VT_METHOD_CALLERS = 28
   };
   const dexkit::schema::StringMatcher *method_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_METHOD_NAME);
@@ -1407,11 +1308,14 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_USING_STRINGS);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *using_fiels() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *>(VT_USING_FIELS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *using_fields() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *>(VT_USING_FIELDS);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>> *using_numbers() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>> *>(VT_USING_NUMBERS);
+  const ::flatbuffers::Vector<dexkit::schema::Number> *using_numbers_type() const {
+    return GetPointer<const ::flatbuffers::Vector<dexkit::schema::Number> *>(VT_USING_NUMBERS_TYPE);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *using_numbers() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *>(VT_USING_NUMBERS);
   }
   const dexkit::schema::MethodsMatcher *invoking_methods() const {
     return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_INVOKING_METHODS);
@@ -1438,12 +1342,14 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_USING_STRINGS) &&
            verifier.VerifyVector(using_strings()) &&
            verifier.VerifyVectorOfTables(using_strings()) &&
-           VerifyOffset(verifier, VT_USING_FIELS) &&
-           verifier.VerifyVector(using_fiels()) &&
-           verifier.VerifyVectorOfTables(using_fiels()) &&
+           VerifyOffset(verifier, VT_USING_FIELDS) &&
+           verifier.VerifyVector(using_fields()) &&
+           verifier.VerifyVectorOfTables(using_fields()) &&
+           VerifyOffset(verifier, VT_USING_NUMBERS_TYPE) &&
+           verifier.VerifyVector(using_numbers_type()) &&
            VerifyOffset(verifier, VT_USING_NUMBERS) &&
            verifier.VerifyVector(using_numbers()) &&
-           verifier.VerifyVectorOfTables(using_numbers()) &&
+           VerifyNumberVector(verifier, using_numbers(), using_numbers_type()) &&
            VerifyOffset(verifier, VT_INVOKING_METHODS) &&
            verifier.VerifyTable(invoking_methods()) &&
            VerifyOffset(verifier, VT_METHOD_CALLERS) &&
@@ -1480,10 +1386,13 @@ struct MethodMatcherBuilder {
   void add_using_strings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings) {
     fbb_.AddOffset(MethodMatcher::VT_USING_STRINGS, using_strings);
   }
-  void add_using_fiels(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>> using_fiels) {
-    fbb_.AddOffset(MethodMatcher::VT_USING_FIELS, using_fiels);
+  void add_using_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>> using_fields) {
+    fbb_.AddOffset(MethodMatcher::VT_USING_FIELDS, using_fields);
   }
-  void add_using_numbers(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>>> using_numbers) {
+  void add_using_numbers_type(::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::Number>> using_numbers_type) {
+    fbb_.AddOffset(MethodMatcher::VT_USING_NUMBERS_TYPE, using_numbers_type);
+  }
+  void add_using_numbers(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> using_numbers) {
     fbb_.AddOffset(MethodMatcher::VT_USING_NUMBERS, using_numbers);
   }
   void add_invoking_methods(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods) {
@@ -1513,15 +1422,17 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcher(
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::OpCodesMatcher> op_codes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>> using_fiels = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>>> using_numbers = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>> using_fields = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::Number>> using_numbers_type = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> using_numbers = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0) {
   MethodMatcherBuilder builder_(_fbb);
   builder_.add_method_callers(method_callers);
   builder_.add_invoking_methods(invoking_methods);
   builder_.add_using_numbers(using_numbers);
-  builder_.add_using_fiels(using_fiels);
+  builder_.add_using_numbers_type(using_numbers_type);
+  builder_.add_using_fields(using_fields);
   builder_.add_using_strings(using_strings);
   builder_.add_op_codes(op_codes);
   builder_.add_annotations(annotations);
@@ -1548,13 +1459,15 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::OpCodesMatcher> op_codes = 0,
     const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings = nullptr,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *using_fiels = nullptr,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>> *using_numbers = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>> *using_fields = nullptr,
+    const std::vector<dexkit::schema::Number> *using_numbers_type = nullptr,
+    const std::vector<::flatbuffers::Offset<void>> *using_numbers = nullptr,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0) {
   auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
-  auto using_fiels__ = using_fiels ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>(*using_fiels) : 0;
-  auto using_numbers__ = using_numbers ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingNumberMatcher>>(*using_numbers) : 0;
+  auto using_fields__ = using_fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>(*using_fields) : 0;
+  auto using_numbers_type__ = using_numbers_type ? _fbb.CreateVector<dexkit::schema::Number>(*using_numbers_type) : 0;
+  auto using_numbers__ = using_numbers ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*using_numbers) : 0;
   return dexkit::schema::CreateMethodMatcher(
       _fbb,
       method_name,
@@ -1565,7 +1478,8 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
       annotations,
       op_codes,
       using_strings__,
-      using_fiels__,
+      using_fields__,
+      using_numbers_type__,
       using_numbers__,
       invoking_methods,
       method_callers);
@@ -2245,6 +2159,10 @@ inline bool VerifyNumber(::flatbuffers::Verifier &verifier, const void *obj, Num
   switch (type) {
     case Number::NONE: {
       return true;
+    }
+    case Number::EncodeValueByte: {
+      auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueByte *>(obj);
+      return verifier.VerifyTable(ptr);
     }
     case Number::EncodeValueShort: {
       auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueShort *>(obj);
