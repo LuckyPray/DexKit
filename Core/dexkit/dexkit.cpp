@@ -104,8 +104,9 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &dex_class_map]() {
-            return dex_item->FindClass(query, dex_class_map[dex_item->GetDexId()]);
+        auto &class_set = dex_class_map[dex_item->GetDexId()];
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set]() {
+            return dex_item->FindClass(query, class_set);
         }));
     }
 
@@ -140,8 +141,10 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<MethodBean>>> futures;
     for (auto &dex_item: dex_items) {
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &dex_class_map, &dex_method_map]() {
-            return dex_item->FindMethod(query, dex_class_map[dex_item->GetDexId()], dex_method_map[dex_item->GetDexId()]);
+        auto &class_set = dex_class_map[dex_item->GetDexId()];
+        auto &method_set = dex_method_map[dex_item->GetDexId()];
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &class_set, &method_set]() {
+            return dex_item->FindMethod(query, class_set, method_set);
         }));
     }
 
@@ -176,8 +179,10 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<FieldBean>>> futures;
     for (auto &dex_item: dex_items) {
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &dex_class_map, &dex_field_map]() {
-            return dex_item->FindField(query, dex_class_map[dex_item->GetDexId()], dex_field_map[dex_item->GetDexId()]);
+        auto &class_set = dex_class_map[dex_item->GetDexId()];
+        auto &field_set = dex_field_map[dex_item->GetDexId()];
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &field_set]() {
+            return dex_item->FindField(query, class_set, field_set);
         }));
     }
 
@@ -223,8 +228,9 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<BatchFindClassItemBean>>> futures;
     for (auto &dex_item: dex_items) {
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &acTrie, &keywords_map, &match_type_map, &dex_class_map]() {
-            return dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()]);
+        auto &class_map = dex_class_map[dex_item->GetDexId()];
+        futures.push_back(pool.enqueue([&dex_item, &query, &acTrie, &keywords_map, &match_type_map, &class_map]() {
+            return dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, class_map);
         }));
     }
 
@@ -291,8 +297,10 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<BatchFindMethodItemBean>>> futures;
     for (auto &dex_item: dex_items) {
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &acTrie, &keywords_map, &match_type_map, &dex_class_map, &dex_method_map]() {
-            return dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, dex_class_map[dex_item->GetDexId()], dex_method_map[dex_item->GetDexId()]);
+        auto &class_set = dex_class_map[dex_item->GetDexId()];
+        auto &method_set = dex_method_map[dex_item->GetDexId()];
+        futures.push_back(pool.enqueue([&dex_item, &query, &acTrie, &keywords_map, &match_type_map, &class_set, &method_set]() {
+            return dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, class_set, method_set);
         }));
     }
 

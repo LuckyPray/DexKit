@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "slicer/reader.h"
 #include "schema/querys_generated.h"
 #include "dexkit.h"
@@ -25,15 +26,16 @@ int SharedPtrVoidCast(dexkit::DexKit &dexkit) {
 }
 
 int ThreadVariableTest() {
-    std::vector<std::future<void>> results;
     ThreadPool pool(2);
     for (int i = 0; i < 10000; ++i) {
-        results.push_back(pool.enqueue([i]() {
+        pool.enqueue([i]() {
             ThreadVariable::SetThreadVariable<int>(i, i);
             auto thread_id = std::this_thread::get_id();
             auto p = ThreadVariable::GetThreadVariable<int>(i);
-            printf("thread id: %p, idx: %d, %d\n", thread_id, i, *p);
-        }));
+            std::ostringstream os;
+            os << thread_id;
+            printf("thread id: %s, idx: %d, %d\n", os.str().c_str(), (int) i, *p);
+        });
     }
     return 0;
 }
@@ -234,9 +236,9 @@ int main() {
 //    FlatBufferTest();
     DexKitBatchFindClassTest(dexkit);
     DexKitBatchFindMethodTest(dexkit);
-    dexkit.FindClass(nullptr);
-    dexkit.FindMethod(nullptr);
-    dexkit.FindField(nullptr);
+//    dexkit.FindClass(nullptr);
+//    dexkit.FindMethod(nullptr);
+//    dexkit.FindField(nullptr);
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());
     std::cout << "find used time: " << now_ms2.count() - now_ms1.count() << " ms" << std::endl;
