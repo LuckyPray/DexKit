@@ -22,7 +22,7 @@ enum UsingType:byte {
 }
 
 enum MatchType:byte {
-    Contain,
+    Contains,
     Equal,
 }
 

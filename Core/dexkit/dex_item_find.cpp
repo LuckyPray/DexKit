@@ -15,12 +15,12 @@ DexItem::FindClass(const schema::FindClass *query, std::set<uint32_t> &in_class_
     }
 
     std::vector<uint32_t> find_result;
-    for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
-        if (query->in_classes() && !in_class_set.contains(type_idx)) continue;
-        if (query->search_package() && !type_names[type_idx].starts_with(search_package)) continue;
+    for (auto &class_def: this->reader.ClassDefs()) {
+        if (query->in_classes() && !in_class_set.contains(class_def.class_idx)) continue;
+        if (query->search_package() && !type_names[class_def.class_idx].starts_with(search_package)) continue;
 
-        if (IsClassMatched(type_idx, query->matcher())) {
-            find_result.emplace_back(type_idx);
+        if (IsClassMatched(class_def.class_idx, query->matcher())) {
+            find_result.emplace_back(class_def.class_idx);
         }
     }
 

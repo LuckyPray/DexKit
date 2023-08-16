@@ -61,7 +61,7 @@ public:
             std::set<uint32_t> &in_method_set
     );
 
-    ClassBean GetClassBean(uint32_t class_idx);
+    ClassBean GetClassBean(uint32_t type_idx);
     MethodBean GetMethodBean(uint32_t method_idx);
     FieldBean GetFieldBean(uint32_t field_idx);
 
@@ -103,13 +103,16 @@ private:
     bool IsAnnotationElementMatched(const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher);
     bool IsAnnotationElementsMatched(const std::vector<ir::AnnotationElement *> &annotationElement, const schema::AnnotationEncodeArrayMatcher *matcher);
 
-    bool IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
-    bool IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
-    bool IsClassSmaliSourceMatched(uint32_t class_idx, const schema::StringMatcher *matcher);
-    bool IsClassUsingStringsMatched(uint32_t class_idx, const schema::ClassMatcher *matcher);
-    bool IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMatcher *matcher);
-    bool IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *matcher);
-    bool IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher *matcher);
+    bool IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher);
+    bool IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *matcher);
+    bool IsClassAccessFlagsMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher);
+    bool IsClassSmaliSourceMatched(uint32_t type_idx, const schema::StringMatcher *matcher);
+    bool IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassMatcher *matcher);
+    bool IsSuperClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher);
+    bool IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMatcher *matcher);
+    bool IsClassAnnotationMatched(uint32_t type_idx, const schema::AnnotationsMatcher *matcher);
+    bool IsFieldsMatched(uint32_t type_idx, const schema::FieldsMatcher *matcher);
+    bool IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *matcher);
 
     bool IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
     bool IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher);
@@ -139,9 +142,9 @@ private:
     std::vector<std::string_view> strings;
     std::vector<std::string_view> type_names;
     phmap::flat_hash_map<std::string_view /*type_name*/, uint32_t /*type_id*/> type_ids_map;
-    phmap::flat_hash_map<std::uint32_t /*type_idx*/, uint32_t /*class_id*/> type_id_class_id_map;
+    std::vector<uint32_t /*class_def_id*/> type_def_idx;
     // dex declared types flag
-    std::vector<bool /*declared_flag*/> type_declared_flag;
+    std::vector<bool /*def_in_class_def*/> type_def_flag;
     // class source file name, eg: "HelloWorld.java", maybe obfuscated
     std::vector<std::string_view> class_source_files;
     std::vector<uint32_t /*access_flag*/> class_access_flags;

@@ -77,22 +77,27 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
     auto match_type = matcher->match_type();
     auto match_str = matcher->value()->string_view();
     ConvertSimilarRegex(match_str, match_type);
-    DEXKIT_CHECK(match_type == schema::StringMatchType::Contains && match_str.empty());
+    if (match_type == schema::StringMatchType::Contains) DEXKIT_CHECK(!match_str.empty());
     auto index = kmp::FindIndex(str, match_str, matcher->ignore_case());
+    bool condition;
     switch (match_type) {
-        case schema::StringMatchType::Contains: return index != -1;
-        case schema::StringMatchType::StartWith: return index == 0;
-        case schema::StringMatchType::EndWith: return index == str.size() - matcher->value()->string_view().size();
-        case schema::StringMatchType::Equal: return index == 0 && str.size() == matcher->value()->string_view().size();
+        case schema::StringMatchType::Contains: condition = index != -1; break;
+        case schema::StringMatchType::StartWith: condition = index == 0; break;
+        case schema::StringMatchType::EndWith: condition = index == str.size() - matcher->value()->string_view().size(); break;
+        case schema::StringMatchType::Equal: condition = index == 0 && str.size() == matcher->value()->string_view().size(); break;
         case schema::StringMatchType::SimilarRegex: abort();
     }
+    return condition;
 }
 
 bool DexItem::IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher) {
-    DEXKIT_CHECK(matcher->flags() == 0);
+    if (matcher == nullptr) {
+        return true;
+    }
+    DEXKIT_CHECK(matcher->flags() != 0);
     switch (matcher->match_type()) {
         case schema::MatchType::Equal: return access_flags == matcher->flags();
-        case schema::MatchType::Contain: return (access_flags & matcher->flags()) == matcher->flags();
+        case schema::MatchType::Contains: return (access_flags & matcher->flags()) == matcher->flags();
     }
 }
 
@@ -135,7 +140,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (matcher == nullptr) {
         return true;
     }
-    if (!IsClassNameMatched(annotation->type->orig_index, matcher->type_name())) {
+    if (!IsTypeNameMatched(this->type_def_idx[annotation->type->orig_index], matcher->type_name())) {
         return false;
     }
     auto type_annotations = this->class_annotations[annotation->type->orig_index];
@@ -149,7 +154,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
             }
             for (auto element: ann->elements) {
                 auto field_idx = element->value->u.enum_value->orig_index;
-                DEXKIT_CHECK(this->target_element_map.contains(field_idx) == false);
+                DEXKIT_CHECK(this->target_element_map.contains(field_idx));
                 target_flags |= 1 << (uint8_t) target_element_map[field_idx];
             }
         }
@@ -160,7 +165,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
         bool condition = false;
         switch (target_element_types->match_type()) {
             case schema::MatchType::Equal: condition = target_flags == matcher_flags; break;
-            case schema::MatchType::Contain: condition = (target_flags & matcher_flags) == matcher_flags; break;
+            case schema::MatchType::Contains: condition = (target_flags & matcher_flags) == matcher_flags; break;
         }
         if (!condition) {
             return false;
@@ -258,7 +263,7 @@ bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValu
         case dex::kEncodedFloat: return encodedValue->u.float_value == NonNullCase<const dexkit::schema::EncodeValueFloat *>(value)->value();
         case dex::kEncodedDouble: return encodedValue->u.double_value == NonNullCase<const dexkit::schema::EncodeValueDouble *>(value)->value();
         case dex::kEncodedString: return IsStringMatched(encodedValue->u.string_value->c_str(), NonNullCase<const dexkit::schema::StringMatcher *>(value));
-        case dex::kEncodedType: return IsClassMatched(encodedValue->u.type_value->orig_index, NonNullCase<const dexkit::schema::ClassMatcher *>(value));
+        case dex::kEncodedType: return IsClassMatched(this->type_def_idx[encodedValue->u.type_value->orig_index], NonNullCase<const dexkit::schema::ClassMatcher *>(value));
         case dex::kEncodedEnum: return IsFieldMatched(encodedValue->u.enum_value->orig_index, NonNullCase<const dexkit::schema::FieldMatcher *>(value));
         case dex::kEncodedArray: return IsAnnotationEncodeValuesMatched(encodedValue->u.array_value->values, NonNullCase<const dexkit::schema::AnnotationEncodeValuesMatcher *>(value));
         case dex::kEncodedAnnotation: return IsAnnotationMatched(encodedValue->u.annotation_value, NonNullCase<const dexkit::schema::AnnotationMatcher *>(value));
@@ -321,7 +326,7 @@ bool DexItem::IsAnnotationElementMatched(const ir::AnnotationElement *annotation
         return false;
     }
     if (matcher->value()) {
-        DEXKIT_CHECK(matcher->value_type() == schema::AnnotationEncodeValueMatcher::NONE);
+        DEXKIT_CHECK(matcher->value_type() != schema::AnnotationEncodeValueMatcher::NONE);
         if (!IsAnnotationEncodeValueMatched(annotationElement->value, matcher->value_type(), matcher->value())) {
             return false;
         }
@@ -371,48 +376,46 @@ bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElemen
 }
 
 // NOLINTNEXTLINE
-bool DexItem::IsClassMatched(uint32_t class_idx, const schema::ClassMatcher *matcher) {
+bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    if (!IsClassSmaliSourceMatched(class_idx, matcher->smali_source())) {
+    // TODO: cross dex get type
+    if (!IsTypeNameMatched(type_idx, matcher->class_name())) {
         return false;
     }
-    if (!IsClassNameMatched(class_idx, matcher->class_name())) {
+    if (!IsClassSmaliSourceMatched(type_idx, matcher->smali_source())) {
         return false;
     }
-    auto access_flags = this->class_access_flags[class_idx];
-    if (!IsAccessFlagsMatched(access_flags, matcher->access_flags())) {
+    if (!IsClassAccessFlagsMatched(type_idx, matcher->access_flags())) {
         return false;
     }
-    auto &class_def = this->reader.ClassDefs()[this->type_id_class_id_map[class_idx]];
-    auto super_class_idx = class_def.superclass_idx;
-    if (!IsClassMatched(super_class_idx, matcher->super_class())) {
+    if (!IsSuperClassMatched(type_idx, matcher->super_class())) {
         return false;
     }
-    if (!IsInterfacesMatched(class_idx, matcher->interfaces())) {
+    if (!IsInterfacesMatched(type_idx, matcher->interfaces())) {
         return false;
     }
-    if (!IsAnnotationsMatched(this->class_annotations[class_idx], matcher->annotations())) {
+    if (!IsClassAnnotationMatched(type_idx, matcher->annotations())) {
         return false;
     }
-    if (!IsFieldsMatched(class_idx, matcher->fields())) {
+    if (!IsFieldsMatched(type_idx, matcher->fields())) {
         return false;
     }
-    if (!IsMethodsMatched(class_idx, matcher->methods())) {
+    if (!IsMethodsMatched(type_idx, matcher->methods())) {
         return false;
     }
-    if (!IsClassUsingStringsMatched(class_idx, matcher)) {
+    if (!IsClassUsingStringsMatched(type_idx, matcher)) {
         return false;
     }
     return true;
 }
 
-bool DexItem::IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher *matcher) {
+bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    auto type_name = this->type_names[class_idx];
+    auto type_name = this->type_names[type_idx];
     DEXKIT_CHECK(type_name[0] == 'L' && type_name.back() == ';');
     type_name = type_name.substr(1, type_name.size() - 2);
 
@@ -423,24 +426,37 @@ bool DexItem::IsClassNameMatched(uint32_t class_idx, const schema::StringMatcher
     std::string match_name(match_str);
     std::replace(match_name.begin(), match_name.end(), '.', '/');
     auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
+    bool condition;
     switch (match_type) {
-        case schema::StringMatchType::Contains: return index != -1;
-        case schema::StringMatchType::StartWith: return index == 0;
-        case schema::StringMatchType::EndWith: return index == type_name.size() - match_name.size();
-        case schema::StringMatchType::Equal: return index == 0 && type_name.size() == match_name.size();
+        case schema::StringMatchType::Contains: condition = index != -1; break;
+        case schema::StringMatchType::StartWith: condition = index == 0; break;
+        case schema::StringMatchType::EndWith: condition = index == type_name.size() - match_name.size(); break;
+        case schema::StringMatchType::Equal: condition = index == 0 && type_name.size() == match_name.size(); break;
         case schema::StringMatchType::SimilarRegex: abort();
     }
+    return condition;
 }
 
-bool DexItem::IsClassSmaliSourceMatched(uint32_t class_idx, const schema::StringMatcher *matcher) {
+bool DexItem::IsClassAccessFlagsMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    auto smali_source = this->class_source_files[class_idx];
+    if (!this->type_def_flag[type_idx]) {
+        return false;
+    }
+    auto access_flags = this->class_access_flags[type_idx];
+    return IsAccessFlagsMatched(access_flags, matcher);
+}
+
+bool DexItem::IsClassSmaliSourceMatched(uint32_t type_idx, const schema::StringMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    auto smali_source = this->class_source_files[type_idx];
     return IsStringMatched(smali_source, matcher);
 }
 
-bool DexItem::IsClassUsingStringsMatched(uint32_t class_idx, const schema::ClassMatcher *matcher) {
+bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassMatcher *matcher) {
     if (matcher->using_strings() == nullptr) {
         return true;
     }
@@ -471,7 +487,7 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t class_idx, const schema::Class
     real_keywords = std::get<2>(*ptr);
 
     std::set<std::string_view> search_set;
-    for (auto method_idx: class_method_ids[class_idx]) {
+    for (auto method_idx: class_method_ids[type_idx]) {
         auto &using_strings = this->method_using_string_ids[method_idx];
         for (auto idx: using_strings) {
             auto str = this->strings[idx];
@@ -505,11 +521,23 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t class_idx, const schema::Class
     return true;
 }
 
-bool DexItem::IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMatcher *matcher) {
+// NOLINTNEXTLINE
+bool DexItem::IsSuperClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher) {
+    if (matcher && !this->type_def_flag[type_idx]) {
+        return false;
+    }
+    auto super_class_idx = this->reader.ClassDefs()[this->type_def_idx[type_idx]].superclass_idx;
+    return IsClassMatched(super_class_idx, matcher);
+}
+
+bool DexItem::IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    const auto &interfaces = this->class_interface_ids[class_idx];
+    if (!this->type_def_flag[type_idx]) {
+        return false;
+    }
+    const auto &interfaces = this->class_interface_ids[type_idx];
     if (matcher->interface_count()) {
         if (interfaces.size() < matcher->interface_count()->min()
         || interfaces.size() > matcher->interface_count()->max()) {
@@ -517,8 +545,8 @@ bool DexItem::IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMa
         }
     }
     if (matcher->interfaces()) {
-        static auto IsClassMatched = [this](uint32_t class_idx, const schema::ClassMatcher *matcher) {
-            return this->IsClassMatched(class_idx, matcher);
+        static auto IsClassMatched = [this](uint32_t class_def_idx, const schema::ClassMatcher *matcher) {
+            return this->IsClassMatched(class_def_idx, matcher);
         };
 
         typedef std::vector<const schema::ClassMatcher *> ClassMatcher;
@@ -547,11 +575,24 @@ bool DexItem::IsInterfacesMatched(uint32_t class_idx, const schema::InterfacesMa
     return true;
 }
 
-bool DexItem::IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *matcher) {
+bool DexItem::IsClassAnnotationMatched(uint32_t type_idx, const schema::AnnotationsMatcher *matcher) {
+    if (matcher && !this->type_def_flag[type_idx]) {
+        return false;
+    }
+    if (!IsAnnotationsMatched(this->class_annotations[type_idx], matcher)) {
+        return false;
+    }
+    return true;
+}
+
+bool DexItem::IsFieldsMatched(uint32_t type_idx, const schema::FieldsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    const auto &fields = this->class_field_ids[class_idx];
+    if (!this->type_def_flag[type_idx]) {
+        return false;
+    }
+    const auto &fields = this->class_field_ids[type_idx];
     if (matcher->field_count()) {
         if (fields.size() < matcher->field_count()->min()
         || fields.size() > matcher->field_count()->max()) {
@@ -577,11 +618,11 @@ bool DexItem::IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *m
         auto field_matchers = *ptr;
         Hungarian<uint32_t, const schema::FieldMatcher *> hungarian(fields, field_matchers, IsFieldMatched);
         auto count = hungarian.solve();
-        if (count != fields.size()) {
+        if (count != field_matchers.size()) {
             return false;
         }
         if (matcher->match_type() == schema::MatchType::Equal) {
-            if (count != field_matchers.size()) {
+            if (count != fields.size()) {
                 return false;
             }
         }
@@ -589,11 +630,14 @@ bool DexItem::IsFieldsMatched(uint32_t class_idx, const schema::FieldsMatcher *m
     return true;
 }
 
-bool DexItem::IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher *matcher) {
+bool DexItem::IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    const auto &methods = this->class_method_ids[class_idx];
+    if (!this->type_def_flag[type_idx]) {
+        return false;
+    }
+    const auto &methods = this->class_method_ids[type_idx];
     if (matcher->method_count()) {
         if (methods.size() < matcher->method_count()->min()
         || methods.size() > matcher->method_count()->max()) {
@@ -619,11 +663,11 @@ bool DexItem::IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher 
         auto method_matchers = *ptr;
         Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(methods, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
-        if (count != methods.size()) {
+        if (count != method_matchers.size()) {
             return false;
         }
         if (matcher->match_type() == schema::MatchType::Equal) {
-            if (count != method_matchers.size()) {
+            if (count != methods.size()) {
                 return false;
             }
         }
@@ -633,18 +677,18 @@ bool DexItem::IsMethodsMatched(uint32_t class_idx, const schema::MethodsMatcher 
 
 bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher) {
     auto &method_def = this->reader.MethodIds()[method_idx];
-    auto method_name = this->type_names[method_def.name_idx];
+    auto method_name = this->strings[method_def.name_idx];
     if (!IsStringMatched(method_name, matcher->method_name())) {
         return false;
     }
     if (!IsAccessFlagsMatched(this->method_access_flags[method_idx], matcher->access_flags())) {
         return false;
     }
-    if (!IsClassMatched(method_def.class_idx, matcher->declaring_class())) {
+    if (!IsClassMatched(this->type_def_idx[method_def.class_idx], matcher->declaring_class())) {
         return false;
     }
     auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
-    if (!IsClassMatched(proto_def.return_type_idx, matcher->return_type())) {
+    if (!IsClassMatched(this->type_def_idx[proto_def.return_type_idx], matcher->return_type())) {
         return false;
     }
     if (!IsParametersMatched(method_idx, matcher->parameters())) {
@@ -695,7 +739,7 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
         auto &parameter_annotations = this->method_parameter_annotations[method_idx];
         for (size_t i = 0; i < type_list->size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
-            if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->prameter_type())) {
+            if (!IsClassMatched(this->type_def_idx[type_list->list[i].type_idx], parameter_matcher->prameter_type())) {
                 return false;
             }
             if (!IsAnnotationsMatched(parameter_annotations[i], parameter_matcher->annotations())) {
@@ -711,7 +755,7 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
         return true;
     }
     auto &opt_opcodes = this->method_opcode_seq[method_idx];
-    DEXKIT_CHECK(opt_opcodes == std::nullopt);
+    DEXKIT_CHECK(opt_opcodes.has_value());
     const auto opcodes = opt_opcodes.value();
     if (matcher->op_code_count()) {
         if (opcodes.size() < matcher->op_code_count()->min()
@@ -1052,17 +1096,17 @@ bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *mat
         return true;
     }
     auto &field_def = this->reader.FieldIds()[field_idx];
-    auto field_name = this->type_names[field_def.name_idx];
+    auto field_name = this->strings[field_def.name_idx];
     if (!IsStringMatched(field_name, matcher->field_name())) {
         return false;
     }
     if (!IsAccessFlagsMatched(this->field_access_flags[field_idx], matcher->access_flags())) {
         return false;
     }
-    if (!IsClassMatched(field_def.class_idx, matcher->declaring_class())) {
+    if (!IsClassMatched(this->type_def_idx[field_def.class_idx], matcher->declaring_class())) {
         return false;
     }
-    if (!IsClassMatched(field_def.type_idx, matcher->type_class())) {
+    if (!IsClassMatched(this->type_def_idx[field_def.type_idx], matcher->type_class())) {
         return false;
     }
     if (!IsAnnotationsMatched(this->field_annotations[field_idx], matcher->annotations())) {

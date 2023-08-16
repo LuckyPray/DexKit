@@ -87,7 +87,8 @@ int DexItem::InitCache() {
         ++field_idx;
     }
 
-    type_declared_flag.resize(reader.TypeIds().size(), false);
+    type_def_flag.resize(reader.TypeIds().size(), false);
+    type_def_idx.resize(reader.TypeIds().size());
     class_source_files.resize(reader.TypeIds().size());
     class_access_flags.resize(reader.TypeIds().size());
     class_interface_ids.resize(reader.TypeIds().size());
@@ -108,11 +109,13 @@ int DexItem::InitCache() {
 
     auto class_def_idx = 0;
     for (auto &class_def: reader.ClassDefs()) {
+        auto type_idx = class_def_idx++;
         if (class_def.source_file_idx != dex::kNoIndex) {
             class_source_files[class_def.class_idx] = strings[class_def.source_file_idx];
         }
-        this->type_id_class_id_map[class_def.class_idx] = class_def_idx;
-        type_declared_flag[class_def.class_idx] = true;
+        type_def_flag[class_def.class_idx] = true;
+        type_def_idx[class_def.class_idx] = type_idx;
+        class_access_flags[class_def.class_idx] = class_def.access_flags;
         if (class_def.class_data_off == 0) {
             continue;
         }
@@ -123,7 +126,7 @@ int DexItem::InitCache() {
                 auto &interfaces = this->class_interface_ids[class_def.class_idx];
                 interfaces.reserve(interface_type_list->size);
                 for (auto i = 0; i < interface_type_list->size; ++i) {
-                    interfaces.emplace_back(interface_type_list->list[i].type_idx);
+                    interfaces.emplace_back(type_def_idx[interface_type_list->list[i].type_idx]);
                 }
             }
         }
@@ -189,13 +192,11 @@ int DexItem::InitCache() {
                 auto width = GetBytecodeWidth(ptr++);
                 auto op_format = ins_formats[op];
                 // using string
-                if (op == 0x1a || op == 0x1b) {
-                    uint32_t index;
-                    if (op == 0x1a) { // const-string
-                        index = ReadShort(ptr);
-                    } else { // const-string-jumbo
-                        index = ReadInt(ptr);
-                    }
+                if (op == 0x1a) { // const-string
+                    auto index = ReadShort(ptr);
+                    method_using_strings.emplace_back(index);
+                } else if (op == 0x1b) { // const-string-jumbo
+                    auto index = ReadInt(ptr);
                     method_using_strings.emplace_back(index);
                 } else switch (op_format) {
                     // using field
@@ -264,7 +265,6 @@ int DexItem::InitCache() {
                 p += width;
             }
         }
-        ++class_def_idx;
     }
 
     class_annotations.resize(reader.TypeIds().size());
@@ -290,23 +290,26 @@ int DexItem::InitCache() {
     return 0;
 }
 
-ClassBean DexItem::GetClassBean(uint32_t class_idx) {
-    auto &class_def = this->reader.ClassDefs()[this->type_id_class_id_map[class_idx]];
+ClassBean DexItem::GetClassBean(uint32_t type_idx) {
     ClassBean bean;
-    bean.id = class_idx;
+    bean.id = type_idx;
     bean.dex_id = this->dex_id;
-    bean.source_file = this->class_source_files[class_idx];
-    bean.access_flags = class_def.access_flags;
-    bean.dex_descriptor = this->type_names[class_idx];
-    bean.super_class_id = class_def.superclass_idx;
-    if (class_def.interfaces_off) {
-        auto interface_type_list = this->reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
-        for (auto i = 0; i < interface_type_list->size; ++i) {
-            bean.interface_ids.push_back(interface_type_list->list[i].type_idx);
+    bean.dex_descriptor = this->type_names[type_idx];
+    // cross dex reference
+    if (this->type_def_flag[type_idx]) {
+        auto &class_def = this->reader.ClassDefs()[this->type_def_idx[type_idx]];
+        bean.source_file = this->class_source_files[type_idx];
+        bean.access_flags = class_def.access_flags;
+        bean.super_class_id = class_def.superclass_idx;
+        if (class_def.interfaces_off) {
+            auto interface_type_list = this->reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
+            for (auto i = 0; i < interface_type_list->size; ++i) {
+                bean.interface_ids.push_back(interface_type_list->list[i].type_idx);
+            }
         }
+        bean.field_ids = this->class_field_ids[type_idx];
+        bean.method_ids = this->class_method_ids[type_idx];
     }
-    bean.field_ids = this->class_field_ids[class_idx];
-    bean.method_ids = this->class_method_ids[class_idx];
     return bean;
 }
 

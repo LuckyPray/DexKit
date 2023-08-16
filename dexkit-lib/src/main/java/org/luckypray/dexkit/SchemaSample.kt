@@ -1,9 +1,9 @@
 package org.luckypray.dexkit
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.schema.BatchUsingStringsMatcher
-import org.luckypray.dexkit.schema.StringMatchType
-import org.luckypray.dexkit.schema.StringMatcher
+import org.luckypray.BatchUsingStringsMatcher
+import org.luckypray.StringMatchType
+import org.luckypray.StringMatcher
 import java.nio.ByteBuffer
 
 

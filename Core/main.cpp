@@ -20,7 +20,7 @@ int SharedPtrVoidCast(dexkit::DexKit &dexkit) {
     auto vector = std::vector<int>{114, 514};
     map[ptr] = std::make_shared<std::vector<int>>(vector);
     printf("map size: %zu\n", map.size());
-    auto q = *reinterpret_cast<std::shared_ptr<std::vector<int>>*>(&map[ptr]);
+    auto q = *reinterpret_cast<std::shared_ptr<std::vector<int>> *>(&map[ptr]);
     printf("map[ptr]: %d\n", (*q)[0]);
     assert((*q)[0] == vector[0]);
     return 0;
@@ -221,6 +221,171 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindClassUsingStrings(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindClassUsingStrings Start-----------\n");
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindClass(
+            fbb, 0, false, 0,
+            CreateClassMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("52b7f2"),
+                                    StringMatchType::Equal,
+                                    false
+                            ),
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("qimei"),
+                                    StringMatchType::Contains,
+                                    false
+                            ),
+                    })
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindClass>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindClass(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<ClassMetaArrayHolder>(buffer);
+    if (result->classes()) {
+        printf("result->classes()->size() = %d\n", result->classes()->size());
+        for (int i = 0; i < result->classes()->size(); ++i) {
+            auto item = result->classes()->Get(i);
+            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+        }
+    }
+    return 0;
+}
+
+int DexKitFindClassTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindClassTest Start-----------\n");
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindClass(
+            fbb, 0, false, 0,
+            CreateClassMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    CreateClassMatcher(
+                            fbb,
+                            0,
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("JceStruct"),
+                                    StringMatchType::Contains,
+                                    false
+                            )
+                    ),
+                    0,
+                    0,
+                    CreateFieldsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<FieldMatcher>>{
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("cAge"),
+                                                    StringMatchType::Equal,
+                                                    false
+                                            )
+                                    ),
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("Sex"),
+                                                    StringMatchType::Contains,
+                                                    false
+                                            )
+                                    ),
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("Black"),
+                                                    StringMatchType::Contains,
+                                                    false
+                                            )
+                                    ),
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("Nick"),
+                                                    StringMatchType::Contains,
+                                                    false
+                                            )
+                                    ),
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("Face"),
+                                                    StringMatchType::Contains,
+                                                    false
+                                            )
+                                    )
+                            }),
+                            MatchType::Contains,
+                            CreateIntRange(fbb, 3, 5)
+                    ),
+                    CreateMethodsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
+                                    CreateMethodMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("read"),
+                                                    StringMatchType::StartWith,
+                                                    false
+                                            )
+                                    )
+                            })
+                    )
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindClass>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindClass(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<ClassMetaArrayHolder>(buffer);
+    if (result->classes()) {
+        printf("result->classes()->size() = %d\n", result->classes()->size());
+        for (int i = 0; i < result->classes()->size(); ++i) {
+            auto item = result->classes()->Get(i);
+            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+        }
+    }
+    return 0;
+}
+
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
@@ -236,12 +401,17 @@ int main() {
 //    ACTrieTest();
 //    FlatBufferTest();
     DexKitBatchFindClassTest(dexkit);
-    DexKitBatchFindMethodTest(dexkit);
-//    dexkit.FindClass(nullptr);
-//    dexkit.FindMethod(nullptr);
-//    dexkit.FindField(nullptr);
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());
     std::cout << "find used time: " << now_ms2.count() - now_ms1.count() << " ms" << std::endl;
+//    DexKitBatchFindMethodTest(dexkit);
+    DexKitFindClassUsingStrings(dexkit);
+//    DexKitFindClassTest(dexkit);
+//    dexkit.FindMethod(nullptr);
+//    dexkit.FindField(nullptr);
+
+    auto now3 = std::chrono::system_clock::now();
+    auto now_ms3 = std::chrono::duration_cast<std::chrono::milliseconds>(now3.time_since_epoch());
+    std::cout << "find used time: " << now_ms3.count() - now_ms2.count() << " ms" << std::endl;
     return 0;
 }

@@ -17,8 +17,7 @@ set(SLICER_SOURCES
         ${SLICER_SRC_FILES}
 )
 
-set(COMPILE_FLAGS "-flto -fvisibility=default -Wall -O3 \
-    -fPIC -Wno-empty-body -Wno-unused-private-field \
+set(COMPILE_FLAGS "-Wno-empty-body -Wno-unused-private-field \
     -Wno-unused-value -Wno-unused-variable -Wno-unused-function")
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")

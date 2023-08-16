@@ -198,8 +198,8 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DEX_DESCRIPTOR = 12,
     VT_SUPER_CLASS = 14,
     VT_INTERFACES = 16,
-    VT_FIELDS = 18,
-    VT_METHODS = 20
+    VT_METHODS = 18,
+    VT_FIELDS = 20
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -222,11 +222,11 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<int32_t> *interfaces() const {
     return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_INTERFACES);
   }
-  const ::flatbuffers::Vector<int32_t> *fields() const {
-    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_FIELDS);
-  }
   const ::flatbuffers::Vector<int32_t> *methods() const {
     return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_METHODS);
+  }
+  const ::flatbuffers::Vector<int32_t> *fields() const {
+    return GetPointer<const ::flatbuffers::Vector<int32_t> *>(VT_FIELDS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -240,10 +240,10 @@ struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_SUPER_CLASS, 4) &&
            VerifyOffset(verifier, VT_INTERFACES) &&
            verifier.VerifyVector(interfaces()) &&
-           VerifyOffset(verifier, VT_FIELDS) &&
-           verifier.VerifyVector(fields()) &&
            VerifyOffset(verifier, VT_METHODS) &&
            verifier.VerifyVector(methods()) &&
+           VerifyOffset(verifier, VT_FIELDS) &&
+           verifier.VerifyVector(fields()) &&
            verifier.EndTable();
   }
 };
@@ -273,11 +273,11 @@ struct ClassMetaBuilder {
   void add_interfaces(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> interfaces) {
     fbb_.AddOffset(ClassMeta::VT_INTERFACES, interfaces);
   }
-  void add_fields(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> fields) {
-    fbb_.AddOffset(ClassMeta::VT_FIELDS, fields);
-  }
   void add_methods(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> methods) {
     fbb_.AddOffset(ClassMeta::VT_METHODS, methods);
+  }
+  void add_fields(::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> fields) {
+    fbb_.AddOffset(ClassMeta::VT_FIELDS, fields);
   }
   explicit ClassMetaBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -299,11 +299,11 @@ inline ::flatbuffers::Offset<ClassMeta> CreateClassMeta(
     ::flatbuffers::Offset<::flatbuffers::String> dex_descriptor = 0,
     uint32_t super_class = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> interfaces = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> fields = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> methods = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> methods = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<int32_t>> fields = 0) {
   ClassMetaBuilder builder_(_fbb);
-  builder_.add_methods(methods);
   builder_.add_fields(fields);
+  builder_.add_methods(methods);
   builder_.add_interfaces(interfaces);
   builder_.add_super_class(super_class);
   builder_.add_dex_descriptor(dex_descriptor);
@@ -328,13 +328,13 @@ inline ::flatbuffers::Offset<ClassMeta> CreateClassMetaDirect(
     const char *dex_descriptor = nullptr,
     uint32_t super_class = 0,
     const std::vector<int32_t> *interfaces = nullptr,
-    const std::vector<int32_t> *fields = nullptr,
-    const std::vector<int32_t> *methods = nullptr) {
+    const std::vector<int32_t> *methods = nullptr,
+    const std::vector<int32_t> *fields = nullptr) {
   auto source_file__ = source_file ? _fbb.CreateString(source_file) : 0;
   auto dex_descriptor__ = dex_descriptor ? _fbb.CreateString(dex_descriptor) : 0;
   auto interfaces__ = interfaces ? _fbb.CreateVector<int32_t>(*interfaces) : 0;
-  auto fields__ = fields ? _fbb.CreateVector<int32_t>(*fields) : 0;
   auto methods__ = methods ? _fbb.CreateVector<int32_t>(*methods) : 0;
+  auto fields__ = fields ? _fbb.CreateVector<int32_t>(*fields) : 0;
   return dexkit::schema::CreateClassMeta(
       _fbb,
       id,
@@ -344,8 +344,8 @@ inline ::flatbuffers::Offset<ClassMeta> CreateClassMetaDirect(
       dex_descriptor__,
       super_class,
       interfaces__,
-      fields__,
-      methods__);
+      methods__,
+      fields__);
 }
 
 struct ClassMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

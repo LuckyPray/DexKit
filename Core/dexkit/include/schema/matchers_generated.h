@@ -400,7 +400,7 @@ struct AccessFlagsMatcherBuilder {
 inline ::flatbuffers::Offset<AccessFlagsMatcher> CreateAccessFlagsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t flags = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain) {
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains) {
   AccessFlagsMatcherBuilder builder_(_fbb);
   builder_.add_flags(flags);
   builder_.add_match_type(match_type);
@@ -458,7 +458,7 @@ struct TargetElementTypesMatcherBuilder {
 inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::TargetElementType>> types = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain) {
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains) {
   TargetElementTypesMatcherBuilder builder_(_fbb);
   builder_.add_types(types);
   builder_.add_match_type(match_type);
@@ -473,7 +473,7 @@ struct TargetElementTypesMatcher::Traits {
 inline ::flatbuffers::Offset<TargetElementTypesMatcher> CreateTargetElementTypesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<dexkit::schema::TargetElementType> *types = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain) {
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains) {
   auto types__ = types ? _fbb.CreateVector<dexkit::schema::TargetElementType>(*types) : 0;
   return dexkit::schema::CreateTargetElementTypesMatcher(
       _fbb,
@@ -547,7 +547,7 @@ inline ::flatbuffers::Offset<AnnotationEncodeValuesMatcher> CreateAnnotationEnco
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::AnnotationEncodeValueMatcher>> values_type = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> values = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> value_count = 0) {
   AnnotationEncodeValuesMatcherBuilder builder_(_fbb);
   builder_.add_value_count(value_count);
@@ -566,7 +566,7 @@ inline ::flatbuffers::Offset<AnnotationEncodeValuesMatcher> CreateAnnotationEnco
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<dexkit::schema::AnnotationEncodeValueMatcher> *values_type = nullptr,
     const std::vector<::flatbuffers::Offset<void>> *values = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> value_count = 0) {
   auto values_type__ = values_type ? _fbb.CreateVector<dexkit::schema::AnnotationEncodeValueMatcher>(*values_type) : 0;
   auto values__ = values ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*values) : 0;
@@ -795,7 +795,7 @@ struct AnnotationEncodeArrayMatcherBuilder {
 inline ::flatbuffers::Offset<AnnotationEncodeArrayMatcher> CreateAnnotationEncodeArrayMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>>> elements = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0) {
   AnnotationEncodeArrayMatcherBuilder builder_(_fbb);
   builder_.add_element_count(element_count);
@@ -812,7 +812,7 @@ struct AnnotationEncodeArrayMatcher::Traits {
 inline ::flatbuffers::Offset<AnnotationEncodeArrayMatcher> CreateAnnotationEncodeArrayMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>> *elements = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> element_count = 0) {
   auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMatcher>>(*elements) : 0;
   return dexkit::schema::CreateAnnotationEncodeArrayMatcher(
@@ -969,7 +969,7 @@ struct AnnotationsMatcherBuilder {
 inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>> annotations = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> annotation_count = 0) {
   AnnotationsMatcherBuilder builder_(_fbb);
   builder_.add_annotation_count(annotation_count);
@@ -986,7 +986,7 @@ struct AnnotationsMatcher::Traits {
 inline ::flatbuffers::Offset<AnnotationsMatcher> CreateAnnotationsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>> *annotations = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> annotation_count = 0) {
   auto annotations__ = annotations ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationMatcher>>(*annotations) : 0;
   return dexkit::schema::CreateAnnotationsMatcher(
@@ -1541,7 +1541,7 @@ struct MethodsMatcherBuilder {
 inline ::flatbuffers::Offset<MethodsMatcher> CreateMethodsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> methods = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> method_count = 0) {
   MethodsMatcherBuilder builder_(_fbb);
   builder_.add_method_count(method_count);
@@ -1558,7 +1558,7 @@ struct MethodsMatcher::Traits {
 inline ::flatbuffers::Offset<MethodsMatcher> CreateMethodsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *methods = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> method_count = 0) {
   auto methods__ = methods ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>(*methods) : 0;
   return dexkit::schema::CreateMethodsMatcher(
@@ -1624,7 +1624,7 @@ struct InterfacesMatcherBuilder {
 inline ::flatbuffers::Offset<InterfacesMatcher> CreateInterfacesMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> interfaces = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> interface_count = 0) {
   InterfacesMatcherBuilder builder_(_fbb);
   builder_.add_interface_count(interface_count);
@@ -1641,7 +1641,7 @@ struct InterfacesMatcher::Traits {
 inline ::flatbuffers::Offset<InterfacesMatcher> CreateInterfacesMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *interfaces = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> interface_count = 0) {
   auto interfaces__ = interfaces ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>(*interfaces) : 0;
   return dexkit::schema::CreateInterfacesMatcher(
@@ -1821,7 +1821,7 @@ struct FieldsMatcherBuilder {
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> fields = 0,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> field_count = 0) {
   FieldsMatcherBuilder builder_(_fbb);
   builder_.add_field_count(field_count);
@@ -1838,7 +1838,7 @@ struct FieldsMatcher::Traits {
 inline ::flatbuffers::Offset<FieldsMatcher> CreateFieldsMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *fields = nullptr,
-    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contain,
+    dexkit::schema::MatchType match_type = dexkit::schema::MatchType::Contains,
     ::flatbuffers::Offset<dexkit::schema::IntRange> field_count = 0) {
   auto fields__ = fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*fields) : 0;
   return dexkit::schema::CreateFieldsMatcher(

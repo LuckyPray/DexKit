@@ -129,10 +129,14 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::ClassMeta>> offsets;
     for (auto &bean: result) {
         auto res = bean.CreateClassMeta(*builder);
         builder->Finish(res);
+        offsets.emplace_back(res);
     }
+    auto array_holder = schema::CreateClassMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
     return builder;
 }
 
@@ -167,10 +171,14 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
     for (auto &bean: result) {
         auto res = bean.CreateMethodMeta(*builder);
         builder->Finish(res);
+        offsets.emplace_back(res);
     }
+    auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
     return builder;
 }
 
@@ -205,10 +213,14 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::FieldMeta>> offsets;
     for (auto &bean: result) {
         auto res = bean.CreateFieldMeta(*builder);
         builder->Finish(res);
+        offsets.emplace_back(res);
     }
+    auto array_holder = schema::CreateFieldMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
     return builder;
 }
 

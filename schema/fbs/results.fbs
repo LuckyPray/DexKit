@@ -11,8 +11,8 @@ table ClassMeta {
     dex_descriptor: string;
     super_class: uint32;
     interfaces: [int32];
-    fields: [int32];
     methods: [int32];
+    fields: [int32];
     // annotations, super_class, interfaces, fields, methods
     // need to call the corresponding method to actively load
 }
