@@ -17,9 +17,11 @@ set(SLICER_SOURCES
         ${SLICER_SRC_FILES}
 )
 
-set(CFLAGS -flto -fvisibility=default)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -fPIC")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -fPIC")
+set(COMPILE_FLAGS "-flto -fvisibility=default -Wall -O3 \
+    -fPIC -Wno-empty-body -Wno-unused-private-field \
+    -Wno-unused-value -Wno-unused-variable -Wno-unused-function")
+set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 add_library(${PROJECT_NAME}_static
