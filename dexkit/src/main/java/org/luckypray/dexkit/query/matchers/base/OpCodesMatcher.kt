@@ -1,0 +1,112 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
+package org.luckypray.dexkit.query.matchers.base
+
+import com.google.flatbuffers.FlatBufferBuilder
+import org.luckypray.dexkit.alias.InnerOpCodesMatcher
+import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.enums.MatchType
+import org.luckypray.dexkit.util.OpCodeUtil
+
+class OpCodesMatcher : BaseQuery {
+    private var opCodes: List<Int>? = null
+    private var matchType: MatchType = MatchType.Contains
+    private var methodOpCodeSize: IntRange? = null
+
+    constructor()
+    @JvmOverloads
+    constructor(
+        opCodes: List<Int>,
+        matchType: MatchType = MatchType.Contains,
+        opCodeSize: IntRange? = null
+    ) {
+        this.opCodes = opCodes
+        this.matchType = matchType
+        this.methodOpCodeSize = opCodeSize
+    }
+
+    @JvmOverloads
+    constructor(
+        opCodes: IntArray,
+        matchType: MatchType = MatchType.Contains,
+        opCodeSize: IntRange? = null
+    ) {
+        this.opCodes = opCodes.toList()
+        this.matchType = matchType
+        this.methodOpCodeSize = opCodeSize
+    }
+
+    fun opCodes(opCodes: List<Int>) = also { this.opCodes = opCodes }
+    fun opCodes(opCodes: Array<Int>) = also { this.opCodes = opCodes.toList() }
+    fun opNames(opNames: List<String>) = also {
+        this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
+    }
+
+    fun opNames(opNames: Array<String>) = also {
+        this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
+    }
+
+    fun matchType(matchType: MatchType) = also { this.matchType = matchType }
+    fun opCodeSize(opCodeSize: IntRange?) = also { this.methodOpCodeSize = opCodeSize }
+
+    companion object {
+        @JvmStatic
+        fun create(
+            opCodes: List<Int>,
+            matchType: MatchType = MatchType.Contains,
+            opCodeSize: IntRange? = null
+        ): OpCodesMatcher {
+            return OpCodesMatcher(opCodes, matchType, opCodeSize)
+        }
+
+        @JvmStatic
+        fun create(
+            opCodes: IntArray,
+            matchType: MatchType = MatchType.Contains,
+            opCodeSize: IntRange? = null
+        ): OpCodesMatcher {
+            return OpCodesMatcher(opCodes, matchType, opCodeSize)
+        }
+
+        @JvmStatic
+        fun create(vararg opCodes: Int): OpCodesMatcher {
+            return OpCodesMatcher(opCodes.toList())
+        }
+
+        @JvmStatic
+        fun createForOpNames(
+            opNames: List<String>,
+            matchType: MatchType = MatchType.Contains,
+            opCodeSize: IntRange? = null
+        ): OpCodesMatcher {
+            return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) }, matchType, opCodeSize)
+        }
+
+        @JvmStatic
+        fun createForOpNames(
+            opNames: Array<String>,
+            matchType: MatchType = MatchType.Contains,
+            opCodeSize: IntRange? = null
+        ): OpCodesMatcher {
+            return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) }, matchType, opCodeSize)
+        }
+
+        @JvmStatic
+        fun createForOpNames(vararg opNames: String): OpCodesMatcher {
+            return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) })
+        }
+    }
+
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @kotlin.internal.InlineOnly
+    override fun build(fbb: FlatBufferBuilder): Int {
+        val root = InnerOpCodesMatcher.createOpCodesMatcher(
+            fbb,
+            opCodes?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            matchType.value,
+            methodOpCodeSize?.build(fbb) ?: 0
+        )
+        fbb.finish(root)
+        return root
+    }
+}

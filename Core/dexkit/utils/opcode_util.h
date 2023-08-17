@@ -82,6 +82,7 @@ constexpr uint8_t GetOpcodeLen(dex::u1 opcode) {
         case dex::k51l:
             return 5;
     }
+    abort();
 }
 
 constexpr size_t GetBytecodeWidth(const dex::u2 *bytecode) {

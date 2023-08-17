@@ -21,18 +21,18 @@ java {
 }
 
 dependencies {
-    implementation project(':dexkit-lib')
+    implementation project(':dexkit')
 }
 
 
 afterEvaluate {
     tasks.register('cmakeBuild') {
         group = 'build'
-        def build = project(':dexkit-lib').tasks.named('cmakeBuild')
+        def build = project(':dexkit').tasks.named('cmakeBuild')
         dependsOn(build)
         doLast {
             copy {
-                from("${project(':dexkit-lib').buildDir}/cmake")
+                from("${project(':dexkit').buildDir}/cmake")
                 into library
                 include('**/*.so', '**/*.dll', '**/*.dylib')
                 eachFile {
@@ -46,4 +46,4 @@ afterEvaluate {
     tasks.run.dependsOn(tasks.jar)
 }
 
-evaluationDependsOn(":dexkit-lib")
+evaluationDependsOn(":dexkit")

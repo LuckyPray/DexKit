@@ -13,8 +13,8 @@ dependencyResolutionManagement {
     }
 }
 
-include ':dexkit-lib'
 include ':dexkit'
-include ':dexkit-ktx'
+//include ':dexkit-dsl'
+include ':dexkit-android'
 include ':demo'
-//include ':main'
+include ':main'

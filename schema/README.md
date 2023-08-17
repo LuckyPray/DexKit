@@ -9,14 +9,8 @@ python gen_code.py
 ## kotlin
 
 ```shell
-./flatc --kotlin -o ../dexkit-lib/src/main/java/org/luckypray \
+./flatc --kotlin -o ../dexkit/src/main/java/org/luckypray \
 fbs/encode_value.fbs fbs/enums.fbs fbs/matchers.fbs fbs/querys.fbs fbs/ranges.fbs fbs/results.fbs
-```
-
-macos change package name
-```shell
-sed -i '' 's/package dexkit.schema/package org.luckypray.dexkit.schema/g' ../dexkit-lib/src/main/java/org/luckypray/dexkit/schema/*.kt
-sed -i '' 's/dexkit.schema.//g' ../dexkit-lib/src/main/java/org/luckypray/dexkit/schema/*.kt
 ```
 
 ## c++
