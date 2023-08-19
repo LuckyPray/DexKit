@@ -3,15 +3,15 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerEncodeValueBoolean
-import org.luckypray.dexkit.alias.InnerEncodeValueByte
-import org.luckypray.dexkit.alias.InnerEncodeValueChar
-import org.luckypray.dexkit.alias.InnerEncodeValueDouble
-import org.luckypray.dexkit.alias.InnerEncodeValueFloat
-import org.luckypray.dexkit.alias.InnerEncodeValueInt
-import org.luckypray.dexkit.alias.InnerEncodeValueLong
-import org.luckypray.dexkit.alias.InnerEncodeValueShort
-import org.luckypray.dexkit.alias.InnerEncodeValueString
+import org.luckypray.dexkit.InnerEncodeValueBoolean
+import org.luckypray.dexkit.InnerEncodeValueByte
+import org.luckypray.dexkit.InnerEncodeValueChar
+import org.luckypray.dexkit.InnerEncodeValueDouble
+import org.luckypray.dexkit.InnerEncodeValueFloat
+import org.luckypray.dexkit.InnerEncodeValueInt
+import org.luckypray.dexkit.InnerEncodeValueLong
+import org.luckypray.dexkit.InnerEncodeValueShort
+import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.query.base.BaseQuery
 
 abstract class EncodeValue : BaseQuery()

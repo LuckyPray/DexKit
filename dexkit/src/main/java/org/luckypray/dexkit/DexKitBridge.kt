@@ -3,11 +3,6 @@
 package org.luckypray.dexkit
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerBatchClassMetaArrayHolder
-import org.luckypray.dexkit.alias.InnerBatchMethodMetaArrayHolder
-import org.luckypray.dexkit.alias.InnerClassMetaArrayHolder
-import org.luckypray.dexkit.alias.InnerFieldMetaArrayHolder
-import org.luckypray.dexkit.alias.InnerMethodMetaArrayHolder
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
@@ -19,6 +14,8 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
+import org.luckypray.dexkit.result.AnnotationData
+import org.luckypray.dexkit.result.AnnotationEncodeArrayData
 import java.io.Closeable
 import java.nio.ByteBuffer
 
@@ -151,7 +148,7 @@ class DexKitBridge : Closeable {
             val key = items.unionKey!!
             val batchFindMeta = ClassDataList().apply {
                 for (j in 0 until items.classesLength) {
-                    add(ClassData(this@DexKitBridge, items.classes(j)!!))
+                    add(ClassData.from(this@DexKitBridge, items.classes(j)!!))
                 }
             }
             map[key] = batchFindMeta
@@ -173,7 +170,7 @@ class DexKitBridge : Closeable {
             val key = items.unionKey!!
             val batchFindMeta = MethodDataList().apply {
                 for (j in 0 until items.methodsLength) {
-                    add(MethodData(this@DexKitBridge, items.methods(j)!!))
+                    add(MethodData.from(this@DexKitBridge, items.methods(j)!!))
                 }
             }
             map[key] = batchFindMeta
@@ -191,7 +188,7 @@ class DexKitBridge : Closeable {
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
-            list.add(ClassData(this@DexKitBridge, holder.classes(i)!!))
+            list.add(ClassData.from(this@DexKitBridge, holder.classes(i)!!))
         }
         return list
     }
@@ -206,7 +203,7 @@ class DexKitBridge : Closeable {
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
-            list.add(MethodData(this@DexKitBridge, holder.methods(i)!!))
+            list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
         return list
     }
@@ -221,7 +218,7 @@ class DexKitBridge : Closeable {
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
-            list.add(FieldData(this@DexKitBridge, holder.fields(i)!!))
+            list.add(FieldData.from(this@DexKitBridge, holder.fields(i)!!))
         }
         return list
     }
@@ -233,7 +230,7 @@ class DexKitBridge : Closeable {
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
-            list.add(ClassData(this@DexKitBridge, holder.classes(i)!!))
+            list.add(ClassData.from(this@DexKitBridge, holder.classes(i)!!))
         }
         return list
     }
@@ -245,7 +242,7 @@ class DexKitBridge : Closeable {
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
-            list.add(MethodData(this@DexKitBridge, holder.methods(i)!!))
+            list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
         return list
     }
@@ -257,7 +254,60 @@ class DexKitBridge : Closeable {
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
-            list.add(FieldData(this@DexKitBridge, holder.fields(i)!!))
+            list.add(FieldData.from(this@DexKitBridge, holder.fields(i)!!))
+        }
+        return list
+    }
+
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @kotlin.internal.InlineOnly
+    internal fun getClassAnnotations(classId: Int): List<AnnotationData> {
+        val res = nativeGetClassAnnotations(token, classId)
+        val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<AnnotationData>()
+        for (i in 0 until holder.annotationsLength) {
+            list.add(AnnotationData.from(this@DexKitBridge, holder.annotations(i)!!))
+        }
+        return list
+    }
+
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @kotlin.internal.InlineOnly
+    internal fun getFieldAnnotations(fieldId: Int): List<AnnotationData> {
+        val res = nativeGetFieldAnnotations(token, fieldId)
+        val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<AnnotationData>()
+        for (i in 0 until holder.annotationsLength) {
+            list.add(AnnotationData.from(this@DexKitBridge, holder.annotations(i)!!))
+        }
+        return list
+    }
+
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @kotlin.internal.InlineOnly
+    internal fun getMethodAnnotations(methodId: Int): List<AnnotationData> {
+        val res = nativeGetMethodAnnotations(token, methodId)
+        val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<AnnotationData>()
+        for (i in 0 until holder.annotationsLength) {
+            list.add(AnnotationData.from(this@DexKitBridge, holder.annotations(i)!!))
+        }
+        return list
+    }
+
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @kotlin.internal.InlineOnly
+    internal fun getParameterAnnotations(methodId: Int): List<List<AnnotationData>> {
+        val res = nativeGetParameterAnnotations(token, methodId)
+        val holder = InnerParametersAnnotationMetaArrayHoler.getRootAsParametersAnnotationMetaArrayHoler(ByteBuffer.wrap(res))
+        val list = mutableListOf<List<AnnotationData>>()
+        for (i in 0 until holder.annotationsArrayLength) {
+            val item = holder.annotationsArray(i)!!
+            val annotations = mutableListOf<AnnotationData>()
+            for (j in 0 until item.annotationsLength) {
+                annotations.add(AnnotationData.from(this@DexKitBridge, item.annotations(j)!!))
+            }
+            list.add(annotations)
         }
         return list
     }
@@ -336,6 +386,18 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetFieldByIds(nativePtr: Long, ids: IntArray): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetClassAnnotations(nativePtr: Long, classId: Int): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetFieldAnnotations(nativePtr: Long, fieldId: Int): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetMethodAnnotations(nativePtr: Long, methodId: Int): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetParameterAnnotations(nativePtr: Long, methodId: Int): ByteArray
 
     }
 

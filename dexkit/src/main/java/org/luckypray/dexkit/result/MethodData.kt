@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.alias.InnerMethodMeta
+import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 import org.luckypray.dexkit.util.DexDescriptorUtil.getConstructorSignature
@@ -12,7 +12,7 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
 class MethodData private constructor(
-    private val bridge: DexKitBridge,
+    bridge: DexKitBridge,
     val id: Int,
     val dexId: Int,
     val classId: Int,
@@ -22,20 +22,22 @@ class MethodData private constructor(
     val parameterTypeIds: List<Int>
 ) : BaseData(bridge) {
 
-    internal constructor(bridge: DexKitBridge, methodMeta: InnerMethodMeta) : this(
-        bridge,
-        methodMeta.id.toInt(),
-        methodMeta.dexId.toInt(),
-        methodMeta.classId.toInt(),
-        methodMeta.accessFlags.toInt(),
-        methodMeta.dexDescriptor ?: "",
-        methodMeta.returnType.toInt(),
-        mutableListOf<Int>().apply {
-            for (i in 0 until methodMeta.parameterTypesLength) {
-                add(methodMeta.parameterTypes(i))
+    companion object {
+        internal fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta) = MethodData(
+            bridge,
+            methodMeta.id.toInt(),
+            methodMeta.dexId.toInt(),
+            methodMeta.classId.toInt(),
+            methodMeta.accessFlags.toInt(),
+            methodMeta.dexDescriptor ?: "",
+            methodMeta.returnType.toInt(),
+            mutableListOf<Int>().apply {
+                for (i in 0 until methodMeta.parameterTypesLength) {
+                    add(methodMeta.parameterTypes(i))
+                }
             }
-        }
-    )
+        )
+    }
 
     val name: String by lazy {
         dexDescriptor.substringAfter("->").substringBefore("(")

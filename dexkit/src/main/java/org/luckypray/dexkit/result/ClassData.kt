@@ -3,12 +3,12 @@
 package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.alias.InnerClassMeta
+import org.luckypray.dexkit.InnerClassMeta
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
 class ClassData private constructor(
-    private val bridge: DexKitBridge,
+    bridge: DexKitBridge,
     val id: Int,
     val dexId: Int,
     val sourceFile: String,
@@ -20,30 +20,32 @@ class ClassData private constructor(
     val fieldIds: List<Int>,
 ): BaseData(bridge) {
 
-    internal constructor(bridge: DexKitBridge, classMeta: InnerClassMeta) : this(
-        bridge,
-        classMeta.id.toInt(),
-        classMeta.dexId.toInt(),
-        classMeta.sourceFile ?: "",
-        classMeta.accessFlags.toInt(),
-        classMeta.dexDescriptor ?: "",
-        classMeta.superClass.toInt().let { if (it == -1) null else it },
-        mutableListOf<Int>().apply {
-            for (i in 0 until classMeta.interfacesLength) {
-                add(classMeta.interfaces(i))
-            }
-        },
-        mutableListOf<Int>().apply {
-            for (i in 0 until classMeta.methodsLength) {
-                add(classMeta.methods(i))
-            }
-        },
-        mutableListOf<Int>().apply {
-            for (i in 0 until classMeta.fieldsLength) {
-                add(classMeta.fields(i))
-            }
-        },
-    )
+    companion object {
+        internal fun from(bridge: DexKitBridge, classMeta: InnerClassMeta) = ClassData(
+            bridge,
+            classMeta.id.toInt(),
+            classMeta.dexId.toInt(),
+            classMeta.sourceFile ?: "",
+            classMeta.accessFlags.toInt(),
+            classMeta.dexDescriptor ?: "",
+            classMeta.superClass.toInt().let { if (it == -1) null else it },
+            mutableListOf<Int>().apply {
+                for (i in 0 until classMeta.interfacesLength) {
+                    add(classMeta.interfaces(i))
+                }
+            },
+            mutableListOf<Int>().apply {
+                for (i in 0 until classMeta.methodsLength) {
+                    add(classMeta.methods(i))
+                }
+            },
+            mutableListOf<Int>().apply {
+                for (i in 0 until classMeta.fieldsLength) {
+                    add(classMeta.fields(i))
+                }
+            },
+        )
+    }
 
     val name: String by lazy {
         getClassName(dexDescriptor)

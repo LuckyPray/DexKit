@@ -1,6 +1,6 @@
 package org.luckypray.dexkit.query.enums
 
-import org.luckypray.dexkit.alias.InnerTargetElementType
+import org.luckypray.dexkit.InnerTargetElementType
 
 enum class TargetElementType(val value: Byte) {
     Type(InnerTargetElementType.Type),

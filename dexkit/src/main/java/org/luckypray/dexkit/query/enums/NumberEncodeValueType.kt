@@ -1,6 +1,6 @@
 package org.luckypray.dexkit.query.enums
 
-import org.luckypray.dexkit.alias.InnerNumber
+import org.luckypray.dexkit.InnerNumber
 
 enum class NumberEncodeValueType(val value: UByte) {
     ByteValue(InnerNumber.EncodeValueByte),

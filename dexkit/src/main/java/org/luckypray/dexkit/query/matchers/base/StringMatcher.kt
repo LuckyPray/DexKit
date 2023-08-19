@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerStringMatcher
+import org.luckypray.dexkit.InnerStringMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 

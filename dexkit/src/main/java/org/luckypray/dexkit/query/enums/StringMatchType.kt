@@ -1,6 +1,6 @@
 package org.luckypray.dexkit.query.enums
 
-import org.luckypray.dexkit.alias.InnerStringMatchType
+import org.luckypray.dexkit.InnerStringMatchType
 
 enum class StringMatchType(val value: Byte) {
     Contains(InnerStringMatchType.Contains),

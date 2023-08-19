@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerIntRange
+import org.luckypray.dexkit.InnerIntRange
 import org.luckypray.dexkit.query.base.BaseQuery
 
 class IntRange : BaseQuery {

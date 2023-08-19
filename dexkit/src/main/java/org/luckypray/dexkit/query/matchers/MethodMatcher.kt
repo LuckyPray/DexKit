@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerMethodMatcher
+import org.luckypray.dexkit.InnerMethodMatcher
 import org.luckypray.dexkit.query.NumberEncodeValueMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.UsingFieldMatcherList

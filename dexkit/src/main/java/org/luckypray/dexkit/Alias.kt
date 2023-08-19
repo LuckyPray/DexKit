@@ -1,4 +1,4 @@
-package org.luckypray.dexkit.alias
+package org.luckypray.dexkit
 
 internal typealias InnerAccessFlagsMatcher = org.luckypray.dexkit.schema.`-AccessFlagsMatcher`
 internal typealias InnerAnnotationElementMatcher = org.luckypray.dexkit.schema.`-AnnotationElementMatcher`
@@ -52,6 +52,7 @@ internal typealias InnerNumber = org.luckypray.dexkit.schema.`-Number`
 internal typealias InnerOpCodeMatchType = org.luckypray.dexkit.schema.`-OpCodeMatchType`
 internal typealias InnerOpCodesMatcher = org.luckypray.dexkit.schema.`-OpCodesMatcher`
 internal typealias InnerParameterMatcher = org.luckypray.dexkit.schema.`-ParameterMatcher`
+internal typealias InnerParametersAnnotationMetaArrayHoler = org.luckypray.dexkit.schema.`-ParametersAnnotationMetaArrayHoler`
 internal typealias InnerParametersMatcher = org.luckypray.dexkit.schema.`-ParametersMatcher`
 internal typealias InnerRetentionPolicyType = org.luckypray.dexkit.schema.`-RetentionPolicyType`
 internal typealias InnerStringMatchType = org.luckypray.dexkit.schema.`-StringMatchType`

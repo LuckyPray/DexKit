@@ -38,7 +38,7 @@ for dir, _, _files in os.walk(f"{KOTLIN_OUT_DIR}/dexkit/schema"):
         with open(file_path, 'wb') as f:
             f.write(content)
     with open(f'{KOTLIN_ALIAS_OUT_DIR}/Alias.kt', 'wb') as f:
-        f.write(b'package org.luckypray.dexkit.alias\n\n')
+        f.write(b'package org.luckypray.dexkit\n\n')
         for v in class_list:
             f.write(f'internal typealias Inner{v} = org.luckypray.dexkit.schema.`-{v}`\n'.encode())
         f.write(b'\n')

@@ -52,6 +52,9 @@ struct AnnotationMetaBuilder;
 struct AnnotationMetaArrayHolder;
 struct AnnotationMetaArrayHolderBuilder;
 
+struct ParametersAnnotationMetaArrayHoler;
+struct ParametersAnnotationMetaArrayHolerBuilder;
+
 struct BatchClassMeta;
 struct BatchClassMetaBuilder;
 
@@ -1222,6 +1225,64 @@ inline ::flatbuffers::Offset<AnnotationMetaArrayHolder> CreateAnnotationMetaArra
   return dexkit::schema::CreateAnnotationMetaArrayHolder(
       _fbb,
       annotations__);
+}
+
+struct ParametersAnnotationMetaArrayHoler FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ParametersAnnotationMetaArrayHolerBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ANNOTATIONS_ARRAY = 4
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMetaArrayHolder>> *annotations_array() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMetaArrayHolder>> *>(VT_ANNOTATIONS_ARRAY);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ANNOTATIONS_ARRAY) &&
+           verifier.VerifyVector(annotations_array()) &&
+           verifier.VerifyVectorOfTables(annotations_array()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ParametersAnnotationMetaArrayHolerBuilder {
+  typedef ParametersAnnotationMetaArrayHoler Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_annotations_array(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMetaArrayHolder>>> annotations_array) {
+    fbb_.AddOffset(ParametersAnnotationMetaArrayHoler::VT_ANNOTATIONS_ARRAY, annotations_array);
+  }
+  explicit ParametersAnnotationMetaArrayHolerBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ParametersAnnotationMetaArrayHoler> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ParametersAnnotationMetaArrayHoler>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ParametersAnnotationMetaArrayHoler> CreateParametersAnnotationMetaArrayHoler(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationMetaArrayHolder>>> annotations_array = 0) {
+  ParametersAnnotationMetaArrayHolerBuilder builder_(_fbb);
+  builder_.add_annotations_array(annotations_array);
+  return builder_.Finish();
+}
+
+struct ParametersAnnotationMetaArrayHoler::Traits {
+  using type = ParametersAnnotationMetaArrayHoler;
+  static auto constexpr Create = CreateParametersAnnotationMetaArrayHoler;
+};
+
+inline ::flatbuffers::Offset<ParametersAnnotationMetaArrayHoler> CreateParametersAnnotationMetaArrayHolerDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationMetaArrayHolder>> *annotations_array = nullptr) {
+  auto annotations_array__ = annotations_array ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationMetaArrayHolder>>(*annotations_array) : 0;
+  return dexkit::schema::CreateParametersAnnotationMetaArrayHoler(
+      _fbb,
+      annotations_array__);
 }
 
 struct BatchClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

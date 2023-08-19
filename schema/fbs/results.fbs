@@ -91,6 +91,10 @@ table AnnotationMetaArrayHolder {
     annotations: [AnnotationMeta];
 }
 
+table ParametersAnnotationMetaArrayHoler {
+    annotations_array: [AnnotationMetaArrayHolder];
+}
+
 table BatchClassMeta {
     union_key: string;
     classes: [ClassMeta];

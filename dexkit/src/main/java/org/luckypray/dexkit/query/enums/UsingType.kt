@@ -1,6 +1,6 @@
 package org.luckypray.dexkit.query.enums
 
-import org.luckypray.dexkit.alias.InnerUsingType
+import org.luckypray.dexkit.InnerUsingType
 
 enum class UsingType(val value: Byte) {
     Any(InnerUsingType.Any_),

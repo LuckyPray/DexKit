@@ -3,7 +3,7 @@ package org.luckypray.dexkit.result.base
 import org.luckypray.dexkit.DexKitBridge
 
 abstract class BaseData(
-    private val bridge: DexKitBridge
+    protected val bridge: DexKitBridge
 ) {
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly

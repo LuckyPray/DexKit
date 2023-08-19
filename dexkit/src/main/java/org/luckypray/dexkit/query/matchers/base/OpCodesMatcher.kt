@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerOpCodesMatcher
+import org.luckypray.dexkit.InnerOpCodesMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.util.OpCodeUtil

@@ -3,14 +3,14 @@
 package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.alias.InnerFieldMeta
+import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 import org.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
 import java.lang.reflect.Field
 
 class FieldData private constructor(
-    private val bridge: DexKitBridge,
+    bridge: DexKitBridge,
     val id: Int,
     val dexId: Int,
     val classId: Int,
@@ -19,15 +19,17 @@ class FieldData private constructor(
     val typeId: Int
 ): BaseData(bridge) {
 
-    internal constructor(bridge: DexKitBridge, fieldMeta: InnerFieldMeta) : this(
-        bridge,
-        fieldMeta.id.toInt(),
-        fieldMeta.dexId.toInt(),
-        fieldMeta.classId.toInt(),
-        fieldMeta.accessFlags.toInt(),
-        fieldMeta.dexDescriptor ?: "",
-        fieldMeta.typeId.toInt()
-    )
+    companion object {
+        internal fun from(bridge: DexKitBridge, fieldMeta: InnerFieldMeta) = FieldData(
+            bridge,
+            fieldMeta.id.toInt(),
+            fieldMeta.dexId.toInt(),
+            fieldMeta.classId.toInt(),
+            fieldMeta.accessFlags.toInt(),
+            fieldMeta.dexDescriptor!!,
+            fieldMeta.typeId.toInt()
+        )
+    }
 
     val classDescriptor : String by lazy {
         dexDescriptor.substringBefore("->")

@@ -1,7 +1,7 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerUsingFieldMatcher
+import org.luckypray.dexkit.InnerUsingFieldMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.UsingType
 

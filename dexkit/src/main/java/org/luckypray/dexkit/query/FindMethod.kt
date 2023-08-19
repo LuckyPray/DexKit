@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.query
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.alias.InnerFindMethod
+import org.luckypray.dexkit.InnerFindMethod
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
