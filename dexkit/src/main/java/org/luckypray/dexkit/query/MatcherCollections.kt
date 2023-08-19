@@ -6,6 +6,7 @@ import org.luckypray.dexkit.query.base.IQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.BatchUsingStringsMatcher
 import org.luckypray.dexkit.query.matchers.FieldMatcher
+import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.FieldData
@@ -50,6 +51,16 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
 
     fun addForName(name: String) = also {
         add(FieldMatcher().apply { name(name) })
+    }
+}
+
+class UsingFieldMatcherList : ArrayList<UsingFieldMatcher>, IQuery {
+    constructor(): super()
+    constructor(initialCapacity: Int): super(initialCapacity)
+    constructor(elements: Collection<UsingFieldMatcher>): super(elements)
+
+    fun add(init: UsingFieldMatcher.() -> Unit) = also {
+        add(UsingFieldMatcher().apply(init))
     }
 }
 

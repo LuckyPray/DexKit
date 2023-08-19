@@ -6,18 +6,19 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerOpCodesMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
+import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.util.OpCodeUtil
 
 class OpCodesMatcher : BaseQuery {
     private var opCodes: List<Int>? = null
-    private var matchType: MatchType = MatchType.Contains
+    private var matchType: OpCodeMatchType = OpCodeMatchType.Contains
     private var methodOpCodeSize: IntRange? = null
 
     constructor()
     @JvmOverloads
     constructor(
         opCodes: List<Int>,
-        matchType: MatchType = MatchType.Contains,
+        matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) {
         this.opCodes = opCodes
@@ -28,7 +29,7 @@ class OpCodesMatcher : BaseQuery {
     @JvmOverloads
     constructor(
         opCodes: IntArray,
-        matchType: MatchType = MatchType.Contains,
+        matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) {
         this.opCodes = opCodes.toList()
@@ -46,14 +47,14 @@ class OpCodesMatcher : BaseQuery {
         this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
     }
 
-    fun matchType(matchType: MatchType) = also { this.matchType = matchType }
+    fun matchType(matchType: OpCodeMatchType) = also { this.matchType = matchType }
     fun opCodeSize(opCodeSize: IntRange?) = also { this.methodOpCodeSize = opCodeSize }
 
     companion object {
         @JvmStatic
         fun create(
             opCodes: List<Int>,
-            matchType: MatchType = MatchType.Contains,
+            matchType: OpCodeMatchType = OpCodeMatchType.Contains,
             opCodeSize: IntRange? = null
         ): OpCodesMatcher {
             return OpCodesMatcher(opCodes, matchType, opCodeSize)
@@ -62,7 +63,7 @@ class OpCodesMatcher : BaseQuery {
         @JvmStatic
         fun create(
             opCodes: IntArray,
-            matchType: MatchType = MatchType.Contains,
+            matchType: OpCodeMatchType = OpCodeMatchType.Contains,
             opCodeSize: IntRange? = null
         ): OpCodesMatcher {
             return OpCodesMatcher(opCodes, matchType, opCodeSize)
@@ -76,7 +77,7 @@ class OpCodesMatcher : BaseQuery {
         @JvmStatic
         fun createForOpNames(
             opNames: List<String>,
-            matchType: MatchType = MatchType.Contains,
+            matchType: OpCodeMatchType = OpCodeMatchType.Contains,
             opCodeSize: IntRange? = null
         ): OpCodesMatcher {
             return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) }, matchType, opCodeSize)
@@ -85,7 +86,7 @@ class OpCodesMatcher : BaseQuery {
         @JvmStatic
         fun createForOpNames(
             opNames: Array<String>,
-            matchType: MatchType = MatchType.Contains,
+            matchType: OpCodeMatchType = OpCodeMatchType.Contains,
             opCodeSize: IntRange? = null
         ): OpCodesMatcher {
             return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) }, matchType, opCodeSize)

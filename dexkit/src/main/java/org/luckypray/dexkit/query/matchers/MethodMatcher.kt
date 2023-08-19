@@ -5,9 +5,10 @@ package org.luckypray.dexkit.query.matchers
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerMethodMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
-import org.luckypray.dexkit.query.FieldMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
+import org.luckypray.dexkit.query.UsingFieldMatcherList
 import org.luckypray.dexkit.query.enums.MatchType
+import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
@@ -23,7 +24,7 @@ class MethodMatcher : BaseQuery() {
 //    var annotations: AnnotationsMatcher? = null
     private var opCodes: OpCodesMatcher? = null
     private var usingStrings: List<StringMatcher>? = null
-    private var usingFields: List<FieldMatcher>? = null
+    private var usingFields: List<UsingFieldMatcher>? = null
     // TODO
 //    var usingNumbers: List<Number>? = null
     private var invokingMethods: MethodsMatcher? = null
@@ -72,7 +73,7 @@ class MethodMatcher : BaseQuery() {
 
     fun opCodes(
         opCodes: List<Int>,
-        matchType: MatchType = MatchType.Contains,
+        matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) {
         this.opCodes = OpCodesMatcher(opCodes, matchType, opCodeSize)
@@ -80,7 +81,7 @@ class MethodMatcher : BaseQuery() {
 
     fun opNames(
         opNames: List<String>,
-        matchType: MatchType = MatchType.Contains,
+        matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) {
         this.opCodes = OpCodesMatcher.createForOpNames(opNames, matchType, opCodeSize)
@@ -98,7 +99,7 @@ class MethodMatcher : BaseQuery() {
         this.usingStrings = usingStrings.map { StringMatcher(it) }
     }
 
-    fun usingFields(usingFields: List<FieldMatcher>) = also {
+    fun usingFields(usingFields: List<UsingFieldMatcher>) = also {
         this.usingFields = usingFields
     }
 
@@ -128,8 +129,8 @@ class MethodMatcher : BaseQuery() {
         this.usingStrings = StringMatcherList().apply(init)
     }
 
-    fun usingFields(init: FieldMatcherList.() -> Unit) = also {
-        this.usingFields = FieldMatcherList().apply(init)
+    fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
+        this.usingFields = UsingFieldMatcherList().apply(init)
     }
 
     fun invokingMethods(init: MethodsMatcher.() -> Unit) = also {

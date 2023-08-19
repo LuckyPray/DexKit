@@ -20,6 +20,7 @@ for dir, _, _files in os.walk(f"{KOTLIN_OUT_DIR}/dexkit/schema"):
     class_list = []
     for file in _files:
         class_list.append(file.replace('.kt', ''))
+    class_list = sorted(class_list)
     for file in _files:
         file_path = os.path.join(dir, file)
         with open(file_path, 'rb') as f:
