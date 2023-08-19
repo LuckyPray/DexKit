@@ -4,6 +4,7 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.alias.InnerFieldMeta
+import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 import org.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
 import java.lang.reflect.Field

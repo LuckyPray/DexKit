@@ -1,4 +1,4 @@
-package org.luckypray.dexkit.result
+package org.luckypray.dexkit.result.base
 
 import org.luckypray.dexkit.DexKitBridge
 

@@ -13,11 +13,26 @@ class MethodsMatcher : BaseQuery() {
     private var matchType: MatchType = MatchType.Contains
     private var methodCount: IntRange? = null
 
-    fun methods(methods: List<MethodMatcher>) = also { this.methods = methods }
-    fun matchType(matchType: MatchType) = also { this.matchType = matchType }
-    fun methodCount(methodCount: IntRange) = also { this.methodCount = methodCount }
-    fun methodCount(count: Int) = also { this.methodCount = IntRange(count) }
-    fun methodCount(min: Int, max: Int) = also { this.methodCount = IntRange(min, max) }
+    fun methods(methods: List<MethodMatcher>) = also {
+        this.methods = methods
+    }
+
+    fun matchType(matchType: MatchType) = also {
+        this.matchType = matchType
+    }
+
+    fun methodCount(methodCount: IntRange) = also {
+        this.methodCount = methodCount
+    }
+
+    fun methodCount(count: Int) = also {
+        this.methodCount = IntRange(count)
+    }
+
+    fun methodCount(min: Int, max: Int) = also {
+        this.methodCount = IntRange(min, max)
+    }
+
     fun add(method: MethodMatcher) = also {
         methods = methods ?: mutableListOf()
         if (methods !is MutableList) {

@@ -5,18 +5,18 @@ package org.luckypray.dexkit.schema
 @Suppress("unused")
 internal class `-AnnotationEncodeValueType` private constructor() {
     companion object {
-        const val Byte: Byte = 0
-        const val Short: Byte = 1
-        const val Char: Byte = 2
-        const val Int: Byte = 3
-        const val Long: Byte = 4
-        const val Float: Byte = 5
-        const val Double: Byte = 6
-        const val String: Byte = 7
-        const val Type: Byte = 8
-        const val Enum: Byte = 9
-        const val Array: Byte = 10
-        const val Annotation: Byte = 11
-        const val Bool: Byte = 12
+        const val ByteValue: Byte = 0
+        const val ShortValue: Byte = 1
+        const val CharValue: Byte = 2
+        const val IntValue: Byte = 3
+        const val LongValue: Byte = 4
+        const val FloatValue: Byte = 5
+        const val DoubleValue: Byte = 6
+        const val StringValue: Byte = 7
+        const val TypeValue: Byte = 8
+        const val EnumValue: Byte = 9
+        const val ArrayValue: Byte = 10
+        const val AnnotationValue: Byte = 11
+        const val BoolValue: Byte = 12
     }
 }

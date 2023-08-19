@@ -915,7 +915,7 @@ struct AnnotationEncodeValueMetaBuilder {
 
 inline ::flatbuffers::Offset<AnnotationEncodeValueMeta> CreateAnnotationEncodeValueMeta(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    dexkit::schema::AnnotationEncodeValueType type = dexkit::schema::AnnotationEncodeValueType::Byte,
+    dexkit::schema::AnnotationEncodeValueType type = dexkit::schema::AnnotationEncodeValueType::ByteValue,
     dexkit::schema::AnnotationEncodeValue value_type = dexkit::schema::AnnotationEncodeValue::NONE,
     ::flatbuffers::Offset<void> value = 0) {
   AnnotationEncodeValueMetaBuilder builder_(_fbb);

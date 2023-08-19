@@ -56,19 +56,19 @@ AnnotationEncodeValueBean::CreateAnnotationEncodeValueMeta(flatbuffers::FlatBuff
     using namespace schema;
     flatbuffers::Offset<void> offset;
     switch (this->type) {
-        case AnnotationEncodeValueType::Byte: offset = schema::CreateEncodeValueByte(fbb, get<int8_t>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::Short: offset = schema::CreateEncodeValueShort(fbb, get<int16_t>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::Char: offset = schema::CreateEncodeValueChar(fbb, get<int16_t>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::Int: offset = schema::CreateEncodeValueInt(fbb, get<int32_t>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::Long: offset = schema::CreateEncodeValueLong(fbb, get<int64_t>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::Float: offset = schema::CreateEncodeValueFloat(fbb, get<float>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::Double: offset = schema::CreateEncodeValueDouble(fbb, get<double>(this->value)).Union(); break;
-        case AnnotationEncodeValueType::String: offset = schema::CreateEncodeValueString(fbb, fbb.CreateString(get<std::string_view>(this->value))).Union(); break;
-        case AnnotationEncodeValueType::Type: offset = get<std::unique_ptr<ClassBean>>(this->value)->CreateClassMeta(fbb).Union(); break;
-        case AnnotationEncodeValueType::Enum: offset = get<std::unique_ptr<FieldBean>>(this->value)->CreateFieldMeta(fbb).Union(); break;
-        case AnnotationEncodeValueType::Array: offset = get<std::unique_ptr<AnnotationEncodeArrayBean>>(this->value)->CreateAnnotationEncodeArray(fbb).Union(); break;
-        case AnnotationEncodeValueType::Annotation: offset = get<std::unique_ptr<AnnotationBean>>(this->value)->CreateAnnotationMeta(fbb).Union(); break;
-        case AnnotationEncodeValueType::Bool: offset = schema::CreateEncodeValueBoolean(fbb, get<bool>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::ByteValue: offset = schema::CreateEncodeValueByte(fbb, get<int8_t>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::ShortValue: offset = schema::CreateEncodeValueShort(fbb, get<int16_t>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::CharValue: offset = schema::CreateEncodeValueChar(fbb, get<int16_t>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::IntValue: offset = schema::CreateEncodeValueInt(fbb, get<int32_t>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::LongValue: offset = schema::CreateEncodeValueLong(fbb, get<int64_t>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::FloatValue: offset = schema::CreateEncodeValueFloat(fbb, get<float>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::DoubleValue: offset = schema::CreateEncodeValueDouble(fbb, get<double>(this->value)).Union(); break;
+        case AnnotationEncodeValueType::StringValue: offset = schema::CreateEncodeValueString(fbb, fbb.CreateString(get<std::string_view>(this->value))).Union(); break;
+        case AnnotationEncodeValueType::TypeValue: offset = get<std::unique_ptr<ClassBean>>(this->value)->CreateClassMeta(fbb).Union(); break;
+        case AnnotationEncodeValueType::EnumValue: offset = get<std::unique_ptr<FieldBean>>(this->value)->CreateFieldMeta(fbb).Union(); break;
+        case AnnotationEncodeValueType::ArrayValue: offset = get<std::unique_ptr<AnnotationEncodeArrayBean>>(this->value)->CreateAnnotationEncodeArray(fbb).Union(); break;
+        case AnnotationEncodeValueType::AnnotationValue: offset = get<std::unique_ptr<AnnotationBean>>(this->value)->CreateAnnotationMeta(fbb).Union(); break;
+        case AnnotationEncodeValueType::BoolValue: offset = schema::CreateEncodeValueBoolean(fbb, get<bool>(this->value)).Union(); break;
     }
     auto annotation_encode_value_meta = schema::CreateAnnotationEncodeValueMeta(
             fbb,

@@ -4,8 +4,8 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerClassMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.StringMatcherList
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
@@ -17,8 +17,7 @@ class ClassMatcher : BaseQuery() {
     private var modifiers: AccessFlagsMatcher? = null
     private var superClass: ClassMatcher? = null
     private var interfaces: InterfacesMatcher? = null
-    //TODO
-//    var annotation: AnnotationsMatcher? = null
+    private var annotations: AnnotationsMatcher? = null
     private var fields: FieldsMatcher? = null
     private var methods: MethodsMatcher? = null
     private var usingStrings: List<StringMatcher>? = null
@@ -71,6 +70,10 @@ class ClassMatcher : BaseQuery() {
         this.interfaces = interfaces
     }
 
+    fun annotations(annotations: AnnotationsMatcher) = also {
+        this.annotations = annotations
+    }
+
     fun fields(fields: FieldsMatcher) = also {
         this.fields = fields
     }
@@ -101,6 +104,10 @@ class ClassMatcher : BaseQuery() {
         interfaces(InterfacesMatcher().apply(init))
     }
 
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        annotations(AnnotationsMatcher().apply(init))
+    }
+
     fun fields(init: FieldsMatcher.() -> Unit) = also {
         fields(FieldsMatcher().apply(init))
     }
@@ -129,8 +136,7 @@ class ClassMatcher : BaseQuery() {
             modifiers?.build(fbb) ?: 0,
             superClass?.build(fbb) ?: 0,
             interfaces?.build(fbb) ?: 0,
-            // TODO
-            0,
+            annotations?.build(fbb) ?: 0,
             fields?.build(fbb) ?: 0,
             methods?.build(fbb) ?: 0,
             usingStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }

@@ -230,62 +230,62 @@ inline const char *EnumNameRetentionPolicyType(RetentionPolicyType e) {
 }
 
 enum class AnnotationEncodeValueType : int8_t {
-  Byte = 0,
-  Short = 1,
-  Char = 2,
-  Int = 3,
-  Long = 4,
-  Float = 5,
-  Double = 6,
-  String = 7,
-  Type = 8,
-  Enum = 9,
-  Array = 10,
-  Annotation = 11,
-  Bool = 12
+  ByteValue = 0,
+  ShortValue = 1,
+  CharValue = 2,
+  IntValue = 3,
+  LongValue = 4,
+  FloatValue = 5,
+  DoubleValue = 6,
+  StringValue = 7,
+  TypeValue = 8,
+  EnumValue = 9,
+  ArrayValue = 10,
+  AnnotationValue = 11,
+  BoolValue = 12
 };
 
 inline const AnnotationEncodeValueType (&EnumValuesAnnotationEncodeValueType())[13] {
   static const AnnotationEncodeValueType values[] = {
-    AnnotationEncodeValueType::Byte,
-    AnnotationEncodeValueType::Short,
-    AnnotationEncodeValueType::Char,
-    AnnotationEncodeValueType::Int,
-    AnnotationEncodeValueType::Long,
-    AnnotationEncodeValueType::Float,
-    AnnotationEncodeValueType::Double,
-    AnnotationEncodeValueType::String,
-    AnnotationEncodeValueType::Type,
-    AnnotationEncodeValueType::Enum,
-    AnnotationEncodeValueType::Array,
-    AnnotationEncodeValueType::Annotation,
-    AnnotationEncodeValueType::Bool
+    AnnotationEncodeValueType::ByteValue,
+    AnnotationEncodeValueType::ShortValue,
+    AnnotationEncodeValueType::CharValue,
+    AnnotationEncodeValueType::IntValue,
+    AnnotationEncodeValueType::LongValue,
+    AnnotationEncodeValueType::FloatValue,
+    AnnotationEncodeValueType::DoubleValue,
+    AnnotationEncodeValueType::StringValue,
+    AnnotationEncodeValueType::TypeValue,
+    AnnotationEncodeValueType::EnumValue,
+    AnnotationEncodeValueType::ArrayValue,
+    AnnotationEncodeValueType::AnnotationValue,
+    AnnotationEncodeValueType::BoolValue
   };
   return values;
 }
 
 inline const char * const *EnumNamesAnnotationEncodeValueType() {
   static const char * const names[14] = {
-    "Byte",
-    "Short",
-    "Char",
-    "Int",
-    "Long",
-    "Float",
-    "Double",
-    "String",
-    "Type",
-    "Enum",
-    "Array",
-    "Annotation",
-    "Bool",
+    "ByteValue",
+    "ShortValue",
+    "CharValue",
+    "IntValue",
+    "LongValue",
+    "FloatValue",
+    "DoubleValue",
+    "StringValue",
+    "TypeValue",
+    "EnumValue",
+    "ArrayValue",
+    "AnnotationValue",
+    "BoolValue",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameAnnotationEncodeValueType(AnnotationEncodeValueType e) {
-  if (::flatbuffers::IsOutRange(e, AnnotationEncodeValueType::Byte, AnnotationEncodeValueType::Bool)) return "";
+  if (::flatbuffers::IsOutRange(e, AnnotationEncodeValueType::ByteValue, AnnotationEncodeValueType::BoolValue)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesAnnotationEncodeValueType()[index];
 }

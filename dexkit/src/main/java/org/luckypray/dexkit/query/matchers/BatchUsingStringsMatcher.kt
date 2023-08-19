@@ -4,8 +4,8 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerBatchUsingStringsMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.StringMatcherList
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class BatchUsingStringsMatcher @JvmOverloads constructor(

@@ -15,8 +15,7 @@ class FieldMatcher : BaseQuery() {
     private var modifiers: AccessFlagsMatcher? = null
     private var declaredClass: ClassMatcher? = null
     private var type: ClassMatcher? = null
-    //TODO
-//    var annotation: AnnotationsMatcher? = null
+    private var annotations: AnnotationsMatcher? = null
     private var getMethods: MethodsMatcher? = null
     private var setMethods: MethodsMatcher? = null
 
@@ -62,6 +61,10 @@ class FieldMatcher : BaseQuery() {
         this.type = ClassMatcher().className(typeName, matchType, ignoreCase)
     }
 
+    fun annotations(annotations: AnnotationsMatcher) = also {
+        this.annotations = annotations
+    }
+
     fun getMethods(getMethods: MethodsMatcher) = also {
         this.getMethods = getMethods
     }
@@ -78,6 +81,10 @@ class FieldMatcher : BaseQuery() {
 
     fun type(init: ClassMatcher.() -> Unit) = also {
         this.type(ClassMatcher().apply(init))
+    }
+
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        this.annotations(AnnotationsMatcher().apply(init))
     }
 
     fun getMethods(init: MethodsMatcher.() -> Unit) = also {
@@ -104,8 +111,7 @@ class FieldMatcher : BaseQuery() {
             modifiers?.build(fbb) ?: 0,
             declaredClass?.build(fbb) ?: 0,
             type?.build(fbb) ?: 0,
-            // TODO
-            0,
+            annotations?.build(fbb) ?: 0,
             getMethods?.build(fbb) ?: 0,
             setMethods?.build(fbb) ?: 0
         )

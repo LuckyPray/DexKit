@@ -4,6 +4,7 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.alias.InnerMethodMeta
+import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 import org.luckypray.dexkit.util.DexDescriptorUtil.getConstructorSignature
 import org.luckypray.dexkit.util.DexDescriptorUtil.getMethodSignature

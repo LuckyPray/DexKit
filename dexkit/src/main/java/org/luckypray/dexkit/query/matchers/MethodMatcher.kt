@@ -4,13 +4,15 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerMethodMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.NumberEncodeValueMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.UsingFieldMatcherList
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
+import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
@@ -20,13 +22,11 @@ class MethodMatcher : BaseQuery() {
     private var declaredClass: ClassMatcher? = null
     private var returnType: ClassMatcher? = null
     private var parameters: ParametersMatcher? = null
-    // TODO
-//    var annotations: AnnotationsMatcher? = null
+    private var annotations: AnnotationsMatcher? = null
     private var opCodes: OpCodesMatcher? = null
     private var usingStrings: List<StringMatcher>? = null
     private var usingFields: List<UsingFieldMatcher>? = null
-    // TODO
-//    var usingNumbers: List<Number>? = null
+    private var usingNumbers: List<NumberEncodeValueMatcher>? = null
     private var invokingMethods: MethodsMatcher? = null
     private var methodCallers: MethodsMatcher? = null
 
@@ -67,6 +67,10 @@ class MethodMatcher : BaseQuery() {
         this.parameters = parameters
     }
 
+    fun annotations(annotations: AnnotationsMatcher) = also {
+        this.annotations = annotations
+    }
+
     fun opCodes(opCodes: OpCodesMatcher) = also {
         this.opCodes = opCodes
     }
@@ -103,6 +107,10 @@ class MethodMatcher : BaseQuery() {
         this.usingFields = usingFields
     }
 
+    fun usingNumbers(usingNumbers: List<NumberEncodeValueMatcher>) = also {
+        this.usingNumbers = usingNumbers
+    }
+
     fun invokingMethods(invokingMethods: MethodsMatcher) = also {
         this.invokingMethods = invokingMethods
     }
@@ -125,12 +133,20 @@ class MethodMatcher : BaseQuery() {
         this.parameters = ParametersMatcher().apply(init)
     }
 
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        this.annotations = AnnotationsMatcher().apply(init)
+    }
+
     fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
         this.usingStrings = StringMatcherList().apply(init)
     }
 
     fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
         this.usingFields = UsingFieldMatcherList().apply(init)
+    }
+
+    fun usingNumbers(init: NumberEncodeValueMatcherList.() -> Unit) = also {
+        this.usingNumbers = NumberEncodeValueMatcherList().apply(init)
     }
 
     fun invokingMethods(init: MethodsMatcher.() -> Unit) = also {
@@ -158,18 +174,12 @@ class MethodMatcher : BaseQuery() {
             declaredClass?.build(fbb) ?: 0,
             returnType?.build(fbb) ?: 0,
             parameters?.build(fbb) ?: 0,
-            // TODO
-            0,
+            annotations?.build(fbb) ?: 0,
             opCodes?.build(fbb) ?: 0,
-            usingStrings?.let {
-                fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray())
-            } ?: 0,
-            usingFields?.let {
-                fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray())
-            } ?: 0,
-            // TODO
-            0,
-            0,
+            usingStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            usingFields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            usingNumbers?.let { fbb.createVectorOfTables(it.map { it.type!!.value.toInt() }.toIntArray()) } ?: 0,
+            usingNumbers?.let { fbb.createVectorOfTables(it.map { it.value!!.build(fbb) }.toIntArray()) } ?: 0,
             invokingMethods?.build(fbb) ?: 0,
             methodCallers?.build(fbb) ?: 0
         )

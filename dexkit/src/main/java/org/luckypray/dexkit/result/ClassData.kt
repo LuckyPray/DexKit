@@ -4,7 +4,7 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.alias.InnerClassMeta
-import org.luckypray.dexkit.util.DexDescriptorUtil
+import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
 class ClassData private constructor(

@@ -363,19 +363,19 @@ AnnotationBean DexItem::GetAnnotationBean(ir::Annotation *annotation) {
 AnnotationEncodeValueBean DexItem::GetAnnotationEncodeValueBean(ir::EncodedValue *encoded_value) {
     AnnotationEncodeValueBean bean;
     switch (encoded_value->type) {
-        case 0x00: bean.type = schema::AnnotationEncodeValueType::Byte; break;
-        case 0x02: bean.type = schema::AnnotationEncodeValueType::Short; break;
-        case 0x03: bean.type = schema::AnnotationEncodeValueType::Char; break;
-        case 0x04: bean.type = schema::AnnotationEncodeValueType::Int; break;
-        case 0x06: bean.type = schema::AnnotationEncodeValueType::Long; break;
-        case 0x10: bean.type = schema::AnnotationEncodeValueType::Float; break;
-        case 0x11: bean.type = schema::AnnotationEncodeValueType::Double; break;
-        case 0x17: bean.type = schema::AnnotationEncodeValueType::String; break;
-        case 0x18: bean.type = schema::AnnotationEncodeValueType::Type; break;
-        case 0x1b: bean.type = schema::AnnotationEncodeValueType::Enum; break;
-        case 0x1c: bean.type = schema::AnnotationEncodeValueType::Array; break;
-        case 0x1d: bean.type = schema::AnnotationEncodeValueType::Annotation; break;
-        case 0x1f: bean.type = schema::AnnotationEncodeValueType::Bool; break;
+        case 0x00: bean.type = schema::AnnotationEncodeValueType::ByteValue; break;
+        case 0x02: bean.type = schema::AnnotationEncodeValueType::ShortValue; break;
+        case 0x03: bean.type = schema::AnnotationEncodeValueType::CharValue; break;
+        case 0x04: bean.type = schema::AnnotationEncodeValueType::IntValue; break;
+        case 0x06: bean.type = schema::AnnotationEncodeValueType::LongValue; break;
+        case 0x10: bean.type = schema::AnnotationEncodeValueType::FloatValue; break;
+        case 0x11: bean.type = schema::AnnotationEncodeValueType::DoubleValue; break;
+        case 0x17: bean.type = schema::AnnotationEncodeValueType::StringValue; break;
+        case 0x18: bean.type = schema::AnnotationEncodeValueType::TypeValue; break;
+        case 0x1b: bean.type = schema::AnnotationEncodeValueType::EnumValue; break;
+        case 0x1c: bean.type = schema::AnnotationEncodeValueType::ArrayValue; break;
+        case 0x1d: bean.type = schema::AnnotationEncodeValueType::AnnotationValue; break;
+        case 0x1f: bean.type = schema::AnnotationEncodeValueType::BoolValue; break;
         default: break;
     }
     switch (encoded_value->type) {
