@@ -13,9 +13,12 @@ import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.query.BatchFindClassUsingStrings
 import org.luckypray.dexkit.query.BatchFindMethodUsingStrings
+import org.luckypray.dexkit.query.ClassDataList
+import org.luckypray.dexkit.query.FieldDataList
 import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
+import org.luckypray.dexkit.query.MethodDataList
 import java.io.Closeable
 import java.nio.ByteBuffer
 
@@ -93,19 +96,19 @@ class DexKitBridge : Closeable {
         return this.batchFindMethodUsingStrings(fbb)
     }
 
-    fun findClass(findClass: FindClass): List<ClassData> {
+    fun findClass(findClass: FindClass): ClassDataList {
         val fbb = FlatBufferBuilder()
         findClass.build(fbb)
         return this.findClass(fbb)
     }
 
-    fun findMethod(findMethod: FindMethod): List<MethodData> {
+    fun findMethod(findMethod: FindMethod): MethodDataList {
         val fbb = FlatBufferBuilder()
         findMethod.build(fbb)
         return this.findMethod(fbb)
     }
 
-    fun findField(fieldMatcher: FindField): List<FieldData> {
+    fun findField(fieldMatcher: FindField): FieldDataList {
         val fbb = FlatBufferBuilder()
         fieldMatcher.build(fbb)
         return this.findField(fbb)
@@ -121,14 +124,14 @@ class DexKitBridge : Closeable {
         return batchFindMethodUsingStrings(BatchFindMethodUsingStrings().apply(init))
     }
 
-    fun findClass(init: FindClass.() -> Unit): List<ClassData> {
+    fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
-    fun findMethod(init: FindMethod.() -> Unit): List<MethodData> {
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
-    fun findField(init: FindField.() -> Unit): List<FieldData> {
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 
@@ -139,21 +142,21 @@ class DexKitBridge : Closeable {
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun batchFindClassUsingStrings(fbb: FlatBufferBuilder): Map<String, List<ClassData>> {
+    internal fun batchFindClassUsingStrings(fbb: FlatBufferBuilder): Map<String, ClassDataList> {
         val res = nativeBatchFindClassUsingStrings(token, fbb.sizedByteArray())
         val holder = InnerBatchClassMetaArrayHolder.getRootAsBatchClassMetaArrayHolder(ByteBuffer.wrap(res))
-        val map = HashMap<String, MutableList<ClassData>>()
+        val map = HashMap<String, ClassDataList>()
         for (i in 0 until holder.itemsLength) {
             val items = holder.items(i)!!
             val key = items.unionKey!!
-            val batchFindMeta = mutableListOf<ClassData>().apply {
+            val batchFindMeta = ClassDataList().apply {
                 for (j in 0 until items.classesLength) {
                     add(ClassData(this@DexKitBridge, items.classes(j)!!))
                 }
             }
             map[key] = batchFindMeta
         }
-        return HashMap()
+        return map
     }
 
     /**
@@ -161,14 +164,14 @@ class DexKitBridge : Closeable {
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder): Map<String, List<MethodData>> {
+    internal fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder): Map<String, MethodDataList> {
         val res = nativeBatchFindMethodUsingStrings(token, fbb.sizedByteArray())
         val holder = InnerBatchMethodMetaArrayHolder.getRootAsBatchMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val map = HashMap<String, MutableList<MethodData>>()
+        val map = HashMap<String, MethodDataList>()
         for (i in 0 until holder.itemsLength) {
             val items = holder.items(i)!!
             val key = items.unionKey!!
-            val batchFindMeta = mutableListOf<MethodData>().apply {
+            val batchFindMeta = MethodDataList().apply {
                 for (j in 0 until items.methodsLength) {
                     add(MethodData(this@DexKitBridge, items.methods(j)!!))
                 }
@@ -183,10 +186,10 @@ class DexKitBridge : Closeable {
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun findClass(fbb: FlatBufferBuilder): List<ClassData> {
+    internal fun findClass(fbb: FlatBufferBuilder): ClassDataList {
         val res = nativeFindClass(token, fbb.sizedByteArray())
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<ClassData>()
+        val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
             list.add(ClassData(this@DexKitBridge, holder.classes(i)!!))
         }
@@ -198,10 +201,10 @@ class DexKitBridge : Closeable {
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun findMethod(fbb: FlatBufferBuilder): List<MethodData> {
+    internal fun findMethod(fbb: FlatBufferBuilder): MethodDataList {
         val res = nativeFindMethod(token, fbb.sizedByteArray())
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<MethodData>()
+        val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData(this@DexKitBridge, holder.methods(i)!!))
         }
@@ -213,10 +216,10 @@ class DexKitBridge : Closeable {
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun findField(fbb: FlatBufferBuilder): List<FieldData> {
+    internal fun findField(fbb: FlatBufferBuilder): FieldDataList {
         val res = nativeFindField(token, fbb.sizedByteArray())
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<FieldData>()
+        val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
             list.add(FieldData(this@DexKitBridge, holder.fields(i)!!))
         }
@@ -225,10 +228,10 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getClassByIds(ids: IntArray): List<ClassData> {
+    internal fun getClassByIds(ids: IntArray): ClassDataList {
         val res = nativeGetClassByIds(token, ids)
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<ClassData>()
+        val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
             list.add(ClassData(this@DexKitBridge, holder.classes(i)!!))
         }
@@ -237,10 +240,10 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getMethodByIds(ids: IntArray): List<MethodData> {
+    internal fun getMethodByIds(ids: IntArray): MethodDataList {
         val res = nativeGetMethodByIds(token, ids)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<MethodData>()
+        val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData(this@DexKitBridge, holder.methods(i)!!))
         }
@@ -249,10 +252,10 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getFieldByIds(ids: IntArray): List<FieldData> {
+    internal fun getFieldByIds(ids: IntArray): FieldDataList {
         val res = nativeGetFieldByIds(token, ids)
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<FieldData>()
+        val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
             list.add(FieldData(this@DexKitBridge, holder.fields(i)!!))
         }

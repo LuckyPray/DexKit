@@ -4,7 +4,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerInterfacesMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
@@ -34,7 +34,7 @@ class InterfacesMatcher : BaseQuery() {
         this.interfaceCount = IntRange(min, max)
     }
 
-    fun addMatcher(interfaceMatcher: ClassMatcher) = also {
+    fun add(interfaceMatcher: ClassMatcher) = also {
         interfaces = interfaces ?: mutableListOf()
         if (interfaces !is MutableList) {
             interfaces = interfaces!!.toMutableList()
@@ -43,18 +43,18 @@ class InterfacesMatcher : BaseQuery() {
     }
 
     @JvmOverloads
-    fun addMatcher(
+    fun add(
         className: String,
         matchType: StringMatchType = StringMatchType.Equal,
         ignoreCase: Boolean = false
     ) {
-        addMatcher(ClassMatcher().apply { className(className, matchType, ignoreCase) })
+        add(ClassMatcher().apply { className(className, matchType, ignoreCase) })
     }
 
     // region DSL
 
-    fun addMatcher(init: ClassMatcher.() -> Unit) = also {
-        addMatcher(ClassMatcher().apply(init))
+    fun add(init: ClassMatcher.() -> Unit) = also {
+        add(ClassMatcher().apply(init))
     }
 
     // endregion

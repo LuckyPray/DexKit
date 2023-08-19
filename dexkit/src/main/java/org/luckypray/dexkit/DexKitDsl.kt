@@ -2,8 +2,6 @@ package org.luckypray.dexkit
 
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.util.addMatcher
-import org.luckypray.dexkit.query.util.findMethod
 import java.lang.reflect.Modifier
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
@@ -28,7 +26,7 @@ fun main() {
                 className("superClassName")
                 modifiers(Modifier.ABSTRACT, MatchType.Contains)
                 methods {
-                    addMatcher {
+                    add {
                         modifiers(Modifier.PUBLIC)
                         returnType("void")
                         name("methodName")
@@ -36,15 +34,18 @@ fun main() {
                 }
             }
             interfaces {
-                addMatcher {
+                add {
                     className("interfaceName")
                 }
-                addMatcher("interfaceName1", StringMatchType.Contains, true)
+                add("interfaceName1", StringMatchType.Contains, true)
             }
             usingStrings("A123", "abc")
             usingStringsMatcher {
-                addMatcher("A123", StringMatchType.EndWith)
-                addMatcher("abc", StringMatchType.Contains, true)
+                add("A123", StringMatchType.EndWith)
+                add("abc", StringMatchType.Contains, true)
+                add {
+                    value("abc")
+                }
             }
         }
     }.findMethod {

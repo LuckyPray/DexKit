@@ -4,11 +4,11 @@ package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerStringMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 
 class StringMatcher @JvmOverloads constructor(
-    private var value: String,
+    private var value: String? = null,
     private var matchType: StringMatchType = StringMatchType.Contains,
     private var ignoreCase: Boolean = false
 ) : BaseQuery() {
@@ -28,7 +28,7 @@ class StringMatcher @JvmOverloads constructor(
         @JvmStatic
         @JvmOverloads
         fun create(
-            value: String,
+            value: String? = null,
             matchType: StringMatchType = StringMatchType.Contains,
             ignoreCase: Boolean = false
         ) = StringMatcher(value, matchType, ignoreCase)
@@ -37,8 +37,9 @@ class StringMatcher @JvmOverloads constructor(
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        assert(value.isEmpty() and (matchType == StringMatchType.Contains)) {
-            "StringMatcher value must not be empty when matchType is Contains"
+        value ?: throw IllegalArgumentException("value must not be null")
+        if (value!!.isEmpty() && matchType != StringMatchType.Equal) {
+            throw IllegalAccessException("value '$value' is empty, matchType must be equal")
         }
         val root = InnerStringMatcher.createStringMatcher(
             fbb,

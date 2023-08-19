@@ -4,7 +4,8 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerFieldsMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.FieldMatcherList
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
@@ -34,16 +35,16 @@ class FieldsMatcher : BaseQuery() {
         this.fieldCount = IntRange(min, max)
     }
 
-    fun addMatcher(matcher: FieldMatcher) {
-        values = values ?: mutableListOf()
-        if (values !is MutableList) {
-            values = values!!.toMutableList()
+    fun add(matcher: FieldMatcher) {
+        values = values ?: FieldMatcherList()
+        if (values !is FieldMatcherList) {
+            values = FieldMatcherList(values!!)
         }
-        (values as MutableList<FieldMatcher>).add(matcher)
+        (values as FieldMatcherList).add(matcher)
     }
 
     fun addForName(name: String) = also {
-        addMatcher(FieldMatcher().apply { name(name) })
+        add(FieldMatcher().apply { name(name) })
     }
 
     fun addForType(
@@ -51,13 +52,13 @@ class FieldsMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equal,
         ignoreCase: Boolean = false
     ) = also {
-        addMatcher(FieldMatcher().apply { type(typeName, matchType, ignoreCase) })
+        add(FieldMatcher().apply { type(typeName, matchType, ignoreCase) })
     }
 
     // region DSL
 
-    fun addMatcher(init: FieldMatcher.() -> Unit) = also {
-        addMatcher(FieldMatcher().apply(init))
+    fun add(init: FieldMatcher.() -> Unit) = also {
+        add(FieldMatcher().apply(init))
     }
 
     // endregion

@@ -1,8 +1,10 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package org.luckypray.dexkit.query
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.DexKitDsl
 import org.luckypray.dexkit.alias.InnerBatchFindMethodUsingStrings
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -44,8 +46,8 @@ class BatchFindMethodUsingStrings : BaseQuery() {
 
     // region DSL
 
-    fun matcher(init: (@DexKitDsl MutableList<BatchUsingStringsMatcher>).() -> Unit) = also {
-        this.matchers = mutableListOf<BatchUsingStringsMatcher>().apply(init)
+    fun matcher(init: BatchUsingStringsMatcherList.() -> Unit) = also {
+        this.matchers = BatchUsingStringsMatcherList().apply(init)
     }
 
     // endregion
@@ -58,7 +60,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        assert(matchers != null) { "matchers must be set" }
+        matchers ?: throw IllegalAccessException("matchers must be set")
         val root = InnerBatchFindMethodUsingStrings.createBatchFindMethodUsingStrings(
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,

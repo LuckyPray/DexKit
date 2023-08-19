@@ -4,7 +4,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerParametersMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class ParametersMatcher : BaseQuery() {
@@ -28,7 +28,7 @@ class ParametersMatcher : BaseQuery() {
         this.parametersCount = IntRange(min, max)
     }
 
-    fun addMatcher(matcher: ParameterMatcher) {
+    fun add(matcher: ParameterMatcher) {
         parameters = parameters ?: mutableListOf()
         if (parameters !is MutableList) {
             parameters = parameters!!.toMutableList()
@@ -38,8 +38,8 @@ class ParametersMatcher : BaseQuery() {
 
     // region DSL
 
-    fun ParametersMatcher.addMatcher(init: ParameterMatcher.() -> Unit) = also {
-        addMatcher(ParameterMatcher().apply(init))
+    fun ParametersMatcher.add(init: ParameterMatcher.() -> Unit) = also {
+        add(ParameterMatcher().apply(init))
     }
 
     // endregion

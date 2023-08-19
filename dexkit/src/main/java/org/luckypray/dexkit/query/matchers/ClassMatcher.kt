@@ -3,9 +3,9 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.DexKitDsl
 import org.luckypray.dexkit.alias.InnerClassMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
@@ -109,8 +109,8 @@ class ClassMatcher : BaseQuery() {
         methods(MethodsMatcher().apply(init))
     }
 
-    fun usingStringsMatcher(init: (@DexKitDsl MutableList<StringMatcher>).() -> Unit) = also {
-        usingStringsMatcher(mutableListOf<StringMatcher>().apply(init))
+    fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
+        usingStringsMatcher(StringMatcherList().apply(init))
     }
 
     // endregion

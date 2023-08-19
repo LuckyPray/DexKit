@@ -4,7 +4,7 @@ package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerAccessFlagsMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 
 class AccessFlagsMatcher @JvmOverloads constructor(
@@ -23,7 +23,7 @@ class AccessFlagsMatcher @JvmOverloads constructor(
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        assert(modifiers != 0) { "modifiers must not be 0" }
+        if (modifiers == 0) throw IllegalArgumentException("modifiers must not be 0")
         val root = InnerAccessFlagsMatcher.createAccessFlagsMatcher(
             fbb,
             modifiers.toUInt(),

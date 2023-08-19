@@ -3,9 +3,10 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.DexKitDsl
 import org.luckypray.dexkit.alias.InnerMethodMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.FieldMatcherList
+import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
@@ -123,12 +124,12 @@ class MethodMatcher : BaseQuery() {
         this.parameters = ParametersMatcher().apply(init)
     }
 
-    fun usingStringsMatcher(init: (@DexKitDsl MutableList<StringMatcher>).() -> Unit) = also {
-        this.usingStrings = mutableListOf<StringMatcher>().apply(init)
+    fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
+        this.usingStrings = StringMatcherList().apply(init)
     }
 
-    fun usingFields(init: (@DexKitDsl MutableList<FieldMatcher>).() -> Unit) = also {
-        this.usingFields = mutableListOf<FieldMatcher>().apply(init)
+    fun usingFields(init: FieldMatcherList.() -> Unit) = also {
+        this.usingFields = FieldMatcherList().apply(init)
     }
 
     fun invokingMethods(init: MethodsMatcher.() -> Unit) = also {

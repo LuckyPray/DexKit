@@ -3,14 +3,14 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.DexKitDsl
 import org.luckypray.dexkit.alias.InnerBatchUsingStringsMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class BatchUsingStringsMatcher @JvmOverloads constructor(
     private var unionKey: String,
-    private var usingStrings: List<StringMatcher> = mutableListOf(),
+    private var usingStrings: List<StringMatcher> = StringMatcherList(),
 ) : BaseQuery() {
 
     fun unionKey(unionKey: String) = also {
@@ -31,8 +31,8 @@ class BatchUsingStringsMatcher @JvmOverloads constructor(
 
     // region DSL
 
-    fun usingStringsMatcher(init: (@DexKitDsl MutableList<StringMatcher>).() -> Unit) = also {
-        usingStringsMatcher(mutableListOf<StringMatcher>().apply(init))
+    fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
+        usingStringsMatcher(StringMatcherList().apply(init))
     }
 
     // endregion
@@ -49,8 +49,8 @@ class BatchUsingStringsMatcher @JvmOverloads constructor(
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        assert(unionKey.isNotEmpty()) { "unionKey must be set" }
-        assert(usingStrings.isNotEmpty()) { "matchers not be empty" }
+        if (unionKey.isEmpty()) throw IllegalAccessException("unionKey not be empty")
+        if (usingStrings.isEmpty()) throw IllegalAccessException("matchers not be empty")
         val root = InnerBatchUsingStringsMatcher.createBatchUsingStringsMatcher(
             fbb,
             fbb.createString(unionKey),

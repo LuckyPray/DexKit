@@ -1,6 +1,5 @@
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.util.findClass
 import java.io.File
 import java.util.Locale
 
@@ -37,8 +36,11 @@ fun main() {
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
         val res = bridge.findClass {
+            searchPackage("com.tencent.qq")
             matcher {
-                usingStrings("qimei")
+                usingStringsMatcher {
+                    add("QIMEI", StringMatchType.Contains)
+                }
             }
         }
         res.forEach {

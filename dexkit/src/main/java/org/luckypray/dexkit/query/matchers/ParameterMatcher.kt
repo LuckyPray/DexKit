@@ -4,7 +4,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerParameterMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 
 class ParameterMatcher : BaseQuery() {

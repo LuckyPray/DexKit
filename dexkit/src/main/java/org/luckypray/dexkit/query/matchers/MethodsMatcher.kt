@@ -4,7 +4,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerMethodsMatcher
-import org.luckypray.dexkit.query.BaseQuery
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
@@ -18,7 +18,7 @@ class MethodsMatcher : BaseQuery() {
     fun methodCount(methodCount: IntRange) = also { this.methodCount = methodCount }
     fun methodCount(count: Int) = also { this.methodCount = IntRange(count) }
     fun methodCount(min: Int, max: Int) = also { this.methodCount = IntRange(min, max) }
-    fun addMatcher(method: MethodMatcher) = also {
+    fun add(method: MethodMatcher) = also {
         methods = methods ?: mutableListOf()
         if (methods !is MutableList) {
             methods = methods!!.toMutableList()
@@ -26,14 +26,14 @@ class MethodsMatcher : BaseQuery() {
         (methods as MutableList<MethodMatcher>).add(method)
     }
 
-    fun addMatcher(methodName: String) = also {
-        addMatcher(MethodMatcher().apply { name(methodName) })
+    fun add(methodName: String) = also {
+        add(MethodMatcher().apply { name(methodName) })
     }
 
     // region DSL
 
-    fun MethodsMatcher.addMatcher(init: MethodMatcher.() -> Unit) = also {
-        addMatcher(MethodMatcher().apply(init))
+    fun MethodsMatcher.add(init: MethodMatcher.() -> Unit) = also {
+        add(MethodMatcher().apply(init))
     }
 
     // endregion

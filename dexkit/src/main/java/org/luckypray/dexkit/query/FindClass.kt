@@ -1,7 +1,10 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package org.luckypray.dexkit.query
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.alias.InnerFindClass
+import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.query.matchers.ClassMatcher
 
@@ -38,7 +41,6 @@ class FindClass : BaseQuery() {
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        assert(matcher != null) { "Class matcher must be set" }
         val root = InnerFindClass.createFindClass(
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,
