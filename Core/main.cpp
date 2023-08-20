@@ -417,7 +417,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
                                             0,
                                             RetentionPolicyType::None,
                                             0,
-                                            CreateAnnotationEncodeArrayMatcher(
+                                            CreateAnnotationElementsMatcher(
                                                     fbb,
                                                     fbb.CreateVector(std::vector<flatbuffers::Offset<AnnotationElementMatcher>>{
                                                             CreateAnnotationElementMatcher(
@@ -427,8 +427,8 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
                                                                             fbb.CreateString("value"),
                                                                             StringMatchType::Equal
                                                                     ),
-                                                                    AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher,
-                                                                    CreateAnnotationEncodeValuesMatcher(
+                                                                    AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher,
+                                                                    CreateAnnotationEncodeArrayMatcher(
                                                                             fbb,
                                                                             fbb.CreateVector(std::vector<AnnotationEncodeValueMatcher>{
                                                                                     AnnotationEncodeValueMatcher::ClassMatcher

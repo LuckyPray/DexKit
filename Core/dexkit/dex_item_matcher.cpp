@@ -234,7 +234,7 @@ static uint8_t AnnotationEncodeValueTypeCvt(schema::AnnotationEncodeValueMatcher
         case schema::AnnotationEncodeValueMatcher::StringMatcher: return dex::kEncodedString;
         case schema::AnnotationEncodeValueMatcher::ClassMatcher: return dex::kEncodedType;
         case schema::AnnotationEncodeValueMatcher::FieldMatcher: return dex::kEncodedEnum;
-        case schema::AnnotationEncodeValueMatcher::AnnotationEncodeValuesMatcher: return dex::kEncodedArray;
+        case schema::AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher: return dex::kEncodedArray;
         case schema::AnnotationEncodeValueMatcher::AnnotationMatcher: return dex::kEncodedAnnotation;
         case schema::AnnotationEncodeValueMatcher::EncodeValueBoolean: return dex::kEncodedBoolean;
         default: abort();
@@ -249,7 +249,7 @@ T NonNullCase(const void *value) {
     abort();
 }
 
-bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValue, const schema::AnnotationEncodeValueMatcher type, const void *value) {
+bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValue, schema::AnnotationEncodeValueMatcher type, const void *value) {
     auto value_type = AnnotationEncodeValueTypeCvt(type);
     if (encodedValue->type != value_type) {
         return false;
@@ -265,14 +265,14 @@ bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValu
         case dex::kEncodedString: return IsStringMatched(encodedValue->u.string_value->c_str(), NonNullCase<const dexkit::schema::StringMatcher *>(value));
         case dex::kEncodedType: return IsClassMatched(encodedValue->u.type_value->orig_index, NonNullCase<const dexkit::schema::ClassMatcher *>(value));
         case dex::kEncodedEnum: return IsFieldMatched(encodedValue->u.enum_value->orig_index, NonNullCase<const dexkit::schema::FieldMatcher *>(value));
-        case dex::kEncodedArray: return IsAnnotationEncodeValuesMatched(encodedValue->u.array_value->values, NonNullCase<const dexkit::schema::AnnotationEncodeValuesMatcher *>(value));
+        case dex::kEncodedArray: return IsAnnotationEncodeArrayMatcher(encodedValue->u.array_value->values, NonNullCase<const dexkit::schema::AnnotationEncodeArrayMatcher *>(value));
         case dex::kEncodedAnnotation: return IsAnnotationMatched(encodedValue->u.annotation_value, NonNullCase<const dexkit::schema::AnnotationMatcher *>(value));
         case dex::kEncodedBoolean: return encodedValue->u.bool_value == NonNullCase<const dexkit::schema::EncodeValueBoolean *>(value)->value();
         default: abort();
     }
 }
 
-bool DexItem::IsAnnotationEncodeValuesMatched(const std::vector<ir::EncodedValue *> &encodedValues, const dexkit::schema::AnnotationEncodeValuesMatcher *matcher) {
+bool DexItem::IsAnnotationEncodeArrayMatcher(const std::vector<ir::EncodedValue *> &encodedValues, const dexkit::schema::AnnotationEncodeArrayMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
@@ -335,7 +335,7 @@ bool DexItem::IsAnnotationElementMatched(const ir::AnnotationElement *annotation
     return true;
 }
 
-bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElement *> &annotationElement, const schema::AnnotationEncodeArrayMatcher *matcher) {
+bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElement *> &annotationElement, const schema::AnnotationElementsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }

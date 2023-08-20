@@ -55,7 +55,7 @@ class AnnotationsMatcher : BaseQuery() {
 
     companion object {
         @JvmStatic
-        fun create() = AnnotationEncodeArrayMatcher()
+        fun create() = AnnotationElementsMatcher()
     }
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")

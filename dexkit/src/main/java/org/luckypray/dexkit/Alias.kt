@@ -3,13 +3,13 @@ package org.luckypray.dexkit
 internal typealias InnerAccessFlagsMatcher = org.luckypray.dexkit.schema.`-AccessFlagsMatcher`
 internal typealias InnerAnnotationElementMatcher = org.luckypray.dexkit.schema.`-AnnotationElementMatcher`
 internal typealias InnerAnnotationElementMeta = org.luckypray.dexkit.schema.`-AnnotationElementMeta`
+internal typealias InnerAnnotationElementsMatcher = org.luckypray.dexkit.schema.`-AnnotationElementsMatcher`
 internal typealias InnerAnnotationEncodeArray = org.luckypray.dexkit.schema.`-AnnotationEncodeArray`
 internal typealias InnerAnnotationEncodeArrayMatcher = org.luckypray.dexkit.schema.`-AnnotationEncodeArrayMatcher`
 internal typealias InnerAnnotationEncodeValue = org.luckypray.dexkit.schema.`-AnnotationEncodeValue`
 internal typealias InnerAnnotationEncodeValueMatcher = org.luckypray.dexkit.schema.`-AnnotationEncodeValueMatcher`
 internal typealias InnerAnnotationEncodeValueMeta = org.luckypray.dexkit.schema.`-AnnotationEncodeValueMeta`
 internal typealias InnerAnnotationEncodeValueType = org.luckypray.dexkit.schema.`-AnnotationEncodeValueType`
-internal typealias InnerAnnotationEncodeValuesMatcher = org.luckypray.dexkit.schema.`-AnnotationEncodeValuesMatcher`
 internal typealias InnerAnnotationMatcher = org.luckypray.dexkit.schema.`-AnnotationMatcher`
 internal typealias InnerAnnotationMeta = org.luckypray.dexkit.schema.`-AnnotationMeta`
 internal typealias InnerAnnotationMetaArrayHolder = org.luckypray.dexkit.schema.`-AnnotationMetaArrayHolder`

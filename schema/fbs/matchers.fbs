@@ -32,12 +32,12 @@ union AnnotationEncodeValueMatcher {
     ClassMatcher,
     // enum
     FieldMatcher,
-    AnnotationEncodeValuesMatcher,
+    AnnotationEncodeArrayMatcher,
     AnnotationMatcher,
     EncodeValueBoolean,
 }
 
-table AnnotationEncodeValuesMatcher {
+table AnnotationEncodeArrayMatcher {
     values: [AnnotationEncodeValueMatcher];
     match_type: MatchType;
     value_count: IntRange;
@@ -48,7 +48,7 @@ table AnnotationElementMatcher {
     value: AnnotationEncodeValueMatcher;
 }
 
-table AnnotationEncodeArrayMatcher {
+table AnnotationElementsMatcher {
     // maybe has null
     elements: [AnnotationElementMatcher];
     match_type: MatchType;
@@ -60,7 +60,7 @@ table AnnotationMatcher {
     target_element_types: TargetElementTypesMatcher;
     policy: RetentionPolicyType;
     annotations: AnnotationsMatcher;
-    elements: AnnotationEncodeArrayMatcher;
+    elements: AnnotationElementsMatcher;
 }
 
 table AnnotationsMatcher {

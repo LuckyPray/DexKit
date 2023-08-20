@@ -16,7 +16,7 @@ internal class `-AnnotationEncodeValueMatcher` private constructor() {
         const val StringMatcher: UByte = 8u
         const val ClassMatcher: UByte = 9u
         const val FieldMatcher: UByte = 10u
-        const val AnnotationEncodeValuesMatcher: UByte = 11u
+        const val AnnotationEncodeArrayMatcher: UByte = 11u
         const val AnnotationMatcher: UByte = 12u
         const val EncodeValueBoolean: UByte = 13u
     }

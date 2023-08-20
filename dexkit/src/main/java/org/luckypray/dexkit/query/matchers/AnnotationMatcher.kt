@@ -18,7 +18,7 @@ class AnnotationMatcher : BaseQuery() {
     private var targetElementTypes: TargetElementTypesMatcher? = null
     private var policy: RetentionPolicyType? = null
     private var annotations: AnnotationsMatcher? = null
-    private var elements: AnnotationEncodeArrayMatcher? = null
+    private var elements: AnnotationElementsMatcher? = null
 
     fun typeName(typeName: StringMatcher) = also {
         this.typeName = typeName
@@ -54,7 +54,7 @@ class AnnotationMatcher : BaseQuery() {
         this.annotations = annotations
     }
 
-    fun elements(elements: AnnotationEncodeArrayMatcher) = also {
+    fun elements(elements: AnnotationElementsMatcher) = also {
         this.elements = elements
     }
 
@@ -68,8 +68,8 @@ class AnnotationMatcher : BaseQuery() {
         annotations(AnnotationsMatcher().apply(init))
     }
 
-    fun elements(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
-        elements(AnnotationEncodeArrayMatcher().apply(init))
+    fun elements(init: AnnotationElementsMatcher.() -> Unit) = also {
+        elements(AnnotationElementsMatcher().apply(init))
     }
 
     // endregion

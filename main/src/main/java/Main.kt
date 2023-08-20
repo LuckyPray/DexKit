@@ -36,7 +36,6 @@ fun main() {
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
         bridge.findClass {
-            searchPackage("com.tencent.mobileqq")
             matcher {
                 className("com/tencent/mobileqq/antiphing/a")
                 annotations {

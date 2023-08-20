@@ -3,12 +3,12 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.InnerAnnotationEncodeArrayMatcher
+import org.luckypray.dexkit.InnerAnnotationElementsMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
-class AnnotationEncodeArrayMatcher : BaseQuery() {
+class AnnotationElementsMatcher : BaseQuery() {
     private var elements: List<AnnotationElementMatcher>? = null
     private var matchType: MatchType = MatchType.Contains
     private var elementCount: IntRange? = null
@@ -55,13 +55,13 @@ class AnnotationEncodeArrayMatcher : BaseQuery() {
 
     companion object {
         @JvmStatic
-        fun create() = AnnotationEncodeArrayMatcher()
+        fun create() = AnnotationElementsMatcher()
     }
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        val root = InnerAnnotationEncodeArrayMatcher.createAnnotationEncodeArrayMatcher(
+        val root = InnerAnnotationElementsMatcher.createAnnotationElementsMatcher(
             fbb,
             elements?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             matchType.value,

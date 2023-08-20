@@ -3,7 +3,7 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.InnerAnnotationEncodeValuesMatcher
+import org.luckypray.dexkit.InnerAnnotationEncodeArrayMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
@@ -52,17 +52,17 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
 
     companion object {
         @JvmStatic
-        fun create() = AnnotationEncodeArrayMatcher()
+        fun create() = AnnotationElementsMatcher()
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
-        val root = InnerAnnotationEncodeValuesMatcher.createAnnotationEncodeValuesMatcher(
+        val root = InnerAnnotationEncodeArrayMatcher.createAnnotationEncodeArrayMatcher(
             fbb,
-            matchers?.map { it.type!!.value }?.let { InnerAnnotationEncodeValuesMatcher.createValuesTypeVector(fbb, it.toUByteArray()) } ?: 0,
-            matchers?.map { it.value!!.build(fbb) }?.let { InnerAnnotationEncodeValuesMatcher.createValuesVector(fbb, it.toIntArray()) } ?: 0,
+            matchers?.map { it.type!!.value }?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it.toUByteArray()) } ?: 0,
+            matchers?.map { it.value!!.build(fbb) }?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it.toIntArray()) } ?: 0,
             matchType.value,
             valueCount?.build(fbb) ?: 0
         )
