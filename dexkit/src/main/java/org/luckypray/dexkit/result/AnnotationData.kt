@@ -3,8 +3,6 @@
 package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.InnerAnnotationElementMeta
-import org.luckypray.dexkit.InnerAnnotationEncodeValueMeta
 import org.luckypray.dexkit.InnerAnnotationMeta
 import org.luckypray.dexkit.query.enums.RetentionPolicyType
 import org.luckypray.dexkit.result.base.BaseData

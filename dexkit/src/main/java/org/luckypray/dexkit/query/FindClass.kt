@@ -5,13 +5,13 @@ package org.luckypray.dexkit.query
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFindClass
 import org.luckypray.dexkit.query.base.BaseQuery
-import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.query.matchers.ClassMatcher
+import org.luckypray.dexkit.result.ClassData
 
 class FindClass : BaseQuery() {
     private var searchPackage: String? = null
     private var uniqueResult: Boolean = true
-    private var searchClasses: IntArray? = null
+    private var searchClasses: LongArray? = null
     private var matcher: ClassMatcher? = null
 
     fun searchPackage(searchPackage: String) = also {
@@ -23,7 +23,7 @@ class FindClass : BaseQuery() {
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
-        this.searchClasses = classList.map { it.id }.toIntArray()
+        this.searchClasses = classList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
     }
 
     fun matcher(matcher: ClassMatcher) = also {
@@ -45,7 +45,7 @@ class FindClass : BaseQuery() {
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,
             uniqueResult,
-            searchClasses?.let { fbb.createVectorOfTables(it) } ?: 0,
+            searchClasses?.let { InnerFindClass.createInClassesVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

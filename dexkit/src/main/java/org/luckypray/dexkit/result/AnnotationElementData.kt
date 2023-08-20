@@ -5,7 +5,6 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerAnnotationElementMeta
 import org.luckypray.dexkit.InnerAnnotationEncodeValueMeta
-import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.result.base.BaseData
 
 class AnnotationElementData(

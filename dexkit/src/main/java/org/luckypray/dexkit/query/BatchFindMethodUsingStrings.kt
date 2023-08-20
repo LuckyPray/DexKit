@@ -5,16 +5,16 @@ package org.luckypray.dexkit.query
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerBatchFindMethodUsingStrings
 import org.luckypray.dexkit.query.base.BaseQuery
-import org.luckypray.dexkit.result.ClassData
-import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.BatchUsingStringsMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.result.ClassData
+import org.luckypray.dexkit.result.MethodData
 
 class BatchFindMethodUsingStrings : BaseQuery() {
     private var searchPackage: String? = null
-    private var searchClasses: IntArray? = null
-    private var searchMethods: IntArray? = null
+    private var searchClasses: LongArray? = null
+    private var searchMethods: LongArray? = null
     private var matchers: List<BatchUsingStringsMatcher>? = null
 
     fun searchPackage(searchPackage: String) = also {
@@ -22,11 +22,11 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     }
 
     fun searchInClasses(classes: List<ClassData>) = also {
-        this.searchClasses = classes.map { it.id }.toIntArray()
+        this.searchClasses = classes.map { getEncodeId(it.dexId, it.id) }.toLongArray()
     }
 
     fun searchInMethods(methods: List<MethodData>) = also {
-        this.searchMethods = methods.map { it.id }.toIntArray()
+        this.searchMethods = methods.map { getEncodeId(it.dexId, it.id) }.toLongArray()
     }
 
     fun matchers(matchers: List<BatchUsingStringsMatcher>) = also {
@@ -64,8 +64,8 @@ class BatchFindMethodUsingStrings : BaseQuery() {
         val root = InnerBatchFindMethodUsingStrings.createBatchFindMethodUsingStrings(
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,
-            searchClasses?.let { fbb.createVectorOfTables(it) } ?: 0,
-            searchMethods?.let { fbb.createVectorOfTables(it) } ?: 0,
+            searchClasses?.let { InnerBatchFindMethodUsingStrings.createInClassesVector(fbb, it) } ?: 0,
+            searchMethods?.let { InnerBatchFindMethodUsingStrings.createInMethodsVector(fbb, it) } ?: 0,
             fbb.createVectorOfTables(matchers!!.map { it.build(fbb) }.toIntArray())
         )
         fbb.finish(root)

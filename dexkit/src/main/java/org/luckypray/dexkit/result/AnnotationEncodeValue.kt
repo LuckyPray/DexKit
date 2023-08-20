@@ -4,7 +4,6 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerAnnotationEncodeArray
-import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.InnerAnnotationEncodeValueMeta
 import org.luckypray.dexkit.InnerAnnotationMeta
 import org.luckypray.dexkit.InnerClassMeta
@@ -18,7 +17,7 @@ import org.luckypray.dexkit.InnerEncodeValueLong
 import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.InnerFieldMeta
-import org.luckypray.dexkit.result.base.BaseData
+import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 
 class AnnotationEncodeValue(
     val value: Any,

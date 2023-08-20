@@ -69,11 +69,15 @@ class FieldData private constructor(
     }
 
     fun getClass(): ClassData? {
-        return bridge.getClassByIds(intArrayOf(classId)).firstOrNull()
+        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
     }
 
     fun getType(): ClassData? {
-        return bridge.getClassByIds(intArrayOf(typeId)).firstOrNull()
+        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, typeId))).firstOrNull()
+    }
+
+    fun getAnnotations(): List<AnnotationData> {
+        return bridge.getFieldAnnotations(getEncodeId(dexId, id))
     }
 
     override fun toString(): String {

@@ -35,17 +35,29 @@ fun main() {
 
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
-        val res = bridge.findClass {
-            searchPackage("com.tencent.qq")
-            matcher {
-                usingStringsMatcher {
-                    add("QIMEI", StringMatchType.Contains)
+        bridge
+            .findClass {
+                matcher {
+                    className("seal.SealCloudRerankInfo\$CloudReRankInfo")
                 }
             }
-        }
-        res.forEach {
-            println(it)
-        }
-        println("fin class count: ${res.count()}")
+            .also {
+                println("find class count: ${it.count()}")
+                println("find class: ${it.first().name} -> \n")
+            }
+            .findField {}
+            .also {
+                println("find field count: ${it.count()}")
+                it.forEach { println("field: $it") }
+            }
+            .first().getClass()!!
+            .also {
+                println("\nfield class: ${it.name} -> \n")
+            }
+            .getFields()
+            .also {
+                println("field count: ${it.count()}")
+                it.forEach { println("field: $it") }
+            }
     }
 }

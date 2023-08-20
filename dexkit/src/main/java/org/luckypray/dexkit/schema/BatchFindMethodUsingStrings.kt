@@ -39,12 +39,12 @@ internal class `-BatchFindMethodUsingStrings` : Table() {
         }
     val searchPackageAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
     fun searchPackageInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
-    fun inClasses(j: Int) : ULong {
+    fun inClasses(j: Int) : Long {
         val o = __offset(6)
         return if (o != 0) {
-            bb.getLong(__vector(o) + j * 8).toULong()
+            bb.getLong(__vector(o) + j * 8)
         } else {
-            0uL
+            0
         }
     }
     val inClassesLength : Int
@@ -53,21 +53,21 @@ internal class `-BatchFindMethodUsingStrings` : Table() {
         }
     val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
     fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
-    fun mutateInClasses(j: Int, inClasses: ULong) : Boolean {
+    fun mutateInClasses(j: Int, inClasses: Long) : Boolean {
         val o = __offset(6)
         return if (o != 0) {
-            bb.putLong(__vector(o) + j * 8, inClasses.toLong())
+            bb.putLong(__vector(o) + j * 8, inClasses)
             true
         } else {
             false
         }
     }
-    fun inMethods(j: Int) : ULong {
+    fun inMethods(j: Int) : Long {
         val o = __offset(8)
         return if (o != 0) {
-            bb.getLong(__vector(o) + j * 8).toULong()
+            bb.getLong(__vector(o) + j * 8)
         } else {
-            0uL
+            0
         }
     }
     val inMethodsLength : Int
@@ -76,10 +76,10 @@ internal class `-BatchFindMethodUsingStrings` : Table() {
         }
     val inMethodsAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 8)
     fun inMethodsInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 8)
-    fun mutateInMethods(j: Int, inMethods: ULong) : Boolean {
+    fun mutateInMethods(j: Int, inMethods: Long) : Boolean {
         val o = __offset(8)
         return if (o != 0) {
-            bb.putLong(__vector(o) + j * 8, inMethods.toLong())
+            bb.putLong(__vector(o) + j * 8, inMethods)
             true
         } else {
             false
@@ -116,21 +116,19 @@ internal class `-BatchFindMethodUsingStrings` : Table() {
         fun startBatchFindMethodUsingStrings(builder: FlatBufferBuilder) = builder.startTable(4)
         fun addSearchPackage(builder: FlatBufferBuilder, searchPackage: Int) = builder.addOffset(0, searchPackage, 0)
         fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
-        @kotlin.ExperimentalUnsignedTypes
-        fun createInClassesVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
+        fun createInClassesVector(builder: FlatBufferBuilder, data: LongArray) : Int {
             builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
-                builder.addLong(data[i].toLong())
+                builder.addLong(data[i])
             }
             return builder.endVector()
         }
         fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
         fun addInMethods(builder: FlatBufferBuilder, inMethods: Int) = builder.addOffset(2, inMethods, 0)
-        @kotlin.ExperimentalUnsignedTypes
-        fun createInMethodsVector(builder: FlatBufferBuilder, data: ULongArray) : Int {
+        fun createInMethodsVector(builder: FlatBufferBuilder, data: LongArray) : Int {
             builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
-                builder.addLong(data[i].toLong())
+                builder.addLong(data[i])
             }
             return builder.endVector()
         }

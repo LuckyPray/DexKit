@@ -15,13 +15,18 @@ import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
 import org.luckypray.dexkit.result.AnnotationData
-import org.luckypray.dexkit.result.AnnotationEncodeArrayData
 import java.io.Closeable
 import java.nio.ByteBuffer
 
 class DexKitBridge : Closeable {
 
     private var token: Long = 0L
+        get() {
+            if (field == 0L) {
+                throw IllegalStateException("DexKitBridge is not valid")
+            }
+            return field
+        }
 
     private constructor(apkPath: String) {
         token = nativeInitDexKit(apkPath)
@@ -225,8 +230,8 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getClassByIds(ids: IntArray): ClassDataList {
-        val res = nativeGetClassByIds(token, ids)
+    internal fun getClassByIds(encodeIdArray: LongArray): ClassDataList {
+        val res = nativeGetClassByIds(token, encodeIdArray)
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
@@ -237,8 +242,8 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getMethodByIds(ids: IntArray): MethodDataList {
-        val res = nativeGetMethodByIds(token, ids)
+    internal fun getMethodByIds(encodeIdArray: LongArray): MethodDataList {
+        val res = nativeGetMethodByIds(token, encodeIdArray)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -249,8 +254,8 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getFieldByIds(ids: IntArray): FieldDataList {
-        val res = nativeGetFieldByIds(token, ids)
+    internal fun getFieldByIds(encodeIdArray: LongArray): FieldDataList {
+        val res = nativeGetFieldByIds(token, encodeIdArray)
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
@@ -261,7 +266,7 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getClassAnnotations(classId: Int): List<AnnotationData> {
+    internal fun getClassAnnotations(classId: Long): List<AnnotationData> {
         val res = nativeGetClassAnnotations(token, classId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -273,7 +278,7 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getFieldAnnotations(fieldId: Int): List<AnnotationData> {
+    internal fun getFieldAnnotations(fieldId: Long): List<AnnotationData> {
         val res = nativeGetFieldAnnotations(token, fieldId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -285,7 +290,7 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getMethodAnnotations(methodId: Int): List<AnnotationData> {
+    internal fun getMethodAnnotations(methodId: Long): List<AnnotationData> {
         val res = nativeGetMethodAnnotations(token, methodId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -297,7 +302,7 @@ class DexKitBridge : Closeable {
 
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getParameterAnnotations(methodId: Int): List<List<AnnotationData>> {
+    internal fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
         val res = nativeGetParameterAnnotations(token, methodId)
         val holder = InnerParametersAnnotationMetaArrayHoler.getRootAsParametersAnnotationMetaArrayHoler(ByteBuffer.wrap(res))
         val list = mutableListOf<List<AnnotationData>>()
@@ -379,25 +384,25 @@ class DexKitBridge : Closeable {
         private external fun nativeFindField(nativePtr: Long, bytes: ByteArray): ByteArray
 
         @JvmStatic
-        private external fun nativeGetClassByIds(nativePtr: Long, ids: IntArray): ByteArray
+        private external fun nativeGetClassByIds(nativePtr: Long, ids: LongArray): ByteArray
 
         @JvmStatic
-        private external fun nativeGetMethodByIds(nativePtr: Long, ids: IntArray): ByteArray
+        private external fun nativeGetMethodByIds(nativePtr: Long, ids: LongArray): ByteArray
 
         @JvmStatic
-        private external fun nativeGetFieldByIds(nativePtr: Long, ids: IntArray): ByteArray
+        private external fun nativeGetFieldByIds(nativePtr: Long, ids: LongArray): ByteArray
 
         @JvmStatic
-        private external fun nativeGetClassAnnotations(nativePtr: Long, classId: Int): ByteArray
+        private external fun nativeGetClassAnnotations(nativePtr: Long, classId: Long): ByteArray
 
         @JvmStatic
-        private external fun nativeGetFieldAnnotations(nativePtr: Long, fieldId: Int): ByteArray
+        private external fun nativeGetFieldAnnotations(nativePtr: Long, fieldId: Long): ByteArray
 
         @JvmStatic
-        private external fun nativeGetMethodAnnotations(nativePtr: Long, methodId: Int): ByteArray
+        private external fun nativeGetMethodAnnotations(nativePtr: Long, methodId: Long): ByteArray
 
         @JvmStatic
-        private external fun nativeGetParameterAnnotations(nativePtr: Long, methodId: Int): ByteArray
+        private external fun nativeGetParameterAnnotations(nativePtr: Long, methodId: Long): ByteArray
 
     }
 

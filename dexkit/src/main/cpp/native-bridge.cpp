@@ -354,7 +354,138 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFindField__J_3B(JNIEnv *env, jclass
     return ret;
 }
 
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassByIds(JNIEnv *env, jclass clazz,
+                                                           jlong native_ptr,
+                                                           jlongArray encode_id_array) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto ids_len = env->GetArrayLength(encode_id_array);
+    auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
+    std::vector<int64_t> ids_vec(ids_len);
+    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
+    env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
+    auto result = dexkit->GetClassByIds(ids_vec);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    result->Release();
+    return ret;
 }
 
-#undef DEXKIT_JNI
-#undef TAG
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodByIds(JNIEnv *env, jclass clazz,
+                                                            jlong native_ptr,
+                                                            jlongArray encode_id_array) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto ids_len = env->GetArrayLength(encode_id_array);
+    auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
+    std::vector<int64_t> ids_vec(ids_len);
+    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
+    env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
+    auto result = dexkit->GetMethodByIds(ids_vec);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldByIds(JNIEnv *env, jclass clazz,
+                                                           jlong native_ptr, 
+                                                           jlongArray encode_id_array) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto ids_len = env->GetArrayLength(encode_id_array);
+    auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
+    std::vector<int64_t> ids_vec(ids_len);
+    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
+    env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
+    auto result = dexkit->GetFieldByIds(ids_vec);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassAnnotations(JNIEnv *env, jclass clazz,
+                                                                 jlong native_ptr, 
+                                                                 jlong encode_class_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetClassAnnotations(encode_class_id);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldAnnotations(JNIEnv *env, jclass clazz,
+                                                                 jlong native_ptr, 
+                                                                 jlong encode_field_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetFieldAnnotations(encode_field_id);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodAnnotations(JNIEnv *env, jclass clazz,
+                                                                  jlong native_ptr,
+                                                                  jlong encode_method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetMethodAnnotations(encode_method_id);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetParameterAnnotations(JNIEnv *env, jclass clazz,
+                                                                     jlong native_ptr,
+                                                                     jlong encode_method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetParameterAnnotations(encode_method_id);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+}

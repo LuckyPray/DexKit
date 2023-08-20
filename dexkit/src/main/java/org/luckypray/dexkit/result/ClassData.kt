@@ -4,6 +4,9 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerClassMeta
+import org.luckypray.dexkit.query.ClassDataList
+import org.luckypray.dexkit.query.FieldDataList
+import org.luckypray.dexkit.query.MethodDataList
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
@@ -59,19 +62,23 @@ class ClassData private constructor(
 
     fun getSuperClass(): ClassData? {
         superClassId ?: return null
-        return bridge.getClassByIds(intArrayOf(superClassId)).firstOrNull()
+        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, id))).firstOrNull()
     }
 
-    fun getInterfaces(): List<ClassData> {
-        return bridge.getClassByIds(interfaceIds.toIntArray())
+    fun getInterfaces(): ClassDataList {
+        return bridge.getClassByIds(interfaceIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
-    fun getMethods(): List<MethodData> {
-        return bridge.getMethodByIds(methodIds.toIntArray())
+    fun getMethods(): MethodDataList {
+        return bridge.getMethodByIds(methodIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
-    fun getFieldsMeta(): List<FieldData> {
-        return bridge.getFieldByIds(fieldIds.toIntArray())
+    fun getFields(): FieldDataList {
+        return bridge.getFieldByIds(fieldIds.map { getEncodeId(dexId, it) }.toLongArray())
+    }
+
+    fun getAnnotations(): List<AnnotationData> {
+        return bridge.getClassAnnotations(getEncodeId(dexId, id))
     }
 
     override fun toString(): String {

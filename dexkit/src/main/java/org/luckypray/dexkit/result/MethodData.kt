@@ -4,6 +4,7 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
+import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 import org.luckypray.dexkit.util.DexDescriptorUtil.getConstructorSignature
@@ -100,15 +101,23 @@ class MethodData private constructor(
     }
 
     fun getClass(): ClassData? {
-        return bridge.getClassByIds(intArrayOf(classId)).firstOrNull()
+        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
     }
 
     fun getReturnType(): ClassData? {
-        return bridge.getClassByIds(intArrayOf(returnTypeId)).firstOrNull()
+        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, returnTypeId))).firstOrNull()
     }
 
-    fun getParameterTypes(): List<ClassData> {
-        return bridge.getClassByIds(parameterTypeIds.toIntArray())
+    fun getParameterTypes(): ClassDataList {
+        return bridge.getClassByIds(parameterTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
+    }
+
+    fun getAnnotations(): List<AnnotationData> {
+        return bridge.getMethodAnnotations(getEncodeId(dexId, id))
+    }
+
+    fun getParameterAnnotations(): List<List<AnnotationData>> {
+        return bridge.getParameterAnnotations(getEncodeId(dexId, id))
     }
 
     override fun toString(): String {

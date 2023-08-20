@@ -38,10 +38,6 @@ public:
         return dex_id;
     }
 
-    bool operator > (const DexItem &other) const {
-        return dex_id > other.dex_id;
-    }
-
     std::vector<ClassBean> FindClass(const schema::FindClass *query, std::set<uint32_t> &in_class_set);
     std::vector<MethodBean> FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_method_set);
     std::vector<FieldBean> FindField(const schema::FindField *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_field_set);

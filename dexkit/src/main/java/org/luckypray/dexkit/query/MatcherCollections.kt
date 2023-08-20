@@ -4,7 +4,6 @@ package org.luckypray.dexkit.query
 
 import org.luckypray.dexkit.query.base.IQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.enums.TargetElementType
 import org.luckypray.dexkit.query.matchers.BatchUsingStringsMatcher
 import org.luckypray.dexkit.query.matchers.FieldMatcher
 import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
@@ -101,36 +100,36 @@ class ClassDataList : ArrayList<ClassData>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<ClassData>): super(elements)
 
-    fun findClass(findClass: FindClass): List<ClassData> {
-        if (isEmpty()) return emptyList()
+    fun findClass(findClass: FindClass): ClassDataList {
+        if (isEmpty()) return ClassDataList()
         val bridge = first().getBridge()
         findClass.searchInClass(this)
         return bridge.findClass(findClass)
     }
 
-    fun findClass(init: FindClass.() -> Unit): List<ClassData> {
+    fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
-    fun findMethod(findMethod: FindMethod): List<MethodData> {
-        if (isEmpty()) return emptyList()
+    fun findMethod(findMethod: FindMethod): MethodDataList {
+        if (isEmpty()) return MethodDataList()
         val bridge = first().getBridge()
         findMethod.searchInClass(this)
         return bridge.findMethod(findMethod)
     }
 
-    fun findMethod(init: FindMethod.() -> Unit): List<MethodData> {
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 
-    fun findField(findField: FindField): List<FieldData> {
-        if (isEmpty()) return emptyList()
+    fun findField(findField: FindField): FieldDataList {
+        if (isEmpty()) return FieldDataList()
         val bridge = first().getBridge()
         findField.searchInClass(this)
         return bridge.findField(findField)
     }
 
-    fun findField(init: FindField.() -> Unit): List<FieldData> {
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 }
@@ -140,14 +139,14 @@ class MethodDataList : ArrayList<MethodData>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<MethodData>): super(elements)
 
-    fun findMethod(findMethod: FindMethod): List<MethodData> {
-        if (isEmpty()) return emptyList()
+    fun findMethod(findMethod: FindMethod): MethodDataList {
+        if (isEmpty()) return MethodDataList()
         val bridge = first().getBridge()
         findMethod.searchInMethod(this)
         return bridge.findMethod(findMethod)
     }
 
-    fun findMethod(init: FindMethod.() -> Unit): List<MethodData> {
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 }
@@ -156,14 +155,14 @@ class FieldDataList : ArrayList<FieldData>, IQuery {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<FieldData>): super(elements)
-    fun findField(findField: FindField): List<FieldData> {
-        if (isEmpty()) return emptyList()
+    fun findField(findField: FindField): FieldDataList {
+        if (isEmpty()) return FieldDataList()
         val bridge = first().getBridge()
         findField.searchInField(this)
         return bridge.findField(findField)
     }
 
-    fun findField(init: FindField.() -> Unit): List<FieldData> {
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 }

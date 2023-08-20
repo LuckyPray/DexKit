@@ -54,7 +54,7 @@ DexItem::FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_clas
             if (query->in_methods() && !in_method_set.contains(type_idx)) continue;
 
             if (IsMethodMatched(method_idx, query->matcher())) {
-                find_result.emplace_back(type_idx);
+                find_result.emplace_back(method_idx);
             }
         }
     }
@@ -88,7 +88,7 @@ DexItem::FindField(const schema::FindField *query, std::set<uint32_t> &in_class_
             if (query->in_fields() && !in_field_set.contains(field_idx)) continue;
 
             if (IsFieldMatched(field_idx, query->matcher())) {
-                find_result.emplace_back(type_idx);
+                find_result.emplace_back(field_idx);
             }
         }
     }

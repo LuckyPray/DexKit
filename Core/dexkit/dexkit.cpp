@@ -6,13 +6,17 @@
 
 namespace dexkit {
 
+bool comp(std::unique_ptr<DexItem> &a, std::unique_ptr<DexItem> &b) {
+    return a->GetDexId() < b->GetDexId();
+}
+
 DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
     if (unzip_thread_num > 0) {
         _thread_num = unzip_thread_num;
     }
     std::lock_guard<std::mutex> lock(_mutex);
     AddZipPath(apk_path, unzip_thread_num);
-    std::sort(dex_items.begin(), dex_items.end());
+    std::sort(dex_items.begin(), dex_items.end(), comp);
 }
 
 void DexKit::SetThreadNum(int num) {
@@ -22,14 +26,14 @@ void DexKit::SetThreadNum(int num) {
 Error DexKit::AddDex(uint8_t *data, size_t size) {
     std::lock_guard<std::mutex> lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size));
-    std::sort(dex_items.begin(), dex_items.end());
+    std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
 }
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
     std::lock_guard<std::mutex> lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
-    std::sort(dex_items.begin(), dex_items.end());
+    std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
 }
 
@@ -61,24 +65,21 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
     int ort_size = (int) dex_items.size();
     int new_size = (int) (ort_size + dex_pairs.size());
     dex_items.resize(new_size);
-    ThreadPool pool(unzip_thread_num == 0 ? _thread_num : unzip_thread_num);
-    std::vector<std::future<void>> futures;
-    for (auto &dex_pair: dex_pairs) {
-        auto v = pool.enqueue([this, &dex_pair, ort_size]() {
-            auto dex_image = dex_pair.second->uncompress();
-            auto ptr = std::make_unique<MemMap>(std::move(dex_image));
-            if (!ptr->ok()) {
-                return;
-            }
-            int idx = ort_size + dex_pair.first - 1;
-            dex_items[idx] = std::make_unique<DexItem>(idx, std::move(ptr));
-        });
-        futures.emplace_back(std::move(v));
+    {
+        ThreadPool pool(unzip_thread_num == 0 ? _thread_num : unzip_thread_num);
+        for (auto &dex_pair: dex_pairs) {
+            pool.enqueue([this, &dex_pair, ort_size]() {
+                auto dex_image = dex_pair.second->uncompress();
+                auto ptr = std::make_unique<MemMap>(std::move(dex_image));
+                if (!ptr->ok()) {
+                    return;
+                }
+                int idx = ort_size + dex_pair.first - 1;
+                dex_items[idx] = std::make_unique<DexItem>(idx, std::move(ptr));
+            });
+        }
     }
     dex_cnt += (uint32_t) dex_pairs.size();
-    for (auto &f: futures) {
-        f.get();
-    }
     return Error::SUCCESS;
 }
 
@@ -105,7 +106,8 @@ int DexKit::GetDexNum() const {
     return (int) dex_items.size();
 }
 
-std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::FindClass *query) {
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::FindClass(const schema::FindClass *query) {
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     if (query->in_classes()) {
         for (auto encode_idx: *query->in_classes()) {
@@ -140,7 +142,8 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindClass(const schema::
     return builder;
 }
 
-std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema::FindMethod *query) {
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::FindMethod(const schema::FindMethod *query) {
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     std::map<uint32_t, std::set<uint32_t>> dex_method_map;
     if (query->in_classes()) {
@@ -182,7 +185,8 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindMethod(const schema:
     return builder;
 }
 
-std::unique_ptr<flatbuffers::FlatBufferBuilder> DexKit::FindField(const schema::FindField *query) {
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::FindField(const schema::FindField *query) {
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     std::map<uint32_t, std::set<uint32_t>> dex_field_map;
     if (query->in_classes()) {
@@ -355,6 +359,147 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
     auto array_holder = schema::CreateBatchMethodMetaArrayHolder(*fbb, fbb->CreateVector(offsets));
     fbb->Finish(array_holder);
     return fbb;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetClassByIds(const std::vector<int64_t> &encode_ids) {
+    std::vector<ClassBean> result;
+    for (auto encode_id: encode_ids) {
+        auto dex_id = encode_id >> 32;
+        auto class_id = encode_id & UINT32_MAX;
+        result.emplace_back(dex_items[dex_id]->GetClassBean(class_id));
+    }
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::ClassMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateClassMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateClassMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetMethodByIds(const std::vector<int64_t> &encode_ids) {
+    std::vector<MethodBean> result;
+    for (auto encode_id: encode_ids) {
+        auto dex_id = encode_id >> 32;
+        auto method_id = encode_id & UINT32_MAX;
+        result.emplace_back(dex_items[dex_id]->GetMethodBean(method_id));
+    }
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetFieldByIds(const std::vector<int64_t> &encode_ids) {
+    std::vector<FieldBean> result;
+    for (auto encode_id: encode_ids) {
+        auto dex_id = encode_id >> 32;
+        auto field_id = encode_id & UINT32_MAX;
+        result.emplace_back(dex_items[dex_id]->GetFieldBean(field_id));
+    }
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::FieldMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateFieldMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateFieldMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetClassAnnotations(int64_t encode_class_id) {
+    auto dex_id = encode_class_id >> 32;
+    auto class_id = encode_class_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->GetClassAnnotationBeans(class_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::AnnotationMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateAnnotationMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateAnnotationMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetFieldAnnotations(int64_t encode_field_id) {
+    auto dex_id = encode_field_id >> 32;
+    auto field_id = encode_field_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->GetFieldAnnotationBeans(field_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::AnnotationMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateAnnotationMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateAnnotationMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetMethodAnnotations(int64_t encode_method_id) {
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->GetMethodAnnotationBeans(method_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::AnnotationMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateAnnotationMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateAnnotationMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetParameterAnnotations(int64_t encode_method_id) {
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->GetParameterAnnotationBeans(method_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::AnnotationMetaArrayHolder>> holder_offsets;
+    for (auto &param_annotations: result) {
+        std::vector<flatbuffers::Offset<schema::AnnotationMeta>> meta_offsets;
+        for (auto &annotation: param_annotations) {
+            auto res = annotation.CreateAnnotationMeta(*builder);
+            builder->Finish(res);
+            meta_offsets.emplace_back(res);
+        }
+        auto array_holder = schema::CreateAnnotationMetaArrayHolder(*builder, builder->CreateVector(meta_offsets));
+        builder->Finish(array_holder);
+        holder_offsets.emplace_back(array_holder);
+    }
+    auto array_holder = schema::CreateParametersAnnotationMetaArrayHoler(*builder, builder->CreateVector(holder_offsets));
+    builder->Finish(array_holder);
+    return builder;
 }
 
 std::map<std::string_view, std::set<std::string_view>>

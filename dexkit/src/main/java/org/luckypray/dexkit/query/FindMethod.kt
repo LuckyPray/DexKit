@@ -5,15 +5,16 @@ package org.luckypray.dexkit.query
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFindMethod
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.matchers.MethodMatcher
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
-import org.luckypray.dexkit.query.matchers.MethodMatcher
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class FindMethod : BaseQuery() {
     private var searchPackage: String? = null
     private var uniqueResult: Boolean = true
-    private var searchClasses: IntArray? = null
-    private var searchMethods: IntArray? = null
+    private var searchClasses: LongArray? = null
+    private var searchMethods: LongArray? = null
     private var matcher: MethodMatcher? = null
 
     fun searchPackage(searchPackage: String) = also {
@@ -25,11 +26,11 @@ class FindMethod : BaseQuery() {
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
-        this.searchClasses = classList.map { it.id }.toIntArray()
+        this.searchClasses = classList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
     }
 
     fun searchInMethod(methodList: List<MethodData>) = also {
-        this.searchMethods = methodList.map { it.id }.toIntArray()
+        this.searchMethods = methodList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
     }
     fun matcher(matcher: MethodMatcher) = also {
         this.matcher = matcher
@@ -50,8 +51,8 @@ class FindMethod : BaseQuery() {
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,
             uniqueResult,
-            searchClasses?.let { fbb.createVectorOfTables(it) } ?: 0,
-            searchMethods?.let { fbb.createVectorOfTables(it) } ?: 0,
+            searchClasses?.let { InnerFindMethod.createInClassesVector(fbb, it) } ?: 0,
+            searchMethods?.let { InnerFindMethod.createInMethodsVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
