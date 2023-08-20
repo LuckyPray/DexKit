@@ -41,6 +41,8 @@ enum TargetElementType:byte {
 }
 
 enum RetentionPolicyType:byte {
+    // not use
+    None,
     Source,
     Class,
     Runtime,

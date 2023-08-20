@@ -10,7 +10,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationEncodeArrayMatcher : BaseQuery() {
     private var elements: List<AnnotationElementMatcher>? = null
-    private var matchType: MatchType = MatchType.Equal
+    private var matchType: MatchType = MatchType.Contains
     private var elementCount: IntRange? = null
 
     fun elements(elements: List<AnnotationElementMatcher>) = also {
@@ -67,6 +67,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery() {
             matchType.value,
             elementCount?.build(fbb) ?: 0
         )
-        return 0
+        fbb.finish(root)
+        return root
     }
 }

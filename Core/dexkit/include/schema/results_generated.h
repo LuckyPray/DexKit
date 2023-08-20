@@ -1135,7 +1135,7 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMeta(
     uint32_t dex_id = 0,
     uint32_t type_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> type_descriptor = 0,
-    dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::Source,
+    dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::None,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>> elements = 0) {
   AnnotationMetaBuilder builder_(_fbb);
   builder_.add_elements(elements);
@@ -1156,7 +1156,7 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
     uint32_t dex_id = 0,
     uint32_t type_id = 0,
     const char *type_descriptor = nullptr,
-    dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::Source,
+    dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::None,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>> *elements = nullptr) {
   auto type_descriptor__ = type_descriptor ? _fbb.CreateString(type_descriptor) : 0;
   auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>(*elements) : 0;

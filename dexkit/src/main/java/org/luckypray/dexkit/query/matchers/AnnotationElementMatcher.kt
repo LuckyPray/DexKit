@@ -5,14 +5,17 @@ package org.luckypray.dexkit.query.matchers
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationElementMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
+import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class AnnotationElementMatcher : BaseQuery() {
-    private var name: String? = null
+    private var name: StringMatcher? = null
     private var matcher: AnnotationEncodeValueMatcher? = null
 
-    fun name(name: String) = also {
-        this.name = name
+    @JvmOverloads
+    fun name(name: String, ignoreCase: Boolean = false) = also {
+        this.name = StringMatcher(name, StringMatchType.Equal, ignoreCase)
     }
 
     fun matcher(matcher: AnnotationEncodeValueMatcher) = also {
@@ -37,7 +40,7 @@ class AnnotationElementMatcher : BaseQuery() {
     override fun build(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationElementMatcher.createAnnotationElementMatcher(
             fbb,
-            name?.let { fbb.createString(it) } ?: 0,
+            name?.build(fbb) ?: 0,
             matcher?.type?.value ?: 0U,
             matcher?.value?.build(fbb) ?: 0
         )

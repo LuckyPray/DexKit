@@ -11,7 +11,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationEncodeValuesMatcher : BaseQuery() {
     private var matchers: List<AnnotationEncodeValueMatcher>? = null
-    private var matchType: MatchType = MatchType.Equal
+    private var matchType: MatchType = MatchType.Contains
     private var valueCount: IntRange? = null
 
     fun matchers(matchers: List<AnnotationEncodeValueMatcher>) = also {
@@ -55,13 +55,14 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
         fun create() = AnnotationEncodeArrayMatcher()
     }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationEncodeValuesMatcher.createAnnotationEncodeValuesMatcher(
             fbb,
-            matchers?.let { fbb.createVectorOfTables(it.map { it.type!!.value.toInt() }.toIntArray()) } ?: 0,
-            matchers?.let { fbb.createVectorOfTables(it.map { it.value!!.build(fbb) }.toIntArray()) } ?: 0,
+            matchers?.map { it.type!!.value }?.let { InnerAnnotationEncodeValuesMatcher.createValuesTypeVector(fbb, it.toUByteArray()) } ?: 0,
+            matchers?.map { it.value!!.build(fbb) }?.let { InnerAnnotationEncodeValuesMatcher.createValuesVector(fbb, it.toIntArray()) } ?: 0,
             matchType.value,
             valueCount?.build(fbb) ?: 0
         )

@@ -35,29 +35,45 @@ fun main() {
 
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
-        bridge
-            .findClass {
-                matcher {
-                    className("seal.SealCloudRerankInfo\$CloudReRankInfo")
+        bridge.findClass {
+            searchPackage("com.tencent.mobileqq")
+            matcher {
+                className("com/tencent/mobileqq/antiphing/a")
+                annotations {
+                    add {
+                        typeName("dalvik/annotation/MemberClasses")
+                        elements {
+                            elementCount(1)
+                            add {
+                                name("value")
+                                matcher {
+                                    arrayValue {
+                                        add {
+                                            classValue {
+                                                className("com/tencent/mobileqq/antiphing/a\$c")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            .also {
-                println("find class count: ${it.count()}")
-                println("find class: ${it.first().name} -> \n")
-            }
-            .findField {}
-            .also {
-                println("find field count: ${it.count()}")
-                it.forEach { println("field: $it") }
-            }
-            .first().getClass()!!
-            .also {
-                println("\nfield class: ${it.name} -> \n")
-            }
-            .getFields()
-            .also {
-                println("field count: ${it.count()}")
-                it.forEach { println("field: $it") }
-            }
+        }.forEach {
+            println("find -> $it")
+        }
+//        bridge.findMethod {
+//            matcher {
+//                invokingMethods {
+//                    add {
+////                        declaredClass("com/tencent/mobileqq/app/QQAppInterface")
+//                        name("<init>")
+//                    }
+//                }
+//            }
+//        }.forEach {
+//            println(it)
+//        }
     }
 }

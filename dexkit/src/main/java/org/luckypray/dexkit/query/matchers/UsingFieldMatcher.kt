@@ -6,16 +6,16 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.UsingType
 
 class UsingFieldMatcher @JvmOverloads constructor(
-    private val matcher: FieldMatcher? = null,
-    private val usingType: UsingType = UsingType.Any
+    private var matcher: FieldMatcher? = null,
+    private var usingType: UsingType = UsingType.Any
 ) : BaseQuery() {
 
     fun matcher(matcher: FieldMatcher) = also {
-        this.matcher
+        this.matcher = matcher
     }
 
     fun usingType(usingType: UsingType) = also {
-        this.usingType
+        this.usingType = usingType
     }
 
     // region DSL
@@ -43,7 +43,7 @@ class UsingFieldMatcher @JvmOverloads constructor(
         if (matcher == null) throw IllegalArgumentException("UsingFieldMatcher matcher not set")
         val root = InnerUsingFieldMatcher.createUsingFieldMatcher(
             fbb,
-            matcher.build(fbb),
+            matcher!!.build(fbb),
             usingType.value
         )
         fbb.finish(root)

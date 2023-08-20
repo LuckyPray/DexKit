@@ -199,13 +199,15 @@ inline const char *EnumNameTargetElementType(TargetElementType e) {
 }
 
 enum class RetentionPolicyType : int8_t {
-  Source = 0,
-  Class = 1,
-  Runtime = 2
+  None = 0,
+  Source = 1,
+  Class = 2,
+  Runtime = 3
 };
 
-inline const RetentionPolicyType (&EnumValuesRetentionPolicyType())[3] {
+inline const RetentionPolicyType (&EnumValuesRetentionPolicyType())[4] {
   static const RetentionPolicyType values[] = {
+    RetentionPolicyType::None,
     RetentionPolicyType::Source,
     RetentionPolicyType::Class,
     RetentionPolicyType::Runtime
@@ -214,7 +216,8 @@ inline const RetentionPolicyType (&EnumValuesRetentionPolicyType())[3] {
 }
 
 inline const char * const *EnumNamesRetentionPolicyType() {
-  static const char * const names[4] = {
+  static const char * const names[5] = {
+    "None",
     "Source",
     "Class",
     "Runtime",
@@ -224,7 +227,7 @@ inline const char * const *EnumNamesRetentionPolicyType() {
 }
 
 inline const char *EnumNameRetentionPolicyType(RetentionPolicyType e) {
-  if (::flatbuffers::IsOutRange(e, RetentionPolicyType::Source, RetentionPolicyType::Runtime)) return "";
+  if (::flatbuffers::IsOutRange(e, RetentionPolicyType::None, RetentionPolicyType::Runtime)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesRetentionPolicyType()[index];
 }

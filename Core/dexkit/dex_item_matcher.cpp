@@ -140,15 +140,15 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (matcher == nullptr) {
         return true;
     }
-    if (!IsTypeNameMatched(this->type_def_idx[annotation->type->orig_index], matcher->type_name())) {
+    auto type_name = type_names[annotation->type->orig_index];
+    if (!IsTypeNameMatched(annotation->type->orig_index, matcher->type_name())) {
         return false;
     }
     auto type_annotations = this->class_annotations[annotation->type->orig_index];
     if (matcher->target_element_types()) {
         auto target_element_types = matcher->target_element_types();
-        auto annotations = this->class_annotations[annotation->type->orig_index];
         uint32_t target_flags = 0, matcher_flags = 0;
-        for (auto ann: annotations->annotations) {
+        for (auto ann: type_annotations->annotations) {
             if (ann->type->orig_index != this->annotation_target_class_id) {
                 continue;
             }
@@ -263,7 +263,7 @@ bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValu
         case dex::kEncodedFloat: return encodedValue->u.float_value == NonNullCase<const dexkit::schema::EncodeValueFloat *>(value)->value();
         case dex::kEncodedDouble: return encodedValue->u.double_value == NonNullCase<const dexkit::schema::EncodeValueDouble *>(value)->value();
         case dex::kEncodedString: return IsStringMatched(encodedValue->u.string_value->c_str(), NonNullCase<const dexkit::schema::StringMatcher *>(value));
-        case dex::kEncodedType: return IsClassMatched(this->type_def_idx[encodedValue->u.type_value->orig_index], NonNullCase<const dexkit::schema::ClassMatcher *>(value));
+        case dex::kEncodedType: return IsClassMatched(encodedValue->u.type_value->orig_index, NonNullCase<const dexkit::schema::ClassMatcher *>(value));
         case dex::kEncodedEnum: return IsFieldMatched(encodedValue->u.enum_value->orig_index, NonNullCase<const dexkit::schema::FieldMatcher *>(value));
         case dex::kEncodedArray: return IsAnnotationEncodeValuesMatched(encodedValue->u.array_value->values, NonNullCase<const dexkit::schema::AnnotationEncodeValuesMatcher *>(value));
         case dex::kEncodedAnnotation: return IsAnnotationMatched(encodedValue->u.annotation_value, NonNullCase<const dexkit::schema::AnnotationMatcher *>(value));
@@ -283,12 +283,13 @@ bool DexItem::IsAnnotationEncodeValuesMatched(const std::vector<ir::EncodedValue
         }
     }
     if (matcher->values()) {
-        if (matcher->values()->size() > encodedValues.size()) {
-            return false;
-        }
         static auto IsAnnotationEncodeValueMatched = [this](const ir::EncodedValue *encodedValue, const std::pair<schema::AnnotationEncodeValueMatcher, const void *> &value) {
             return this->IsAnnotationEncodeValueMatched(encodedValue, value.first, value.second);
         };
+
+        if (matcher->values()->size() > encodedValues.size()) {
+            return false;
+        }
 
         typedef std::vector<std::pair<schema::AnnotationEncodeValueMatcher, const void *>> AnnotationEncodeValueMatcher;
         auto ptr = ThreadVariable::GetThreadVariable<AnnotationEncodeValueMatcher>(POINT_CASE(matcher->values()));
@@ -416,7 +417,6 @@ bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *
         return true;
     }
     auto type_name = this->type_names[type_idx];
-    DEXKIT_CHECK(type_name[0] == 'L' && type_name.back() == ';');
     type_name = type_name.substr(1, type_name.size() - 2);
 
     auto match_str = matcher->value()->string_view();

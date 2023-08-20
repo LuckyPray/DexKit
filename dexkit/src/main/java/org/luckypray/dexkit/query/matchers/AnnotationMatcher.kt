@@ -4,6 +4,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationMatcher
+import org.luckypray.dexkit.InnerRetentionPolicyType
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.RetentionPolicyType
@@ -80,7 +81,7 @@ class AnnotationMatcher : BaseQuery() {
             fbb,
             typeName?.build(fbb) ?: 0,
             targetElementTypes?.build(fbb) ?: 0,
-            policy?.value ?: 0,
+            policy?.value ?: InnerRetentionPolicyType.None,
             annotations?.build(fbb) ?: 0,
             elements?.build(fbb) ?: 0
         )

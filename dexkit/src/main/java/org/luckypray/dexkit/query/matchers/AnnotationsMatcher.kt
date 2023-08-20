@@ -67,6 +67,7 @@ class AnnotationsMatcher : BaseQuery() {
             matchType.value,
             annotationCount?.build(fbb) ?: 0,
         )
-        return 0
+        fbb.finish(root)
+        return root;
     }
 }
