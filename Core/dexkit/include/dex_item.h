@@ -85,6 +85,7 @@ private:
     std::string_view GetFieldDescriptor(uint32_t field_idx);
 
     static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
+    static bool IsTypeNameMatched(std::string_view type_name, const schema::StringMatcher *matcher);
     static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
     static std::set<std::string_view> BuildBatchFindKeywordsMap(
             const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher,

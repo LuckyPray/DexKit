@@ -11,8 +11,13 @@ private:
     std::vector<int> p;
     std::vector<bool> vis;
     std::function<bool(T&, U&)> judge;
+    bool fast_fail = false;
 public:
     Hungarian(const std::vector<T> &targets, const std::vector<U> &matchers, std::function<bool(T&, U&)> match) {
+        if (matchers.size() > targets.size()) {
+            fast_fail = true;
+            return;
+        }
         this->left = matchers;
         this->right = targets;
         map.resize(left.size());
@@ -40,6 +45,9 @@ public:
     }
 
     int solve() {
+        if (fast_fail || left.empty() || right.empty()) {
+            return 0;
+        }
         int ans = 0;
         for (int i = 0; i < left.size(); ++i) {
             std::fill(vis.begin(), vis.end(), false);
@@ -85,6 +93,34 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
         case schema::StringMatchType::StartWith: condition = index == 0; break;
         case schema::StringMatchType::EndWith: condition = index == str.size() - matcher->value()->string_view().size(); break;
         case schema::StringMatchType::Equal: condition = index == 0 && str.size() == matcher->value()->string_view().size(); break;
+        case schema::StringMatchType::SimilarRegex: abort();
+    }
+    return condition;
+}
+
+bool DexItem::IsTypeNameMatched(std::string_view type_name, const schema::StringMatcher *matcher) {
+    type_name = type_name.substr(1, type_name.size() - 2);
+
+    auto match_str = matcher->value()->string_view();
+    auto match_type = matcher->match_type();
+    ConvertSimilarRegex(match_str, match_type);
+
+    auto ptr = ThreadVariable::GetThreadVariable<std::string>(POINT_CASE(matcher->value()));
+    if (ptr == nullptr) {
+        std::string match_name(match_str);
+        std::replace(match_name.begin(), match_name.end(), '.', '/');
+        ThreadVariable::SetThreadVariable<std::string>(POINT_CASE(matcher->value()), match_name);
+        ptr = ThreadVariable::GetThreadVariable<std::string>(POINT_CASE(matcher->value()));
+    }
+
+    auto match_name = *ptr;
+    auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
+    bool condition;
+    switch (match_type) {
+        case schema::StringMatchType::Contains: condition = index != -1; break;
+        case schema::StringMatchType::StartWith: condition = index == 0; break;
+        case schema::StringMatchType::EndWith: condition = index == type_name.size() - match_name.size(); break;
+        case schema::StringMatchType::Equal: condition = index == 0 && type_name.size() == match_name.size(); break;
         case schema::StringMatchType::SimilarRegex: abort();
     }
     return condition;
@@ -140,7 +176,6 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (matcher == nullptr) {
         return true;
     }
-    auto type_name = type_names[annotation->type->orig_index];
     if (!IsTypeNameMatched(annotation->type->orig_index, matcher->type_name())) {
         return false;
     }
@@ -184,15 +219,15 @@ bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const
     if (matcher == nullptr) {
         return true;
     }
-    const auto &annotations = annotationSet->annotations;
-    if (matcher->annotation_count()) {
-        if (annotations.size() < matcher->annotation_count()->min()
-        || annotations.size() > matcher->annotation_count()->max()) {
+    auto annotation_set_size = annotationSet ? annotationSet->annotations.size() : 0;
+    if (matcher->annotation_count() && annotationSet) {
+        if (annotation_set_size < matcher->annotation_count()->min()
+        || annotation_set_size > matcher->annotation_count()->max()) {
             return false;
         }
     }
     if (matcher->annotations()) {
-        static auto IsAnnotationMatched = [this](ir::Annotation *annotation, const schema::AnnotationMatcher *matcher) {
+        auto IsAnnotationMatched = [this](ir::Annotation *annotation, const schema::AnnotationMatcher *matcher) {
             return this->IsAnnotationMatched(annotation, matcher);
         };
 
@@ -208,7 +243,11 @@ bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const
         }
 
         auto annotation_matches = *ptr;
-        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotationSet->annotations, annotation_matches, IsAnnotationMatched);
+        if (annotation_matches.size() > annotation_set_size) {
+            return false;
+        }
+        auto annotations = annotationSet ? annotationSet->annotations : std::vector<ir::Annotation *>();
+        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotations, annotation_matches, IsAnnotationMatched);
         auto count = hungarian.solve();
         if (count != annotation_matches.size()) {
             return false;
@@ -283,7 +322,7 @@ bool DexItem::IsAnnotationEncodeArrayMatcher(const std::vector<ir::EncodedValue 
         }
     }
     if (matcher->values()) {
-        static auto IsAnnotationEncodeValueMatched = [this](const ir::EncodedValue *encodedValue, const std::pair<schema::AnnotationEncodeValueMatcher, const void *> &value) {
+        auto IsAnnotationEncodeValueMatched = [this](const ir::EncodedValue *encodedValue, const std::pair<schema::AnnotationEncodeValueMatcher, const void *> &value) {
             return this->IsAnnotationEncodeValueMatched(encodedValue, value.first, value.second);
         };
 
@@ -346,7 +385,7 @@ bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElemen
         }
     }
     if (matcher->elements()) {
-        static auto IsAnnotationElementMatched = [this](const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher) {
+        auto IsAnnotationElementMatched = [this](const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher) {
             return this->IsAnnotationElementMatched(annotationElement, matcher);
         };
 
@@ -417,24 +456,7 @@ bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *
         return true;
     }
     auto type_name = this->type_names[type_idx];
-    type_name = type_name.substr(1, type_name.size() - 2);
-
-    auto match_str = matcher->value()->string_view();
-    auto match_type = matcher->match_type();
-    ConvertSimilarRegex(match_str, match_type);
-
-    std::string match_name(match_str);
-    std::replace(match_name.begin(), match_name.end(), '.', '/');
-    auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
-    bool condition;
-    switch (match_type) {
-        case schema::StringMatchType::Contains: condition = index != -1; break;
-        case schema::StringMatchType::StartWith: condition = index == 0; break;
-        case schema::StringMatchType::EndWith: condition = index == type_name.size() - match_name.size(); break;
-        case schema::StringMatchType::Equal: condition = index == 0 && type_name.size() == match_name.size(); break;
-        case schema::StringMatchType::SimilarRegex: abort();
-    }
-    return condition;
+    return IsTypeNameMatched(type_name, matcher);
 }
 
 bool DexItem::IsClassAccessFlagsMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher) {
@@ -545,7 +567,7 @@ bool DexItem::IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMat
         }
     }
     if (matcher->interfaces()) {
-        static auto IsClassMatched = [this](uint32_t class_def_idx, const schema::ClassMatcher *matcher) {
+        auto IsClassMatched = [this](uint32_t class_def_idx, const schema::ClassMatcher *matcher) {
             return this->IsClassMatched(class_def_idx, matcher);
         };
 
@@ -600,7 +622,7 @@ bool DexItem::IsFieldsMatched(uint32_t type_idx, const schema::FieldsMatcher *ma
         }
     }
     if (matcher->fields()) {
-        static auto IsFieldMatched = [this](uint32_t field_idx, const schema::FieldMatcher *matcher) {
+        auto IsFieldMatched = [this](uint32_t field_idx, const schema::FieldMatcher *matcher) {
             return this->IsFieldMatched(field_idx, matcher);
         };
 
@@ -645,7 +667,7 @@ bool DexItem::IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *
         }
     }
     if (matcher->methods()) {
-        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
 
@@ -869,7 +891,7 @@ bool DexItem::IsUsingFieldsMatched(uint32_t method_idx, const schema::MethodMatc
     if (matcher->using_fields() == nullptr) {
         return true;
     }
-    static auto IsUsingFieldMatched = [this](std::pair<uint32_t, bool> field, const schema::UsingFieldMatcher *matcher) {
+    auto IsUsingFieldMatched = [this](std::pair<uint32_t, bool> field, const schema::UsingFieldMatcher *matcher) {
         return this->IsUsingFieldMatched(field, matcher);
     };
     auto &using_fields = this->method_using_field_ids[method_idx];
@@ -963,7 +985,7 @@ bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMat
         ptr = ThreadVariable::GetThreadVariable<Numbers>(POINT_CASE(matcher->using_numbers()));
     }
 
-    static auto IsNumberMatched = [](EncodeNumber number, EncodeNumber matcher) {
+    auto IsNumberMatched = [](EncodeNumber number, EncodeNumber matcher) {
         if (GetNumberSize(number.type) != GetNumberSize(matcher.type)) {
             return false;
         }
@@ -1003,7 +1025,7 @@ bool DexItem::IsInvokingMethodsMatched(uint32_t method_idx, const schema::Method
         if (matcher->methods()->size() > invoking_methods.size()) {
             return false;
         }
-        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
 
@@ -1047,7 +1069,7 @@ bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMat
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
 
@@ -1135,7 +1157,7 @@ bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::Methods
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
 
@@ -1177,7 +1199,7 @@ bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::Methods
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        static auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
+        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
             return this->IsMethodMatched(method_idx, matcher);
         };
 
