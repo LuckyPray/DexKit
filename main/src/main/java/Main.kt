@@ -25,7 +25,7 @@ fun loadLibrary(name: String) {
 fun main() {
     loadLibrary("dexkit")
     println("current work dir: ${File("").absolutePath}")
-    val file = File("apk/qq-8.9.2.apk")
+    val file = File("main/apk/QQ_8.9.2-3072.apk")
     if (!file.exists()) {
         println("apk not found")
         return
@@ -35,29 +35,18 @@ fun main() {
 
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
-        bridge.findMethod {
-            matcher {
-                invokingMethods {
-                    add {
-                        declaredClass("com/tencent/mobileqq/app/QQAppInterface")
-                        name("<init>")
-                    }
-                }
-            }
-        }.forEach {
-            println(it)
-        }
-        println("-------------")
+        val startTime = System.currentTimeMillis()
         bridge.findMethod {
             matcher {
                 methodCallers {
                     add {
-                        declaredClass("Lcom/tencent/mobileqq/guild/setting/msgnotify/h;")
+                        declaredClass("com/tencent/mobileqq/guild/setting/msgnotify/f")
                     }
                 }
             }
         }.forEach {
             println(it)
         }
+        println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }
 }

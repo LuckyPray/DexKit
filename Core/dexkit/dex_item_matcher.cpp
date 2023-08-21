@@ -705,11 +705,11 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsAccessFlagsMatched(this->method_access_flags[method_idx], matcher->access_flags())) {
         return false;
     }
-    if (!IsClassMatched(this->type_def_idx[method_def.class_idx], matcher->declaring_class())) {
+    if (!IsClassMatched(method_def.class_idx, matcher->declaring_class())) {
         return false;
     }
     auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
-    if (!IsClassMatched(this->type_def_idx[proto_def.return_type_idx], matcher->return_type())) {
+    if (!IsClassMatched(proto_def.return_type_idx, matcher->return_type())) {
         return false;
     }
     if (!IsParametersMatched(method_idx, matcher->parameters())) {
@@ -760,7 +760,7 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
         auto &parameter_annotations = this->method_parameter_annotations[method_idx];
         for (size_t i = 0; i < type_list->size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
-            if (!IsClassMatched(this->type_def_idx[type_list->list[i].type_idx], parameter_matcher->prameter_type())) {
+            if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->prameter_type())) {
                 return false;
             }
             if (!IsAnnotationsMatched(parameter_annotations[i], parameter_matcher->annotations())) {
@@ -1124,10 +1124,10 @@ bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *mat
     if (!IsAccessFlagsMatched(this->field_access_flags[field_idx], matcher->access_flags())) {
         return false;
     }
-    if (!IsClassMatched(this->type_def_idx[field_def.class_idx], matcher->declaring_class())) {
+    if (!IsClassMatched(field_def.class_idx, matcher->declaring_class())) {
         return false;
     }
-    if (!IsClassMatched(this->type_def_idx[field_def.type_idx], matcher->type_class())) {
+    if (!IsClassMatched(field_def.type_idx, matcher->type_class())) {
         return false;
     }
     if (!IsAnnotationsMatched(this->field_annotations[field_idx], matcher->annotations())) {

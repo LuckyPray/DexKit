@@ -542,17 +542,83 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindClassUsingAnnotationTest Start-----------\n");
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindMethod(
+            fbb, fbb.CreateString(""), false, 0, 0,
+            CreateMethodMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    CreateMethodsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
+                                    CreateMethodMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("com/tencent/mobileqq/guild/setting/msgnotify/f"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    )
+                            })
+                    )
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindMethod>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindMethod(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<MethodMetaArrayHolder>(buffer);
+    if (result->methods()) {
+        printf("result->classes()->size() = %d\n", result->methods()->size());
+        for (int i = 0; i < result->methods()->size(); ++i) {
+            auto item = result->methods()->Get(i);
+            printf("dex: %02d, idx: %d, descriptor: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/qq-8.9.2.apk");
+    auto dexkit = dexkit::DexKit("../apks/QQ_8.9.2-3072.apk");
+//    dexkit.SetThreadNum(1);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "unzip and init full cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
 
-    DexKitFindMethodInvoking(dexkit);
+    DexKitFindMethodCaller(dexkit);
+//    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindClassUsingAnnotationTest(dexkit);
 //    SharedPtrVoidCast(dexkit);
 //    ThreadVariableTest();
