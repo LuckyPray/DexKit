@@ -473,6 +473,75 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindClassUsingAnnotationTest Start-----------\n");
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindMethod(
+            fbb, 0, false, 0, 0,
+            CreateMethodMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    CreateMethodsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
+                                    CreateMethodMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("<init>"),
+                                                    StringMatchType::Equal,
+                                                    false
+                                            ),
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("com/tencent/mobileqq/app/QQAppInterface"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    )
+                            })
+                    ),
+                    0
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindMethod>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindMethod(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<MethodMetaArrayHolder>(buffer);
+    if (result->methods()) {
+        printf("result->classes()->size() = %d\n", result->methods()->size());
+        for (int i = 0; i < result->methods()->size(); ++i) {
+            auto item = result->methods()->Get(i);
+            printf("dex: %02d, idx: %d, descriptor: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
@@ -483,7 +552,8 @@ int main() {
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
 
-    DexKitFindClassUsingAnnotationTest(dexkit);
+    DexKitFindMethodInvoking(dexkit);
+//    DexKitFindClassUsingAnnotationTest(dexkit);
 //    SharedPtrVoidCast(dexkit);
 //    ThreadVariableTest();
 //    KmpTest();

@@ -24,8 +24,8 @@ public:
         for (int i = 0; i < left.size(); ++i) {
             map[i].resize(right.size());
         }
-        p.resize(matchers.size());
-        vis.resize(matchers.size());
+        p.resize(right.size());
+        vis.resize(right.size());
         this->judge = match;
     }
 

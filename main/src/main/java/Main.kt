@@ -35,39 +35,29 @@ fun main() {
 
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
-        val startTime = System.currentTimeMillis()
-        bridge.findClass {
+        bridge.findMethod {
             matcher {
-                annotations {
+                invokingMethods {
                     add {
-                        elements {
-                            elementCount(1)
-                            add {
-                                name("value")
-                            }
-                        }
+                        declaredClass("com/tencent/mobileqq/app/QQAppInterface")
+                        name("<init>")
                     }
                 }
             }
         }.forEach {
-            println()
-            it.getAnnotations().forEach {
-                println(it)
-            }
-            println(it.name)
+            println(it)
         }
-        println("cost: ${System.currentTimeMillis() - startTime}ms")
-//        bridge.findMethod {
-//            matcher {
-//                invokingMethods {
-//                    add {
-////                        declaredClass("com/tencent/mobileqq/app/QQAppInterface")
-//                        name("<init>")
-//                    }
-//                }
-//            }
-//        }.forEach {
-//            println(it)
-//        }
+        println("-------------")
+        bridge.findMethod {
+            matcher {
+                methodCallers {
+                    add {
+                        declaredClass("Lcom/tencent/mobileqq/guild/setting/msgnotify/h;")
+                    }
+                }
+            }
+        }.forEach {
+            println(it)
+        }
     }
 }
