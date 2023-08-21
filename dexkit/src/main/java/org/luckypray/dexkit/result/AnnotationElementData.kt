@@ -24,6 +24,10 @@ class AnnotationElementData(
     }
 
     override fun toString(): String {
-        return "AnnotationElementData(name='$name', value=$value)"
+        return buildString {
+            append(name)
+            append("=")
+            append(value)
+        }
     }
 }

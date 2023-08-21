@@ -18,6 +18,7 @@ import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
+import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
 class AnnotationEncodeValue(
     val value: Any,
@@ -47,6 +48,34 @@ class AnnotationEncodeValue(
     }
 
     override fun toString(): String {
-        return "AnnotationEncodeValue(type=$type, value=$value)"
+        return buildString {
+            when (type) {
+                AnnotationEncodeValueType.TypeValue -> {
+                    append((value as ClassData).name)
+                }
+                AnnotationEncodeValueType.EnumValue -> {
+                    val fieldData = value as FieldData
+                    append(getClassName(fieldData.typeDescriptor))
+                    append(".")
+                    append(fieldData.name)
+                }
+                AnnotationEncodeValueType.ArrayValue -> {
+                    append("{")
+                    append((value as AnnotationEncodeArrayData).values.joinToString(", "))
+                    append("}")
+                }
+                AnnotationEncodeValueType.AnnotationValue -> {
+                    append((value as AnnotationData).toString())
+                }
+                AnnotationEncodeValueType.StringValue -> {
+                    append("\"")
+                    append(value)
+                    append("\"")
+                }
+                else -> {
+                    append(value)
+                }
+            }
+        }
     }
 }

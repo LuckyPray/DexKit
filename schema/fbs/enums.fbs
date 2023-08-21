@@ -48,6 +48,12 @@ enum RetentionPolicyType:byte {
     Runtime,
 }
 
+enum AnnotationVisibilityType:byte {
+    Build,
+    Runtime,
+    System,
+}
+
 enum AnnotationEncodeValueType: byte {
     ByteValue,
     ShortValue,

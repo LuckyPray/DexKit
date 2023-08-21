@@ -183,7 +183,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (matcher->target_element_types()) {
         auto target_element_types = matcher->target_element_types();
         uint32_t target_flags = 0, matcher_flags = 0;
-        for (auto ann: type_annotations->annotations) {
+        for (auto ann: type_annotations) {
             if (ann->type->orig_index != this->annotation_target_class_id) {
                 continue;
             }
@@ -215,12 +215,12 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     return true;
 }
 
-bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher) {
+bool DexItem::IsAnnotationsMatched(const std::vector<ir::Annotation *> &annotationSet, const schema::AnnotationsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    auto annotation_set_size = annotationSet ? annotationSet->annotations.size() : 0;
-    if (matcher->annotation_count() && annotationSet) {
+    auto annotation_set_size = annotationSet.size();
+    if (matcher->annotation_count()) {
         if (annotation_set_size < matcher->annotation_count()->min()
         || annotation_set_size > matcher->annotation_count()->max()) {
             return false;
@@ -246,14 +246,13 @@ bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const
         if (annotation_matches.size() > annotation_set_size) {
             return false;
         }
-        auto annotations = annotationSet ? annotationSet->annotations : std::vector<ir::Annotation *>();
-        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotations, annotation_matches, IsAnnotationMatched);
+        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotationSet, annotation_matches, IsAnnotationMatched);
         auto count = hungarian.solve();
         if (count != annotation_matches.size()) {
             return false;
         }
         if (matcher->match_type() == schema::MatchType::Equal) {
-            if (count != annotationSet->annotations.size()) {
+            if (count != annotationSet.size()) {
                 return false;
             }
         }

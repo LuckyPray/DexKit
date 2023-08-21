@@ -94,7 +94,7 @@ private:
     );
 
     bool IsAnnotationMatched(const ir::Annotation *annotation, const schema::AnnotationMatcher *matcher);
-    bool IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher);
+    bool IsAnnotationsMatched(const std::vector<ir::Annotation *> &annotationSet, const schema::AnnotationsMatcher *matcher);
     bool IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValue, schema::AnnotationEncodeValueMatcher type, const void *value);
     bool IsAnnotationEncodeArrayMatcher(const std::vector<ir::EncodedValue *> &encodedValues, const dexkit::schema::AnnotationEncodeArrayMatcher *matcher);
     bool IsAnnotationElementMatched(const ir::AnnotationElement *annotationElement, const schema::AnnotationElementMatcher *matcher);
@@ -156,10 +156,10 @@ private:
     // method parameter types
     std::vector<const dex::TypeList *> proto_type_list;
     std::vector<std::optional<std::vector<uint8_t /*opcode*/>>> method_opcode_seq;
-    std::vector<ir::AnnotationSet *> class_annotations;
-    std::vector<ir::AnnotationSet *> method_annotations;
-    std::vector<ir::AnnotationSet *> field_annotations;
-    std::vector<std::vector<ir::AnnotationSet *>> method_parameter_annotations;
+    std::vector<std::vector<ir::Annotation *>> class_annotations;
+    std::vector<std::vector<ir::Annotation *>> method_annotations;
+    std::vector<std::vector<ir::Annotation *>> field_annotations;
+    std::vector<std::vector<std::vector<ir::Annotation *>>> method_parameter_annotations;
 
     std::vector<std::vector<uint32_t /*call_method_id*/>> method_caller_ids;
     std::vector<std::vector<uint32_t /*invoke_method_id*/>> method_invoking_ids;

@@ -276,15 +276,45 @@ int DexItem::InitCache() {
             continue;
         }
         auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
-        class_annotations[class_def.class_idx] = annotations->class_annotation;
+        if (annotations->class_annotation) {
+            auto &class_annotation = class_annotations[class_def.class_idx];
+            for (auto &annotation: annotations->class_annotation->annotations) {
+                if (annotation->visibility == 2) {
+                    continue;
+                }
+                class_annotation.emplace_back(annotation);
+            }
+        }
         for (auto value: annotations->field_annotations) {
-            field_annotations[value->field_decl->orig_index] = value->annotations;
+            auto &field_annotation = field_annotations[value->field_decl->orig_index];
+            for (auto &annotation: value->annotations->annotations) {
+                if (annotation->visibility == 2) {
+                    continue;
+                }
+                field_annotation.emplace_back(annotation);
+            }
         }
         for (auto value: annotations->method_annotations) {
-            method_annotations[value->method_decl->orig_index] = value->annotations;
+            auto &method_annotation = method_annotations[value->method_decl->orig_index];
+            for (auto &annotation: value->annotations->annotations) {
+                if (annotation->visibility == 2) {
+                    continue;
+                }
+                method_annotation.emplace_back(annotation);
+            }
         }
         for (auto value: annotations->param_annotations) {
-            method_parameter_annotations[value->method_decl->orig_index] = value->annotations->annotations;
+            auto &method_parameter_annotation = method_parameter_annotations[value->method_decl->orig_index];
+            for (auto &annotation: value->annotations->annotations) {
+                std::vector<ir::Annotation *> ann_vec;
+                for (auto &parameter_annotation: annotation->annotations) {
+                    if (parameter_annotation->visibility == 2) {
+                        continue;
+                    }
+                    ann_vec.emplace_back(parameter_annotation);
+                }
+                method_parameter_annotation.emplace_back(ann_vec);
+            }
         }
     }
     return 0;
@@ -352,7 +382,8 @@ AnnotationBean DexItem::GetAnnotationBean(ir::Annotation *annotation) {
     bean.dex_id = this->dex_id;
     bean.type_id = annotation->type->orig_index;
     bean.type_descriptor = type_names[annotation->type->orig_index];
-    bean.retention_policy = (schema::RetentionPolicyType) annotation->visibility;
+    // TODO visibility not equal to retention policy
+//    bean.retention_policy = (schema::RetentionPolicyType) annotation->visibility;
     for (auto &element : annotation->elements) {
         bean.elements.emplace_back(GetAnnotationElementBean(element));
     }
@@ -418,14 +449,8 @@ std::vector<AnnotationBean>
 DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
     auto annotationSet = this->class_annotations[class_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet->annotations) {
-        AnnotationBean bean;
-        bean.dex_id = this->dex_id;
-        bean.type_id = annotation->type->orig_index;
-        bean.type_descriptor = this->type_names[bean.type_id];
-        for (auto element: annotation->elements) {
-            bean.elements.emplace_back(GetAnnotationElementBean(element));
-        }
+    for (auto annotation: annotationSet) {
+        AnnotationBean bean = GetAnnotationBean(annotation);
         beans.emplace_back(std::move(bean));
     }
     return beans;
@@ -435,14 +460,8 @@ std::vector<AnnotationBean>
 DexItem::GetMethodAnnotationBeans(uint32_t class_idx) {
     auto annotationSet = this->method_annotations[class_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet->annotations) {
-        AnnotationBean bean;
-        bean.dex_id = this->dex_id;
-        bean.type_id = annotation->type->orig_index;
-        bean.type_descriptor = this->type_names[bean.type_id];
-        for (auto element: annotation->elements) {
-            bean.elements.emplace_back(GetAnnotationElementBean(element));
-        }
+    for (auto annotation: annotationSet) {
+        AnnotationBean bean = GetAnnotationBean(annotation);
         beans.emplace_back(std::move(bean));
     }
     return beans;
@@ -452,14 +471,8 @@ std::vector<AnnotationBean>
 DexItem::GetFieldAnnotationBeans(uint32_t class_idx) {
     auto annotationSet = this->field_annotations[class_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet->annotations) {
-        AnnotationBean bean;
-        bean.dex_id = this->dex_id;
-        bean.type_id = annotation->type->orig_index;
-        bean.type_descriptor = this->type_names[bean.type_id];
-        for (auto element: annotation->elements) {
-            bean.elements.emplace_back(GetAnnotationElementBean(element));
-        }
+    for (auto annotation: annotationSet) {
+        AnnotationBean bean = GetAnnotationBean(annotation);
         beans.emplace_back(std::move(bean));
     }
     return beans;
@@ -469,16 +482,10 @@ std::vector<std::vector<AnnotationBean>>
 DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
     auto param_annotations = this->method_parameter_annotations[method_idx];
     std::vector<std::vector<AnnotationBean>> beans;
-    for (auto annotationSet: param_annotations) {
+    for (auto &annotationSet: param_annotations) {
         std::vector<AnnotationBean> annotationBeans;
-        for (auto annotation: annotationSet->annotations) {
-            AnnotationBean bean;
-            bean.dex_id = this->dex_id;
-            bean.type_id = annotation->type->orig_index;
-            bean.type_descriptor = this->type_names[bean.type_id];
-            for (auto element: annotation->elements) {
-                bean.elements.emplace_back(GetAnnotationElementBean(element));
-            }
+        for (auto annotation: annotationSet) {
+            AnnotationBean bean = GetAnnotationBean(annotation);
             annotationBeans.emplace_back(std::move(bean));
         }
         beans.emplace_back(std::move(annotationBeans));

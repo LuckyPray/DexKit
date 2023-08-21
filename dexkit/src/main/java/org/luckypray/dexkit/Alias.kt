@@ -13,6 +13,7 @@ internal typealias InnerAnnotationEncodeValueType = org.luckypray.dexkit.schema.
 internal typealias InnerAnnotationMatcher = org.luckypray.dexkit.schema.`-AnnotationMatcher`
 internal typealias InnerAnnotationMeta = org.luckypray.dexkit.schema.`-AnnotationMeta`
 internal typealias InnerAnnotationMetaArrayHolder = org.luckypray.dexkit.schema.`-AnnotationMetaArrayHolder`
+internal typealias InnerAnnotationVisibilityType = org.luckypray.dexkit.schema.`-AnnotationVisibilityType`
 internal typealias InnerAnnotationsMatcher = org.luckypray.dexkit.schema.`-AnnotationsMatcher`
 internal typealias InnerBatchClassMeta = org.luckypray.dexkit.schema.`-BatchClassMeta`
 internal typealias InnerBatchClassMetaArrayHolder = org.luckypray.dexkit.schema.`-BatchClassMetaArrayHolder`

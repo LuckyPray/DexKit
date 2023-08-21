@@ -396,11 +396,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
             CreateClassMatcher(
                     fbb,
                     0,
-                    CreateStringMatcher(
-                            fbb,
-                            fbb.CreateString("com/tencent/mobileqq/antiphing/a"),
-                            StringMatchType::Equal
-                    ),
+                    0,
                     0,
                     0,
                     0,

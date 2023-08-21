@@ -6,6 +6,7 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerAnnotationMeta
 import org.luckypray.dexkit.query.enums.RetentionPolicyType
 import org.luckypray.dexkit.result.base.BaseData
+import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
 class AnnotationData(
     bridge: DexKitBridge,
@@ -31,13 +32,24 @@ class AnnotationData(
                 annotationMeta.dexId.toInt(),
                 annotationMeta.typeId.toInt(),
                 annotationMeta.typeDescriptor!!,
-                RetentionPolicyType.from(annotationMeta.retentionPolicy),
+                // TODO
+                RetentionPolicyType.Runtime,
                 elements
             )
         }
     }
 
     override fun toString(): String {
-        return "AnnotationData(dexId=$dexId, typeId=$typeId, typeDescriptor='$typeDescriptor', retentionPolicyType=$retentionPolicyType, elements=$elements)"
+        return buildString {
+            append("@${getClassName(typeDescriptor)}")
+            append("(")
+            elements.forEachIndexed { index, element ->
+                if (index != 0) {
+                    append(", ")
+                }
+                append(element)
+            }
+            append(")")
+        }
     }
 }

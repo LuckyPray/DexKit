@@ -35,33 +35,28 @@ fun main() {
 
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
+        val startTime = System.currentTimeMillis()
         bridge.findClass {
             matcher {
-                className("com/tencent/mobileqq/antiphing/a")
                 annotations {
                     add {
-                        typeName("dalvik/annotation/MemberClasses")
                         elements {
                             elementCount(1)
                             add {
                                 name("value")
-                                matcher {
-                                    arrayValue {
-                                        add {
-                                            classValue {
-                                                className("com/tencent/mobileqq/antiphing/a\$c")
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
                 }
             }
         }.forEach {
-            println("find -> $it")
+            println()
+            it.getAnnotations().forEach {
+                println(it)
+            }
+            println(it.name)
         }
+        println("cost: ${System.currentTimeMillis() - startTime}ms")
 //        bridge.findMethod {
 //            matcher {
 //                invokingMethods {

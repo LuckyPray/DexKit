@@ -232,6 +232,37 @@ inline const char *EnumNameRetentionPolicyType(RetentionPolicyType e) {
   return EnumNamesRetentionPolicyType()[index];
 }
 
+enum class AnnotationVisibilityType : int8_t {
+  Build = 0,
+  Runtime = 1,
+  System = 2
+};
+
+inline const AnnotationVisibilityType (&EnumValuesAnnotationVisibilityType())[3] {
+  static const AnnotationVisibilityType values[] = {
+    AnnotationVisibilityType::Build,
+    AnnotationVisibilityType::Runtime,
+    AnnotationVisibilityType::System
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesAnnotationVisibilityType() {
+  static const char * const names[4] = {
+    "Build",
+    "Runtime",
+    "System",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameAnnotationVisibilityType(AnnotationVisibilityType e) {
+  if (::flatbuffers::IsOutRange(e, AnnotationVisibilityType::Build, AnnotationVisibilityType::System)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesAnnotationVisibilityType()[index];
+}
+
 enum class AnnotationEncodeValueType : int8_t {
   ByteValue = 0,
   ShortValue = 1,

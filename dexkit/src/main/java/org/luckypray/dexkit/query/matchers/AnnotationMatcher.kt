@@ -81,7 +81,7 @@ class AnnotationMatcher : BaseQuery() {
             fbb,
             typeName?.build(fbb) ?: 0,
             targetElementTypes?.build(fbb) ?: 0,
-            policy?.value ?: InnerRetentionPolicyType.None,
+            policy?.value ?: 0,
             annotations?.build(fbb) ?: 0,
             elements?.build(fbb) ?: 0
         )
