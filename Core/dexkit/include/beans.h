@@ -95,7 +95,7 @@ public:
     uint32_t dex_id;
     uint32_t type_id;
     std::string_view type_descriptor;
-    schema::RetentionPolicyType retention_policy;
+    schema::AnnotationVisibilityType visibility;
     std::vector<AnnotationElementBean> elements;
 
 public:

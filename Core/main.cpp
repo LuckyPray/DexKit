@@ -474,7 +474,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
 }
 
 int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
-    printf("-----------DexKitFindClassUsingAnnotationTest Start-----------\n");
+    printf("-----------DexKitFindMethodInvoking Start-----------\n");
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
@@ -543,7 +543,7 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
 }
 
 int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
-    printf("-----------DexKitFindClassUsingAnnotationTest Start-----------\n");
+    printf("-----------DexKitFindMethodCaller Start-----------\n");
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
@@ -622,13 +622,13 @@ int main() {
 //    KmpTest();
 //    ACTrieTest();
 //    FlatBufferTest();
-    DexKitBatchFindClassTest(dexkit);
-    DexKitBatchFindMethodTest(dexkit);
-    DexKitFindClassUsingStrings(dexkit);
-    DexKitFindClassTest(dexkit);
-    DexKitFindMethodCaller(dexkit);
+//    DexKitBatchFindClassTest(dexkit);
+//    DexKitBatchFindMethodTest(dexkit);
+//    DexKitFindClassUsingStrings(dexkit);
+//    DexKitFindClassTest(dexkit);
+//    DexKitFindMethodCaller(dexkit);
     DexKitFindMethodInvoking(dexkit);
-    DexKitFindClassUsingAnnotationTest(dexkit);
+//    DexKitFindClassUsingAnnotationTest(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

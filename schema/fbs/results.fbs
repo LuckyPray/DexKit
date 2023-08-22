@@ -83,7 +83,7 @@ table AnnotationMeta {
     dex_id: uint32;
     type_id: uint32;
     type_descriptor: string;
-    retention_policy: RetentionPolicyType;
+    visibility: AnnotationVisibilityType;
     elements: [AnnotationElementMeta];
 }
 

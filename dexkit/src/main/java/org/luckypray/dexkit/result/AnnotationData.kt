@@ -4,7 +4,7 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerAnnotationMeta
-import org.luckypray.dexkit.query.enums.RetentionPolicyType
+import org.luckypray.dexkit.query.enums.AnnotationVisibilityType
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
 
@@ -13,7 +13,7 @@ class AnnotationData(
     val dexId: Int,
     val typeId: Int,
     val typeDescriptor: String,
-    val retentionPolicyType: RetentionPolicyType,
+    val visibility: AnnotationVisibilityType,
     val elements: List<AnnotationElementData>
 ) : BaseData(bridge) {
 
@@ -32,8 +32,7 @@ class AnnotationData(
                 annotationMeta.dexId.toInt(),
                 annotationMeta.typeId.toInt(),
                 annotationMeta.typeDescriptor!!,
-                // TODO
-                RetentionPolicyType.Runtime,
+                AnnotationVisibilityType.from(annotationMeta.visibility),
                 elements
             )
         }

@@ -1068,7 +1068,7 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DEX_ID = 4,
     VT_TYPE_ID = 6,
     VT_TYPE_DESCRIPTOR = 8,
-    VT_RETENTION_POLICY = 10,
+    VT_VISIBILITY = 10,
     VT_ELEMENTS = 12
   };
   uint32_t dex_id() const {
@@ -1080,8 +1080,8 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *type_descriptor() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TYPE_DESCRIPTOR);
   }
-  dexkit::schema::RetentionPolicyType retention_policy() const {
-    return static_cast<dexkit::schema::RetentionPolicyType>(GetField<int8_t>(VT_RETENTION_POLICY, 0));
+  dexkit::schema::AnnotationVisibilityType visibility() const {
+    return static_cast<dexkit::schema::AnnotationVisibilityType>(GetField<int8_t>(VT_VISIBILITY, 0));
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>> *elements() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>> *>(VT_ELEMENTS);
@@ -1092,7 +1092,7 @@ struct AnnotationMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_TYPE_ID, 4) &&
            VerifyOffset(verifier, VT_TYPE_DESCRIPTOR) &&
            verifier.VerifyString(type_descriptor()) &&
-           VerifyField<int8_t>(verifier, VT_RETENTION_POLICY, 1) &&
+           VerifyField<int8_t>(verifier, VT_VISIBILITY, 1) &&
            VerifyOffset(verifier, VT_ELEMENTS) &&
            verifier.VerifyVector(elements()) &&
            verifier.VerifyVectorOfTables(elements()) &&
@@ -1113,8 +1113,8 @@ struct AnnotationMetaBuilder {
   void add_type_descriptor(::flatbuffers::Offset<::flatbuffers::String> type_descriptor) {
     fbb_.AddOffset(AnnotationMeta::VT_TYPE_DESCRIPTOR, type_descriptor);
   }
-  void add_retention_policy(dexkit::schema::RetentionPolicyType retention_policy) {
-    fbb_.AddElement<int8_t>(AnnotationMeta::VT_RETENTION_POLICY, static_cast<int8_t>(retention_policy), 0);
+  void add_visibility(dexkit::schema::AnnotationVisibilityType visibility) {
+    fbb_.AddElement<int8_t>(AnnotationMeta::VT_VISIBILITY, static_cast<int8_t>(visibility), 0);
   }
   void add_elements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>> elements) {
     fbb_.AddOffset(AnnotationMeta::VT_ELEMENTS, elements);
@@ -1135,14 +1135,14 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMeta(
     uint32_t dex_id = 0,
     uint32_t type_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> type_descriptor = 0,
-    dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::None,
+    dexkit::schema::AnnotationVisibilityType visibility = dexkit::schema::AnnotationVisibilityType::Build,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>> elements = 0) {
   AnnotationMetaBuilder builder_(_fbb);
   builder_.add_elements(elements);
   builder_.add_type_descriptor(type_descriptor);
   builder_.add_type_id(type_id);
   builder_.add_dex_id(dex_id);
-  builder_.add_retention_policy(retention_policy);
+  builder_.add_visibility(visibility);
   return builder_.Finish();
 }
 
@@ -1156,7 +1156,7 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
     uint32_t dex_id = 0,
     uint32_t type_id = 0,
     const char *type_descriptor = nullptr,
-    dexkit::schema::RetentionPolicyType retention_policy = dexkit::schema::RetentionPolicyType::None,
+    dexkit::schema::AnnotationVisibilityType visibility = dexkit::schema::AnnotationVisibilityType::Build,
     const std::vector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>> *elements = nullptr) {
   auto type_descriptor__ = type_descriptor ? _fbb.CreateString(type_descriptor) : 0;
   auto elements__ = elements ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::AnnotationElementMeta>>(*elements) : 0;
@@ -1165,7 +1165,7 @@ inline ::flatbuffers::Offset<AnnotationMeta> CreateAnnotationMetaDirect(
       dex_id,
       type_id,
       type_descriptor__,
-      retention_policy,
+      visibility,
       elements__);
 }
 

@@ -46,6 +46,16 @@ int DexItem::InitCache() {
         annotation_target_class_id = type_ids_map[annotation_target_class_desc];
     }
 
+    uint32_t retention_policy_type_idx = dex::kNoIndex;
+    auto retention_policy_class_desc = "Ljava/lang/annotation/RetentionPolicy;";
+    auto annotation_retention_class_desc = "Ljava/lang/annotation/Retention;";
+    if (type_ids_map.contains(retention_policy_class_desc)) {
+        retention_policy_type_idx = type_ids_map[retention_policy_class_desc];
+    }
+    if (type_ids_map.contains(annotation_retention_class_desc)) {
+        annotation_retention_class_id = type_ids_map[annotation_retention_class_desc];
+    }
+
     proto_type_list.resize(reader.ProtoIds().size());
     auto proto_it = proto_type_list.begin();
     for (auto &proto: reader.ProtoIds()) {
@@ -81,6 +91,15 @@ int DexItem::InitCache() {
                 target_element_map[field_idx] = schema::TargetElementType::TypeParameter;
             } else if (name == "TYPE_USE") {
                 target_element_map[field_idx] = schema::TargetElementType::TypeUse;
+            }
+        } else if (field.class_idx == retention_policy_type_idx) {
+            auto name = strings[field.name_idx];
+            if (name == "SOURCE") {
+                retention_map[field_idx] = schema::RetentionPolicyType::Source;
+            } else if (name == "CLASS") {
+                retention_map[field_idx] = schema::RetentionPolicyType::Class;
+            } else if (name == "RUNTIME") {
+                retention_map[field_idx] = schema::RetentionPolicyType::Runtime;
             }
         }
         class_field_ids[field.class_idx].emplace_back(field_idx);
@@ -382,8 +401,7 @@ AnnotationBean DexItem::GetAnnotationBean(ir::Annotation *annotation) {
     bean.dex_id = this->dex_id;
     bean.type_id = annotation->type->orig_index;
     bean.type_descriptor = type_names[annotation->type->orig_index];
-    // TODO visibility not equal to retention policy
-//    bean.retention_policy = (schema::RetentionPolicyType) annotation->visibility;
+    bean.visibility = (schema::AnnotationVisibilityType) annotation->visibility;
     for (auto &element : annotation->elements) {
         bean.elements.emplace_back(GetAnnotationElementBean(element));
     }

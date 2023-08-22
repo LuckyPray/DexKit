@@ -37,16 +37,14 @@ fun main() {
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
         val startTime = System.currentTimeMillis()
-        bridge.findMethod {
+        bridge.findClass {
             matcher {
-                callMethods {
-                    add {
-                        declaredClass("com/tencent/mobileqq/guild/setting/msgnotify/f")
-                    }
+                addField {
+                    name("candidate_feed_list")
                 }
             }
         }.forEach {
-            println(it)
+            println(it.getAnnotations())
         }
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }

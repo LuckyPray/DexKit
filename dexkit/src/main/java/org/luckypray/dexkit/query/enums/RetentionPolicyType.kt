@@ -7,15 +7,4 @@ enum class RetentionPolicyType(val value: Byte) {
     Class(InnerRetentionPolicyType.Class),
     Runtime(InnerRetentionPolicyType.Runtime),
     ;
-
-    companion object {
-        fun from(retentionPolicy: Byte): RetentionPolicyType {
-            return when (retentionPolicy) {
-                InnerRetentionPolicyType.Source -> Source
-                InnerRetentionPolicyType.Class -> Class
-                InnerRetentionPolicyType.Runtime -> Runtime
-                else -> throw IllegalArgumentException("Unknown RetentionPolicyType: $retentionPolicy")
-            }
-        }
-    }
 }

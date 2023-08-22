@@ -67,15 +67,15 @@ internal class `-AnnotationMeta` : Table() {
         }
     val typeDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 1)
     fun typeDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 1)
-    val retentionPolicy : Byte
+    val visibility : Byte
         get() {
             val o = __offset(10)
             return if(o != 0) bb.get(o + bb_pos) else 0
         }
-    fun mutateRetentionPolicy(retentionPolicy: Byte) : Boolean {
+    fun mutateVisibility(visibility: Byte) : Boolean {
         val o = __offset(10)
         return if (o != 0) {
-            bb.put(o + bb_pos, retentionPolicy)
+            bb.put(o + bb_pos, visibility)
             true
         } else {
             false
@@ -101,20 +101,20 @@ internal class `-AnnotationMeta` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMeta(builder: FlatBufferBuilder, dexId: UInt, typeId: UInt, typeDescriptorOffset: Int, retentionPolicy: Byte, elementsOffset: Int) : Int {
+        fun createAnnotationMeta(builder: FlatBufferBuilder, dexId: UInt, typeId: UInt, typeDescriptorOffset: Int, visibility: Byte, elementsOffset: Int) : Int {
             builder.startTable(5)
             addElements(builder, elementsOffset)
             addTypeDescriptor(builder, typeDescriptorOffset)
             addTypeId(builder, typeId)
             addDexId(builder, dexId)
-            addRetentionPolicy(builder, retentionPolicy)
+            addVisibility(builder, visibility)
             return endAnnotationMeta(builder)
         }
         fun startAnnotationMeta(builder: FlatBufferBuilder) = builder.startTable(5)
         fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(0, dexId.toInt(), 0)
         fun addTypeId(builder: FlatBufferBuilder, typeId: UInt) = builder.addInt(1, typeId.toInt(), 0)
         fun addTypeDescriptor(builder: FlatBufferBuilder, typeDescriptor: Int) = builder.addOffset(2, typeDescriptor, 0)
-        fun addRetentionPolicy(builder: FlatBufferBuilder, retentionPolicy: Byte) = builder.addByte(3, retentionPolicy, 0)
+        fun addVisibility(builder: FlatBufferBuilder, visibility: Byte) = builder.addByte(3, visibility, 0)
         fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(4, elements, 0)
         fun createElementsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)

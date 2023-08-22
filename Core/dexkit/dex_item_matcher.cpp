@@ -186,30 +186,48 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
         return false;
     }
     auto type_annotations = this->class_annotations[annotation->type->orig_index];
-    if (matcher->target_element_types()) {
-        auto target_element_types = matcher->target_element_types();
-        uint32_t target_flags = 0, matcher_flags = 0;
+    if (matcher->target_element_types() || (uint8_t) matcher->policy()) {
+        ir::Annotation *retention_annotation = nullptr;
+        ir::Annotation *target_annotation = nullptr;
         for (auto ann: type_annotations) {
-            if (ann->type->orig_index != this->annotation_target_class_id) {
-                continue;
+            if (ann->type->orig_index == this->annotation_retention_class_id) {
+                retention_annotation = ann;
+            } else if (ann->type->orig_index == this->annotation_target_class_id) {
+                target_annotation = ann;
             }
-            for (auto element: ann->elements) {
+        }
+        if ((uint8_t) matcher->policy()) {
+            DEXKIT_CHECK(retention_annotation->elements.size() == 1);
+            auto element = retention_annotation->elements[0];
+            auto field_idx = element->value->u.enum_value->orig_index;
+            DEXKIT_CHECK(this->retention_map.contains(field_idx));
+            if (retention_map[field_idx] != matcher->policy()) {
+                return false;
+            }
+        }
+        if (matcher->target_element_types()) {
+            auto target_element_types = matcher->target_element_types();
+            uint32_t target_flags = 0, matcher_flags = 0;
+
+            for (auto element: target_annotation->elements) {
                 auto field_idx = element->value->u.enum_value->orig_index;
                 DEXKIT_CHECK(this->target_element_map.contains(field_idx));
                 target_flags |= 1 << (uint8_t) target_element_map[field_idx];
             }
-        }
-        for (int i = 0; i < target_element_types->types()->size(); ++i) {
-            auto type = target_element_types->types()->Get(i);
-            matcher_flags |= 1 << (uint8_t) type;
-        }
-        bool condition = false;
-        switch (target_element_types->match_type()) {
-            case schema::MatchType::Equal: condition = target_flags == matcher_flags; break;
-            case schema::MatchType::Contains: condition = (target_flags & matcher_flags) == matcher_flags; break;
-        }
-        if (!condition) {
-            return false;
+
+            for (int i = 0; i < target_element_types->types()->size(); ++i) {
+                auto type = target_element_types->types()->Get(i);
+                matcher_flags |= 1 << (uint8_t) type;
+            }
+
+            bool condition = false;
+            switch (target_element_types->match_type()) {
+                case schema::MatchType::Equal: condition = target_flags == matcher_flags; break;
+                case schema::MatchType::Contains: condition = (target_flags & matcher_flags) == matcher_flags; break;
+            }
+            if (!condition) {
+                return false;
+            }
         }
     }
     if (!IsAnnotationsMatched(type_annotations, matcher->annotations())) {

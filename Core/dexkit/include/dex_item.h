@@ -134,7 +134,9 @@ private:
     uint32_t dex_id;
 
     uint32_t annotation_target_class_id = dex::kNoIndex;
+    uint32_t annotation_retention_class_id = dex::kNoIndex;
     phmap::flat_hash_map<uint32_t /*field_id*/, schema::TargetElementType> target_element_map;
+    phmap::flat_hash_map<uint32_t /*field_id*/, schema::RetentionPolicyType> retention_map;
 
     // string constants, sorted by string value
     std::vector<std::string_view> strings;

@@ -118,7 +118,7 @@ AnnotationBean::CreateAnnotationMeta(flatbuffers::FlatBufferBuilder &fbb) const 
             this->dex_id,
             this->type_id,
             fbb.CreateString(this->type_descriptor),
-            this->retention_policy,
+            this->visibility,
             fbb.CreateVector(annotation_members)
     );
     fbb.Finish(annotation_meta);
