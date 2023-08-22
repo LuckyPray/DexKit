@@ -114,13 +114,17 @@ DexKit::FindClass(const schema::FindClass *query) {
             dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
+    auto resolve_types = ExtractUseTypeNames(query->matcher());
 
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set]() {
-            return dex_item->FindClass(query, class_set);
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &resolve_types]() -> std::vector<ClassBean> {
+            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+                return dex_item->FindClass(query, class_set);
+            }
+            return {};
         }));
     }
 
@@ -156,14 +160,18 @@ DexKit::FindMethod(const schema::FindMethod *query) {
             dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
+    auto resolve_types = ExtractUseTypeNames(query->matcher());
 
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<MethodBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &method_set = dex_method_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &class_set, &method_set]() {
-            return dex_item->FindMethod(query, class_set, method_set);
+        futures.push_back(pool.enqueue([this, &dex_item, &query, &class_set, &method_set, &resolve_types]() -> std::vector<MethodBean> {
+            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+                return dex_item->FindMethod(query, class_set, method_set);
+            }
+            return {};
         }));
     }
 
@@ -199,14 +207,18 @@ DexKit::FindField(const schema::FindField *query) {
             dex_field_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
+    auto resolve_types = ExtractUseTypeNames(query->matcher());
 
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<FieldBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &field_set = dex_field_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &field_set]() {
-            return dex_item->FindField(query, class_set, field_set);
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &field_set, &resolve_types]() -> std::vector<FieldBean> {
+            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+                return dex_item->FindField(query, class_set, field_set);
+            }
+            return {};
         }));
     }
 

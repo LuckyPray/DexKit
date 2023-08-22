@@ -85,14 +85,16 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
     auto match_type = matcher->match_type();
     auto match_str = matcher->value()->string_view();
     ConvertSimilarRegex(match_str, match_type);
-    if (match_type == schema::StringMatchType::Contains) DEXKIT_CHECK(!match_str.empty());
-    auto index = kmp::FindIndex(str, match_str, matcher->ignore_case());
     bool condition;
     switch (match_type) {
-        case schema::StringMatchType::Contains: condition = index != -1; break;
-        case schema::StringMatchType::StartWith: condition = index == 0; break;
-        case schema::StringMatchType::EndWith: condition = index == str.size() - matcher->value()->string_view().size(); break;
-        case schema::StringMatchType::Equal: condition = index == 0 && str.size() == matcher->value()->string_view().size(); break;
+        case schema::StringMatchType::StartWith: condition = str.starts_with(match_str); break;
+        case schema::StringMatchType::EndWith: condition = str.ends_with(match_str); break;
+        case schema::StringMatchType::Equal: condition = str == match_str; break;
+        case schema::StringMatchType::Contains: {
+            auto index = kmp::FindIndex(str, match_str, matcher->ignore_case());
+            condition = index != -1;
+            break;
+        }
         case schema::StringMatchType::SimilarRegex: abort();
     }
     return condition;
@@ -114,13 +116,16 @@ bool DexItem::IsTypeNameMatched(std::string_view type_name, const schema::String
     }
 
     auto match_name = *ptr;
-    auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
     bool condition;
     switch (match_type) {
-        case schema::StringMatchType::Contains: condition = index != -1; break;
-        case schema::StringMatchType::StartWith: condition = index == 0; break;
-        case schema::StringMatchType::EndWith: condition = index == type_name.size() - match_name.size(); break;
-        case schema::StringMatchType::Equal: condition = index == 0 && type_name.size() == match_name.size(); break;
+        case schema::StringMatchType::StartWith: condition = type_name.starts_with(match_name); break;
+        case schema::StringMatchType::EndWith: condition = type_name.ends_with(match_name); break;
+        case schema::StringMatchType::Equal: condition = type_name == match_name; break;
+        case schema::StringMatchType::Contains: {
+            auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
+            condition = index != -1;
+            break;
+        }
         case schema::StringMatchType::SimilarRegex: abort();
     }
     return condition;
@@ -760,7 +765,7 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
         auto &parameter_annotations = this->method_parameter_annotations[method_idx];
         for (size_t i = 0; i < type_list->size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
-            if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->prameter_type())) {
+            if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->parameter_type())) {
                 return false;
             }
             if (!IsAnnotationsMatched(parameter_annotations[i], parameter_matcher->annotations())) {

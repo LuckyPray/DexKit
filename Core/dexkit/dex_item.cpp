@@ -536,4 +536,17 @@ std::string_view DexItem::GetFieldDescriptor(uint32_t field_idx) {
     return field_desc.value();
 }
 
+bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {
+    for (auto &type_name: types) {
+        std::string type_name_str("L");
+        type_name_str += type_name;
+        type_name_str += ";";
+        std::replace(type_name_str.begin(), type_name_str.end(), '.', '/');
+        if (!type_ids_map.contains(type_name_str)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }

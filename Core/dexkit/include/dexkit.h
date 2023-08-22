@@ -54,6 +54,20 @@ private:
             std::vector<std::pair<std::string_view, bool>> &keywords,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
+
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::ClassMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::InterfacesMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationsMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationElementsMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationElementMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationEncodeArrayMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::FieldsMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::FieldMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::MethodsMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::MethodMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::ParametersMatcher *matcher);
+    std::vector<std::string_view> ExtractUseTypeNames(const schema::ParameterMatcher *matcher);
 };
 
 } // namespace dexkit

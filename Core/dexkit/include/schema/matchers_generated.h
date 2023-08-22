@@ -1001,20 +1001,20 @@ struct ParameterMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ANNOTATIONS = 4,
-    VT_PRAMETER_TYPE = 6
+    VT_PARAMETER_TYPE = 6
   };
   const dexkit::schema::AnnotationsMatcher *annotations() const {
     return GetPointer<const dexkit::schema::AnnotationsMatcher *>(VT_ANNOTATIONS);
   }
-  const dexkit::schema::ClassMatcher *prameter_type() const {
-    return GetPointer<const dexkit::schema::ClassMatcher *>(VT_PRAMETER_TYPE);
+  const dexkit::schema::ClassMatcher *parameter_type() const {
+    return GetPointer<const dexkit::schema::ClassMatcher *>(VT_PARAMETER_TYPE);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_ANNOTATIONS) &&
            verifier.VerifyTable(annotations()) &&
-           VerifyOffset(verifier, VT_PRAMETER_TYPE) &&
-           verifier.VerifyTable(prameter_type()) &&
+           VerifyOffset(verifier, VT_PARAMETER_TYPE) &&
+           verifier.VerifyTable(parameter_type()) &&
            verifier.EndTable();
   }
 };
@@ -1026,8 +1026,8 @@ struct ParameterMatcherBuilder {
   void add_annotations(::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations) {
     fbb_.AddOffset(ParameterMatcher::VT_ANNOTATIONS, annotations);
   }
-  void add_prameter_type(::flatbuffers::Offset<dexkit::schema::ClassMatcher> prameter_type) {
-    fbb_.AddOffset(ParameterMatcher::VT_PRAMETER_TYPE, prameter_type);
+  void add_parameter_type(::flatbuffers::Offset<dexkit::schema::ClassMatcher> parameter_type) {
+    fbb_.AddOffset(ParameterMatcher::VT_PARAMETER_TYPE, parameter_type);
   }
   explicit ParameterMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1043,9 +1043,9 @@ struct ParameterMatcherBuilder {
 inline ::flatbuffers::Offset<ParameterMatcher> CreateParameterMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
-    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> prameter_type = 0) {
+    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> parameter_type = 0) {
   ParameterMatcherBuilder builder_(_fbb);
-  builder_.add_prameter_type(prameter_type);
+  builder_.add_parameter_type(parameter_type);
   builder_.add_annotations(annotations);
   return builder_.Finish();
 }

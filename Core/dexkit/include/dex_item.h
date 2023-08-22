@@ -70,6 +70,7 @@ public:
     std::vector<AnnotationBean> GetMethodAnnotationBeans(uint32_t method_idx);
     std::vector<AnnotationBean> GetFieldAnnotationBeans(uint32_t field_idx);
     std::vector<std::vector<AnnotationBean>> GetParameterAnnotationBeans(uint32_t method_idx);
+    bool CheckAllTypeNamesDeclared(std::vector<std::string_view> &types);
 
 private:
 

@@ -71,7 +71,7 @@ table AnnotationsMatcher {
 
 table ParameterMatcher {
     annotations: AnnotationsMatcher;
-    prameter_type: ClassMatcher;
+    parameter_type: ClassMatcher;
 }
 
 table ParametersMatcher {
