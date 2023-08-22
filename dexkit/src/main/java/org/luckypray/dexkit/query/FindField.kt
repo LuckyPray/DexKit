@@ -11,17 +11,12 @@ import org.luckypray.dexkit.result.FieldData
 
 class FindField : BaseQuery() {
     private var searchPackage: String? = null
-    private var uniqueResult: Boolean = true
     private var searchClasses: LongArray? = null
     private var searchFields: LongArray? = null
     private var matcher: FieldMatcher? = null
 
     fun searchPackage(searchPackage: String) = also {
         this.searchPackage = searchPackage
-    }
-
-    fun uniqueResult(uniqueResult: Boolean) = also {
-        this.uniqueResult = uniqueResult
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
@@ -50,7 +45,6 @@ class FindField : BaseQuery() {
         val root = InnerFindField.createFindField(
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,
-            uniqueResult,
             searchClasses?.let { InnerFindField.createInClassesVector(fbb, it) } ?: 0,
             searchFields?.let { InnerFindField.createInFieldsVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0

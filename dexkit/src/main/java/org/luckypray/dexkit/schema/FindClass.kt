@@ -39,22 +39,8 @@ internal class `-FindClass` : Table() {
         }
     val searchPackageAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
     fun searchPackageInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
-    val uniqueResult : Boolean
-        get() {
-            val o = __offset(6)
-            return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
-        }
-    fun mutateUniqueResult(uniqueResult: Boolean) : Boolean {
-        val o = __offset(6)
-        return if (o != 0) {
-            bb.put(o + bb_pos, (if(uniqueResult) 1 else 0).toByte())
-            true
-        } else {
-            false
-        }
-    }
     fun inClasses(j: Int) : Long {
-        val o = __offset(8)
+        val o = __offset(6)
         return if (o != 0) {
             bb.getLong(__vector(o) + j * 8)
         } else {
@@ -63,12 +49,12 @@ internal class `-FindClass` : Table() {
     }
     val inClassesLength : Int
         get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
         }
-    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(8, 8)
-    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 8, 8)
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
     fun mutateInClasses(j: Int, inClasses: Long) : Boolean {
-        val o = __offset(8)
+        val o = __offset(6)
         return if (o != 0) {
             bb.putLong(__vector(o) + j * 8, inClasses)
             true
@@ -78,7 +64,7 @@ internal class `-FindClass` : Table() {
     }
     val matcher : `-ClassMatcher`? get() = matcher(`-ClassMatcher`())
     fun matcher(obj: `-ClassMatcher`) : `-ClassMatcher`? {
-        val o = __offset(10)
+        val o = __offset(8)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -92,18 +78,16 @@ internal class `-FindClass` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFindClass(builder: FlatBufferBuilder, searchPackageOffset: Int, uniqueResult: Boolean, inClassesOffset: Int, matcherOffset: Int) : Int {
-            builder.startTable(4)
+        fun createFindClass(builder: FlatBufferBuilder, searchPackageOffset: Int, inClassesOffset: Int, matcherOffset: Int) : Int {
+            builder.startTable(3)
             addMatcher(builder, matcherOffset)
             addInClasses(builder, inClassesOffset)
             addSearchPackage(builder, searchPackageOffset)
-            addUniqueResult(builder, uniqueResult)
             return endFindClass(builder)
         }
-        fun startFindClass(builder: FlatBufferBuilder) = builder.startTable(4)
+        fun startFindClass(builder: FlatBufferBuilder) = builder.startTable(3)
         fun addSearchPackage(builder: FlatBufferBuilder, searchPackage: Int) = builder.addOffset(0, searchPackage, 0)
-        fun addUniqueResult(builder: FlatBufferBuilder, uniqueResult: Boolean) = builder.addBoolean(1, uniqueResult, false)
-        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(2, inClasses, 0)
+        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
         fun createInClassesVector(builder: FlatBufferBuilder, data: LongArray) : Int {
             builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
@@ -112,7 +96,7 @@ internal class `-FindClass` : Table() {
             return builder.endVector()
         }
         fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
-        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(3, matcher, 0)
+        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(2, matcher, 0)
         fun endFindClass(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

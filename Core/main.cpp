@@ -225,7 +225,7 @@ int DexKitFindClassUsingStrings(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassUsingStrings Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, false, 0,
+            fbb, 0, 0,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -278,7 +278,7 @@ int DexKitFindClassTest(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassTest Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, false, 0,
+            fbb, 0, 0,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -392,7 +392,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, false, 0,
+            fbb, 0, 0,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -478,7 +478,7 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
-            fbb, 0, false, 0, 0,
+            fbb, 0, 0, 0,
             CreateMethodMatcher(
                     fbb,
                     0,
@@ -547,7 +547,7 @@ int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
-            fbb, fbb.CreateString(""), false, 0, 0,
+            fbb, fbb.CreateString(""), 0, 0,
             CreateMethodMatcher(
                     fbb,
                     0,
@@ -617,20 +617,18 @@ int main() {
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
 
-    DexKitFindMethodCaller(dexkit);
-//    DexKitFindMethodInvoking(dexkit);
-//    DexKitFindClassUsingAnnotationTest(dexkit);
 //    SharedPtrVoidCast(dexkit);
 //    ThreadVariableTest();
 //    KmpTest();
 //    ACTrieTest();
 //    FlatBufferTest();
-//    DexKitBatchFindClassTest(dexkit);
-//    DexKitBatchFindMethodTest(dexkit);
-//    DexKitFindClassUsingStrings(dexkit);
-//    DexKitFindClassTest(dexkit);
-//    dexkit.FindMethod(nullptr);
-//    dexkit.FindField(nullptr);
+    DexKitBatchFindClassTest(dexkit);
+    DexKitBatchFindMethodTest(dexkit);
+    DexKitFindClassUsingStrings(dexkit);
+    DexKitFindClassTest(dexkit);
+    DexKitFindMethodCaller(dexkit);
+    DexKitFindMethodInvoking(dexkit);
+    DexKitFindClassUsingAnnotationTest(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

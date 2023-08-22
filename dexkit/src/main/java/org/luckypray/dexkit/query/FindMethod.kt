@@ -11,17 +11,12 @@ import org.luckypray.dexkit.result.MethodData
 
 class FindMethod : BaseQuery() {
     private var searchPackage: String? = null
-    private var uniqueResult: Boolean = true
     private var searchClasses: LongArray? = null
     private var searchMethods: LongArray? = null
     private var matcher: MethodMatcher? = null
 
     fun searchPackage(searchPackage: String) = also {
         this.searchPackage = searchPackage
-    }
-
-    fun uniqueResult(uniqueResult: Boolean) = also {
-        this.uniqueResult = uniqueResult
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
@@ -49,7 +44,6 @@ class FindMethod : BaseQuery() {
         val root = InnerFindMethod.createFindMethod(
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,
-            uniqueResult,
             searchClasses?.let { InnerFindMethod.createInClassesVector(fbb, it) } ?: 0,
             searchMethods?.let { InnerFindMethod.createInMethodsVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0
