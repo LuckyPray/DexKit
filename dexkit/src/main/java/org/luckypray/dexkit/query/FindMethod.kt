@@ -9,7 +9,6 @@ import org.luckypray.dexkit.query.matchers.MethodMatcher
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 
-@OptIn(ExperimentalUnsignedTypes::class)
 class FindMethod : BaseQuery() {
     private var searchPackage: String? = null
     private var uniqueResult: Boolean = true

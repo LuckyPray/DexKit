@@ -12,7 +12,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 class InterfacesMatcher : BaseQuery() {
     private var interfaces: List<ClassMatcher>? = null
     private var matchType: MatchType = MatchType.Contains
-    private var interfaceCount: IntRange? = null
+    private var countRange: IntRange? = null
 
     fun interfaces(interfaces: List<ClassMatcher>) = also {
         this.interfaces = interfaces
@@ -22,16 +22,16 @@ class InterfacesMatcher : BaseQuery() {
         this.matchType = matchType
     }
 
-    fun interfaceCount(range: IntRange) = also {
-        this.interfaceCount = range
+    fun countRange(range: IntRange) = also {
+        this.countRange = range
     }
 
-    fun interfaceCount(count: Int) = also {
-        this.interfaceCount = IntRange(count)
+    fun countRange(count: Int) = also {
+        this.countRange = IntRange(count)
     }
 
-    fun interfaceCount(min: Int, max: Int) = also {
-        this.interfaceCount = IntRange(min, max)
+    fun countRange(min: Int, max: Int) = also {
+        this.countRange = IntRange(min, max)
     }
 
     fun add(interfaceMatcher: ClassMatcher) = also {
@@ -72,7 +72,7 @@ class InterfacesMatcher : BaseQuery() {
             interfaces?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }
                 ?: 0,
             matchType.value,
-            interfaceCount?.build(fbb) ?: 0
+            countRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

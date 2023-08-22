@@ -11,36 +11,36 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class FieldsMatcher : BaseQuery() {
-    private var values: List<FieldMatcher>? = null
+    private var fields: List<FieldMatcher>? = null
     private var matchType: MatchType = MatchType.Contains
-    private var fieldCount: IntRange? = null
+    private var countRange: IntRange? = null
 
     fun fields(fields: List<FieldMatcher>) = also {
-        this.values = fields
+        this.fields = fields
     }
 
     fun matchType(matchType: MatchType) = also {
         this.matchType = matchType
     }
 
-    fun fieldCount(fieldCount: IntRange) = also {
-        this.fieldCount = fieldCount
+    fun countRange(countRange: IntRange) = also {
+        this.countRange = countRange
     }
 
-    fun fieldCount(count: Int) = also {
-        this.fieldCount = IntRange(count)
+    fun countRange(count: Int) = also {
+        this.countRange = IntRange(count)
     }
 
-    fun fieldCount(min: Int, max: Int) = also {
-        this.fieldCount = IntRange(min, max)
+    fun countRange(min: Int, max: Int) = also {
+        this.countRange = IntRange(min, max)
     }
 
     fun add(matcher: FieldMatcher) {
-        values = values ?: FieldMatcherList()
-        if (values !is FieldMatcherList) {
-            values = FieldMatcherList(values!!)
+        fields = fields ?: FieldMatcherList()
+        if (fields !is FieldMatcherList) {
+            fields = FieldMatcherList(fields!!)
         }
-        (values as FieldMatcherList).add(matcher)
+        (fields as FieldMatcherList).add(matcher)
     }
 
     fun addForName(name: String) = also {
@@ -73,9 +73,9 @@ class FieldsMatcher : BaseQuery() {
     override fun build(fbb: FlatBufferBuilder): Int {
         val root = InnerFieldsMatcher.createFieldsMatcher(
             fbb,
-            values?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            fields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             matchType.value,
-            fieldCount?.build(fbb) ?: 0
+            countRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

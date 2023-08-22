@@ -2,6 +2,7 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
 import java.util.Locale
+import java.util.regex.Pattern
 
 val isWindows
     get() = System.getProperty("os.name")
@@ -38,7 +39,7 @@ fun doSearch(path: String) {
         val startTime = System.currentTimeMillis()
         bridge.findMethod {
             matcher {
-                methodCallers {
+                callMethods {
                     add {
                         declaredClass("com/tencent/mobileqq/guild/setting/msgnotify/f")
                     }

@@ -86,6 +86,7 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
     auto match_str = matcher->value()->string_view();
     ConvertSimilarRegex(match_str, match_type);
     bool condition;
+    // TODO FIX ignore_case matcher
     switch (match_type) {
         case schema::StringMatchType::StartWith: condition = str.starts_with(match_str); break;
         case schema::StringMatchType::EndWith: condition = str.ends_with(match_str); break;

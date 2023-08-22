@@ -11,7 +11,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 class AnnotationsMatcher : BaseQuery() {
     private var annotations: List<AnnotationMatcher>? = null
     private var matchType: MatchType = MatchType.Contains
-    private var annotationCount: IntRange? = null
+    private var countRange: IntRange? = null
 
     fun annotations(annotations: List<AnnotationMatcher>) = also {
         this.annotations = annotations
@@ -21,16 +21,16 @@ class AnnotationsMatcher : BaseQuery() {
         this.matchType = matchType
     }
 
-    fun annotationCount(annotationCount: IntRange) = also {
-        this.annotationCount = annotationCount
+    fun countRange(countRange: IntRange) = also {
+        this.countRange = countRange
     }
 
-    fun annotationCount(count: Int) = also {
-        this.annotationCount = IntRange(count)
+    fun countRange(count: Int) = also {
+        this.countRange = IntRange(count)
     }
 
-    fun annotationCount(min: Int, max: Int) = also {
-        this.annotationCount = IntRange(min, max)
+    fun countRange(min: Int, max: Int) = also {
+        this.countRange = IntRange(min, max)
     }
 
     fun add(annotation: AnnotationMatcher) = also {
@@ -65,7 +65,7 @@ class AnnotationsMatcher : BaseQuery() {
             fbb,
             annotations?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             matchType.value,
-            annotationCount?.build(fbb) ?: 0,
+            countRange?.build(fbb) ?: 0,
         )
         fbb.finish(root)
         return root;

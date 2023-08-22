@@ -10,6 +10,7 @@ import org.luckypray.dexkit.query.UsingFieldMatcherList
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
+import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
@@ -27,15 +28,16 @@ class MethodMatcher : BaseQuery() {
     private var usingStrings: List<StringMatcher>? = null
     private var usingFields: List<UsingFieldMatcher>? = null
     private var usingNumbers: List<NumberEncodeValueMatcher>? = null
-    private var invokingMethods: MethodsMatcher? = null
-    private var methodCallers: MethodsMatcher? = null
+    private var invokeMethods: MethodsMatcher? = null
+    private var callMethods: MethodsMatcher? = null
 
     fun name(name: StringMatcher) = also {
         this.name = name
     }
 
-    fun name(name: String) = also {
-        this.name = StringMatcher(name)
+    @JvmOverloads
+    fun name(name: String, ignoreCase: Boolean = false) = also {
+        this.name = StringMatcher(name, StringMatchType.Equal, ignoreCase)
     }
 
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
@@ -65,6 +67,30 @@ class MethodMatcher : BaseQuery() {
 
     fun parameters(parameters: ParametersMatcher) = also {
         this.parameters = parameters
+    }
+
+    fun parameterTypes(vararg parameterTypes: String?) = also {
+        this.parameters = ParametersMatcher().apply {
+            parameterTypes.forEach {
+                val paramMatcher = it?.let { ParameterMatcher().type(it) }
+                add(paramMatcher)
+            }
+        }
+    }
+
+    fun addParameterType(parameterType: String?) = also {
+        parameters = parameters ?: ParametersMatcher()
+        parameters!!.add(parameterType?.let { ParameterMatcher().type(parameterType) })
+    }
+
+    fun parameterCount(count: Int) = also {
+        this.parameters ?: let { this.parameters = ParametersMatcher() }
+        this.parameters!!.apply { countRange(count) }
+    }
+
+    fun parameterCount(min: Int, max: Int) = also {
+        this.parameters ?: let { this.parameters = ParametersMatcher() }
+        this.parameters!!.apply { countRange(min, max) }
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
@@ -111,50 +137,68 @@ class MethodMatcher : BaseQuery() {
         this.usingNumbers = usingNumbers
     }
 
-    fun invokingMethods(invokingMethods: MethodsMatcher) = also {
-        this.invokingMethods = invokingMethods
+    fun invokeMethods(invokeMethods: MethodsMatcher) = also {
+        this.invokeMethods = invokeMethods
     }
 
-    fun methodCallers(methodCallers: MethodsMatcher) = also {
-        this.methodCallers = methodCallers
+    fun addInvoke(invokeMethod: MethodMatcher) = also {
+        invokeMethods = invokeMethods ?: MethodsMatcher()
+        invokeMethods!!.add(invokeMethod)
+    }
+
+    fun callMethods(callMethods: MethodsMatcher) = also {
+        this.callMethods = callMethods
+    }
+
+    fun addCall(callMethod: MethodMatcher) = also {
+        callMethods = callMethods ?: MethodsMatcher()
+        callMethods!!.add(callMethod)
     }
 
     // region DSL
 
     fun declaredClass(init: ClassMatcher.() -> Unit) = also {
-        this.declaredClass = ClassMatcher().apply(init)
+        declaredClass = ClassMatcher().apply(init)
     }
 
     fun returnType(init: ClassMatcher.() -> Unit) = also {
-        this.returnType = ClassMatcher().apply(init)
+        returnType = ClassMatcher().apply(init)
     }
 
     fun parameters(init: ParametersMatcher.() -> Unit) = also {
-        this.parameters = ParametersMatcher().apply(init)
+        parameters = ParametersMatcher().apply(init)
     }
 
     fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
-        this.annotations = AnnotationsMatcher().apply(init)
+        annotations = AnnotationsMatcher().apply(init)
     }
 
     fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
-        this.usingStrings = StringMatcherList().apply(init)
+        usingStrings = StringMatcherList().apply(init)
     }
 
     fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
-        this.usingFields = UsingFieldMatcherList().apply(init)
+        usingFields = UsingFieldMatcherList().apply(init)
     }
 
     fun usingNumbers(init: NumberEncodeValueMatcherList.() -> Unit) = also {
-        this.usingNumbers = NumberEncodeValueMatcherList().apply(init)
+        usingNumbers = NumberEncodeValueMatcherList().apply(init)
     }
 
-    fun invokingMethods(init: MethodsMatcher.() -> Unit) = also {
-        this.invokingMethods = MethodsMatcher().apply(init)
+    fun invokeMethods(init: MethodsMatcher.() -> Unit) = also {
+        invokeMethods = MethodsMatcher().apply(init)
     }
 
-    fun methodCallers(init: MethodsMatcher.() -> Unit) = also {
-        this.methodCallers = MethodsMatcher().apply(init)
+    fun addInvoke(init: MethodMatcher.() -> Unit) = also {
+        addInvoke(MethodMatcher().apply(init))
+    }
+
+    fun callMethods(init: MethodsMatcher.() -> Unit) = also {
+        callMethods = MethodsMatcher().apply(init)
+    }
+
+    fun addCall(init: MethodMatcher.() -> Unit) = also {
+        addCall(MethodMatcher().apply(init))
     }
 
     // endregion
@@ -180,8 +224,8 @@ class MethodMatcher : BaseQuery() {
             usingFields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             usingNumbers?.let { fbb.createVectorOfTables(it.map { it.type!!.value.toInt() }.toIntArray()) } ?: 0,
             usingNumbers?.let { fbb.createVectorOfTables(it.map { it.value!!.build(fbb) }.toIntArray()) } ?: 0,
-            invokingMethods?.build(fbb) ?: 0,
-            methodCallers?.build(fbb) ?: 0
+            invokeMethods?.build(fbb) ?: 0,
+            callMethods?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

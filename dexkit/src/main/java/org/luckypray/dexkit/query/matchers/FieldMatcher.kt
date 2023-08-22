@@ -17,14 +17,15 @@ class FieldMatcher : BaseQuery() {
     private var type: ClassMatcher? = null
     private var annotations: AnnotationsMatcher? = null
     private var getMethods: MethodsMatcher? = null
-    private var setMethods: MethodsMatcher? = null
+    private var putMethods: MethodsMatcher? = null
 
     fun name(name: StringMatcher) = also {
         this.name = name
     }
 
-    fun name(name: String) = also {
-        this.name = StringMatcher(name, StringMatchType.Equal)
+    @JvmOverloads
+    fun name(name: String, ignoreCase: Boolean = false) = also {
+        this.name = StringMatcher(name, StringMatchType.Equal, ignoreCase)
     }
 
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
@@ -65,12 +66,37 @@ class FieldMatcher : BaseQuery() {
         this.annotations = annotations
     }
 
+    fun addAnnotation(annotation: AnnotationMatcher) = also {
+        this.annotations = annotations ?: AnnotationsMatcher()
+        this.annotations!!.add(annotation)
+    }
+
+    fun annotationCount(count: Int) = also {
+        this.annotations = annotations ?: AnnotationsMatcher()
+        this.annotations!!.countRange(count)
+    }
+
+    fun annotationCount(min: Int, max: Int) = also {
+        this.annotations = annotations ?: AnnotationsMatcher()
+        this.annotations!!.countRange(min, max)
+    }
+
     fun getMethods(getMethods: MethodsMatcher) = also {
         this.getMethods = getMethods
     }
 
-    fun setMethods(setMethods: MethodsMatcher) = also {
-        this.setMethods = setMethods
+    fun addGetMethod(getMethod: MethodMatcher) = also {
+        this.getMethods = getMethods ?: MethodsMatcher()
+        this.getMethods!!.add(getMethod)
+    }
+
+    fun putMethods(putMethods: MethodsMatcher) = also {
+        this.putMethods = putMethods
+    }
+
+    fun addPutMethod(putMethod: MethodMatcher) = also {
+        this.putMethods = putMethods ?: MethodsMatcher()
+        this.putMethods!!.add(putMethod)
     }
 
     // region DSL
@@ -91,8 +117,16 @@ class FieldMatcher : BaseQuery() {
         this.getMethods(MethodsMatcher().apply(init))
     }
 
-    fun setMethods(init: MethodsMatcher.() -> Unit) = also {
-        this.setMethods(MethodsMatcher().apply(init))
+    fun addGetMethod(init: MethodMatcher.() -> Unit) = also {
+        addGetMethod(MethodMatcher().apply(init))
+    }
+
+    fun putMethods(init: MethodsMatcher.() -> Unit) = also {
+        this.putMethods(MethodsMatcher().apply(init))
+    }
+
+    fun addPutMethod(init: MethodMatcher.() -> Unit) = also {
+        addPutMethod(MethodMatcher().apply(init))
     }
 
     // endregion
@@ -113,7 +147,7 @@ class FieldMatcher : BaseQuery() {
             type?.build(fbb) ?: 0,
             annotations?.build(fbb) ?: 0,
             getMethods?.build(fbb) ?: 0,
-            setMethods?.build(fbb) ?: 0
+            putMethods?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

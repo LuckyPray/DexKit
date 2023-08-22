@@ -9,31 +9,31 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class ParametersMatcher : BaseQuery() {
     // TODO nullable
-    private var parameters: List<ParameterMatcher>? = null
-    private var parametersCount: IntRange? = null
+    private var parameters: List<ParameterMatcher?>? = null
+    private var countRange: IntRange? = null
 
-    fun parameters(parameters: List<ParameterMatcher>) = also {
+    fun parameters(parameters: List<ParameterMatcher?>) = also {
         this.parameters = parameters
     }
 
-    fun parametersCount(parametersCount: IntRange) = also {
-        this.parametersCount = parametersCount
+    fun countRange(countRange: IntRange) = also {
+        this.countRange = countRange
     }
 
-    fun parametersCount(count: Int) = also {
-        this.parametersCount = IntRange(count)
+    fun countRange(count: Int) = also {
+        this.countRange = IntRange(count)
     }
 
-    fun parametersCount(min: Int, max: Int) = also {
-        this.parametersCount = IntRange(min, max)
+    fun countRange(min: Int, max: Int) = also {
+        this.countRange = IntRange(min, max)
     }
 
-    fun add(matcher: ParameterMatcher) {
+    fun add(matcher: ParameterMatcher?) {
         parameters = parameters ?: mutableListOf()
         if (parameters !is MutableList) {
             parameters = parameters!!.toMutableList()
         }
-        (parameters as MutableList<ParameterMatcher>).add(matcher)
+        (parameters as MutableList<ParameterMatcher?>).add(matcher)
     }
 
     // region DSL
@@ -54,9 +54,8 @@ class ParametersMatcher : BaseQuery() {
     override fun build(fbb: FlatBufferBuilder): Int {
         val root = InnerParametersMatcher.createParametersMatcher(
             fbb,
-            parameters?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }
-                ?: 0,
-            parametersCount?.build(fbb) ?: 0
+            parameters?.let { fbb.createVectorOfTables(it.map { it?.build(fbb) ?: 0 }.toIntArray()) } ?: 0,
+            countRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

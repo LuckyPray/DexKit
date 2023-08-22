@@ -11,7 +11,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 class MethodsMatcher : BaseQuery() {
     private var methods: List<MethodMatcher>? = null
     private var matchType: MatchType = MatchType.Contains
-    private var methodCount: IntRange? = null
+    private var countRange: IntRange? = null
 
     fun methods(methods: List<MethodMatcher>) = also {
         this.methods = methods
@@ -21,16 +21,16 @@ class MethodsMatcher : BaseQuery() {
         this.matchType = matchType
     }
 
-    fun methodCount(methodCount: IntRange) = also {
-        this.methodCount = methodCount
+    fun countRange(countRange: IntRange) = also {
+        this.countRange = countRange
     }
 
-    fun methodCount(count: Int) = also {
-        this.methodCount = IntRange(count)
+    fun countRange(count: Int) = also {
+        this.countRange = IntRange(count)
     }
 
-    fun methodCount(min: Int, max: Int) = also {
-        this.methodCount = IntRange(min, max)
+    fun countRange(min: Int, max: Int) = also {
+        this.countRange = IntRange(min, max)
     }
 
     fun add(method: MethodMatcher) = also {
@@ -65,7 +65,7 @@ class MethodsMatcher : BaseQuery() {
             fbb,
             methods?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             matchType.value,
-            methodCount?.build(fbb) ?: 0
+            countRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root
