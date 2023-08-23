@@ -13,44 +13,30 @@ methods, or properties.
 
 ---
 
-## Background
+# Welcome to DexKit 2.0
 
-For `Xposed` modules, we often need to `Hook` specific methods, but due to obfuscation, we need to use means 
-to find the methods we need. However, for `JVM` languages, the information we can obtain at runtime is limited. 
-In the past, we looked up obfuscated methods by traversing all classes in the ClassLoader, filtering by 
-package name, the number of methods contained in the class, and method signature. This approach is not only 
-very inefficient, but also helpless in the case of completely obfuscated package names.
+> Special Note:
+> - The current version is actively under development, and there may be instability and missing features.
+> - Due to a project rewrite, comprehensive testing and validation haven't been performed, leading to potential issues.
+> - If you need a stable version, please use version 1.1.8.
 
-So, do we have other ways? The answer is yes. `ProGuard` obfuscation rules only obscure class names, method names, 
-and property names, but they do not modify code logic, and there are usually no major code changes during minor updates. 
-Therefore, we can reverse search for the information we need by parsing bytecode.
+## Supported APIs
 
-Currently, there are many libraries for parsing Dex files, but most are implemented based on `dexlib2`.
-If the host application has a large number of Dex files, the search time can take several minutes, 
-which is a poor user experience. That's where `DexKit` comes in. It is implemented in C++ and uses 
-multi-threading acceleration to complete searches in a short amount of time. It has extremely high performance, 
-with search times in the milliseconds range and support for multi-threaded concurrent searches. 
-Even for large applications with 30+ Dex files, `DexKit` can complete a single search in about 100 milliseconds. 
-In addition, it is also optimized for string search scenarios, even if you want to search hundreds of strings, 
-it only takes no more than twice the time to complete.
+Basic Features:
 
-## Supported features
+- [x] Multi-condition class search
+- [x] Multi-condition method search
+- [x] Multi-condition property search
 
-- Batch search methods/classes with a specific string
-- Find methods/classes using a specific string
-- Method call/called search
-- Direct subclass search
-- Method multi-condition search
-- Op sequence search (only supports standard dex instructions)
-- Annotation search (currently only supports searching for values that are strings)
+⭐️ Distinctive Features (Recommended):
 
-> **Note**:
-> This is the early stage of the project, and we cannot guarantee that the API will not change in the future.
-> If you have any suggestions or opinions, please let us know.
+- [x] Batch search of classes using strings
+- [x] Batch search of methods using strings
 
-## Usage
+> Note: Optimizations have been implemented for string search scenarios, significantly enhancing 
+> search speed. Increasing query groups will not lead to a linear increase in time consumption.
 
-### Library
+### Dependencies
 
 Add `DexKit` dependency in `build.gradle`. 
 
@@ -65,24 +51,60 @@ dependencies {
 
 DexKit current version: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
-### Usage Sample
+## Usage Example
 
-Sample App:
+Here's a simple usage example.
+
+Suppose this class is what we want to obtain, with most of its names obfuscated and changing in each version.
+
+> Sample app:
+
 
 ```java
-public class abc {
+package com.test.demo;
+
+public class a extends Activity implements Serializable {
     
-    public boolean cvc() {
-        boolean b = false;
+    public a(String var1) {
+        super();
         // ...
-        Log.d("VipCheckUtil", "userInfo: xxxx");
-        // ...
-        return b;
     }
+    
+    private static final String TAG = "SplashActivity";
+    
+    private String a;
+    
+    private boolean b;
+    
+    protected void onCreate(Bundle var1) {
+        super.onCreate(var1);
+        Log.d("SplashActivity", "onCreate");
+        // ...
+    }
+    
+    private static void a(String var1, String var2) {
+        // ...
+    }
+    
+    private String a(String var1) {
+        Log.d("SplashActivity", "load data");
+        // ...
+    }
+    
+    private void a() {
+        // ...
+    }
+    
+    // ...
+    
 }
 ```
 
-Sample Hook:
+At this point, to obtain this class, you can use the following code:
+
+> This is just an example, in actual usage, there's no need for such an extensive set of matching 
+> conditions. Choose and use as needed to avoid unnecessary complexity in matching due to an 
+> excessive number of conditions.
 
 ```kotlin
 class MainHook : IXposedHookLoadPackage {
@@ -93,31 +115,67 @@ class MainHook : IXposedHookLoadPackage {
         if (packageName != "com.test.demo") {
             return
         }
+        // need minSdkVersion >= 23
         System.loadLibrary("dexkit")
         DexKitBridge.create(apkPath)?.use { bridge ->
-            val resultMap = bridge.batchFindMethodsUsingStrings {
-                addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
-            }.firstOrNull()?.let {
-                val classDescriptor = it.value.first()
-                val method: Method = classDescriptor.getMethodInstance(hostClassLoader)
-                XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
-            } ?: Log.e("DexKit", "search result empty")
+            bridge.findClass {
+                // Search within the specified package name range
+                searchPackage("com.test.demo")
+                // ClassMatcher for class matching
+                matcher {
+                    // FieldsMatcher for matching properties within the class
+                    fields {
+                        // Add a matcher for properties
+                        add {
+                            type("java.lang.String")
+                            name("TAG")
+                        }
+                        addForType("java.lang.String")
+                        addForType("boolean")
+                        // Specify the number of properties in the class
+                        countRange(count = 3)
+                    }
+                    // MethodsMatcher for matching methods within the class
+                    methods {
+                        // Add a matcher for methods
+                        add {
+                            name("onCreate")
+                            returnType("void")
+                            parameterTypes("android.os.Bundle")
+                            usingStrings("onCreate")
+                        }
+                        add {
+                            modifiers(Modifier.PRIVATE or Modifier.STATIC)
+                            returnType("void")
+                            parameterTypes("java.lang.String", "java.lang.String")
+                        }
+                        // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
+                        countRange(min = 4, max = 10)
+                    }
+                    // Strings used by all methods in the class
+                    useStrings("SplashActivity", "load data", "onCreate")
+                }
+            }.forEach {
+                // Print the found class: com.test.demo.a
+                println(it.className)
+                // Get the corresponding class instance
+                val clazz = it.getInstance(loadPackageParam.classLoader)
+            }
         }
     }
 }
 ```
 
-### Usage Document
+### Documentation
 
-- [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
-- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) is a KDoc (similar to JavaDoc) generated from source code comments.
-However, it is recommended to use an IDE such as IDEA to view source code comments during development.
+- [Click here]() Documentation is currently being written and might take some time.
+- [DexKit API KDoc]() Documentation is currently being written and might take some time.
 
-## Open source reference
+## Third-Party Open Source References
 
 - [slicer](https://cs.android.com/android/platform/superproject/+/master:tools/dexter/slicer/export/slicer/)
 - [ThreadPool](https://github.com/progschj/ThreadPool)
-- [BiliRoaming](https://github.com/yujincheng08/BiliRoaming)
+- [parallel-hashmap](https://github.com/greg7mdp/parallel-hashmap)
 
 ## License
 

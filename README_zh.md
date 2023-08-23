@@ -12,34 +12,27 @@
 
 ---
 
-## 背景
+# 欢迎使用 DexKit 2.0
 
-对于 `Xposed` 模块来说，我们总是需要对某些特定的方法进行 `Hook` ，但是由于混淆的存在，我们需要使用一些手段来找到我们需要的方法。
-但是对于 `JVM` 语言来说，我们在运行时能获取到的信息是有限的，在以往我们查找被混淆后的方法是遍历 ClassLoader 中所有的类，通过包名、
-类中包含的方法数量以及方法签名过滤。这种方式的效率不仅十分低下，且对于包名彻底混淆的情况下，我们基本束手无策。
+> 特别说明：
+> - 当前版本正在积极开发中，可能存在不稳定性和功能缺失
+> - 由于项目进行了重写，未进行充分的测试和验证，可能存在潜在问题
+> - 如果需您需要稳定版本，请使用 1.1.8 版本
 
-是否还有其他方法？答案是肯定的，`ProGuard` 混淆规则只会混淆类名、方法名和属性名，但是不会修改代码逻辑，
-并且在小版本更新时通常不会出现大规模的代码修改。因此，我们可以通过解析字节码来反向查找我们需要的信息。
+## 支持的 API
 
-目前对于 Dex 文件的解析库有很多，但是基本上都是基于 `dexlib2` 实现的。如果宿主应用程序内有很多 Dex 文件，则搜索时间可能长达数分钟，
-这对用户来说是一种不好的体验。因此，`DexKit` 应运而生。它使用 C++ 实现，并使用多线程加速，可以在短时间内完成搜索。它具有非常高的性能，
-单次搜索的时间在毫秒级别，且支持多线程并发搜索。就算是拥有着 30+ dex 文件的大型应用，使用 `DexKit` 也能在 100 毫秒左右完成单次搜索。
-此外，它还针对字符串搜索场景进行了优化，即使要搜索数以百计的字符串，也只需要在两倍的时间内即可完成。
+基础功能：
 
-## 支持的功能
+- [x] 多条件查找类
+- [x] 多条件查找方法
+- [x] 多条件查找属性
 
-- 批量搜索指定字符串的方法/类
-- 查找使用了指定字符串的方法/类
-- 方法调用/被调用搜索
-- 直系子类搜索
-- 方法多条件搜索
-- op序列搜索(仅支持标准dex指令)
-- 注解搜索（目前仅支持搜索value为字符串的查找）
+⭐️ 特色功能（推荐）：
 
-> **Note:**
-> 目前为项目初期阶段，不保证未来API不会发生改动，如果你有什么好的建议或者意见，欢迎提出。
+- [x] 批量查找使用字符串的类
+- [x] 批量查找使用字符串的方法
 
-## 使用
+> 备注：对于字符串搜索场景进行了优化，可以大幅度提升搜索速度，增加查询分组不会导致耗时成倍增长
 
 ### 依赖
 
@@ -56,24 +49,57 @@ dependencies {
 
 DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
-### 使用样例
+## 使用样例
 
-宿主样例:
+下面是一个简单的用法示例。
+
+假设这个 Class 是我们想得到的，其中大部分名称经过混淆，且每个版本都会发生变化。
+
+> 样例 APP 如下
 
 ```java
-public class abc {
+package com.test.demo;
+
+public class a extends Activity implements Serializable {
     
-    public boolean cvc() {
-        boolean b = false;
+    public a(String var1) {
+        super();
         // ...
-        Log.d("VipCheckUtil", "userInfo: xxxx");
-        // ...
-        return b;
     }
+    
+    private static final String TAG = "SplashActivity";
+    
+    private String a;
+    
+    private boolean b;
+    
+    protected void onCreate(Bundle var1) {
+        super.onCreate(var1);
+        Log.d("SplashActivity", "onCreate");
+        // ...
+    }
+    
+    private static void a(String var1, String var2) {
+        // ...
+    }
+    
+    private String a(String var1) {
+        Log.d("SplashActivity", "load data");
+        // ...
+    }
+    
+    private void a() {
+        // ...
+    }
+    
+    // ...
+    
 }
 ```
 
-Hook 样例:
+此时我们想得到这个类可以使用如下代码：
+
+> 这仅仅是个样例，实际使用中并不需要这么多条件进行匹配，按需选用即可，避免条件过多带来的匹配复杂度增长
 
 ```kotlin
 class MainHook : IXposedHookLoadPackage {
@@ -84,15 +110,52 @@ class MainHook : IXposedHookLoadPackage {
         if (packageName != "com.test.demo") {
             return
         }
+        // need minSdkVersion >= 23
         System.loadLibrary("dexkit")
         DexKitBridge.create(apkPath)?.use { bridge ->
-            val resultMap = bridge.batchFindMethodsUsingStrings {
-                addQuery("VipCheckUtil_isVip", setOf("VipCheckUtil", "userInfo:"))
-            }.firstOrNull()?.let {
-                val classDescriptor = it.value.first()
-                val method: Method = classDescriptor.getMethodInstance(hostClassLoader)
-                XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
-            } ?: Log.e("DexKit", "search result empty")
+            bridge.findClass {
+                // 从指定的包名范围内进行查找
+                searchPackage("com.test.demo")
+                // ClassMatcher 针对类的匹配器
+                matcher {
+                    // FieldsMatcher 针对类中包含属性的匹配器
+                    fields {
+                        // 添加对于属性的匹配器
+                        add {
+                            type("java.lang.String")
+                            name("TAG")
+                        }
+                        addForType("java.lang.String")
+                        addForType("boolean")
+                        // 指定类中属性的数量
+                        countRange(count = 3)
+                    }
+                    // MethodsMatcher 针对类中包含方法的匹配器
+                    methods {
+                        // 添加对于方法的匹配器
+                        add {
+                            name("onCreate")
+                            returnType("void")
+                            parameterTypes("android.os.Bundle")
+                            usingStrings("onCreate")
+                        }
+                        add {
+                            modifiers(Modifier.PRIVATE or Modifier.STATIC)
+                            returnType("void")
+                            parameterTypes("java.lang.String", "java.lang.String")
+                        }
+                        // 指定类中方法的数量，最少不少于4个，最多不超过10个
+                        countRange(min = 4, max = 10)
+                    }
+                    // 类中所有方法使用的字符串
+                    useStrings("SplashActivity", "load data", "onCreate")
+                }
+            }.forEach {
+                // 打印查找到的类: com.test.demo.a
+                println(it.className)
+                // 获取对应的类实例
+                val clazz = it.getInstance(loadPackageParam.classLoader)
+            }
         }
     }
 }
@@ -100,15 +163,14 @@ class MainHook : IXposedHookLoadPackage {
 
 ### 使用文档
 
-- [点击此处](https://luckypray.org/DexKit/zh-cn/)进入文档页面查看更详细的教程。
-- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) 基于源码注释生成的 KDoc（类似于 JavaDoc）。
-但是更推荐使用 IDEA 等 IDE 在开发时查看源码内注释。
+- [点击此处]() 文档正在编写中，可能需要一段时间
+- [DexKit API KDoc]() 文档正在编写中，可能需要一段时间
 
 ## 第三方开源引用
 
 - [slicer](https://cs.android.com/android/platform/superproject/+/master:tools/dexter/slicer/export/slicer/)
 - [ThreadPool](https://github.com/progschj/ThreadPool)
-- [BiliRoaming](https://github.com/yujincheng08/BiliRoaming)
+- [parallel-hashmap](https://github.com/greg7mdp/parallel-hashmap)
 
 ## 许可证
 
