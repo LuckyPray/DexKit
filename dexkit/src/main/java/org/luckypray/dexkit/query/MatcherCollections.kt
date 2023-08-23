@@ -89,6 +89,28 @@ class BatchUsingStringsMatcherList : ArrayList<BatchUsingStringsMatcher>, IQuery
 
     fun add(
         unionKey: String,
+        vararg matchers: StringMatcher
+    ) = also {
+        add(BatchUsingStringsMatcher(unionKey, matchers.toList()))
+    }
+
+    fun add(
+        unionKey: String,
+        ignoreCase: Boolean,
+        vararg strings: String
+    ) = also {
+        add(BatchUsingStringsMatcher(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, ignoreCase) }))
+    }
+
+    fun add(
+        unionKey: String,
+        vararg strings: String
+    ) = also {
+        add(BatchUsingStringsMatcher(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, false) }))
+    }
+
+    fun add(
+        unionKey: String,
         init: StringMatcherList.() -> Unit
     ) = also {
         add(BatchUsingStringsMatcher(unionKey, StringMatcherList().apply(init)))
