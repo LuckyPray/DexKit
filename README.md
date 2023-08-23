@@ -18,7 +18,7 @@ methods, or properties.
 > Special Note:
 > - The current version is actively under development, and there may be instability and missing features.
 > - Due to a project rewrite, comprehensive testing and validation haven't been performed, leading to potential issues.
-> - If you need a stable version, please use version 1.1.8.
+> - If you need a stable version, please use version [1.1.8](https://github.com/LuckyPray/DexKit/tree/1.1.x).
 
 ## Supported APIs
 
