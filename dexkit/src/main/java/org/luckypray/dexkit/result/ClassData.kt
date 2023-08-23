@@ -9,7 +9,9 @@ import org.luckypray.dexkit.query.FieldDataList
 import org.luckypray.dexkit.query.MethodDataList
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexSignUtil
+import org.luckypray.dexkit.util.getClassInstance
 import java.lang.reflect.Modifier
+import kotlin.jvm.Throws
 
 class ClassData private constructor(
     bridge: DexKitBridge,
@@ -55,6 +57,8 @@ class ClassData private constructor(
         DexSignUtil.getSimpleName(dexDescriptor)
     }
 
+    val name get() = className
+
     val classSimpleName : String by lazy {
         className.substringAfterLast(".")
     }
@@ -78,6 +82,21 @@ class ClassData private constructor(
 
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getClassAnnotations(getEncodeId(dexId, id))
+    }
+
+    @Throws(ClassNotFoundException::class)
+    fun getInstance(classLoader: ClassLoader): Class<*> {
+        return getClassInstance(classLoader, className)
+    }
+
+    @Throws(ClassNotFoundException::class)
+    fun getSuperClassInstance(classLoader: ClassLoader): Class<*>? {
+        return getSuperClass()?.getInstance(classLoader)
+    }
+
+    @Throws(ClassNotFoundException::class)
+    fun getInterfaceInstances(classLoader: ClassLoader): List<Class<*>> {
+        return getInterfaces().map { getClassInstance(classLoader, it.className) }
     }
 
     override fun toString(): String {

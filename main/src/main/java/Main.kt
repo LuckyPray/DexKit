@@ -47,16 +47,6 @@ fun doSearch(path: String) {
             }
             println(it)
             println()
-
-            it.getFields().forEach {
-                println(it)
-                println()
-            }
-
-            it.getMethods().forEach {
-                println(it)
-                println()
-            }
         }
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }

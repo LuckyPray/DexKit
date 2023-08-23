@@ -7,6 +7,9 @@ import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexSignUtil
+import org.luckypray.dexkit.util.getClassInstance
+import org.luckypray.dexkit.util.getMethodInstance
+import org.luckypray.dexkit.util.getConstructorInstance
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -39,15 +42,15 @@ class MethodData private constructor(
         )
     }
 
-    private val classSign: String by lazy {
+    val classSign: String by lazy {
         dexDescriptor.substringBefore("->")
     }
 
-    private val paramSign: String by lazy {
+    val paramSign: String by lazy {
         dexDescriptor.substringAfter("(").substringBefore(")")
     }
 
-    private val returnTypeSign: String by lazy {
+    val returnTypeSign: String by lazy {
         dexDescriptor.substringAfter(")")
     }
 
@@ -55,9 +58,11 @@ class MethodData private constructor(
         DexSignUtil.getSimpleName(classSign)
     }
 
-    val name: String by lazy {
+    val methodName: String by lazy {
         dexDescriptor.substringAfter("->").substringBefore("(")
     }
+
+    val name get() = methodName
 
     val paramSignList: List<String> by lazy {
         DexSignUtil.getParamSignList(paramSign)
@@ -68,51 +73,11 @@ class MethodData private constructor(
     }
 
     val isConstructor: Boolean by lazy {
-        name == "<init>"
+        methodName == "<init>"
     }
 
     val isMethod: Boolean by lazy {
-        name != "<clinit>" && !isConstructor
-    }
-
-    @Throws(NoSuchMethodException::class)
-    fun getConstructorInstance(classLoader: ClassLoader): Constructor<*> {
-        if (!isConstructor) {
-            throw IllegalArgumentException("$this not a constructor")
-        }
-        try {
-            var clz = classLoader.loadClass(className)
-            do {
-                for (constructor in clz.declaredConstructors) {
-                    if (dexDescriptor == DexSignUtil.getConstructorSign(constructor)) {
-                        return constructor
-                    }
-                }
-            } while (clz.superclass.also { clz = it } != null)
-            throw NoSuchMethodException("Constructor $this not found in $dexDescriptor")
-        } catch (e: ClassNotFoundException) {
-            throw NoSuchMethodException("No such method: $this").initCause(e)
-        }
-    }
-
-    @Throws(NoSuchMethodException::class)
-    fun getMethodInstance(classLoader: ClassLoader): Method {
-        if (!isMethod) {
-            throw IllegalArgumentException("$this not a method")
-        }
-        try {
-            var clz = classLoader.loadClass(className)
-            do {
-                for (method in clz.declaredMethods) {
-                    if (method.name == name && dexDescriptor == DexSignUtil.getMethodSign(method)) {
-                        return method
-                    }
-                }
-            } while (clz.superclass.also { clz = it } != null)
-            throw NoSuchMethodException("Method $this not found in $dexDescriptor")
-        } catch (e: ClassNotFoundException) {
-            throw NoSuchMethodException("No such method: $this").initCause(e)
-        }
+        methodName != "<clinit>" && !isConstructor
     }
 
     fun getClass(): ClassData? {
@@ -135,12 +100,32 @@ class MethodData private constructor(
         return bridge.getParameterAnnotations(getEncodeId(dexId, id))
     }
 
+    @Throws(ClassNotFoundException::class)
+    fun getClassInstance(classLoader: ClassLoader): Class<*> {
+        return getClassInstance(classLoader, className)
+    }
+
+    @Throws(ClassNotFoundException::class)
+    fun getReturnTypeInstance(classLoader: ClassLoader): Class<*> {
+        return getClassInstance(classLoader, returnTypeName)
+    }
+
+    @Throws(NoSuchMethodException::class)
+    fun getConstructorInstance(classLoader: ClassLoader): Constructor<*> {
+        return getConstructorInstance(classLoader, this)
+    }
+
+    @Throws(NoSuchMethodException::class)
+    fun getMethodInstance(classLoader: ClassLoader): Method {
+        return getMethodInstance(classLoader, this)
+    }
+
     override fun toString(): String {
         return buildString {
             if (modifiers != 0) {
                 append("${Modifier.toString(modifiers)} ")
             }
-            append("$returnTypeName $name(")
+            append("$returnTypeName $methodName(")
             append(paramSignList.joinToString(", "))
             append(") {}")
         }

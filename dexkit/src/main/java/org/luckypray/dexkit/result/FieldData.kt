@@ -6,6 +6,8 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexSignUtil
+import org.luckypray.dexkit.util.getClassInstance
+import org.luckypray.dexkit.util.getFieldInstance
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
@@ -31,11 +33,11 @@ class FieldData private constructor(
         )
     }
 
-    private val classSign : String by lazy {
+    val classSign : String by lazy {
         dexDescriptor.substringBefore("->")
     }
 
-    private val typeSign : String by lazy {
+    val typeSign : String by lazy {
         dexDescriptor.substringAfter(":")
     }
 
@@ -47,25 +49,10 @@ class FieldData private constructor(
         dexDescriptor.substringAfter("->").substringBefore(":")
     }
 
+    val name get() = fieldName
+
     val typeName : String by lazy {
         DexSignUtil.getSimpleName(typeSign)
-    }
-
-    @Throws(NoSuchFieldException::class)
-    fun getFieldInstance(classLoader: ClassLoader): Field {
-        try {
-            var clz = classLoader.loadClass(className)
-            do {
-                for (field in clz.declaredFields) {
-                    if (field.name == fieldName && typeSign == DexSignUtil.getTypeSign(field.type)) {
-                        return field
-                    }
-                }
-            } while (clz.superclass.also { clz = it } != null)
-            throw NoSuchFieldException("Field $this not found in $className")
-        } catch (e: ClassNotFoundException) {
-            throw NoSuchFieldException("No such field: $this").initCause(e)
-        }
     }
 
     fun getClass(): ClassData? {
@@ -78,6 +65,16 @@ class FieldData private constructor(
 
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getFieldAnnotations(getEncodeId(dexId, id))
+    }
+
+    @Throws(ClassNotFoundException::class)
+    fun getTypeInstance(classLoader: ClassLoader): Class<*> {
+        return getClassInstance(classLoader, className)
+    }
+
+    @Throws(NoSuchFieldException::class)
+    fun getFieldInstance(classLoader: ClassLoader): Field {
+        return getFieldInstance(classLoader, this)
     }
 
     override fun toString(): String {
