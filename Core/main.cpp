@@ -411,7 +411,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
                                                     StringMatchType::Equal
                                             ),
                                             0,
-                                            RetentionPolicyType::None,
+                                            RetentionPolicyType::Any,
                                             0,
                                             CreateAnnotationElementsMatcher(
                                                     fbb,
@@ -616,7 +616,7 @@ int main() {
     std::cout << "unzip and init full cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
-
+    dexkit.GetClassAnnotations(27LL<<32 | 3346);
 //    SharedPtrVoidCast(dexkit);
 //    ThreadVariableTest();
 //    KmpTest();

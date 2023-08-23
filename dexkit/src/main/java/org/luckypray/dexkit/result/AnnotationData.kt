@@ -6,14 +6,14 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerAnnotationMeta
 import org.luckypray.dexkit.query.enums.AnnotationVisibilityType
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
+import org.luckypray.dexkit.util.DexSignUtil
 
 class AnnotationData(
     bridge: DexKitBridge,
     val dexId: Int,
     val typeId: Int,
     val typeDescriptor: String,
-    val visibility: AnnotationVisibilityType,
+    val visibility: AnnotationVisibilityType?,
     val elements: List<AnnotationElementData>
 ) : BaseData(bridge) {
 
@@ -40,7 +40,7 @@ class AnnotationData(
 
     override fun toString(): String {
         return buildString {
-            append("@${getClassName(typeDescriptor)}")
+            append("@${DexSignUtil.getSimpleName(typeDescriptor)}")
             append("(")
             elements.forEachIndexed { index, element ->
                 if (index != 0) {

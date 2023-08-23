@@ -1,6 +1,6 @@
 namespace dexkit.schema;
 
-enum StringMatchType:byte {
+enum StringMatchType: byte {
     Contains,
     StartWith,
     EndWith,
@@ -8,25 +8,25 @@ enum StringMatchType:byte {
     Equal,
 }
 
-enum OpCodeMatchType:byte {
+enum OpCodeMatchType: byte {
     Contains,
     StartWith,
     EndWith,
     Equal,
 }
 
-enum UsingType:byte {
+enum UsingType: byte {
     Any,
     Get,
     Put,
 }
 
-enum MatchType:byte {
+enum MatchType: byte {
     Contains,
     Equal,
 }
 
-enum TargetElementType:byte {
+enum TargetElementType: byte {
     Type,
     Field,
     Method,
@@ -40,18 +40,20 @@ enum TargetElementType:byte {
     TypeUse,
 }
 
-enum RetentionPolicyType:byte {
+enum RetentionPolicyType: byte {
     // not use
-    None,
+    Any,
     Source,
     Class,
     Runtime,
 }
 
-enum AnnotationVisibilityType:byte {
+enum AnnotationVisibilityType: byte {
     Build,
     Runtime,
     System,
+    // sub annotation is '-1'
+    None,
 }
 
 enum AnnotationEncodeValueType: byte {

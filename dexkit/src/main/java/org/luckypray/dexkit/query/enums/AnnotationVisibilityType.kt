@@ -9,11 +9,12 @@ enum class AnnotationVisibilityType {
     ;
 
     companion object {
-        fun from(retentionPolicy: Byte): AnnotationVisibilityType {
+        fun from(retentionPolicy: Byte): AnnotationVisibilityType? {
             return when (retentionPolicy) {
                 InnerAnnotationVisibilityType.Build -> Build
                 InnerAnnotationVisibilityType.Runtime -> Runtime
                 InnerAnnotationVisibilityType.System -> System
+                InnerAnnotationVisibilityType.None -> null
                 else -> throw IllegalArgumentException("Unknown AnnotationVisibilityType: $retentionPolicy")
             }
         }

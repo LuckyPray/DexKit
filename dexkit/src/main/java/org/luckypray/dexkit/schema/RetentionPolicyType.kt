@@ -5,7 +5,7 @@ package org.luckypray.dexkit.schema
 @Suppress("unused")
 internal class `-RetentionPolicyType` private constructor() {
     companion object {
-        const val None: Byte = 0
+        const val Any_: Byte = 0
         const val Source: Byte = 1
         const val Class: Byte = 2
         const val Runtime: Byte = 3

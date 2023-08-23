@@ -26,7 +26,7 @@ class AnnotationElementData(
     override fun toString(): String {
         return buildString {
             append(name)
-            append("=")
+            append(" = ")
             append(value)
         }
     }

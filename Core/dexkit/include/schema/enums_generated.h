@@ -199,7 +199,7 @@ inline const char *EnumNameTargetElementType(TargetElementType e) {
 }
 
 enum class RetentionPolicyType : int8_t {
-  None = 0,
+  Any = 0,
   Source = 1,
   Class = 2,
   Runtime = 3
@@ -207,7 +207,7 @@ enum class RetentionPolicyType : int8_t {
 
 inline const RetentionPolicyType (&EnumValuesRetentionPolicyType())[4] {
   static const RetentionPolicyType values[] = {
-    RetentionPolicyType::None,
+    RetentionPolicyType::Any,
     RetentionPolicyType::Source,
     RetentionPolicyType::Class,
     RetentionPolicyType::Runtime
@@ -217,7 +217,7 @@ inline const RetentionPolicyType (&EnumValuesRetentionPolicyType())[4] {
 
 inline const char * const *EnumNamesRetentionPolicyType() {
   static const char * const names[5] = {
-    "None",
+    "Any",
     "Source",
     "Class",
     "Runtime",
@@ -227,7 +227,7 @@ inline const char * const *EnumNamesRetentionPolicyType() {
 }
 
 inline const char *EnumNameRetentionPolicyType(RetentionPolicyType e) {
-  if (::flatbuffers::IsOutRange(e, RetentionPolicyType::None, RetentionPolicyType::Runtime)) return "";
+  if (::flatbuffers::IsOutRange(e, RetentionPolicyType::Any, RetentionPolicyType::Runtime)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesRetentionPolicyType()[index];
 }
@@ -235,30 +235,33 @@ inline const char *EnumNameRetentionPolicyType(RetentionPolicyType e) {
 enum class AnnotationVisibilityType : int8_t {
   Build = 0,
   Runtime = 1,
-  System = 2
+  System = 2,
+  None = 3
 };
 
-inline const AnnotationVisibilityType (&EnumValuesAnnotationVisibilityType())[3] {
+inline const AnnotationVisibilityType (&EnumValuesAnnotationVisibilityType())[4] {
   static const AnnotationVisibilityType values[] = {
     AnnotationVisibilityType::Build,
     AnnotationVisibilityType::Runtime,
-    AnnotationVisibilityType::System
+    AnnotationVisibilityType::System,
+    AnnotationVisibilityType::None
   };
   return values;
 }
 
 inline const char * const *EnumNamesAnnotationVisibilityType() {
-  static const char * const names[4] = {
+  static const char * const names[5] = {
     "Build",
     "Runtime",
     "System",
+    "None",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameAnnotationVisibilityType(AnnotationVisibilityType e) {
-  if (::flatbuffers::IsOutRange(e, AnnotationVisibilityType::Build, AnnotationVisibilityType::System)) return "";
+  if (::flatbuffers::IsOutRange(e, AnnotationVisibilityType::Build, AnnotationVisibilityType::None)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesAnnotationVisibilityType()[index];
 }

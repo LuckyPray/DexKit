@@ -896,7 +896,7 @@ inline ::flatbuffers::Offset<AnnotationMatcher> CreateAnnotationMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> type_name = 0,
     ::flatbuffers::Offset<dexkit::schema::TargetElementTypesMatcher> target_element_types = 0,
-    dexkit::schema::RetentionPolicyType policy = dexkit::schema::RetentionPolicyType::None,
+    dexkit::schema::RetentionPolicyType policy = dexkit::schema::RetentionPolicyType::Any,
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements = 0) {
   AnnotationMatcherBuilder builder_(_fbb);

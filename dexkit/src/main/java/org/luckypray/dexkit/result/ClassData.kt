@@ -8,7 +8,8 @@ import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.query.FieldDataList
 import org.luckypray.dexkit.query.MethodDataList
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
+import org.luckypray.dexkit.util.DexSignUtil
+import java.lang.reflect.Modifier
 
 class ClassData private constructor(
     bridge: DexKitBridge,
@@ -50,14 +51,12 @@ class ClassData private constructor(
         )
     }
 
-    val name: String by lazy {
-        getClassName(dexDescriptor)
+    val className: String by lazy {
+        DexSignUtil.getSimpleName(dexDescriptor)
     }
 
-    val canonicalName get() = name
-
-    val simpleName : String by lazy {
-        name.substringAfterLast(".")
+    val classSimpleName : String by lazy {
+        className.substringAfterLast(".")
     }
 
     fun getSuperClass(): ClassData? {
@@ -82,7 +81,20 @@ class ClassData private constructor(
     }
 
     override fun toString(): String {
-        return dexDescriptor
+        return buildString {
+            if (modifiers > 0) {
+                append("${Modifier.toString(modifiers)} ")
+            }
+            append("class $className")
+            getSuperClass()?.let {
+                append(" extends ")
+                append(it.className)
+            }
+            if (getInterfaces().size > 0) {
+                append(" implements ")
+                append(getInterfaces().joinToString(", ") { it.className })
+            }
+        }
     }
 
     override fun equals(other: Any?): Boolean {

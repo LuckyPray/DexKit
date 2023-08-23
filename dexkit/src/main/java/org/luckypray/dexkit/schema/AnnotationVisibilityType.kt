@@ -8,5 +8,6 @@ internal class `-AnnotationVisibilityType` private constructor() {
         const val Build: Byte = 0
         const val Runtime: Byte = 1
         const val System: Byte = 2
+        const val None: Byte = 3
     }
 }

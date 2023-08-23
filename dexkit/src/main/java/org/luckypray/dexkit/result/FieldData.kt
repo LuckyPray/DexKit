@@ -5,9 +5,9 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
-import org.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
+import org.luckypray.dexkit.util.DexSignUtil
 import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 
 class FieldData private constructor(
     bridge: DexKitBridge,
@@ -31,24 +31,24 @@ class FieldData private constructor(
         )
     }
 
-    val classDescriptor : String by lazy {
+    private val classSign : String by lazy {
         dexDescriptor.substringBefore("->")
     }
 
-    val className: String by lazy {
-        getClassName(classDescriptor)
-    }
-
-    val name : String by lazy {
-        dexDescriptor.substringAfter("->").substringBefore(":")
-    }
-
-    val typeDescriptor : String by lazy {
+    private val typeSign : String by lazy {
         dexDescriptor.substringAfter(":")
     }
 
+    val className: String by lazy {
+        DexSignUtil.getSimpleName(classSign)
+    }
+
+    val fieldName : String by lazy {
+        dexDescriptor.substringAfter("->").substringBefore(":")
+    }
+
     val typeName : String by lazy {
-        getClassName(typeDescriptor)
+        DexSignUtil.getSimpleName(typeSign)
     }
 
     @Throws(NoSuchFieldException::class)
@@ -57,7 +57,7 @@ class FieldData private constructor(
             var clz = classLoader.loadClass(className)
             do {
                 for (field in clz.declaredFields) {
-                    if (field.name == name && typeDescriptor == getTypeSig(field.type)) {
+                    if (field.name == fieldName && typeSign == DexSignUtil.getTypeSign(field.type)) {
                         return field
                     }
                 }
@@ -81,7 +81,15 @@ class FieldData private constructor(
     }
 
     override fun toString(): String {
-        return dexDescriptor
+        return buildString {
+            if (modifiers > 0) {
+                append("${Modifier.toString(modifiers)} ")
+            }
+            append(typeName)
+            append(" ")
+            append(fieldName)
+            append(";")
+        }
     }
 
     override fun equals(other: Any?): Boolean {

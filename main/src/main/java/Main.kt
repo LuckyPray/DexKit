@@ -1,8 +1,7 @@
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
+import java.lang.reflect.Modifier
 import java.util.Locale
-import java.util.regex.Pattern
 
 val isWindows
     get() = System.getProperty("os.name")
@@ -39,12 +38,25 @@ fun doSearch(path: String) {
         val startTime = System.currentTimeMillis()
         bridge.findClass {
             matcher {
-                addField {
-                    name("candidate_feed_list")
-                }
+                className("com.tencent.mobileqq.kandian.biz.publisher.e.a")
             }
         }.forEach {
-            println(it.getAnnotations())
+            println()
+            it.getAnnotations().forEach {
+                println(it)
+            }
+            println(it)
+            println()
+
+            it.getFields().forEach {
+                println(it)
+                println()
+            }
+
+            it.getMethods().forEach {
+                println(it)
+                println()
+            }
         }
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }

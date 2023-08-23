@@ -6,11 +6,10 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexDescriptorUtil.getClassName
-import org.luckypray.dexkit.util.DexDescriptorUtil.getConstructorSignature
-import org.luckypray.dexkit.util.DexDescriptorUtil.getMethodSignature
+import org.luckypray.dexkit.util.DexSignUtil
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 class MethodData private constructor(
     bridge: DexKitBridge,
@@ -40,16 +39,32 @@ class MethodData private constructor(
         )
     }
 
+    private val classSign: String by lazy {
+        dexDescriptor.substringBefore("->")
+    }
+
+    private val paramSign: String by lazy {
+        dexDescriptor.substringAfter("(").substringBefore(")")
+    }
+
+    private val returnTypeSign: String by lazy {
+        dexDescriptor.substringAfter(")")
+    }
+
+    val className: String by lazy {
+        DexSignUtil.getSimpleName(classSign)
+    }
+
     val name: String by lazy {
         dexDescriptor.substringAfter("->").substringBefore("(")
     }
 
-    val classDescriptor: String by lazy {
-        dexDescriptor.substringBefore("->")
+    val paramSignList: List<String> by lazy {
+        DexSignUtil.getParamSignList(paramSign)
     }
 
-    val className: String by lazy {
-        getClassName(classDescriptor)
+    val returnTypeName: String by lazy {
+        DexSignUtil.getSimpleName(returnTypeSign)
     }
 
     val isConstructor: Boolean by lazy {
@@ -69,7 +84,7 @@ class MethodData private constructor(
             var clz = classLoader.loadClass(className)
             do {
                 for (constructor in clz.declaredConstructors) {
-                    if (dexDescriptor == getConstructorSignature(constructor)) {
+                    if (dexDescriptor == DexSignUtil.getConstructorSign(constructor)) {
                         return constructor
                     }
                 }
@@ -89,7 +104,7 @@ class MethodData private constructor(
             var clz = classLoader.loadClass(className)
             do {
                 for (method in clz.declaredMethods) {
-                    if (method.name == name && dexDescriptor == getMethodSignature(method)) {
+                    if (method.name == name && dexDescriptor == DexSignUtil.getMethodSign(method)) {
                         return method
                     }
                 }
@@ -121,7 +136,14 @@ class MethodData private constructor(
     }
 
     override fun toString(): String {
-        return dexDescriptor
+        return buildString {
+            if (modifiers != 0) {
+                append("${Modifier.toString(modifiers)} ")
+            }
+            append("$returnTypeName $name(")
+            append(paramSignList.joinToString(", "))
+            append(") {}")
+        }
     }
 
     override fun equals(other: Any?): Boolean {
