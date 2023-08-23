@@ -34,22 +34,25 @@ object DexSignUtil {
     }
 
     @JvmStatic
-    fun getParamSignList(signString: String): List<String> {
+    fun getParamSignList(paramsSign: String): List<String> {
         val params = mutableListOf<String>()
         var left = 0
         var right = 0
-        while (right < signString.length) {
-            val c = signString[right]
+        while (right < paramsSign.length) {
+            val c = paramsSign[right]
             if (c == '[') {
                 right++
                 continue
             } else if (c == 'L') {
-                val end = signString.indexOf(';', right)
+                val end = paramsSign.indexOf(';', right)
                 right = end
             }
-            val sign = signString.substring(left, right + 1)
+            val sign = paramsSign.substring(left, right + 1)
             params.add(getSimpleName(sign))
             left = ++right
+        }
+        if (left != right) {
+            throw IllegalStateException("Unknown signString: $paramsSign")
         }
         return params
     }
