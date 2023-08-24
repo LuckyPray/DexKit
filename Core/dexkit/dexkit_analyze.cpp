@@ -6,7 +6,7 @@ std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::ClassMatcher *matcher) {
     if (!matcher) return {};
     std::vector<std::string_view> result;
-    if (matcher->class_name() && matcher->class_name()->match_type() == schema::StringMatchType::Equal) {
+    if (matcher->class_name() && matcher->class_name()->match_type() == schema::StringMatchType::Equal && !matcher->class_name()->ignore_case()) {
         result.emplace_back(matcher->class_name()->value()->string_view());
     }
     if (matcher->super_class()) {
@@ -58,7 +58,7 @@ std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::AnnotationMatcher *matcher) {
     if (!matcher) return {};
     std::vector<std::string_view> result;
-    if (matcher->type_name() && matcher->type_name()->match_type() == schema::StringMatchType::Equal) {
+    if (matcher->type_name() && matcher->type_name()->match_type() == schema::StringMatchType::Equal && !matcher->type_name()->ignore_case()) {
         result.emplace_back(matcher->type_name()->value()->string_view());
     }
     if (matcher->elements()) {
