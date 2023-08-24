@@ -65,7 +65,7 @@ class ClassData private constructor(
 
     fun getSuperClass(): ClassData? {
         superClassId ?: return null
-        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, id))).firstOrNull()
+        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, superClassId))).firstOrNull()
     }
 
     fun getInterfaces(): ClassDataList {
