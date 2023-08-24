@@ -8,7 +8,7 @@
 #include "common.h"
 #include "constant.h"
 #include "error.h"
-#include "kmp.h"
+#include "string_match.h"
 
 #include "parallel_hashmap/phmap.h"
 #include "slicer/reader.h"

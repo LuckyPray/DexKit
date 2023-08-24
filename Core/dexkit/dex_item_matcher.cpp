@@ -85,12 +85,12 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
     auto match_type = matcher->match_type();
     auto match_str = matcher->value()->string_view();
     ConvertSimilarRegex(match_str, match_type);
+
     bool condition;
-    // TODO FIX ignore_case matcher
     switch (match_type) {
-        case schema::StringMatchType::StartWith: condition = str.starts_with(match_str); break;
-        case schema::StringMatchType::EndWith: condition = str.ends_with(match_str); break;
-        case schema::StringMatchType::Equal: condition = str == match_str; break;
+        case schema::StringMatchType::StartWith: condition = kmp::starts_with(str, match_str, matcher->ignore_case()); break;
+        case schema::StringMatchType::EndWith: condition = kmp::ends_with(str, match_str, matcher->ignore_case()); break;
+        case schema::StringMatchType::Equal: condition = kmp::equals(str, match_str, matcher->ignore_case()); break;
         case schema::StringMatchType::Contains: {
             auto index = kmp::FindIndex(str, match_str, matcher->ignore_case());
             condition = index != -1;
@@ -119,9 +119,9 @@ bool DexItem::IsTypeNameMatched(std::string_view type_name, const schema::String
     auto match_name = *ptr;
     bool condition;
     switch (match_type) {
-        case schema::StringMatchType::StartWith: condition = type_name.starts_with(match_name); break;
-        case schema::StringMatchType::EndWith: condition = type_name.ends_with(match_name); break;
-        case schema::StringMatchType::Equal: condition = type_name == match_name; break;
+        case schema::StringMatchType::StartWith: condition = kmp::starts_with(type_name, match_name, matcher->ignore_case()); break;
+        case schema::StringMatchType::EndWith: condition = kmp::ends_with(type_name, match_name, matcher->ignore_case()); break;
+        case schema::StringMatchType::Equal: condition = kmp::equals(type_name, match_name, matcher->ignore_case()); break;
         case schema::StringMatchType::Contains: {
             auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
             condition = index != -1;

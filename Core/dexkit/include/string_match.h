@@ -83,4 +83,40 @@ static int FindIndex(const std::string_view &data, const std::string_view &find,
     return -1;
 }
 
+static bool starts_with(const std::string_view &source, const std::string_view &target, bool ignore_case = false) {
+    if (source.size() < target.size()) return false;
+    for (int i = 0; i < target.size(); ++i) {
+        char c1 = GetIgnoreCaseChar(source[i], ignore_case);
+        char c2 = GetIgnoreCaseChar(target[i], ignore_case);
+        if (c1 != c2) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool ends_with(const std::string_view &source, const std::string_view &target, bool ignore_case = false) {
+    if (source.size() < target.size()) return false;
+    for (int i = 0; i < target.size(); ++i) {
+        char c1 = GetIgnoreCaseChar(source[source.size() - target.size() + i], ignore_case);
+        char c2 = GetIgnoreCaseChar(target[i], ignore_case);
+        if (c1 != c2) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool equals(const std::string_view &source, const std::string_view &target, bool ignore_case = false) {
+    if (source.size() != target.size()) return false;
+    for (int i = 0; i < target.size(); ++i) {
+        char c1 = GetIgnoreCaseChar(source[i], ignore_case);
+        char c2 = GetIgnoreCaseChar(target[i], ignore_case);
+        if (c1 != c2) {
+            return false;
+        }
+    }
+    return true;
+}
+
 } // namespace kmp
