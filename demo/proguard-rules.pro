@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keepattributes SourceFile
+-keep class * extends java.lang.annotation.Annotation {*;}
+-dontshrink
+-keep class !org.luckypray.dexkit.demo.** {*;}
+-keep class org.luckypray.dexkit.demo.R$* {*;}

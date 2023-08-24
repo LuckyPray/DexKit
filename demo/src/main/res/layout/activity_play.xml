@@ -4,11 +4,20 @@
     android:layout_height="match_parent"
     tools:context=".PlayActivity">
 
-    <Button
-        android:id="@+id/go_play_button"
+    <TextView
+        android:id="@+id/resultText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/go_to_play_activity"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="16dp"
+        android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/rollButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/roll_dice"
         android:layout_centerInParent="true" />
+
 
 </RelativeLayout>

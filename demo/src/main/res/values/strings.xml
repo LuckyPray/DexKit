@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Demo</string>
+    <string name="go_to_play_activity">Go to Play Activity</string>
+    <string name="roll_dice">Roll Dice</string>
 </resources>
