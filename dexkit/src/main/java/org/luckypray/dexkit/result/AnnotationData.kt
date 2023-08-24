@@ -38,6 +38,14 @@ class AnnotationData(
         }
     }
 
+    val typeName: String by lazy {
+        DexSignUtil.getSimpleName(typeDescriptor)
+    }
+
+    val className get() = typeName
+
+    val name get() = typeName
+
     override fun toString(): String {
         return buildString {
             append("@${DexSignUtil.getSimpleName(typeDescriptor)}")

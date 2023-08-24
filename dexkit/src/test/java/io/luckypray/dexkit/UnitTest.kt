@@ -44,7 +44,7 @@ class UnitTest {
             assert(it.className.endsWith("Activity"))
             val annotation = it.getAnnotations()
             assert(annotation.size == 1)
-            assert(annotation.first().typeDescriptor == "Lorg/luckypray/dexkit/demo/annotations/Router;")
+            assert(annotation.first().className == "org.luckypray.dexkit.demo.annotations.Router")
         }
     }
 
