@@ -405,11 +405,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
                             fbb.CreateVector(std::vector<flatbuffers::Offset<AnnotationMatcher>>{
                                     CreateAnnotationMatcher(
                                             fbb,
-                                            CreateStringMatcher(
-                                                    fbb,
-                                                    fbb.CreateString("dalvik/annotation/MemberClasses"),
-                                                    StringMatchType::Equal
-                                            ),
+                                            0,
                                             0,
                                             RetentionPolicyType::Any,
                                             0,
@@ -609,7 +605,7 @@ int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/qq-8.9.2.apk");
+    auto dexkit = dexkit::DexKit("../apks/QQ_8.9.2-3072.apk");
 //    dexkit.SetThreadNum(1);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
@@ -626,8 +622,8 @@ int main() {
 //    DexKitBatchFindMethodTest(dexkit);
 //    DexKitFindClassUsingStrings(dexkit);
 //    DexKitFindClassTest(dexkit);
+//    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindMethodCaller(dexkit);
-    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindClassUsingAnnotationTest(dexkit);
 
     auto now2 = std::chrono::system_clock::now();

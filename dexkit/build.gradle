@@ -22,7 +22,54 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+test {
+    systemProperty("java.library.path", "$buildDir/library")
+    systemProperty("apk.path", "$projectDir/apk")
+}
+
 dependencies {
     implementation 'com.google.flatbuffers:flatbuffers-java:23.5.26'
     testImplementation 'junit:junit:4.13.2'
 }
+
+afterEvaluate {
+    tasks.register('copyLibrary') {
+        def build = tasks.cmakeBuild
+        dependsOn(build)
+        doLast {
+            copy {
+                from "$buildDir/cmake"
+                into "$buildDir/library"
+                include('**/*.so', '**/*.dll', '**/*.dylib')
+                eachFile {
+                    path = name
+                }
+                includeEmptyDirs = false
+            }
+        }
+    }
+    tasks.jar.dependsOn(tasks.copyLibrary)
+
+    tasks.register("copyReleaseDemo") {
+        def assemble = project(":demo").tasks.assembleRelease
+        dependsOn(assemble)
+        doLast {
+            copy {
+                from "${project(":demo").buildDir}/outputs/apk/release"
+                into "$projectDir/apk"
+                include('**/*.apk')
+                eachFile {
+                    path = name
+                }
+                rename { String fileName ->
+                    fileName.replaceAll(".*\\.apk", "demo.apk")
+                }
+                includeEmptyDirs = false
+            }
+        }
+    }
+    tasks.testClasses.dependsOn(tasks.copyReleaseDemo)
+    tasks.testClasses.dependsOn(tasks.copyLibrary)
+}
+
+evaluationDependsOn(":demo")
