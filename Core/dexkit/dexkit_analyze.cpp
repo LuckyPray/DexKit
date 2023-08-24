@@ -34,7 +34,7 @@ DexKit::ExtractUseTypeNames(const schema::ClassMatcher *matcher) {
 
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::InterfacesMatcher *matcher) {
-    if (!matcher) return {};
+    if (!matcher || !matcher->interfaces()) return {};
     std::vector<std::string_view> result;
     for (auto i = 0; i < matcher->interfaces()->size(); ++i) {
         auto res = ExtractUseTypeNames(matcher->interfaces()->Get(i));
@@ -45,7 +45,7 @@ DexKit::ExtractUseTypeNames(const schema::InterfacesMatcher *matcher) {
 
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::AnnotationsMatcher *matcher) {
-    if (!matcher) return {};
+    if (!matcher || !matcher->annotations()) return {};
     std::vector<std::string_view> result;
     for (auto i = 0; i < matcher->annotations()->size(); ++i) {
         auto res = ExtractUseTypeNames(matcher->annotations()->Get(i));
@@ -70,7 +70,7 @@ DexKit::ExtractUseTypeNames(const schema::AnnotationMatcher *matcher) {
 
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::AnnotationElementsMatcher *matcher) {
-    if (!matcher) return {};
+    if (!matcher || !matcher->elements()) return {};
     std::vector<std::string_view> result;
     for (auto i = 0; i < matcher->elements()->size(); ++i) {
         auto res = ExtractUseTypeNames(matcher->elements()->Get(i));

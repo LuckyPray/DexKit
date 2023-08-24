@@ -590,8 +590,8 @@ bool DexItem::IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMat
         }
     }
     if (matcher->interfaces()) {
-        auto IsClassMatched = [this](uint32_t class_def_idx, const schema::ClassMatcher *matcher) {
-            return this->IsClassMatched(class_def_idx, matcher);
+        auto IsClassMatched = [this](uint32_t type_idx, const schema::ClassMatcher *matcher) {
+            return this->IsClassMatched(type_idx, matcher);
         };
 
         typedef std::vector<const schema::ClassMatcher *> ClassMatcher;
@@ -608,11 +608,11 @@ bool DexItem::IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMat
         auto interface_matchers = *ptr;
         Hungarian<uint32_t, const schema::ClassMatcher *> hungarian(interfaces, interface_matchers, IsClassMatched);
         auto count = hungarian.solve();
-        if (count != interfaces.size()) {
+        if (count != interface_matchers.size()) {
             return false;
         }
         if (matcher->match_type() == schema::MatchType::Equal) {
-            if (count != interface_matchers.size()) {
+            if (count != interfaces.size()) {
                 return false;
             }
         }

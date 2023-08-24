@@ -128,12 +128,12 @@ int DexItem::InitCache() {
 
     auto class_def_idx = 0;
     for (auto &class_def: reader.ClassDefs()) {
-        auto type_idx = class_def_idx++;
+        auto def_idx = class_def_idx++;
         if (class_def.source_file_idx != dex::kNoIndex) {
             class_source_files[class_def.class_idx] = strings[class_def.source_file_idx];
         }
         type_def_flag[class_def.class_idx] = true;
-        type_def_idx[class_def.class_idx] = type_idx;
+        type_def_idx[class_def.class_idx] = def_idx;
         class_access_flags[class_def.class_idx] = class_def.access_flags;
         if (class_def.class_data_off == 0) {
             continue;
@@ -145,7 +145,7 @@ int DexItem::InitCache() {
                 auto &interfaces = this->class_interface_ids[class_def.class_idx];
                 interfaces.reserve(interface_type_list->size);
                 for (auto i = 0; i < interface_type_list->size; ++i) {
-                    interfaces.emplace_back(type_def_idx[interface_type_list->list[i].type_idx]);
+                    interfaces.emplace_back(interface_type_list->list[i].type_idx);
                 }
             }
         }
