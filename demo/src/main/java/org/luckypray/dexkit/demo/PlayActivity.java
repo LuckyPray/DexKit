@@ -13,6 +13,8 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.Random;
+
 @Router(path = "/play")
 public class PlayActivity extends AppCompatActivity {
 
@@ -34,9 +36,13 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
-
-                if (msg.what == 0) {
-                    runOnUiThread(() -> rollDice());
+                switch (msg.what) {
+                    case 0:
+                        runOnUiThread(() -> rollDice(false));
+                        break;
+                    case 114514:
+                        runOnUiThread(() -> rollDice(true));
+                        break;
                 }
             }
         };
@@ -45,12 +51,21 @@ public class PlayActivity extends AppCompatActivity {
         Button rollButton = findViewById(R.id.rollButton);
         rollButton.setOnClickListener(v -> {
             Log.d(TAG, "onClick: rollButton");
-            handler.sendEmptyMessage(0);
+            if (new Random().nextFloat() < 0.987f) {
+                handler.sendEmptyMessage(0);
+            } else {
+                handler.sendEmptyMessage(114514);
+            }
         });
     }
 
-    public void rollDice() {
-        int diceValue = RandomUtil.getRandomDice();
+    public void rollDice(boolean jackpot) {
+        int diceValue;
+        if (!jackpot) {
+            diceValue = RandomUtil.getRandomDice();
+        } else {
+            diceValue = 6;
+        }
         String result = "You rolled a " + diceValue;
         resultText.setText(result);
         Log.d(TAG, "rollDice: " + result);
