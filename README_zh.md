@@ -58,42 +58,62 @@ DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/or
 > 样例 APP 如下
 
 ```java
-package com.test.demo;
+package org.luckypray.dexkit.demo;
 
-public class a extends Activity implements Serializable {
-    
-    public a(String var1) {
-        super();
-        // ...
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.h;
+import java.util.Random;
+import org.luckypray.dexkit.demo.annotations.Router;
+
+@Router(path = "/play")
+public class PlayActivity extends AppCompatActivity {
+    private final String a = "PlayActivity";
+    private TextView b;
+    private Handler c;
+
+    public void d(View view) {
+        Handler handler;
+        int i;
+        Log.d("PlayActivity", "onClick: rollButton");
+        if (new Random().nextFloat() < 0.987f) {
+            handler = this.c;
+            i = 0;
+        } else {
+            handler = this.c;
+            i = 114514;
+        }
+        handler.sendEmptyMessage(i);
     }
-    
-    private static final String TAG = "SplashActivity";
-    
-    private String a;
-    
-    private boolean b;
-    
-    protected void onCreate(Bundle var1) {
-        super.onCreate(var1);
-        Log.d("SplashActivity", "onCreate");
-        // ...
+
+    public void e(boolean z) {
+        int i;
+        if (!z) {
+            i = g.a();
+        } else {
+            i = 6;
+        }
+        String a = h.a("You rolled a ", i);
+        this.b.setText(a);
+        Log.d("PlayActivity", "rollDice: " + a);
     }
-    
-    private static void a(String var1, String var2) {
-        // ...
+
+    protected void onCreate(Bundle bundle) {
+        super/*androidx.fragment.app.FragmentActivity*/.onCreate(bundle);
+        setContentView(0x7f0b001d);
+        Log.d("PlayActivity", "onCreate");
+        HandlerThread handlerThread = new HandlerThread("PlayActivity");
+        handlerThread.start();
+        this.c = new e(this, handlerThread.getLooper());
+        this.b = (TextView) findViewById(0x7f080134);
+        ((Button) findViewById(0x7f08013a)).setOnClickListener(new b(this));
     }
-    
-    private String a(String var1) {
-        Log.d("SplashActivity", "load data");
-        // ...
-    }
-    
-    private void a() {
-        // ...
-    }
-    
-    // ...
-    
 }
 ```
 
@@ -115,18 +135,20 @@ class MainHook : IXposedHookLoadPackage {
         DexKitBridge.create(apkPath)?.use { bridge ->
             bridge.findClass {
                 // 从指定的包名范围内进行查找
-                searchPackage("com.test.demo")
+                searchPackage("org.luckypray.dexkit.demo")
                 // ClassMatcher 针对类的匹配器
                 matcher {
+                    className("org.luckypray.dexkit.demo.PlayActivity")
                     // FieldsMatcher 针对类中包含属性的匹配器
                     fields {
                         // 添加对于属性的匹配器
                         add {
+                            modifiers(Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL)
                             type("java.lang.String")
                             name("TAG")
                         }
-                        addForType("java.lang.String")
-                        addForType("boolean")
+                        addForType("android.widget.TextView")
+                        addForType("android.os.Handler")
                         // 指定类中属性的数量
                         countRange(count = 3)
                     }
@@ -134,24 +156,49 @@ class MainHook : IXposedHookLoadPackage {
                     methods {
                         // 添加对于方法的匹配器
                         add {
+                            modifiers(Modifier.PROTECTED)
                             name("onCreate")
                             returnType("void")
                             parameterTypes("android.os.Bundle")
                             usingStrings("onCreate")
                         }
                         add {
-                            modifiers(Modifier.PRIVATE or Modifier.STATIC)
-                            returnType("void")
-                            parameterTypes("java.lang.String", "java.lang.String")
+                            parameterTypes("android.view.View")
+                            usingNumbers {
+                                add {
+                                    intValue(114514)
+                                }
+                                add {
+                                    floatValue(0.987f)
+                                }
+                            }
                         }
-                        // 指定类中方法的数量，最少不少于4个，最多不超过10个
-                        countRange(min = 4, max = 10)
+                        add {
+                            modifiers(Modifier.PUBLIC)
+                            parameterTypes("boolean")
+                        }
+                        // 指定类中方法的数量，最少不少于1个，最多不超过10个
+                        countRange(min = 1, max = 10)
+                    }
+                    // AnnotationsMatcher 针对类中包含注解的匹配器
+                    annotations {
+                        add {
+                            typeName("Router", StringMatchType.EndWith)
+                            elements {
+                                add {
+                                    name("path")
+                                    matcher {
+                                        stringValue("/play")
+                                    }
+                                }
+                            }
+                        }
                     }
                     // 类中所有方法使用的字符串
-                    useStrings("SplashActivity", "load data", "onCreate")
+                    useStrings("PlayActivity", "onClick", "onCreate")
                 }
             }.forEach {
-                // 打印查找到的类: com.test.demo.a
+                // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
                 println(it.className)
                 // 获取对应的类实例
                 val clazz = it.getInstance(loadPackageParam.classLoader)

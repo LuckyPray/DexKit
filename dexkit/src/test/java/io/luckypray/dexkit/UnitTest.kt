@@ -249,6 +249,20 @@ class UnitTest {
                     // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
                     countRange(min = 1, max = 10)
                 }
+                // InterfacesMatcher for matching interfaces within the class
+                annotations {
+                    add {
+                        typeName("Router", StringMatchType.EndWith)
+                        elements {
+                            add {
+                                name("path")
+                                matcher {
+                                    stringValue("/play")
+                                }
+                            }
+                        }
+                    }
+                }
                 // Strings used by all methods in the class
                 useStrings("PlayActivity", "onClick", "onCreate")
             }
