@@ -101,8 +101,42 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
     return condition;
 }
 
+static std::string TypeNameToDescriptor(const std::string_view type) {
+    std::string desc;
+    auto arr_dimensions = std::count(type.begin(), type.end(), '[');
+    for (int i = 0; i < arr_dimensions; ++i) {
+        desc += '[';
+    }
+    if (type.starts_with("int")) {
+        desc += 'I';
+    } else if (type.starts_with("long")) {
+        desc += 'J';
+    } else if (type.starts_with("float")) {
+        desc += 'F';
+    } else if (type.starts_with("double")) {
+        desc += 'D';
+    } else if (type.starts_with("char")) {
+        desc += 'C';
+    } else if (type.starts_with("byte")) {
+        desc += 'B';
+    } else if (type.starts_with("short")) {
+        desc += 'S';
+    } else if (type.starts_with("boolean")) {
+        desc += 'Z';
+    } else if (type.starts_with("void")) {
+        desc += 'V';
+    } else {
+        desc += 'L';
+        for (auto &c: type) {
+            desc += (c == '.' ? '/' : c);
+        }
+        desc += ';';
+    }
+    return desc;
+}
+
 bool DexItem::IsTypeNameMatched(std::string_view type_name, const schema::StringMatcher *matcher) {
-    type_name = type_name.substr(1, type_name.size() - 2);
+    auto tmp_type_name = type_name.substr(1, type_name.size() - 2);
 
     auto match_str = matcher->value()->string_view();
     auto match_type = matcher->match_type();
@@ -110,8 +144,15 @@ bool DexItem::IsTypeNameMatched(std::string_view type_name, const schema::String
 
     auto ptr = ThreadVariable::GetThreadVariable<std::string>(POINT_CASE(matcher->value()));
     if (ptr == nullptr) {
-        std::string match_name(match_str);
-        std::replace(match_name.begin(), match_name.end(), '.', '/');
+        // TODO: EndWith -> String[] match [Ljava/lang/String;
+        // TODO: StartWith -> java.lang match [Ljava/lang/String;
+        std::string match_name;
+        if (match_type == schema::StringMatchType::Equal) {
+            match_name = TypeNameToDescriptor(match_str);
+        } else {
+            match_name = match_str;
+            std::replace(match_name.begin(), match_name.end(), '.', '/');
+        }
         ThreadVariable::SetThreadVariable<std::string>(POINT_CASE(matcher->value()), match_name);
         ptr = ThreadVariable::GetThreadVariable<std::string>(POINT_CASE(matcher->value()));
     }
@@ -119,11 +160,11 @@ bool DexItem::IsTypeNameMatched(std::string_view type_name, const schema::String
     auto match_name = *ptr;
     bool condition;
     switch (match_type) {
-        case schema::StringMatchType::StartWith: condition = kmp::starts_with(type_name, match_name, matcher->ignore_case()); break;
-        case schema::StringMatchType::EndWith: condition = kmp::ends_with(type_name, match_name, matcher->ignore_case()); break;
+        case schema::StringMatchType::StartWith: condition = kmp::starts_with(tmp_type_name, match_name, matcher->ignore_case()); break;
+        case schema::StringMatchType::EndWith: condition = kmp::ends_with(tmp_type_name, match_name, matcher->ignore_case()); break;
         case schema::StringMatchType::Equal: condition = kmp::equals(type_name, match_name, matcher->ignore_case()); break;
         case schema::StringMatchType::Contains: {
-            auto index = kmp::FindIndex(type_name, match_name, matcher->ignore_case());
+            auto index = kmp::FindIndex(tmp_type_name, match_name, matcher->ignore_case());
             condition = index != -1;
             break;
         }
@@ -770,15 +811,17 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
     if (matcher == nullptr) {
         return true;
     }
-    const auto type_list = proto_type_list[method_idx];
+    auto method_def = this->reader.MethodIds()[method_idx];
+    const auto type_list = proto_type_list[method_def.proto_idx];
+    auto type_list_size = type_list == nullptr ? 0 : type_list->size;
     if (matcher->parameter_count()) {
-        if (type_list->size < matcher->parameter_count()->min()
-        || type_list->size > matcher->parameter_count()->max()) {
+        if (type_list_size < matcher->parameter_count()->min()
+        || type_list_size > matcher->parameter_count()->max()) {
             return false;
         }
     }
     if (matcher->parameters()) {
-        if (type_list->size != matcher->parameters()->size()) {
+        if (type_list_size != matcher->parameters()->size()) {
             return false;
         }
         auto &parameter_annotations = this->method_parameter_annotations[method_idx];

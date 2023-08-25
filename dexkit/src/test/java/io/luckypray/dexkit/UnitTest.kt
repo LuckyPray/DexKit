@@ -5,6 +5,7 @@ import org.junit.Test
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
+import java.lang.reflect.Modifier
 
 
 class UnitTest {
@@ -197,6 +198,66 @@ class UnitTest {
         }
         println(res)
         assert(res.size == 1)
+    }
+
+    @Test
+    fun test() {
+        bridge.findClass {
+            // Search within the specified package name range
+            searchPackage("org.luckypray.dexkit.demo")
+            // ClassMatcher for class matching
+            matcher {
+                className("org.luckypray.dexkit.demo.PlayActivity")
+                // FieldsMatcher for matching properties within the class
+                fields {
+                    // Add a matcher for properties
+                    add {
+                        modifiers(Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL)
+                        type("java.lang.String")
+                        name("TAG")
+                    }
+                    addForType("android.widget.TextView")
+                    addForType("android.os.Handler")
+                    // Specify the number of properties in the class
+                    countRange(count = 3)
+                }
+                // MethodsMatcher for matching methods within the class
+                methods {
+                    // Add a matcher for methods
+                    add {
+                        modifiers(Modifier.PROTECTED)
+                        name("onCreate")
+                        returnType("void")
+                        parameterTypes("android.os.Bundle")
+                        usingStrings("onCreate")
+                    }
+                    add {
+                        parameterTypes("android.view.View")
+                        usingNumbers {
+                            add {
+                                intValue(114514)
+                            }
+                            add {
+                                floatValue(0.987f)
+                            }
+                        }
+                    }
+                    add {
+                        modifiers(Modifier.PUBLIC)
+                        parameterTypes("boolean")
+                    }
+                    // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
+                    countRange(min = 1, max = 10)
+                }
+                // Strings used by all methods in the class
+                useStrings("PlayActivity", "onClick", "onCreate")
+            }
+        }.forEach {
+            // Print the found class: com.test.demo.a
+            println(it.className)
+            // Get the corresponding class instance
+//            val clazz = it.getInstance(loadPackageParam.classLoader)
+        }
     }
 
 }

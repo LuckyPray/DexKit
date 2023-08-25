@@ -18,7 +18,7 @@ import java.util.Random;
 @Router(path = "/play")
 public class PlayActivity extends AppCompatActivity {
 
-    private final String TAG = "PlayActivity";
+    private static final String TAG = "PlayActivity";
 
     private TextView resultText;
     private Handler handler;

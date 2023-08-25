@@ -146,7 +146,7 @@ DexKit::ExtractUseTypeNames(const schema::AnnotationEncodeArrayMatcher *matcher)
 
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::FieldsMatcher *matcher) {
-    if (!matcher) return {};
+    if (!matcher || !matcher->fields()) return {};
     std::vector<std::string_view> result;
     for (auto i = 0; i < matcher->fields()->size(); ++i) {
         auto res = ExtractUseTypeNames(matcher->fields()->Get(i));
@@ -184,7 +184,7 @@ DexKit::ExtractUseTypeNames(const schema::FieldMatcher *matcher) {
 
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::MethodsMatcher *matcher) {
-    if (!matcher) return {};
+    if (!matcher || !matcher->methods()) return {};
     std::vector<std::string_view> result;
     for (auto i = 0; i < matcher->methods()->size(); ++i) {
         auto res = ExtractUseTypeNames(matcher->methods()->Get(i));
