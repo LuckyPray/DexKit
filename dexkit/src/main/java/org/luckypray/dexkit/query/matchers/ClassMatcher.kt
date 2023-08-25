@@ -20,7 +20,7 @@ class ClassMatcher : BaseQuery() {
     private var annotations: AnnotationsMatcher? = null
     private var fields: FieldsMatcher? = null
     private var methods: MethodsMatcher? = null
-    private var useStrings: List<StringMatcher>? = null
+    private var usingStrings: List<StringMatcher>? = null
 
     fun sourceName(matcher: StringMatcher) = also {
         this.source = matcher
@@ -152,33 +152,33 @@ class ClassMatcher : BaseQuery() {
         this.methods!!.countRange(min, max)
     }
 
-    fun useStringsMatcher(useStrings: List<StringMatcher>) = also {
-        this.useStrings = useStrings
+    fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
+        this.usingStrings = usingStrings
     }
 
-    fun useStrings(useStrings: List<String>) = also {
-        this.useStrings = useStrings.map { StringMatcher(it) }
+    fun usingStrings(usingStrings: List<String>) = also {
+        this.usingStrings = usingStrings.map { StringMatcher(it) }
     }
 
-    fun addUseString(useString: StringMatcher) = also {
-        useStrings = useStrings ?: StringMatcherList()
-        if (useStrings !is StringMatcherList) {
-            useStrings = StringMatcherList(useStrings!!)
+    fun addUsingString(usingString: StringMatcher) = also {
+        usingStrings = usingStrings ?: StringMatcherList()
+        if (usingStrings !is StringMatcherList) {
+            usingStrings = StringMatcherList(usingStrings!!)
         }
-        (useStrings as MutableList<StringMatcher>).add(useString)
+        (usingStrings as MutableList<StringMatcher>).add(usingString)
     }
 
     @JvmOverloads
-    fun addUseString(
-        useString: String,
+    fun addUsingString(
+        usingString: String,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
-        addUseString(StringMatcher(useString, matchType, ignoreCase))
+        addUsingString(StringMatcher(usingString, matchType, ignoreCase))
     }
 
-    fun useStrings(vararg useStrings: String) = also {
-        this.useStrings = useStrings.map { StringMatcher(it) }
+    fun usingStrings(vararg usingStrings: String) = also {
+        this.usingStrings = usingStrings.map { StringMatcher(it) }
     }
 
     // region DSL
@@ -219,8 +219,8 @@ class ClassMatcher : BaseQuery() {
         addMethod(MethodMatcher().apply(init))
     }
 
-    fun useStringsMatcher(init: StringMatcherList.() -> Unit) = also {
-        useStringsMatcher(StringMatcherList().apply(init))
+    fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
+        usingStringsMatcher(StringMatcherList().apply(init))
     }
 
     // endregion
@@ -242,7 +242,7 @@ class ClassMatcher : BaseQuery() {
             annotations?.build(fbb) ?: 0,
             fields?.build(fbb) ?: 0,
             methods?.build(fbb) ?: 0,
-            useStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0
+            usingStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0
         )
         fbb.finish(root)
         return root

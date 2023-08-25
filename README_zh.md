@@ -174,7 +174,6 @@ class MainHook : IXposedHookLoadPackage {
                             }
                         }
                         add {
-                            modifiers(Modifier.PUBLIC)
                             parameterTypes("boolean")
                         }
                         // 指定类中方法的数量，最少不少于1个，最多不超过10个
@@ -183,7 +182,7 @@ class MainHook : IXposedHookLoadPackage {
                     // AnnotationsMatcher 针对类中包含注解的匹配器
                     annotations {
                         add {
-                            typeName("Router", StringMatchType.EndWith)
+                            typeName("org.luckypray.dexkit.demo.annotations.Router")
                             elements {
                                 add {
                                     name("path")
@@ -195,7 +194,7 @@ class MainHook : IXposedHookLoadPackage {
                         }
                     }
                     // 类中所有方法使用的字符串
-                    useStrings("PlayActivity", "onClick", "onCreate")
+                    usingStrings("PlayActivity", "onClick", "onCreate")
                 }
             }.forEach {
                 // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity

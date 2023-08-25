@@ -26,7 +26,7 @@ Basic Features:
 
 - [x] Multi-condition class search
 - [x] Multi-condition method search
-- [x] Multi-condition property search
+- [x] Multi-condition field search
 
 ⭐️ Distinctive Features (Recommended):
 
@@ -179,16 +179,15 @@ class MainHook : IXposedHookLoadPackage {
                             }
                         }
                         add {
-                            modifiers(Modifier.PUBLIC)
                             parameterTypes("boolean")
                         }
                         // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                         countRange(min = 1, max = 10)
                     }
-                    // InterfacesMatcher for matching interfaces within the class
+                    // AnnotationsMatcher for matching interfaces within the class
                     annotations {
                         add {
-                            typeName("Router", StringMatchType.EndWith)
+                            typeName("org.luckypray.dexkit.demo.annotations.Router")
                             elements {
                                 add {
                                     name("path")
@@ -200,7 +199,7 @@ class MainHook : IXposedHookLoadPackage {
                         }
                     }
                     // Strings used by all methods in the class
-                    useStrings("PlayActivity", "onClick", "onCreate")
+                    usingStrings("PlayActivity", "onClick", "onCreate")
                 }
             }.forEach {
                 // Print the found class: org.luckypray.dexkit.demo.PlayActivity

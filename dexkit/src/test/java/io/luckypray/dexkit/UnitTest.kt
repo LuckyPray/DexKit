@@ -98,7 +98,7 @@ class UnitTest {
     fun testFindClassUsingString() {
         val res = bridge.findClass {
             matcher {
-                useStrings("PlayActivity")
+                usingStrings("PlayActivity")
             }
         }
         println(res)
@@ -110,7 +110,7 @@ class UnitTest {
     fun testFindClassUsingStringArray() {
         val res = bridge.findClass {
             matcher {
-                useStrings("PlayActivity", "onClick")
+                usingStrings("PlayActivity", "onClick")
             }
         }
         println(res)
@@ -264,7 +264,7 @@ class UnitTest {
                     }
                 }
                 // Strings used by all methods in the class
-                useStrings("PlayActivity", "onClick", "onCreate")
+                usingStrings("PlayActivity", "onClick", "onCreate")
             }
         }.forEach {
             // Print the found class: com.test.demo.a
