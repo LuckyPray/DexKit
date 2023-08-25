@@ -26,6 +26,7 @@
 - [x] 多条件查找类
 - [x] 多条件查找方法
 - [x] 多条件查找属性
+- [x] 获取类/方法/属性/参数的注解
 
 ⭐️ 特色功能（推荐）：
 
@@ -43,7 +44,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation 'org.luckypray:DexKit:<version>'
+    implementation 'org.luckypray:dexkit:<version>'
 }
 ```
 
@@ -121,13 +122,103 @@ public class PlayActivity extends AppCompatActivity {
 
 > 这仅仅是个样例，实际使用中并不需要这么多条件进行匹配，按需选用即可，避免条件过多带来的匹配复杂度增长
 
+<details><summary>Java Example</summary>
+<p>
+
+```java
+public class MainHook implements IXposedHookLoadPackage {
+    
+    @Override
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        String packageName = loadPackageParam.packageName;
+        String apkPath = loadPackageParam.appInfo.sourceDir;
+        if (!packageName.equals("org.luckypray.dexkit.demo")) {
+            return;
+        }
+        // need minSdkVersion >= 23
+        System.loadLibrary("dexkit");
+        try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+            bridge.findClass(FindClass.create()
+                    // 从指定的包名范围内进行查找
+                    .searchPackage("org.luckypray.dexkit.demo")
+                    .matcher(ClassMatcher.create()
+                            // ClassMatcher 针对类的匹配器
+                            .className("org.luckypray.dexkit.demo.PlayActivity")
+                            // FieldsMatcher 针对类中包含属性的匹配器
+                            .fields(FieldsMatcher.create()
+                                    // 添加对于属性的匹配器
+                                    .add(FieldMatcher.create()
+                                            .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
+                                            .type("java.lang.String")
+                                            .name("TAG")
+                                    )
+                                    .addForType("android.widget.TextView")
+                                    .addForType("android.os.Handler")
+                                    // 指定类中属性的数量
+                                    .countRange(3)
+                            )
+                            // MethodsMatcher 针对类中包含方法的匹配器
+                            .methods(MethodsMatcher.create()
+                                    // 添加对于方法的匹配器
+                                    .methods(List.of(
+                                            MethodMatcher.create()
+                                                    .modifiers(Modifier.PROTECTED)
+                                                    .name("onCreate")
+                                                    .returnType("void")
+                                                    .parameterTypes("android.os.Bundle")
+                                                    .usingStrings("onCreate"),
+                                            MethodMatcher.create()
+                                                    .parameterTypes("android.view.View")
+                                                    .usingNumbers(
+                                                            List.of(
+                                                                    createInt(114514),
+                                                                    createFloat(0.987f)
+                                                            )
+                                                    ),
+                                            MethodMatcher.create()
+                                                    .modifiers(Modifier.PUBLIC)
+                                                    .parameterTypes("boolean")
+                                    ))
+                                    // 指定类中方法的数量，最少不少于1个，最多不超过10个
+                                    .countRange(1, 10)
+                            )
+                            // AnnotationsMatcher 针对类中包含注解的匹配器
+                            .annotations(AnnotationsMatcher.create()
+                                    .add(AnnotationMatcher.create()
+                                            .typeName("Router", StringMatchType.EndWith)
+                                            .addElement(
+                                                    AnnotationElementMatcher.create()
+                                                            .name("path")
+                                                            .matcher(createString("/play"))
+                                            )
+                                    )
+                            )
+                            // 类中所有方法使用的字符串
+                            .usingStrings("PlayActivity", "onClick", "onCreate")
+                    )
+            ).forEach(classData -> {
+                // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
+                System.out.println(classData.getClassName());
+                // 获取对应的类实例
+                Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
+            });
+        }
+    }
+}
+```
+
+</p></details>
+
+<details open><summary>Kotlin Example</summary>
+<p>
+
 ```kotlin
 class MainHook : IXposedHookLoadPackage {
     
     override fun handleLoadPackage(loadPackageParam: LoadPackageParam) {
         val packageName = loadPackageParam.packageName
         val apkPath = loadPackageParam.appInfo.sourceDir
-        if (packageName != "com.test.demo") {
+        if (!packageName.equals("org.luckypray.dexkit.demo")) {
             return
         }
         // need minSdkVersion >= 23
@@ -177,7 +268,7 @@ class MainHook : IXposedHookLoadPackage {
                             parameterTypes("boolean")
                         }
                         // 指定类中方法的数量，最少不少于1个，最多不超过10个
-                        countRange(min = 1, max = 10)
+                        countRange(1..10)
                     }
                     // AnnotationsMatcher 针对类中包含注解的匹配器
                     annotations {
@@ -206,6 +297,8 @@ class MainHook : IXposedHookLoadPackage {
     }
 }
 ```
+
+</p></details>
 
 ### 使用文档
 

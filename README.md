@@ -27,6 +27,7 @@ Basic Features:
 - [x] Multi-condition class search
 - [x] Multi-condition method search
 - [x] Multi-condition field search
+- [x] Access annotations of classes/methods/properties/parameters
 
 ⭐️ Distinctive Features (Recommended):
 
@@ -45,7 +46,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation 'org.luckypray:DexKit:<version>'
+    implementation 'org.luckypray:dexkit:<version>'
 }
 ```
 
@@ -126,13 +127,103 @@ At this point, to obtain this class, you can use the following code:
 > conditions. Choose and use as needed to avoid unnecessary complexity in matching due to an 
 > excessive number of conditions.
 
+<details><summary>Java Example</summary>
+<p>
+
+```java
+public class MainHook implements IXposedHookLoadPackage {
+    
+    @Override
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        String packageName = loadPackageParam.packageName;
+        String apkPath = loadPackageParam.appInfo.sourceDir;
+        if (!packageName.equals("org.luckypray.dexkit.demo")) {
+            return;
+        }
+        // need minSdkVersion >= 23
+        System.loadLibrary("dexkit");
+        try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+            bridge.findClass(FindClass.create()
+                    // Search within the specified package name range
+                    .searchPackage("org.luckypray.dexkit.demo")
+                    .matcher(ClassMatcher.create()
+                            // ClassMatcher for class matching
+                            .className("org.luckypray.dexkit.demo.PlayActivity")
+                            // FieldsMatcher for matching properties within the class
+                            .fields(FieldsMatcher.create()
+                                    // Add a matcher for properties
+                                    .add(FieldMatcher.create()
+                                            .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
+                                            .type("java.lang.String")
+                                            .name("TAG")
+                                    )
+                                    .addForType("android.widget.TextView")
+                                    .addForType("android.os.Handler")
+                                    // Specify the number of properties in the class
+                                    .countRange(3)
+                            )
+                            // MethodsMatcher for matching methods within the class
+                            .methods(MethodsMatcher.create()
+                                    // Add a matcher for methods
+                                    .methods(List.of(
+                                            MethodMatcher.create()
+                                                    .modifiers(Modifier.PROTECTED)
+                                                    .name("onCreate")
+                                                    .returnType("void")
+                                                    .parameterTypes("android.os.Bundle")
+                                                    .usingStrings("onCreate"),
+                                            MethodMatcher.create()
+                                                    .parameterTypes("android.view.View")
+                                                    .usingNumbers(
+                                                            List.of(
+                                                                    createInt(114514),
+                                                                    createFloat(0.987f)
+                                                            )
+                                                    ),
+                                            MethodMatcher.create()
+                                                    .modifiers(Modifier.PUBLIC)
+                                                    .parameterTypes("boolean")
+                                    ))
+                                    // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
+                                    .countRange(1, 10)
+                            )
+                            // AnnotationsMatcher for matching interfaces within the class
+                            .annotations(AnnotationsMatcher.create()
+                                    .add(AnnotationMatcher.create()
+                                            .typeName("Router", StringMatchType.EndWith)
+                                            .addElement(
+                                                    AnnotationElementMatcher.create()
+                                                            .name("path")
+                                                            .matcher(createString("/play"))
+                                            )
+                                    )
+                            )
+                            // Strings used by all methods in the class
+                            .usingStrings("PlayActivity", "onClick", "onCreate")
+                    )
+            ).forEach(classData -> {
+                // Print the found class: org.luckypray.dexkit.demo.PlayActivity
+                System.out.println(classData.getClassName());
+                // Get the corresponding class instance
+                Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
+            });
+        }
+    }
+}
+```
+
+</p></details>
+
+<details open><summary>Kotlin Example</summary>
+<p>
+
 ```kotlin
 class MainHook : IXposedHookLoadPackage {
     
     override fun handleLoadPackage(loadPackageParam: LoadPackageParam) {
         val packageName = loadPackageParam.packageName
         val apkPath = loadPackageParam.appInfo.sourceDir
-        if (packageName != "com.test.demo") {
+        if (packageName != "org.luckypray.dexkit.demo") {
             return
         }
         // need minSdkVersion >= 23
@@ -182,7 +273,7 @@ class MainHook : IXposedHookLoadPackage {
                             parameterTypes("boolean")
                         }
                         // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
-                        countRange(min = 1, max = 10)
+                        countRange(1..10)
                     }
                     // AnnotationsMatcher for matching interfaces within the class
                     annotations {
@@ -211,6 +302,8 @@ class MainHook : IXposedHookLoadPackage {
     }
 }
 ```
+
+</p></details>
 
 ### Documentation
 
