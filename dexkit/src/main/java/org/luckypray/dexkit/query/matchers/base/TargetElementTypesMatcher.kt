@@ -32,10 +32,8 @@ class TargetElementTypesMatcher @JvmOverloads constructor(
             matchType: MatchType = MatchType.Equal
         ) = TargetElementTypesMatcher(types, matchType)
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerTargetElementTypesMatcher.createTargetElementTypesMatcher(
             fbb,
             types?.let { fbb.createVectorOfTables(it.map { it.value.toInt() }.toIntArray()) } ?: 0,

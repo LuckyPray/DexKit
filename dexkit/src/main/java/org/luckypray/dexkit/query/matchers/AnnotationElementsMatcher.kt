@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -6,12 +6,13 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationElementsMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
+import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationElementsMatcher : BaseQuery() {
     private var elements: List<AnnotationElementMatcher>? = null
     private var matchType: MatchType = MatchType.Contains
-    private var elementCount: IntRange? = null
+    private var countRange: IntRange? = null
 
     fun elements(elements: List<AnnotationElementMatcher>) = also {
         this.elements = elements
@@ -25,16 +26,20 @@ class AnnotationElementsMatcher : BaseQuery() {
         this.matchType = matchType
     }
 
-    fun elementCount(elementCount: IntRange?) = also {
-        this.elementCount = elementCount
+    fun countRange(countRange: IntRange) = also {
+        this.countRange = countRange
     }
 
-    fun elementCount(count: Int) = also {
-        this.elementCount = IntRange(count)
+    fun countRange(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
     }
 
-    fun elementCount(min: Int, max: Int) = also {
-        this.elementCount = IntRange(min, max)
+    fun countRange(count: Int) = also {
+        this.countRange = IntRange(count)
+    }
+
+    fun countRange(min: Int, max: Int) = also {
+        this.countRange = IntRange(min, max)
     }
 
     fun add(element: AnnotationElementMatcher) = also {
@@ -45,9 +50,18 @@ class AnnotationElementsMatcher : BaseQuery() {
         (elements as MutableList<AnnotationElementMatcher>).add(element)
     }
 
+    @JvmOverloads
+    fun add(name: String, matcher: AnnotationEncodeValueMatcher? = null) = also {
+        add(AnnotationElementMatcher().apply {
+            this.name(name)
+            matcher?.let { this.matcher(it) }
+        })
+    }
+
     // region DSL
 
-    fun add(init: AnnotationElementMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: AnnotationElementMatcher.() -> Unit) = also {
         add(AnnotationElementMatcher().apply(init))
     }
 
@@ -57,15 +71,13 @@ class AnnotationElementsMatcher : BaseQuery() {
         @JvmStatic
         fun create() = AnnotationElementsMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationElementsMatcher.createAnnotationElementsMatcher(
             fbb,
             elements?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             matchType.value,
-            elementCount?.build(fbb) ?: 0
+            countRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

@@ -1,3 +1,5 @@
+@file:JvmName("LibLoader")
+
 package io.luckypray.dexkit.util
 
 import java.util.Locale

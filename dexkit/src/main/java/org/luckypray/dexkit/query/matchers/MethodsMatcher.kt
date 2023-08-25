@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -25,6 +25,10 @@ class MethodsMatcher : BaseQuery() {
         this.countRange = countRange
     }
 
+    fun countRange(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
+    }
+
     fun countRange(count: Int) = also {
         this.countRange = IntRange(count)
     }
@@ -47,7 +51,8 @@ class MethodsMatcher : BaseQuery() {
 
     // region DSL
 
-    fun MethodsMatcher.add(init: MethodMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun MethodsMatcher.add(init: MethodMatcher.() -> Unit) = also {
         add(MethodMatcher().apply(init))
     }
 
@@ -57,10 +62,8 @@ class MethodsMatcher : BaseQuery() {
         @JvmStatic
         fun create() = MethodsMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerMethodsMatcher.createMethodsMatcher(
             fbb,
             methods?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,

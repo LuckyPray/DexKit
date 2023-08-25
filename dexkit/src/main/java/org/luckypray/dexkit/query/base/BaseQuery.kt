@@ -1,11 +1,15 @@
-package org.luckypray.dexkit.query.base
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")package org.luckypray.dexkit.query.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 
 abstract class BaseQuery : IQuery {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
+    protected abstract fun innerBuild(fbb: FlatBufferBuilder): Int
+
     @kotlin.internal.InlineOnly
-    internal abstract fun build(fbb: FlatBufferBuilder): Int
+    internal inline fun build(fbb: FlatBufferBuilder): Int {
+        return innerBuild(fbb)
+    }
 
     protected fun getEncodeId(dexId: Int, id: Int) = ((dexId.toLong() shl 32) or id.toLong())
 }

@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query
 
@@ -27,15 +27,19 @@ class FindClass : BaseQuery() {
 
     // region DSL
 
-    fun FindClass.matcher(init: ClassMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun FindClass.matcher(init: ClassMatcher.() -> Unit) = also {
         matcher(ClassMatcher().apply(init))
     }
 
     // endregion
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    companion object {
+        @JvmStatic
+        fun create() = FindClass()
+    }
+
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFindClass.createFindClass(
             fbb,
             searchPackage?.let { fbb.createString(searchPackage) } ?: 0,

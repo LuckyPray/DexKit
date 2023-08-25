@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -26,12 +26,14 @@ class ParameterMatcher : BaseQuery() {
 
     // region DSL
 
-    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
-        annotations = AnnotationsMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        annotations(AnnotationsMatcher().apply(init))
     }
 
-    fun type(init: ClassMatcher.() -> Unit) = also {
-        type = ClassMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun type(init: ClassMatcher.() -> Unit) = also {
+        type(ClassMatcher().apply(init))
     }
 
     // endregion
@@ -40,10 +42,8 @@ class ParameterMatcher : BaseQuery() {
         @JvmStatic
         fun create() = ParameterMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerParameterMatcher.createParameterMatcher(
             fbb,
             annotations?.build(fbb) ?: 0,

@@ -17,9 +17,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 abstract class EncodeValue : BaseQuery()
 
 class EncodeValueByte(val value: Byte) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueByte.createEncodeValueByte(fbb, value)
         fbb.finish(root)
         return root
@@ -27,9 +25,7 @@ class EncodeValueByte(val value: Byte) : EncodeValue() {
 }
 
 class EncodeValueShort(val value: Short) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueShort.createEncodeValueShort(fbb, value)
         fbb.finish(root)
         return root
@@ -37,9 +33,7 @@ class EncodeValueShort(val value: Short) : EncodeValue() {
 }
 
 class EncodeValueChar(val value: Char) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueChar.createEncodeValueChar(fbb, value.code.toShort())
         fbb.finish(root)
         return root
@@ -47,9 +41,7 @@ class EncodeValueChar(val value: Char) : EncodeValue() {
 }
 
 class EncodeValueInt(val value: Int) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueInt.createEncodeValueInt(fbb, value)
         fbb.finish(root)
         return root
@@ -57,9 +49,7 @@ class EncodeValueInt(val value: Int) : EncodeValue() {
 }
 
 class EncodeValueLong(val value: Long) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueLong.createEncodeValueLong(fbb, value)
         fbb.finish(root)
         return root
@@ -67,9 +57,7 @@ class EncodeValueLong(val value: Long) : EncodeValue() {
 }
 
 class EncodeValueFloat(val value: Float) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueFloat.createEncodeValueFloat(fbb, value)
         fbb.finish(root)
         return root
@@ -77,9 +65,7 @@ class EncodeValueFloat(val value: Float) : EncodeValue() {
 }
 
 class EncodeValueDouble(val value: Double) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueDouble.createEncodeValueDouble(fbb, value)
         fbb.finish(root)
         return root
@@ -87,9 +73,7 @@ class EncodeValueDouble(val value: Double) : EncodeValue() {
 }
 
 class EncodeValueString(val value: String) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueString.createEncodeValueString(fbb, fbb.createString(value))
         fbb.finish(root)
         return root
@@ -97,9 +81,7 @@ class EncodeValueString(val value: String) : EncodeValue() {
 }
 
 class EncodeValueBoolean(val value: Boolean) : EncodeValue() {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueBoolean.createEncodeValueBoolean(fbb, value)
         fbb.finish(root)
         return root

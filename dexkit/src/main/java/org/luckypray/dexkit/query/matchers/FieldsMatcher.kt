@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -27,6 +27,10 @@ class FieldsMatcher : BaseQuery() {
         this.countRange = countRange
     }
 
+    fun countRange(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
+    }
+
     fun countRange(count: Int) = also {
         this.countRange = IntRange(count)
     }
@@ -35,7 +39,7 @@ class FieldsMatcher : BaseQuery() {
         this.countRange = IntRange(min, max)
     }
 
-    fun add(matcher: FieldMatcher) {
+    fun add(matcher: FieldMatcher) = also {
         fields = fields ?: FieldMatcherList()
         if (fields !is FieldMatcherList) {
             fields = FieldMatcherList(fields!!)
@@ -47,6 +51,7 @@ class FieldsMatcher : BaseQuery() {
         add(FieldMatcher().apply { name(name) })
     }
 
+    @JvmOverloads
     fun addForType(
         typeName: String,
         matchType: StringMatchType = StringMatchType.Equal,
@@ -57,7 +62,8 @@ class FieldsMatcher : BaseQuery() {
 
     // region DSL
 
-    fun add(init: FieldMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: FieldMatcher.() -> Unit) = also {
         add(FieldMatcher().apply(init))
     }
 
@@ -67,10 +73,8 @@ class FieldsMatcher : BaseQuery() {
         @JvmStatic
         fun create() = FieldsMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFieldsMatcher.createFieldsMatcher(
             fbb,
             fields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,

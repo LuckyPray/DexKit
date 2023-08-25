@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -105,7 +105,7 @@ class MethodMatcher : BaseQuery() {
         opCodes: List<Int>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
-    ) {
+    ) = also {
         this.opCodes = OpCodesMatcher(opCodes, matchType, opCodeSize)
     }
 
@@ -113,7 +113,7 @@ class MethodMatcher : BaseQuery() {
         opNames: List<String>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
-    ) {
+    ) = also {
         this.opCodes = OpCodesMatcher.createForOpNames(opNames, matchType, opCodeSize)
     }
 
@@ -157,47 +157,59 @@ class MethodMatcher : BaseQuery() {
 
     // region DSL
 
-    fun declaredClass(init: ClassMatcher.() -> Unit) = also {
-        declaredClass = ClassMatcher().apply(init)
+    
+    @kotlin.internal.InlineOnly
+    inline fun declaredClass(init: ClassMatcher.() -> Unit) = also {
+        declaredClass(ClassMatcher().apply(init))
     }
 
-    fun returnType(init: ClassMatcher.() -> Unit) = also {
-        returnType = ClassMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun returnType(init: ClassMatcher.() -> Unit) = also {
+        returnType(ClassMatcher().apply(init))
     }
 
-    fun parameters(init: ParametersMatcher.() -> Unit) = also {
-        parameters = ParametersMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun parameters(init: ParametersMatcher.() -> Unit) = also {
+        parameters(ParametersMatcher().apply(init))
     }
 
-    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
-        annotations = AnnotationsMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        annotations(AnnotationsMatcher().apply(init))
     }
 
-    fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
-        usingStrings = StringMatcherList().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
+        usingStringsMatcher(StringMatcherList().apply(init))
     }
 
-    fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
-        usingFields = UsingFieldMatcherList().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
+        usingFields(UsingFieldMatcherList().apply(init))
     }
 
-    fun usingNumbers(init: NumberEncodeValueMatcherList.() -> Unit) = also {
-        usingNumbers = NumberEncodeValueMatcherList().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun usingNumbers(init: NumberEncodeValueMatcherList.() -> Unit) = also {
+        usingNumbers(NumberEncodeValueMatcherList().apply(init))
     }
 
-    fun invokeMethods(init: MethodsMatcher.() -> Unit) = also {
-        invokeMethods = MethodsMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun invokeMethods(init: MethodsMatcher.() -> Unit) = also {
+        invokeMethods(MethodsMatcher().apply(init))
     }
 
-    fun addInvoke(init: MethodMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun addInvoke(init: MethodMatcher.() -> Unit) = also {
         addInvoke(MethodMatcher().apply(init))
     }
 
-    fun callMethods(init: MethodsMatcher.() -> Unit) = also {
-        callMethods = MethodsMatcher().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun callMethods(init: MethodsMatcher.() -> Unit) = also {
+        callMethods(MethodsMatcher().apply(init))
     }
 
-    fun addCall(init: MethodMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun addCall(init: MethodMatcher.() -> Unit) = also {
         addCall(MethodMatcher().apply(init))
     }
 
@@ -209,9 +221,7 @@ class MethodMatcher : BaseQuery() {
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerMethodMatcher.createMethodMatcher(
             fbb,
             name?.build(fbb) ?: 0,

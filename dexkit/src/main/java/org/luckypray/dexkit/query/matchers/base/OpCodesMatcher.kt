@@ -14,6 +14,7 @@ class OpCodesMatcher : BaseQuery {
     private var methodOpCodeSize: IntRange? = null
 
     constructor()
+
     @JvmOverloads
     constructor(
         opCodes: List<Int>,
@@ -96,10 +97,8 @@ class OpCodesMatcher : BaseQuery {
             return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) })
         }
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerOpCodesMatcher.createOpCodesMatcher(
             fbb,
             opCodes?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,

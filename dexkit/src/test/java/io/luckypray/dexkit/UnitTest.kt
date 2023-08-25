@@ -247,9 +247,9 @@ class UnitTest {
                         parameterTypes("boolean")
                     }
                     // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                    countRange(min = 1, max = 10)
+                    countRange(1..10)
                 }
-                // InterfacesMatcher for matching interfaces within the class
+                // AnnotationsMatcher for matching interfaces within the class
                 annotations {
                     add {
                         typeName("Router", StringMatchType.EndWith)
@@ -267,7 +267,7 @@ class UnitTest {
                 usingStrings("PlayActivity", "onClick", "onCreate")
             }
         }.forEach {
-            // Print the found class: com.test.demo.a
+            // Print the found class: org.luckypray.dexkit.demo.PlayActivity
             println(it.className)
             // Get the corresponding class instance
 //            val clazz = it.getInstance(loadPackageParam.classLoader)

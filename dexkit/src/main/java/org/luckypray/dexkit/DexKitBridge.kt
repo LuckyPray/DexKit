@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit
 
@@ -118,22 +118,27 @@ class DexKitBridge : Closeable {
 
     // region DSL
 
-    fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, List<ClassData>> {
+    @kotlin.internal.InlineOnly
+    inline fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, List<ClassData>> {
         return batchFindClassUsingStrings(BatchFindClassUsingStrings().apply(init))
     }
 
-    fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, List<MethodData>> {
+    @kotlin.internal.InlineOnly
+    inline fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, List<MethodData>> {
         return batchFindMethodUsingStrings(BatchFindMethodUsingStrings().apply(init))
     }
 
-    fun findClass(init: FindClass.() -> Unit): ClassDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
-    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
-    fun findField(init: FindField.() -> Unit): FieldDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 
@@ -142,9 +147,8 @@ class DexKitBridge : Closeable {
     /**
      * find class by [BatchFindMethodUsingStrings]'s [FlatBufferBuilder]
      */
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun batchFindClassUsingStrings(fbb: FlatBufferBuilder): Map<String, ClassDataList> {
+    internal inline fun batchFindClassUsingStrings(fbb: FlatBufferBuilder): Map<String, ClassDataList> {
         val res = nativeBatchFindClassUsingStrings(token, fbb.sizedByteArray())
         val holder = InnerBatchClassMetaArrayHolder.getRootAsBatchClassMetaArrayHolder(ByteBuffer.wrap(res))
         val map = HashMap<String, ClassDataList>()
@@ -164,9 +168,8 @@ class DexKitBridge : Closeable {
     /**
      * find class by [BatchFindClassUsingStrings]'s [FlatBufferBuilder]
      */
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder): Map<String, MethodDataList> {
+    internal inline fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder): Map<String, MethodDataList> {
         val res = nativeBatchFindMethodUsingStrings(token, fbb.sizedByteArray())
         val holder = InnerBatchMethodMetaArrayHolder.getRootAsBatchMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val map = HashMap<String, MethodDataList>()
@@ -186,9 +189,8 @@ class DexKitBridge : Closeable {
     /**
      * find class by [FindClass]'s [FlatBufferBuilder]
      */
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun findClass(fbb: FlatBufferBuilder): ClassDataList {
+    internal inline fun findClass(fbb: FlatBufferBuilder): ClassDataList {
         val res = nativeFindClass(token, fbb.sizedByteArray())
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
@@ -202,9 +204,8 @@ class DexKitBridge : Closeable {
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun findMethod(fbb: FlatBufferBuilder): MethodDataList {
+    internal inline fun findMethod(fbb: FlatBufferBuilder): MethodDataList {
         val res = nativeFindMethod(token, fbb.sizedByteArray())
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -218,9 +219,8 @@ class DexKitBridge : Closeable {
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun findField(fbb: FlatBufferBuilder): FieldDataList {
+    internal inline fun findField(fbb: FlatBufferBuilder): FieldDataList {
         val res = nativeFindField(token, fbb.sizedByteArray())
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
@@ -231,9 +231,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getClassByIds(encodeIdArray: LongArray): ClassDataList {
+    internal inline fun getClassByIds(encodeIdArray: LongArray): ClassDataList {
         val res = nativeGetClassByIds(token, encodeIdArray)
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
@@ -244,9 +243,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getMethodByIds(encodeIdArray: LongArray): MethodDataList {
+    internal inline fun getMethodByIds(encodeIdArray: LongArray): MethodDataList {
         val res = nativeGetMethodByIds(token, encodeIdArray)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -257,9 +255,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getFieldByIds(encodeIdArray: LongArray): FieldDataList {
+    internal inline fun getFieldByIds(encodeIdArray: LongArray): FieldDataList {
         val res = nativeGetFieldByIds(token, encodeIdArray)
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
@@ -270,9 +267,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getClassAnnotations(classId: Long): List<AnnotationData> {
+    internal inline fun getClassAnnotations(classId: Long): List<AnnotationData> {
         val res = nativeGetClassAnnotations(token, classId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -282,9 +278,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getFieldAnnotations(fieldId: Long): List<AnnotationData> {
+    internal inline fun getFieldAnnotations(fieldId: Long): List<AnnotationData> {
         val res = nativeGetFieldAnnotations(token, fieldId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -294,9 +289,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getMethodAnnotations(methodId: Long): List<AnnotationData> {
+    internal inline fun getMethodAnnotations(methodId: Long): List<AnnotationData> {
         val res = nativeGetMethodAnnotations(token, methodId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -306,9 +300,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
-    internal fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
+    internal inline fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
         val res = nativeGetParameterAnnotations(token, methodId)
         val holder = InnerParametersAnnotationMetaArrayHoler.getRootAsParametersAnnotationMetaArrayHoler(ByteBuffer.wrap(res))
         val list = mutableListOf<List<AnnotationData>>()

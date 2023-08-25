@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers.base
 
@@ -110,19 +110,23 @@ class AnnotationEncodeValueMatcher : IQuery {
 
     // region DSL
 
-    fun classValue(init: ClassMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun classValue(init: ClassMatcher.() -> Unit) = also {
         classValue(ClassMatcher().apply(init))
     }
 
-    fun enumValue(init: FieldMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun enumValue(init: FieldMatcher.() -> Unit) = also {
         enumValue(FieldMatcher().apply(init))
     }
 
-    fun arrayValue(init: AnnotationEncodeValuesMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun arrayValue(init: AnnotationEncodeValuesMatcher.() -> Unit) = also {
         arrayValue(AnnotationEncodeValuesMatcher().apply(init))
     }
 
-    fun annotationValue(init: AnnotationMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun annotationValue(init: AnnotationMatcher.() -> Unit) = also {
         annotationValue(AnnotationMatcher().apply(init))
     }
 

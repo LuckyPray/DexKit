@@ -33,10 +33,8 @@ class StringMatcher @JvmOverloads constructor(
             ignoreCase: Boolean = false
         ) = StringMatcher(value, matchType, ignoreCase)
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         value ?: throw IllegalArgumentException("value must not be null")
         if (value!!.isEmpty() && matchType != StringMatchType.Equal) {
             throw IllegalAccessException("value '$value' is empty, matchType must be equal")

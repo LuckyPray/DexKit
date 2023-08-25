@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -54,6 +54,7 @@ class FieldMatcher : BaseQuery() {
         this.type = type
     }
 
+    @JvmOverloads
     fun type(
         typeName: String,
         matchType: StringMatchType = StringMatchType.Equal,
@@ -101,31 +102,38 @@ class FieldMatcher : BaseQuery() {
 
     // region DSL
 
-    fun declaredClass(init: ClassMatcher.() -> Unit) = also {
-        this.declaredClass(ClassMatcher().apply(init))
+    @kotlin.internal.InlineOnly
+    inline fun declaredClass(init: ClassMatcher.() -> Unit) = also {
+        declaredClass(ClassMatcher().apply(init))
     }
 
-    fun type(init: ClassMatcher.() -> Unit) = also {
-        this.type(ClassMatcher().apply(init))
+    @kotlin.internal.InlineOnly
+    inline fun type(init: ClassMatcher.() -> Unit) = also {
+        type(ClassMatcher().apply(init))
     }
 
-    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
-        this.annotations(AnnotationsMatcher().apply(init))
+    @kotlin.internal.InlineOnly
+    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        annotations(AnnotationsMatcher().apply(init))
     }
 
-    fun getMethods(init: MethodsMatcher.() -> Unit) = also {
-        this.getMethods(MethodsMatcher().apply(init))
+    @kotlin.internal.InlineOnly
+    inline fun getMethods(init: MethodsMatcher.() -> Unit) = also {
+        getMethods(MethodsMatcher().apply(init))
     }
 
-    fun addGetMethod(init: MethodMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun addGetMethod(init: MethodMatcher.() -> Unit) = also {
         addGetMethod(MethodMatcher().apply(init))
     }
 
-    fun putMethods(init: MethodsMatcher.() -> Unit) = also {
-        this.putMethods(MethodsMatcher().apply(init))
+    @kotlin.internal.InlineOnly
+    inline fun putMethods(init: MethodsMatcher.() -> Unit) = also {
+        putMethods(MethodsMatcher().apply(init))
     }
 
-    fun addPutMethod(init: MethodMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun addPutMethod(init: MethodMatcher.() -> Unit) = also {
         addPutMethod(MethodMatcher().apply(init))
     }
 
@@ -135,10 +143,8 @@ class FieldMatcher : BaseQuery() {
         @JvmStatic
         fun create() = FieldMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFieldMatcher.createFieldMatcher(
             fbb,
             name?.build(fbb) ?: 0,

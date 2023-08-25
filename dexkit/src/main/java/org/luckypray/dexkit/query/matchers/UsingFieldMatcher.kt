@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
@@ -20,7 +22,8 @@ class UsingFieldMatcher @JvmOverloads constructor(
 
     // region DSL
 
-    fun matcher(init: FieldMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun matcher(init: FieldMatcher.() -> Unit) = also {
         matcher(FieldMatcher().apply(init))
     }
 
@@ -36,10 +39,8 @@ class UsingFieldMatcher @JvmOverloads constructor(
             return UsingFieldMatcher(matcher, usingType)
         }
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         if (matcher == null) throw IllegalArgumentException("UsingFieldMatcher matcher not set")
         val root = InnerUsingFieldMatcher.createUsingFieldMatcher(
             fbb,

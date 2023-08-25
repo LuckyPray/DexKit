@@ -14,15 +14,13 @@ class AccessFlagsMatcher @JvmOverloads constructor(
 
     companion object {
         @JvmOverloads
-        fun builder(
+        fun create(
             modifiers: Int,
             matchType: MatchType = MatchType.Equal
         ) = AccessFlagsMatcher(modifiers, matchType)
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         if (modifiers == 0) throw IllegalArgumentException("modifiers must not be 0")
         val root = InnerAccessFlagsMatcher.createAccessFlagsMatcher(
             fbb,

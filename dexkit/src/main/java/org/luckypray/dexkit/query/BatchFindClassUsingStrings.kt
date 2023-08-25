@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query
 
@@ -40,8 +40,9 @@ class BatchFindClassUsingStrings : BaseQuery() {
 
     // region DSL
 
-    fun matcher(init: BatchUsingStringsMatcherList.() -> Unit) = also {
-        this.matchers = BatchUsingStringsMatcherList().apply(init)
+    @kotlin.internal.InlineOnly
+    inline fun matcher(init: BatchUsingStringsMatcherList.() -> Unit) = also {
+        matchers(BatchUsingStringsMatcherList().apply(init))
     }
 
     // endregion
@@ -50,10 +51,8 @@ class BatchFindClassUsingStrings : BaseQuery() {
         @JvmStatic
         fun create() = BatchFindClassUsingStrings()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         matchers ?: throw IllegalAccessException("matchers must be set")
         val root = InnerBatchFindClassUsingStrings.createBatchFindClassUsingStrings(
             fbb,

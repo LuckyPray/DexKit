@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -25,6 +25,10 @@ class AnnotationsMatcher : BaseQuery() {
         this.countRange = countRange
     }
 
+    fun countRange(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
+    }
+
     fun countRange(count: Int) = also {
         this.countRange = IntRange(count)
     }
@@ -47,7 +51,8 @@ class AnnotationsMatcher : BaseQuery() {
 
     // region DSL
 
-    fun add(init: AnnotationMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: AnnotationMatcher.() -> Unit) = also {
         add(AnnotationMatcher().apply(init))
     }
 
@@ -55,12 +60,10 @@ class AnnotationsMatcher : BaseQuery() {
 
     companion object {
         @JvmStatic
-        fun create() = AnnotationElementsMatcher()
+        fun create() = AnnotationsMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationsMatcher.createAnnotationsMatcher(
             fbb,
             annotations?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,

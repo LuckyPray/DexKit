@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -20,6 +20,10 @@ class ParametersMatcher : BaseQuery() {
         this.countRange = countRange
     }
 
+    fun countRange(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
+    }
+
     fun countRange(count: Int) = also {
         this.countRange = IntRange(count)
     }
@@ -28,7 +32,7 @@ class ParametersMatcher : BaseQuery() {
         this.countRange = IntRange(min, max)
     }
 
-    fun add(matcher: ParameterMatcher?) {
+    fun add(matcher: ParameterMatcher?) = also {
         parameters = parameters ?: mutableListOf()
         if (parameters !is MutableList) {
             parameters = parameters!!.toMutableList()
@@ -38,7 +42,8 @@ class ParametersMatcher : BaseQuery() {
 
     // region DSL
 
-    fun ParametersMatcher.add(init: ParameterMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun ParametersMatcher.add(init: ParameterMatcher.() -> Unit) = also {
         add(ParameterMatcher().apply(init))
     }
 
@@ -48,10 +53,8 @@ class ParametersMatcher : BaseQuery() {
         @JvmStatic
         fun create() = ParametersMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerParametersMatcher.createParametersMatcher(
             fbb,
             parameters?.let { fbb.createVectorOfTables(it.map { it?.build(fbb) ?: 0 }.toIntArray()) } ?: 0,

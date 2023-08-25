@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query
 
@@ -27,7 +27,8 @@ class StringMatcherList : ArrayList<StringMatcher>, IQuery {
         add(StringMatcher(value, matchType, ignoreCase))
     }
 
-    fun add(init: StringMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: StringMatcher.() -> Unit) = also {
         add(StringMatcher().apply(init))
     }
 }
@@ -60,7 +61,8 @@ class UsingFieldMatcherList : ArrayList<UsingFieldMatcher>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<UsingFieldMatcher>): super(elements)
 
-    fun add(init: UsingFieldMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: UsingFieldMatcher.() -> Unit) = also {
         add(UsingFieldMatcher().apply(init))
     }
 }
@@ -70,7 +72,8 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<NumberEncodeValueMatcher>): super(elements)
 
-    fun add(init: NumberEncodeValueMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: NumberEncodeValueMatcher.() -> Unit) = also {
         add(NumberEncodeValueMatcher().apply(init))
     }
 }
@@ -109,7 +112,8 @@ class BatchUsingStringsMatcherList : ArrayList<BatchUsingStringsMatcher>, IQuery
         add(BatchUsingStringsMatcher(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, false) }))
     }
 
-    fun add(
+    @kotlin.internal.InlineOnly
+    inline fun add(
         unionKey: String,
         init: StringMatcherList.() -> Unit
     ) = also {
@@ -129,7 +133,8 @@ class ClassDataList : ArrayList<ClassData>, IQuery {
         return bridge.findClass(findClass)
     }
 
-    fun findClass(init: FindClass.() -> Unit): ClassDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
@@ -140,7 +145,8 @@ class ClassDataList : ArrayList<ClassData>, IQuery {
         return bridge.findMethod(findMethod)
     }
 
-    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 
@@ -151,7 +157,8 @@ class ClassDataList : ArrayList<ClassData>, IQuery {
         return bridge.findField(findField)
     }
 
-    fun findField(init: FindField.() -> Unit): FieldDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 }
@@ -168,7 +175,8 @@ class MethodDataList : ArrayList<MethodData>, IQuery {
         return bridge.findMethod(findMethod)
     }
 
-    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 }
@@ -184,7 +192,8 @@ class FieldDataList : ArrayList<FieldData>, IQuery {
         return bridge.findField(findField)
     }
 
-    fun findField(init: FindField.() -> Unit): FieldDataList {
+    @kotlin.internal.InlineOnly
+    inline fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 }

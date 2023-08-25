@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -31,7 +31,8 @@ class BatchUsingStringsMatcher @JvmOverloads constructor(
 
     // region DSL
 
-    fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
         usingStringsMatcher(StringMatcherList().apply(init))
     }
 
@@ -45,10 +46,8 @@ class BatchUsingStringsMatcher @JvmOverloads constructor(
             matchers: List<StringMatcher> = mutableListOf()
         ) = BatchUsingStringsMatcher(unionKey, matchers)
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         if (unionKey.isEmpty()) throw IllegalAccessException("unionKey not be empty")
         if (usingStrings.isEmpty()) throw IllegalAccessException("matchers not be empty")
         val root = InnerBatchUsingStringsMatcher.createBatchUsingStringsMatcher(

@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -47,13 +47,14 @@ class InterfacesMatcher : BaseQuery() {
         className: String,
         matchType: StringMatchType = StringMatchType.Equal,
         ignoreCase: Boolean = false
-    ) {
+    ) = also {
         add(ClassMatcher().apply { className(className, matchType, ignoreCase) })
     }
 
     // region DSL
 
-    fun add(init: ClassMatcher.() -> Unit) = also {
+    @kotlin.internal.InlineOnly
+    inline fun add(init: ClassMatcher.() -> Unit) = also {
         add(ClassMatcher().apply(init))
     }
 
@@ -63,10 +64,8 @@ class InterfacesMatcher : BaseQuery() {
         @JvmStatic
         fun create() = InterfacesMatcher()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerInterfacesMatcher.createInterfacesMatcher(
             fbb,
             interfaces?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }

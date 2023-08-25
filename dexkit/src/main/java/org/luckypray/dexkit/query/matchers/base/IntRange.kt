@@ -20,14 +20,17 @@ class IntRange : BaseQuery {
         this.max = max
     }
 
+    constructor(range: kotlin.ranges.IntRange) {
+        min = range.first
+        max = range.last
+    }
+
     companion object {
         fun create(value: Int) = IntRange(value)
         fun create(min: Int, max: Int) = IntRange(min, max)
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.InlineOnly
-    override fun build(fbb: FlatBufferBuilder): Int {
+    
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerIntRange.createIntRange(
             fbb,
             min,
