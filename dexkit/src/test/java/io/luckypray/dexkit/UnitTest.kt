@@ -166,4 +166,37 @@ class UnitTest {
         assert(res.first().className == "org.luckypray.dexkit.demo.MainActivity")
     }
 
+    @Test
+    fun testIntNumberSearch() {
+        val res = bridge.findMethod {
+            matcher {
+                usingNumbers {
+                    add {
+                        intValue(114514)
+                    }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 2)
+    }
+
+    @Test
+    fun testIntAndFloatNumberSearch() {
+        val res = bridge.findMethod {
+            matcher {
+                usingNumbers {
+                    add {
+                        floatValue(0.987f)
+                    }
+                    add {
+                        intValue(114514)
+                    }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 1)
+    }
+
 }

@@ -208,6 +208,7 @@ class MethodMatcher : BaseQuery() {
         fun create() = MethodMatcher()
     }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @kotlin.internal.InlineOnly
     override fun build(fbb: FlatBufferBuilder): Int {
@@ -222,8 +223,8 @@ class MethodMatcher : BaseQuery() {
             opCodes?.build(fbb) ?: 0,
             usingStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             usingFields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
-            usingNumbers?.let { fbb.createVectorOfTables(it.map { it.type!!.value.toInt() }.toIntArray()) } ?: 0,
-            usingNumbers?.let { fbb.createVectorOfTables(it.map { it.value!!.build(fbb) }.toIntArray()) } ?: 0,
+            usingNumbers?.map { it.type!!.value }?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it.toUByteArray()) } ?: 0,
+            usingNumbers?.map { it.value!!.build(fbb) }?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it.toIntArray()) } ?: 0,
             invokeMethods?.build(fbb) ?: 0,
             callMethods?.build(fbb) ?: 0
         )
