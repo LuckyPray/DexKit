@@ -47,15 +47,14 @@ DexItem::FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_clas
     std::vector<uint32_t> find_result;
     auto index = 0;
     for (auto &method_def: this->reader.MethodIds()) {
-        auto method_class_type_idx = method_def.class_idx;
-        if (query->in_classes() && !in_class_set.contains(method_class_type_idx)) continue;
-        if (query->search_package() && !type_names[method_class_type_idx].starts_with(search_package)) continue;
-        if (query->in_methods() && !in_method_set.contains(index)) continue;
+        auto method_idx = index++;
+        if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) continue;
+        if (query->search_package() && !type_names[method_def.class_idx].starts_with(search_package)) continue;
+        if (query->in_methods() && !in_method_set.contains(method_idx)) continue;
 
-        if (IsMethodMatched(index, query->matcher())) {
-            find_result.emplace_back(index);
+        if (IsMethodMatched(method_idx, query->matcher())) {
+            find_result.emplace_back(method_idx);
         }
-        ++index;
     }
 
     std::vector<MethodBean> result;
@@ -81,15 +80,15 @@ DexItem::FindField(const schema::FindField *query, std::set<uint32_t> &in_class_
     std::vector<uint32_t> find_result;
     auto index = 0;
     for (auto &field_def: this->reader.FieldIds()) {
+        auto field_idx = index++;
         auto field_class_type_idx = field_def.class_idx;
         if (query->in_classes() && !in_class_set.contains(field_class_type_idx)) continue;
         if (query->search_package() && !type_names[field_class_type_idx].starts_with(search_package)) continue;
-        if (query->in_fields() && !in_field_set.contains(index)) continue;
+        if (query->in_fields() && !in_field_set.contains(field_idx)) continue;
 
-        if (IsFieldMatched(index, query->matcher())) {
-            find_result.emplace_back(index);
+        if (IsFieldMatched(field_idx, query->matcher())) {
+            find_result.emplace_back(field_idx);
         }
-        ++index;
     }
 
     std::vector<FieldBean> result;
