@@ -57,7 +57,7 @@ class ParametersMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerParametersMatcher.createParametersMatcher(
             fbb,
-            parameters?.let { fbb.createVectorOfTables(it.map { it?.build(fbb) ?: 0 }.toIntArray()) } ?: 0,
+            parameters?.let { fbb.createVectorOfTables(it.map { it?.build(fbb) ?: ParameterMatcher().build(fbb) }.toIntArray()) } ?: 0,
             countRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
