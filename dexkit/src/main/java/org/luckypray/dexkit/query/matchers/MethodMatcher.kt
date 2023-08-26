@@ -53,16 +53,26 @@ class MethodMatcher : BaseQuery() {
         this.declaredClass = declaredClass
     }
 
-    fun declaredClass(declaredClassName: String) = also {
-        this.declaredClass = ClassMatcher().className(declaredClassName)
+    @JvmOverloads
+    fun declaredClass(
+        declaredClassName: String,
+        matchType: StringMatchType = StringMatchType.Equal,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.declaredClass = ClassMatcher().className(declaredClassName, matchType, ignoreCase)
     }
 
     fun returnType(returnType: ClassMatcher) = also {
         this.returnType = returnType
     }
 
-    fun returnType(returnTypeName: String) = also {
-        this.returnType = ClassMatcher().className(returnTypeName)
+    @JvmOverloads
+    fun returnType(
+        returnTypeName: String,
+        matchType: StringMatchType = StringMatchType.Equal,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.returnType = ClassMatcher().className(returnTypeName, matchType, ignoreCase)
     }
 
     fun parameters(parameters: ParametersMatcher) = also {

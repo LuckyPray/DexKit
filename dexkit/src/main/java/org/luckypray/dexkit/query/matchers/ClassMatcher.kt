@@ -10,6 +10,7 @@ import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import java.lang.IllegalStateException
 
 class ClassMatcher : BaseQuery() {
     private var source: StringMatcher? = null
@@ -241,6 +242,9 @@ class ClassMatcher : BaseQuery() {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
+        if (className?.getValue()?.isEmpty() == true) {
+            throw IllegalStateException("className not be empty")
+        }
         val root = InnerClassMatcher.createClassMatcher(
             fbb,
             source?.build(fbb) ?: 0,

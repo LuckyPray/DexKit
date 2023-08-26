@@ -12,6 +12,10 @@ class StringMatcher @JvmOverloads constructor(
     private var matchType: StringMatchType = StringMatchType.Contains,
     private var ignoreCase: Boolean = false
 ) : BaseQuery() {
+
+    @JvmSynthetic
+    internal fun getValue() = value
+
     fun value(value: String) = also {
         this.value = value
     }
