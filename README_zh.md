@@ -2,7 +2,7 @@
     <h1> DexKit </h1>
 
 [![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
+[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
 [English](https://github.com/LuckyPray/DexKit/blob/master/README.md) | 简体中文
 
@@ -37,7 +37,7 @@
 
 ### 依赖
 
-添加 `DexKit` 依赖进 `build.gradle`.
+添加 `dexkit` 依赖进 `build.gradle`.
 
 ```gradle
 repositories {
@@ -48,7 +48,7 @@ dependencies {
 }
 ```
 
-DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/DexKit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
+DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
 ## 使用样例
 
