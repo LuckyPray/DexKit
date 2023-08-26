@@ -25,9 +25,9 @@ internal fun getFieldInstance(classLoader: ClassLoader, fieldData: FieldData): F
                 }
             }
         } while (clz.superclass.also { clz = it } != null)
-        throw NoSuchFieldException("Field $fieldData not found in ${fieldData.className}")
+        throw NoSuchFieldException("Field ${fieldData.dexDescriptor} not found in ${fieldData.className}")
     } catch (e: ClassNotFoundException) {
-        throw NoSuchFieldException("No such field: $fieldData").initCause(e)
+        throw NoSuchFieldException("No such field: ${fieldData.dexDescriptor}").initCause(e)
     }
 }
 
@@ -40,35 +40,35 @@ internal fun getConstructorInstance(classLoader: ClassLoader, methodData: Method
         var clz = classLoader.loadClass(methodData.className)
         do {
             for (constructor in clz.declaredConstructors) {
-                if (methodData.dexDescriptor == DexSignUtil.getConstructorSign(constructor)) {
+                if (methodData.methodSign == DexSignUtil.getConstructorSign(constructor)) {
                     constructor.isAccessible = true
                     return constructor
                 }
             }
         } while (clz.superclass.also { clz = it } != null)
-        throw NoSuchMethodException("Constructor $methodData not found in $methodData.dexDescriptor")
+        throw NoSuchMethodException("Constructor ${methodData.dexDescriptor} not found in ${methodData.className}")
     } catch (e: ClassNotFoundException) {
-        throw NoSuchMethodException("No such method: $methodData").initCause(e)
+        throw NoSuchMethodException("No such method: ${methodData.dexDescriptor}").initCause(e)
     }
 }
 
 @Throws(NoSuchMethodException::class)
 internal fun getMethodInstance(classLoader: ClassLoader, methodData: MethodData): Method {
     if (!methodData.isMethod) {
-        throw IllegalArgumentException("$methodData not a method")
+        throw IllegalArgumentException("${methodData.dexDescriptor} not a method")
     }
     try {
         var clz = classLoader.loadClass(methodData.className)
         do {
             for (method in clz.declaredMethods) {
-                if (method.name == methodData.methodName && methodData.dexDescriptor == DexSignUtil.getMethodSign(method)) {
+                if (method.name == methodData.methodName && methodData.methodSign == DexSignUtil.getMethodSign(method)) {
                     method.isAccessible = true
                     return method
                 }
             }
         } while (clz.superclass.also { clz = it } != null)
-        throw NoSuchMethodException("Method $methodData not found in $methodData.dexDescriptor")
+        throw NoSuchMethodException("Method ${methodData.dexDescriptor} not found in ${methodData.className}")
     } catch (e: ClassNotFoundException) {
-        throw NoSuchMethodException("No such method: $methodData").initCause(e)
+        throw NoSuchMethodException("No such method: ${methodData.dexDescriptor}").initCause(e)
     }
 }

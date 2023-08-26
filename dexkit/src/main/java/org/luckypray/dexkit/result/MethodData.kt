@@ -54,6 +54,8 @@ class MethodData private constructor(
         dexDescriptor.substringAfter(")")
     }
 
+    val methodSign get() = "($paramSign)$returnTypeSign"
+
     val className: String by lazy {
         DexSignUtil.getSimpleName(classSign)
     }
