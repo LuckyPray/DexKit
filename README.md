@@ -50,6 +50,9 @@ dependencies {
 }
 ```
 
+> **Note**
+> The new ArtifactId has been changed to `dexkit`.
+
 DexKit current version: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
 ## Usage Example
