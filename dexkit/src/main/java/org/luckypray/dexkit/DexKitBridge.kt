@@ -301,6 +301,11 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
+    internal inline fun getParameterNames(encodeId: Long): List<String?>? {
+        return nativeGetParameterNames(token, encodeId)?.map { it }
+    }
+
+    @kotlin.internal.InlineOnly
     internal inline fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
         val res = nativeGetParameterAnnotations(token, methodId)
         val holder = InnerParametersAnnotationMetaArrayHoler.getRootAsParametersAnnotationMetaArrayHoler(ByteBuffer.wrap(res))
@@ -399,6 +404,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetMethodAnnotations(nativePtr: Long, methodId: Long): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetParameterNames(nativePtr: Long, methodId: Long): Array<String?>?
 
         @JvmStatic
         private external fun nativeGetParameterAnnotations(nativePtr: Long, methodId: Long): ByteArray

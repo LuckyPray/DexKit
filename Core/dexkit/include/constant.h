@@ -43,6 +43,3 @@ constexpr dex::u4 mContains = 1;
 //     similar_regex_match(search = "^abc$", target = "abc") == true
 //     similar_regex_match(search = "^abc$", target = "abcd") == false
 constexpr dex::u4 mSimilarRegex = 2;
-
-
-const dex::Code emptyCode{};

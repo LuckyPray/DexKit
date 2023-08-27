@@ -94,6 +94,10 @@ class MethodData private constructor(
         return bridge.getClassByIds(parameterTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    fun getParameterNames(): List<String?>? {
+        return bridge.getParameterNames(getEncodeId(dexId, id))
+    }
+
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getMethodAnnotations(getEncodeId(dexId, id))
     }

@@ -471,6 +471,29 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodAnnotations(JNIEnv *env, j
     return ret;
 }
 
+DEXKIT_JNI jobjectArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetParameterNames(JNIEnv *env, jclass clazz,
+                                                               jlong native_ptr, jlong method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetParameterNames(method_id);
+    if (!result.has_value()) {
+        return nullptr;
+    }
+    jobjectArray ret = env->NewObjectArray(result->size(), env->FindClass("java/lang/String"),nullptr);
+    for (int i = 0; i < result->size(); ++i) {
+        auto value = result->at(i);
+        if (!value.has_value()) {
+            env->SetObjectArrayElement(ret, i, nullptr);
+        } else {
+            env->SetObjectArrayElement(ret, i, env->NewStringUTF(value->data()));
+        }
+    }
+    return ret;
+}
+
 DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetParameterAnnotations(JNIEnv *env, jclass clazz,
                                                                      jlong native_ptr,

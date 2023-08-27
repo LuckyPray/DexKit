@@ -172,9 +172,7 @@ int DexItem::InitCache() {
             class_method_idx += ReadULeb128(&class_data);
             method_access_flags[class_method_idx] = ReadULeb128(&class_data);
             uint32_t code_off = ReadULeb128(&class_data);
-            if (code_off == 0) {
-                method_codes[class_method_idx] = &emptyCode;
-            } else {
+            if (code_off) {
                 method_codes[class_method_idx] = reader.dataPtr<const dex::Code>(code_off);
             }
             methods.emplace_back(class_method_idx);
@@ -183,9 +181,7 @@ int DexItem::InitCache() {
             class_method_idx += ReadULeb128(&class_data);
             method_access_flags[class_method_idx] = ReadULeb128(&class_data);
             uint32_t code_off = ReadULeb128(&class_data);
-            if (code_off == 0) {
-                method_codes[class_method_idx] = &emptyCode;
-            } else {
+            if (code_off) {
                 method_codes[class_method_idx] = reader.dataPtr<const dex::Code>(code_off);
             }
             methods.emplace_back(class_method_idx);
@@ -193,7 +189,7 @@ int DexItem::InitCache() {
 
         for (auto method_id: methods) {
             auto code = method_codes[method_id];
-            if (code == &emptyCode) {
+            if (code == nullptr) {
                 continue;
             }
             auto &method_invoking = method_invoking_ids[method_id];
@@ -511,6 +507,28 @@ DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
         beans.emplace_back(std::move(annotationBeans));
     }
     return beans;
+}
+
+std::optional<std::vector<std::optional<std::string_view>>>
+DexItem::GetParameterNames(uint32_t method_idx) {
+    auto code = method_codes[method_idx];
+    if (code == nullptr || code->debug_info_off == 0) {
+        return {};
+    }
+    auto *ptr = reader.dataPtr<dex::u1>(code->debug_info_off);
+    ReadULeb128(&ptr); // line_start
+    auto parameter_count = ReadULeb128(&ptr);
+    std::vector<std::optional<std::string_view>> names;
+    names.reserve(parameter_count);
+    for (auto i = 0; i < parameter_count; ++i) {
+        auto name_idx = ReadULeb128(&ptr) - 1;
+        if (name_idx == dex::kNoIndex) {
+            names.emplace_back(std::nullopt);
+        } else {
+            names.emplace_back(strings[name_idx]);
+        }
+    }
+    return names;
 }
 
 std::string_view DexItem::GetMethodDescriptor(uint32_t method_idx) {

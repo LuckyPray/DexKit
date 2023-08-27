@@ -28,6 +28,19 @@ class UnitTest {
     }
 
     @Test
+    fun testGetParameterNames() {
+        bridge.findMethod {
+            matcher {
+                declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+            }
+        }.forEach {
+            println("${it.dexId} ${it.id} ${it.dexDescriptor}")
+            val paramNames = it.getParameterNames()
+            println("paramNames: ${paramNames?.joinToString(",")}")
+        }
+    }
+
+    @Test
     fun testAnnotationSearch() {
         val res = bridge.findClass {
             matcher {

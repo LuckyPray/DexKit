@@ -514,6 +514,13 @@ DexKit::GetParameterAnnotations(int64_t encode_method_id) {
     return builder;
 }
 
+std::optional<std::vector<std::optional<std::string_view>>>
+DexKit::GetParameterNames(int64_t encode_method_id) {
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    return dex_items[dex_id]->GetParameterNames(method_id);
+}
+
 std::map<std::string_view, std::set<std::string_view>>
 DexKit::BuildBatchFindKeywordsMap(
         const flatbuffers::Vector<flatbuffers::Offset<dexkit::schema::BatchUsingStringsMatcher>> *matchers,
