@@ -364,8 +364,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassByIds(JNIEnv *env, jclass c
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto ids_len = env->GetArrayLength(encode_id_array);
     auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
-    std::vector<int64_t> ids_vec(ids_len);
-    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
+    std::vector<int64_t> ids_vec;
+    for (int i = 0; i < ids_len; ++i) {
+        ids_vec.push_back(ids_ptr[i]);
+    }
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetClassByIds(ids_vec);
     auto buf_ptr = result->GetBufferPointer();
@@ -386,8 +388,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodByIds(JNIEnv *env, jclass 
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto ids_len = env->GetArrayLength(encode_id_array);
     auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
-    std::vector<int64_t> ids_vec(ids_len);
-    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
+    std::vector<int64_t> ids_vec;
+    for (int i = 0; i < ids_len; ++i) {
+        ids_vec.push_back(ids_ptr[i]);
+    }
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetMethodByIds(ids_vec);
     auto buf_ptr = result->GetBufferPointer();
@@ -408,8 +412,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldByIds(JNIEnv *env, jclass c
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto ids_len = env->GetArrayLength(encode_id_array);
     auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
-    std::vector<int64_t> ids_vec(ids_len);
-    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
+    std::vector<int64_t> ids_vec;
+    for (int i = 0; i < ids_len; ++i) {
+        ids_vec.push_back(ids_ptr[i]);
+    }
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetFieldByIds(ids_vec);
     auto buf_ptr = result->GetBufferPointer();
