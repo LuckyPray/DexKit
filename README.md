@@ -193,7 +193,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             // AnnotationsMatcher for matching interfaces within the class
                             .annotations(AnnotationsMatcher.create()
                                     .add(AnnotationMatcher.create()
-                                            .typeName("Router", StringMatchType.EndWith)
+                                            .typeName("org.luckypray.dexkit.demo.annotations.Router")
                                             .addElement(
                                                     AnnotationElementMatcher.create()
                                                             .name("path")

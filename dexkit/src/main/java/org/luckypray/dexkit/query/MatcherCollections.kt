@@ -45,7 +45,7 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
     @JvmOverloads
     fun addForType(
         typeName: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         add(FieldMatcher().apply { type(typeName, matchType, ignoreCase) })

@@ -188,7 +188,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             // AnnotationsMatcher 针对类中包含注解的匹配器
                             .annotations(AnnotationsMatcher.create()
                                     .add(AnnotationMatcher.create()
-                                            .typeName("Router", StringMatchType.EndWith)
+                                            .typeName("org.luckypray.dexkit.demo.annotations.Router")
                                             .addElement(
                                                     AnnotationElementMatcher.create()
                                                             .name("path")

@@ -46,7 +46,7 @@ class UnitTest {
             matcher {
                 annotations {
                     add {
-                        this.typeName("Router", StringMatchType.EndWith)
+                        this.typeName("Router", StringMatchType.EndsWith)
                     }
                 }
             }
@@ -67,7 +67,7 @@ class UnitTest {
         val res = bridge.findClass {
             matcher {
                 addAnnotation {
-                    typeName("Router", StringMatchType.EndWith)
+                    typeName("Router", StringMatchType.EndsWith)
                     elements {
                         add {
                             name("path")
@@ -151,7 +151,7 @@ class UnitTest {
         val res = bridge.findClass {
             searchPackage("org.luckypray.dexkit.demo")
             matcher {
-                superClass("AppCompatActivity", StringMatchType.EndWith)
+                superClass("AppCompatActivity", StringMatchType.EndsWith)
                 interfaces {
                     add("android.view.View\$OnClickListener")
                     countRange(1)
@@ -168,9 +168,9 @@ class UnitTest {
         val res = bridge.findClass {
             searchPackage("org.luckypray.dexkit.demo")
             matcher {
-                superClass("appcompatactivity", StringMatchType.EndWith, true)
+                superClass("appcompatactivity", StringMatchType.EndsWith, true)
                 interfaces {
-                    add("android.view.View\$OnClicklistener", StringMatchType.Equal, true)
+                    add("android.view.View\$OnClicklistener", StringMatchType.Equals, true)
                     countRange(1)
                 }
             }
@@ -265,7 +265,7 @@ class UnitTest {
                 // AnnotationsMatcher for matching interfaces within the class
                 annotations {
                     add {
-                        typeName("Router", StringMatchType.EndWith)
+                        typeName("Router", StringMatchType.EndsWith)
                         elements {
                             add {
                                 name("path")

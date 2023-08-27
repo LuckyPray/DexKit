@@ -30,7 +30,7 @@ class ClassMatcher : BaseQuery() {
     @JvmOverloads
     fun source(
         source: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also { this.source = StringMatcher(source, matchType, ignoreCase) }
 
@@ -39,7 +39,7 @@ class ClassMatcher : BaseQuery() {
     @JvmOverloads
     fun className(
         className: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.className = StringMatcher(className, matchType, ignoreCase)
@@ -61,7 +61,7 @@ class ClassMatcher : BaseQuery() {
     @JvmOverloads
     fun superClass(
         className: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.superClass = ClassMatcher().className(StringMatcher(className, matchType, ignoreCase))
@@ -79,7 +79,7 @@ class ClassMatcher : BaseQuery() {
     @JvmOverloads
     fun addInterface(
         className: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.interfaces = this.interfaces ?: InterfacesMatcher()

@@ -1,3 +1,5 @@
+package io.luckypray.dexkit;
+
 import static org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher.createString;
 import static org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher.createFloat;
 import static org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher.createInt;
@@ -6,9 +8,7 @@ import static io.luckypray.dexkit.util.LibLoader.loadLibrary;
 import org.junit.Test;
 import org.luckypray.dexkit.DexKitBridge;
 import org.luckypray.dexkit.query.FindClass;
-import org.luckypray.dexkit.query.enums.StringMatchType;
 import org.luckypray.dexkit.query.matchers.AnnotationElementMatcher;
-import org.luckypray.dexkit.query.matchers.AnnotationElementsMatcher;
 import org.luckypray.dexkit.query.matchers.AnnotationMatcher;
 import org.luckypray.dexkit.query.matchers.AnnotationsMatcher;
 import org.luckypray.dexkit.query.matchers.ClassMatcher;
@@ -16,12 +16,9 @@ import org.luckypray.dexkit.query.matchers.FieldMatcher;
 import org.luckypray.dexkit.query.matchers.FieldsMatcher;
 import org.luckypray.dexkit.query.matchers.MethodMatcher;
 import org.luckypray.dexkit.query.matchers.MethodsMatcher;
-import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher;
-import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JavaTest {
@@ -90,7 +87,7 @@ public class JavaTest {
                         // AnnotationsMatcher for matching interfaces within the class
                         .annotations(AnnotationsMatcher.create()
                                 .add(AnnotationMatcher.create()
-                                        .typeName("Router", StringMatchType.EndWith)
+                                        .typeName("org.luckypray.dexkit.demo.annotations.Router")
                                         .addElement(
                                                 AnnotationElementMatcher.create()
                                                         .name("path")

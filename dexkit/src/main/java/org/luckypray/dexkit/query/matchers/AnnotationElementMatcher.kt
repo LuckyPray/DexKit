@@ -15,7 +15,7 @@ class AnnotationElementMatcher : BaseQuery() {
 
     @JvmOverloads
     fun name(name: String, ignoreCase: Boolean = false) = also {
-        this.name = StringMatcher(name, StringMatchType.Equal, ignoreCase)
+        this.name = StringMatcher(name, StringMatchType.Equals, ignoreCase)
     }
 
     fun matcher(matcher: AnnotationEncodeValueMatcher) = also {

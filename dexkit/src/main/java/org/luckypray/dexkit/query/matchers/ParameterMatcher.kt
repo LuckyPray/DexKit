@@ -18,7 +18,7 @@ class ParameterMatcher : BaseQuery() {
     fun type(type: ClassMatcher) = also { this.type = type }
     fun type(
         typeName: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.type = ClassMatcher().className(typeName, matchType, ignoreCase)

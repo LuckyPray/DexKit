@@ -45,7 +45,7 @@ class InterfacesMatcher : BaseQuery() {
     @JvmOverloads
     fun add(
         className: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         add(ClassMatcher().apply { className(className, matchType, ignoreCase) })

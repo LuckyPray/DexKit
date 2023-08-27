@@ -4,9 +4,9 @@ import org.luckypray.dexkit.InnerStringMatchType
 
 enum class StringMatchType(val value: Byte) {
     Contains(InnerStringMatchType.Contains),
-    StartWith(InnerStringMatchType.StartWith),
-    EndWith(InnerStringMatchType.EndWith),
+    StartsWith(InnerStringMatchType.StartWith),
+    EndsWith(InnerStringMatchType.EndWith),
     SimilarRegex(InnerStringMatchType.SimilarRegex),
-    Equal(InnerStringMatchType.Equal),
+    Equals(InnerStringMatchType.Equal),
     ;
 }

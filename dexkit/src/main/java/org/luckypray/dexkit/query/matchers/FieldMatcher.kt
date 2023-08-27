@@ -25,7 +25,7 @@ class FieldMatcher : BaseQuery() {
 
     @JvmOverloads
     fun name(name: String, ignoreCase: Boolean = false) = also {
-        this.name = StringMatcher(name, StringMatchType.Equal, ignoreCase)
+        this.name = StringMatcher(name, StringMatchType.Equals, ignoreCase)
     }
 
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
@@ -44,7 +44,7 @@ class FieldMatcher : BaseQuery() {
     @JvmOverloads
     fun declaredClass(
         className: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.declaredClass = ClassMatcher().className(className, matchType, ignoreCase)
@@ -57,7 +57,7 @@ class FieldMatcher : BaseQuery() {
     @JvmOverloads
     fun type(
         typeName: String,
-        matchType: StringMatchType = StringMatchType.Equal,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.type = ClassMatcher().className(typeName, matchType, ignoreCase)
