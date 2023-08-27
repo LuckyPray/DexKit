@@ -12,9 +12,9 @@ public:
     uint32_t id;
     uint32_t dex_id;
     std::string_view source_file;
-    uint32_t access_flags;
+    uint32_t access_flags = 0;
     std::string_view dex_descriptor;
-    uint32_t super_class_id;
+    uint32_t super_class_id = -1;
     std::vector<uint32_t> interface_ids;
     std::vector<uint32_t> method_ids;
     std::vector<uint32_t> field_ids;
