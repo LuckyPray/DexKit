@@ -364,10 +364,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassByIds(JNIEnv *env, jclass c
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto ids_len = env->GetArrayLength(encode_id_array);
     auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
-    std::vector<int64_t> ids_vec;
-    for (int i = 0; i < ids_len; ++i) {
-        ids_vec.push_back(ids_ptr[i]);
-    }
+    std::vector<int64_t> ids_vec(ids_len);
+    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetClassByIds(ids_vec);
     auto buf_ptr = result->GetBufferPointer();
@@ -388,10 +386,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodByIds(JNIEnv *env, jclass 
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto ids_len = env->GetArrayLength(encode_id_array);
     auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
-    std::vector<int64_t> ids_vec;
-    for (int i = 0; i < ids_len; ++i) {
-        ids_vec.push_back(ids_ptr[i]);
-    }
+    std::vector<int64_t> ids_vec(ids_len);
+    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetMethodByIds(ids_vec);
     auto buf_ptr = result->GetBufferPointer();
@@ -404,7 +400,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodByIds(JNIEnv *env, jclass 
 
 DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldByIds(JNIEnv *env, jclass clazz,
-                                                           jlong native_ptr, 
+                                                           jlong native_ptr,
                                                            jlongArray encode_id_array) {
     if (!native_ptr) {
         return {};
@@ -412,10 +408,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldByIds(JNIEnv *env, jclass c
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto ids_len = env->GetArrayLength(encode_id_array);
     auto *ids_ptr = env->GetLongArrayElements(encode_id_array, nullptr);
-    std::vector<int64_t> ids_vec;
-    for (int i = 0; i < ids_len; ++i) {
-        ids_vec.push_back(ids_ptr[i]);
-    }
+    std::vector<int64_t> ids_vec(ids_len);
+    memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetFieldByIds(ids_vec);
     auto buf_ptr = result->GetBufferPointer();
@@ -428,7 +422,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldByIds(JNIEnv *env, jclass c
 
 DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassAnnotations(JNIEnv *env, jclass clazz,
-                                                                 jlong native_ptr, 
+                                                                 jlong native_ptr,
                                                                  jlong encode_class_id) {
     if (!native_ptr) {
         return {};
@@ -445,7 +439,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassAnnotations(JNIEnv *env, jc
 
 DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldAnnotations(JNIEnv *env, jclass clazz,
-                                                                 jlong native_ptr, 
+                                                                 jlong native_ptr,
                                                                  jlong encode_field_id) {
     if (!native_ptr) {
         return {};
