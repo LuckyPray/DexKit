@@ -101,7 +101,7 @@ class OpCodesMatcher : BaseQuery {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerOpCodesMatcher.createOpCodesMatcher(
             fbb,
-            opCodes?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            opCodes?.map { it.toShort() }?.let { InnerOpCodesMatcher.createOpCodesVector(fbb, it.toShortArray()) } ?: 0,
             matchType.value,
             methodOpCodeSize?.build(fbb) ?: 0
         )

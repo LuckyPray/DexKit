@@ -825,7 +825,6 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
             return false;
         }
         auto &parameter_annotations = this->method_parameter_annotations[method_idx];
-        auto type_list_size = type_list == nullptr ? 0 : type_list->size;
         for (size_t i = 0; i < type_list_size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
             if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->parameter_type())) {
@@ -844,16 +843,15 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
         return true;
     }
     auto &opt_opcodes = this->method_opcode_seq[method_idx];
-    DEXKIT_CHECK(opt_opcodes.has_value());
-    const auto opcodes = opt_opcodes.value();
+    auto op_code_size = opt_opcodes.has_value() ? opt_opcodes->size() : 0;
     if (matcher->op_code_count()) {
-        if (opcodes.size() < matcher->op_code_count()->min()
-        || opcodes.size() > matcher->op_code_count()->max()) {
+        if (op_code_size < matcher->op_code_count()->min()
+        || op_code_size > matcher->op_code_count()->max()) {
             return false;
         }
     }
     if (matcher->op_codes()) {
-        if (matcher->op_codes()->size() > opcodes.size()) {
+        if (matcher->op_codes()->size() > op_code_size) {
             return false;
         }
 
@@ -873,20 +871,27 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
         }
 
         auto matcher_opcodes = *ptr;
-        auto index = kmp::FindIndex(opcodes, matcher_opcodes);
-        if (index == -1) {
+        if (matcher_opcodes.size() > op_code_size) {
             return false;
         }
-        bool condition = false;
-        switch (matcher->match_type()) {
-            case schema::OpCodeMatchType::Equal: condition = index == 0 && matcher_opcodes.size() == opcodes.size(); break;
-            case schema::OpCodeMatchType::StartWith: condition = index == 0; break;
-            case schema::OpCodeMatchType::EndWith: condition = index + matcher_opcodes.size() == opcodes.size(); break;
-            case schema::OpCodeMatchType::Contains: condition = true; break;
+
+        if (matcher_opcodes.size() > 0) {
+            auto index = kmp::FindIndex(opt_opcodes.value(), matcher_opcodes);
+            if (index == -1) {
+                return false;
+            }
+            bool condition = false;
+            switch (matcher->match_type()) {
+                case schema::OpCodeMatchType::Equal: condition = index == 0 && matcher_opcodes.size() == op_code_size; break;
+                case schema::OpCodeMatchType::StartWith: condition = index == 0; break;
+                case schema::OpCodeMatchType::EndWith: condition = index + matcher_opcodes.size() == op_code_size; break;
+                case schema::OpCodeMatchType::Contains: condition = true; break;
+            }
+            if (!condition) {
+                return false;
+            }
         }
-        if (!condition) {
-            return false;
-        }
+
     }
     return true;
 }
