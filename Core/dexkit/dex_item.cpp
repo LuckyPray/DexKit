@@ -531,6 +531,12 @@ DexItem::GetParameterNames(uint32_t method_idx) {
     return names;
 }
 
+std::vector<uint8_t>
+DexItem::GetMethodOpCodes(uint32_t method_idx) {
+    auto &op_seq = method_opcode_seq[method_idx];
+    return op_seq.has_value() ? op_seq.value() : std::vector<uint8_t>();
+}
+
 std::string_view DexItem::GetMethodDescriptor(uint32_t method_idx) {
     auto &method_desc = this->method_descriptors[method_idx];
     if (method_desc != std::nullopt) {

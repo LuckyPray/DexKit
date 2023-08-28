@@ -318,6 +318,11 @@ class DexKitBridge : Closeable {
         return list
     }
 
+    @kotlin.internal.InlineOnly
+    internal inline fun getMethodOpCodes(encodeId: Long): List<Int> {
+        return nativeGetMethodOpCodes(token, encodeId).toList()
+    }
+
     companion object {
         @JvmStatic
         fun create(apkPath: String): DexKitBridge? {
@@ -407,6 +412,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetParameterAnnotations(nativePtr: Long, methodId: Long): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetMethodOpCodes(nativePtr: Long, methodId: Long): IntArray
 
     }
 

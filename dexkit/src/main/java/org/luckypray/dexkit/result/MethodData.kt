@@ -7,6 +7,7 @@ import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexSignUtil
+import org.luckypray.dexkit.util.OpCodeUtil
 import org.luckypray.dexkit.util.getClassInstance
 import org.luckypray.dexkit.util.getMethodInstance
 import org.luckypray.dexkit.util.getConstructorInstance
@@ -104,6 +105,14 @@ class MethodData private constructor(
 
     fun getParameterAnnotations(): List<List<AnnotationData>> {
         return bridge.getParameterAnnotations(getEncodeId(dexId, id))
+    }
+
+    fun getOpCodes(): List<Int> {
+        return bridge.getMethodOpCodes(getEncodeId(dexId, id))
+    }
+
+    fun getOpNames(): List<String> {
+        return getOpCodes().map { OpCodeUtil.getOpFormat(it) }
     }
 
     @Throws(ClassNotFoundException::class)

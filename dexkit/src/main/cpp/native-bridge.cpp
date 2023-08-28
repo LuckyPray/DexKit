@@ -511,4 +511,18 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetParameterAnnotations(JNIEnv *env
     return ret;
 }
 
+DEXKIT_JNI jintArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodOpCodes(JNIEnv *env, jclass clazz,
+                                                              jlong native_ptr, jlong method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetMethodOpCodes(method_id);
+    auto int_vector = std::vector<int>(result.begin(), result.end());
+    jintArray ret = env->NewIntArray(int_vector.size());
+    env->SetIntArrayRegion(ret, 0, int_vector.size(), (const jint*) int_vector.data());
+    return ret;
+}
+
 }
