@@ -825,7 +825,8 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
             return false;
         }
         auto &parameter_annotations = this->method_parameter_annotations[method_idx];
-        for (size_t i = 0; i < type_list->size; ++i) {
+        auto type_list_size = type_list == nullptr ? 0 : type_list->size;
+        for (size_t i = 0; i < type_list_size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
             if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->parameter_type())) {
                 return false;
