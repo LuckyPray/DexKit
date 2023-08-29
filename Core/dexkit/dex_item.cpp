@@ -397,7 +397,7 @@ AnnotationBean DexItem::GetAnnotationBean(ir::Annotation *annotation) {
     bean.dex_id = this->dex_id;
     bean.type_id = annotation->type->orig_index;
     bean.type_descriptor = type_names[annotation->type->orig_index];
-    bean.visibility = ((char) annotation->visibility == -1)
+    bean.visibility = ((int8_t) annotation->visibility == -1)
             ? schema::AnnotationVisibilityType::None
             : (schema::AnnotationVisibilityType) annotation->visibility;
     for (auto &element : annotation->elements) {
