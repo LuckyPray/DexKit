@@ -142,7 +142,7 @@ class MethodData private constructor(
             }
             append("$returnTypeName $methodName(")
             append(paramSignList.joinToString(", "))
-            append(") {}")
+            append(")")
         }
     }
 

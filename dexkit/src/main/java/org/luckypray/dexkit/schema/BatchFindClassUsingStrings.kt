@@ -28,19 +28,46 @@ internal class `-BatchFindClassUsingStrings` : Table() {
         __init(_i, _bb)
         return this
     }
-    val searchPackage : String?
-        get() {
-            val o = __offset(4)
-            return if (o != 0) {
-                __string(o + bb_pos)
-            } else {
-                null
-            }
+    fun searchPackages(j: Int) : String? {
+        val o = __offset(4)
+        return if (o != 0) {
+            __string(__vector(o) + j * 4)
+        } else {
+            null
         }
-    val searchPackageAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(4, 1)
-    fun searchPackageInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 4, 1)
-    fun inClasses(j: Int) : Long {
+    }
+    val searchPackagesLength : Int
+        get() {
+            val o = __offset(4); return if (o != 0) __vector_len(o) else 0
+        }
+    fun excludePackages(j: Int) : String? {
         val o = __offset(6)
+        return if (o != 0) {
+            __string(__vector(o) + j * 4)
+        } else {
+            null
+        }
+    }
+    val excludePackagesLength : Int
+        get() {
+            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+        }
+    val ignorePackagesCase : Boolean
+        get() {
+            val o = __offset(8)
+            return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
+        }
+    fun mutateIgnorePackagesCase(ignorePackagesCase: Boolean) : Boolean {
+        val o = __offset(8)
+        return if (o != 0) {
+            bb.put(o + bb_pos, (if(ignorePackagesCase) 1 else 0).toByte())
+            true
+        } else {
+            false
+        }
+    }
+    fun inClasses(j: Int) : Long {
+        val o = __offset(10)
         return if (o != 0) {
             bb.getLong(__vector(o) + j * 8)
         } else {
@@ -49,12 +76,12 @@ internal class `-BatchFindClassUsingStrings` : Table() {
     }
     val inClassesLength : Int
         get() {
-            val o = __offset(6); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(10); return if (o != 0) __vector_len(o) else 0
         }
-    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(6, 8)
-    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 6, 8)
+    val inClassesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(10, 8)
+    fun inClassesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 10, 8)
     fun mutateInClasses(j: Int, inClasses: Long) : Boolean {
-        val o = __offset(6)
+        val o = __offset(10)
         return if (o != 0) {
             bb.putLong(__vector(o) + j * 8, inClasses)
             true
@@ -64,7 +91,7 @@ internal class `-BatchFindClassUsingStrings` : Table() {
     }
     fun matchers(j: Int) : `-BatchUsingStringsMatcher`? = matchers(`-BatchUsingStringsMatcher`(), j)
     fun matchers(obj: `-BatchUsingStringsMatcher`, j: Int) : `-BatchUsingStringsMatcher`? {
-        val o = __offset(8)
+        val o = __offset(12)
         return if (o != 0) {
             obj.__assign(__indirect(__vector(o) + j * 4), bb)
         } else {
@@ -73,7 +100,7 @@ internal class `-BatchFindClassUsingStrings` : Table() {
     }
     val matchersLength : Int
         get() {
-            val o = __offset(8); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(12); return if (o != 0) __vector_len(o) else 0
         }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
@@ -82,16 +109,36 @@ internal class `-BatchFindClassUsingStrings` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createBatchFindClassUsingStrings(builder: FlatBufferBuilder, searchPackageOffset: Int, inClassesOffset: Int, matchersOffset: Int) : Int {
-            builder.startTable(3)
+        fun createBatchFindClassUsingStrings(builder: FlatBufferBuilder, searchPackagesOffset: Int, excludePackagesOffset: Int, ignorePackagesCase: Boolean, inClassesOffset: Int, matchersOffset: Int) : Int {
+            builder.startTable(5)
             addMatchers(builder, matchersOffset)
             addInClasses(builder, inClassesOffset)
-            addSearchPackage(builder, searchPackageOffset)
+            addExcludePackages(builder, excludePackagesOffset)
+            addSearchPackages(builder, searchPackagesOffset)
+            addIgnorePackagesCase(builder, ignorePackagesCase)
             return endBatchFindClassUsingStrings(builder)
         }
-        fun startBatchFindClassUsingStrings(builder: FlatBufferBuilder) = builder.startTable(3)
-        fun addSearchPackage(builder: FlatBufferBuilder, searchPackage: Int) = builder.addOffset(0, searchPackage, 0)
-        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(1, inClasses, 0)
+        fun startBatchFindClassUsingStrings(builder: FlatBufferBuilder) = builder.startTable(5)
+        fun addSearchPackages(builder: FlatBufferBuilder, searchPackages: Int) = builder.addOffset(0, searchPackages, 0)
+        fun createSearchPackagesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startSearchPackagesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addExcludePackages(builder: FlatBufferBuilder, excludePackages: Int) = builder.addOffset(1, excludePackages, 0)
+        fun createExcludePackagesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startExcludePackagesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addIgnorePackagesCase(builder: FlatBufferBuilder, ignorePackagesCase: Boolean) = builder.addBoolean(2, ignorePackagesCase, false)
+        fun addInClasses(builder: FlatBufferBuilder, inClasses: Int) = builder.addOffset(3, inClasses, 0)
         fun createInClassesVector(builder: FlatBufferBuilder, data: LongArray) : Int {
             builder.startVector(8, data.size, 8)
             for (i in data.size - 1 downTo 0) {
@@ -100,7 +147,7 @@ internal class `-BatchFindClassUsingStrings` : Table() {
             return builder.endVector()
         }
         fun startInClassesVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
-        fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(2, matchers, 0)
+        fun addMatchers(builder: FlatBufferBuilder, matchers: Int) = builder.addOffset(4, matchers, 0)
         fun createMatchersVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

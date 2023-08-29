@@ -40,25 +40,21 @@ DexItem::BatchFindClassUsingStrings(
         acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
         std::map<std::string_view, std::set<std::string_view>> &keywords_map,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
-        std::set<uint32_t> &in_class_set
+        std::set<uint32_t> &in_class_set,
+        trie::PackageTrie &packageTrie
 ) {
     auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
     if (strings_map.empty()) return {};
-
-    std::string search_package;
-    if (query->search_package()) {
-        search_package = query->search_package()->string_view();
-        std::replace(search_package.begin(), search_package.end(), '.', '/');
-        if (search_package[0] != 'L') {
-            search_package = "L" + search_package;
-        }
-    }
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
         if (class_method_ids[type_idx].empty()) continue;
         if (query->in_classes() && in_class_set.contains(type_idx)) continue;
-        if (query->search_package() && !type_names[type_idx].starts_with(search_package)) continue;
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
 
         std::set<std::string_view> search_set;
         for (auto method_idx: class_method_ids[type_idx]) {
@@ -105,25 +101,21 @@ DexItem::BatchFindMethodUsingStrings(
         std::map<std::string_view, std::set<std::string_view>> &keywords_map,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
         std::set<uint32_t> &in_class_set,
-        std::set<uint32_t> &in_method_set
+        std::set<uint32_t> &in_method_set,
+        trie::PackageTrie &packageTrie
 ) {
     auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
     if (strings_map.empty()) return {};
-
-    std::string search_package;
-    if (query->search_package()) {
-        search_package = query->search_package()->string_view();
-        std::replace(search_package.begin(), search_package.end(), '.', '/');
-        if (search_package[0] != 'L') {
-            search_package = "L" + search_package;
-        }
-    }
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
         if (class_method_ids[type_idx].empty()) continue;
         if (query->in_classes() && in_class_set.contains(type_idx)) continue;
-        if (query->search_package() && !type_names[type_idx].starts_with(search_package)) continue;
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
 
         for (auto method_idx: class_method_ids[type_idx]) {
             if (query->in_methods() && in_method_set.contains(method_idx)) continue;

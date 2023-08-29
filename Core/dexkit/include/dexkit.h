@@ -9,6 +9,7 @@
 #include "file_helper.h"
 #include "error.h"
 #include "dex_item.h"
+#include "package_trie.h"
 
 namespace dexkit {
 
@@ -49,6 +50,14 @@ private:
     std::atomic<uint32_t> dex_cnt = 0;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
+
+    static void
+    BuildPackagesMatchTrie(
+            const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,
+            const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *exclude_packages,
+            const bool ignore_package_case,
+            trie::PackageTrie &trie
+    );
 
     static std::map<std::string_view, std::set<std::string_view>>
     BuildBatchFindKeywordsMap(

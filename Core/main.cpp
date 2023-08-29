@@ -134,7 +134,7 @@ int DexKitBatchFindClassTest(dexkit::DexKit &dexkit) {
             ),
     };
 
-    auto find = CreateBatchFindClassUsingStrings(fbb, 0, 0, fbb.CreateVector(matchers));
+    auto find = CreateBatchFindClassUsingStrings(fbb, 0, 0, false,0, fbb.CreateVector(matchers));
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
@@ -195,7 +195,7 @@ int DexKitBatchFindMethodTest(dexkit::DexKit &dexkit) {
             ),
     };
 
-    auto find = CreateBatchFindMethodUsingStrings(fbb, 0, 0, 0, fbb.CreateVector(matchers));
+    auto find = CreateBatchFindMethodUsingStrings(fbb, 0, 0, false, 0, 0, fbb.CreateVector(matchers));
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
@@ -225,7 +225,7 @@ int DexKitFindClassUsingStrings(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassUsingStrings Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, 0,
+            fbb, 0, 0, false, 0,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -278,7 +278,7 @@ int DexKitFindClassTest(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassTest Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, 0,
+            fbb, 0, 0, false, 0,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -392,7 +392,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, 0,
+            fbb, 0, 0, false, 0,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -474,7 +474,7 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
-            fbb, 0, 0, 0,
+            fbb, 0, 0, false, 0, 0,
             CreateMethodMatcher(
                     fbb,
                     0,
@@ -543,7 +543,7 @@ int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
-            fbb, fbb.CreateString(""), 0, 0,
+            fbb, 0, 0, false, 0, 0,
             CreateMethodMatcher(
                     fbb,
                     0,
@@ -602,17 +602,50 @@ int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitPackageTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitPackageTest Start-----------\n");
+
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindClass(
+            fbb,
+            fbb.CreateVectorOfStrings({"Org.luckypray.dexkit.demo"}),
+            fbb.CreateVectorOfStrings({"org.luckypray.dexkit.demo.annotations"}),
+            false
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindClass>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindClass(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<ClassMetaArrayHolder>(buffer);
+    if (result->classes()) {
+        printf("result->classes()->size() = %d\n", result->classes()->size());
+        for (int i = 0; i < result->classes()->size(); ++i) {
+            auto item = result->classes()->Get(i);
+            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+        }
+    }
+    return 0;
+}
+
+
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/QQ_8.9.2-3072.apk");
+    auto dexkit = dexkit::DexKit("../apks/demo.apk");
 //    dexkit.SetThreadNum(1);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "unzip and init full cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
-    dexkit.GetClassAnnotations(27LL<<32 | 3346);
 //    SharedPtrVoidCast(dexkit);
 //    ThreadVariableTest();
 //    KmpTest();
@@ -625,6 +658,7 @@ int main() {
 //    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindMethodCaller(dexkit);
 //    DexKitFindClassUsingAnnotationTest(dexkit);
+    DexKitPackageTest(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

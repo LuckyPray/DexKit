@@ -143,7 +143,7 @@ public class MainHook implements IXposedHookLoadPackage {
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             bridge.findClass(FindClass.create()
                     // 从指定的包名范围内进行查找
-                    .searchPackage("org.luckypray.dexkit.demo")
+                    .searchPackages("org.luckypray.dexkit.demo")
                     .matcher(ClassMatcher.create()
                             // ClassMatcher 针对类的匹配器
                             .className("org.luckypray.dexkit.demo.PlayActivity")
@@ -229,7 +229,7 @@ class MainHook : IXposedHookLoadPackage {
         DexKitBridge.create(apkPath)?.use { bridge ->
             bridge.findClass {
                 // 从指定的包名范围内进行查找
-                searchPackage("org.luckypray.dexkit.demo")
+                searchPackages("org.luckypray.dexkit.demo")
                 // ClassMatcher 针对类的匹配器
                 matcher {
                     className("org.luckypray.dexkit.demo.PlayActivity")

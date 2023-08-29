@@ -116,13 +116,17 @@ DexKit::FindClass(const schema::FindClass *query) {
     }
     auto resolve_types = ExtractUseTypeNames(query->matcher());
 
+    trie::PackageTrie packageTrie;
+    // build package match trie
+    BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
+
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &resolve_types]() -> std::vector<ClassBean> {
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &resolve_types, &packageTrie]() -> std::vector<ClassBean> {
             if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-                return dex_item->FindClass(query, class_set);
+                return dex_item->FindClass(query, class_set, packageTrie);
             }
             return {};
         }));
@@ -162,14 +166,18 @@ DexKit::FindMethod(const schema::FindMethod *query) {
     }
     auto resolve_types = ExtractUseTypeNames(query->matcher());
 
+    trie::PackageTrie packageTrie;
+    // build package match trie
+    BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
+
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<MethodBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &method_set = dex_method_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([this, &dex_item, &query, &class_set, &method_set, &resolve_types]() -> std::vector<MethodBean> {
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &method_set, &resolve_types, &packageTrie]() -> std::vector<MethodBean> {
             if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-                return dex_item->FindMethod(query, class_set, method_set);
+                return dex_item->FindMethod(query, class_set, method_set, packageTrie);
             }
             return {};
         }));
@@ -209,14 +217,18 @@ DexKit::FindField(const schema::FindField *query) {
     }
     auto resolve_types = ExtractUseTypeNames(query->matcher());
 
+    trie::PackageTrie packageTrie;
+    // build package match trie
+    BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
+
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<FieldBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &field_set = dex_field_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &field_set, &resolve_types]() -> std::vector<FieldBean> {
+        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &field_set, &resolve_types, &packageTrie]() -> std::vector<FieldBean> {
             if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-                return dex_item->FindField(query, class_set, field_set);
+                return dex_item->FindField(query, class_set, field_set, packageTrie);
             }
             return {};
         }));
@@ -249,6 +261,10 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
         }
     }
 
+    trie::PackageTrie packageTrie;
+    // build package match trie
+    BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
+
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
@@ -269,8 +285,8 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     std::vector<std::future<std::vector<BatchFindClassItemBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_map = dex_class_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &acTrie, &keywords_map, &match_type_map, &class_map]() {
-            return dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, class_map);
+        futures.push_back(pool.enqueue([&dex_item, &query, &acTrie, &keywords_map, &match_type_map, &class_map, &packageTrie]() {
+            return dex_item->BatchFindClassUsingStrings(query, acTrie, keywords_map, match_type_map, class_map, packageTrie);
         }));
     }
 
@@ -318,6 +334,10 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
         }
     }
 
+    trie::PackageTrie packageTrie;
+    // build package match trie
+    BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
+
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
@@ -339,8 +359,8 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &method_set = dex_method_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &acTrie, &keywords_map, &match_type_map, &class_set, &method_set]() {
-            return dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, class_set, method_set);
+        futures.push_back(pool.enqueue([&dex_item, &query, &acTrie, &keywords_map, &match_type_map, &class_set, &method_set, &packageTrie]() {
+            return dex_item->BatchFindMethodUsingStrings(query, acTrie, keywords_map, match_type_map, class_set, method_set, packageTrie);
         }));
     }
 
@@ -526,6 +546,40 @@ DexKit::GetMethodOpCodes(int64_t encode_method_id) {
     auto dex_id = encode_method_id >> 32;
     auto method_id = encode_method_id & UINT32_MAX;
     return dex_items[dex_id]->GetMethodOpCodes(method_id);
+}
+
+void
+DexKit::BuildPackagesMatchTrie(
+        const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,
+        const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *exclude_packages,
+        const bool ignore_packages_case,
+        trie::PackageTrie &trie
+) {
+    std::vector<std::string> packages;
+    if (search_packages) {
+        for (auto i = 0; i < search_packages->size(); ++i) {
+            auto package = search_packages->Get(i);
+            std::string package_str(package->string_view());
+            std::replace(package_str.begin(), package_str.end(), '.', '/');
+            if (package_str[0] != 'L') {
+                package_str = "L" + package_str; // NOLINT
+            }
+            trie.insert(package_str, true, ignore_packages_case);
+            packages.emplace_back(std::move(package_str));
+        }
+    }
+    if (exclude_packages) {
+        for (auto i = 0; i < exclude_packages->size(); ++i) {
+            auto package = exclude_packages->Get(i);
+            std::string package_str(package->string_view());
+            std::replace(package_str.begin(), package_str.end(), '.', '/');
+            if (package_str[0] != 'L') {
+                package_str = "L" + package_str; // NOLINT
+            }
+            trie.insert(package_str, false, ignore_packages_case);
+            packages.emplace_back(std::move(package_str));
+        }
+    }
 }
 
 std::map<std::string_view, std::set<std::string_view>>

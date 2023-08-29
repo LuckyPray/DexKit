@@ -17,6 +17,7 @@
 #include "acdat/Builder.h"
 #include "ThreadVariable.h"
 #include "file_helper.h"
+#include "package_trie.h"
 
 namespace dexkit {
 
@@ -38,15 +39,30 @@ public:
         return dex_id;
     }
 
-    std::vector<ClassBean> FindClass(const schema::FindClass *query, std::set<uint32_t> &in_class_set);
-    std::vector<MethodBean> FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_method_set);
-    std::vector<FieldBean> FindField(const schema::FindField *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_field_set);
+    std::vector<ClassBean> FindClass(
+            const schema::FindClass *query,
+            std::set<uint32_t> &in_class_set,
+            trie::PackageTrie &packageTrie
+    );
+    std::vector<MethodBean> FindMethod(
+            const schema::FindMethod *query,
+            std::set<uint32_t> &in_class_set,
+            std::set<uint32_t> &in_method_set,
+            trie::PackageTrie &packageTrie
+    );
+    std::vector<FieldBean> FindField(
+            const schema::FindField *query,
+            std::set<uint32_t> &in_class_set,
+            std::set<uint32_t> &in_field_set,
+            trie::PackageTrie &packageTrie
+    );
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
             acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
-            std::set<uint32_t> &in_class_set
+            std::set<uint32_t> &in_class_set,
+            trie::PackageTrie &packageTrie
     );
     std::vector<BatchFindMethodItemBean> BatchFindMethodUsingStrings(
             const schema::BatchFindMethodUsingStrings *query,
@@ -54,7 +70,8 @@ public:
             std::map<std::string_view, std::set<std::string_view>> &keywords_map,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map,
             std::set<uint32_t> &in_class_set,
-            std::set<uint32_t> &in_method_set
+            std::set<uint32_t> &in_method_set,
+            trie::PackageTrie &packageTrie
     );
 
     ClassBean GetClassBean(uint32_t type_idx);

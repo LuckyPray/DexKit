@@ -3,21 +3,20 @@
 namespace dexkit {
 
 std::vector<ClassBean>
-DexItem::FindClass(const schema::FindClass *query, std::set<uint32_t> &in_class_set) {
-
-    std::string search_package;
-    if (query->search_package()) {
-        search_package = query->search_package()->string_view();
-        std::replace(search_package.begin(), search_package.end(), '.', '/');
-        if (search_package[0] != 'L') {
-            search_package = "L" + search_package;
-        }
-    }
+DexItem::FindClass(
+        const schema::FindClass *query,
+        std::set<uint32_t> &in_class_set,
+        trie::PackageTrie &packageTrie
+) {
 
     std::vector<uint32_t> find_result;
     for (auto &class_def: this->reader.ClassDefs()) {
         if (query->in_classes() && !in_class_set.contains(class_def.class_idx)) continue;
-        if (query->search_package() && !type_names[class_def.class_idx].starts_with(search_package)) continue;
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[class_def.class_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
 
         if (IsClassMatched(class_def.class_idx, query->matcher())) {
             find_result.emplace_back(class_def.class_idx);
@@ -33,23 +32,23 @@ DexItem::FindClass(const schema::FindClass *query, std::set<uint32_t> &in_class_
 }
 
 std::vector<MethodBean>
-DexItem::FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_method_set) {
-
-    std::string search_package;
-    if (query->search_package()) {
-        search_package = query->search_package()->string_view();
-        std::replace(search_package.begin(), search_package.end(), '.', '/');
-        if (search_package[0] != 'L') {
-            search_package = "L" + search_package;
-        }
-    }
+DexItem::FindMethod(
+        const schema::FindMethod *query,
+        std::set<uint32_t> &in_class_set,
+        std::set<uint32_t> &in_method_set,
+        trie::PackageTrie &packageTrie
+) {
 
     std::vector<uint32_t> find_result;
     auto index = 0;
     for (auto &method_def: this->reader.MethodIds()) {
         auto method_idx = index++;
         if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) continue;
-        if (query->search_package() && !type_names[method_def.class_idx].starts_with(search_package)) continue;
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[method_def.class_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
         if (query->in_methods() && !in_method_set.contains(method_idx)) continue;
 
         if (IsMethodMatched(method_idx, query->matcher())) {
@@ -66,24 +65,23 @@ DexItem::FindMethod(const schema::FindMethod *query, std::set<uint32_t> &in_clas
 }
 
 std::vector<FieldBean>
-DexItem::FindField(const schema::FindField *query, std::set<uint32_t> &in_class_set, std::set<uint32_t> &in_field_set) {
-
-    std::string search_package;
-    if (query->search_package()) {
-        search_package = query->search_package()->string_view();
-        std::replace(search_package.begin(), search_package.end(), '.', '/');
-        if (search_package[0] != 'L') {
-            search_package = "L" + search_package;
-        }
-    }
+DexItem::FindField(
+        const schema::FindField *query,
+        std::set<uint32_t> &in_class_set,
+        std::set<uint32_t> &in_field_set,
+        trie::PackageTrie &packageTrie
+) {
 
     std::vector<uint32_t> find_result;
     auto index = 0;
     for (auto &field_def: this->reader.FieldIds()) {
         auto field_idx = index++;
-        auto field_class_type_idx = field_def.class_idx;
-        if (query->in_classes() && !in_class_set.contains(field_class_type_idx)) continue;
-        if (query->search_package() && !type_names[field_class_type_idx].starts_with(search_package)) continue;
+        if (query->in_classes() && !in_class_set.contains(field_def.class_idx)) continue;
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[field_def.class_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
         if (query->in_fields() && !in_field_set.contains(field_idx)) continue;
 
         if (IsFieldMatched(field_idx, query->matcher())) {

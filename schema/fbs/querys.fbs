@@ -3,33 +3,43 @@ include "matchers.fbs";
 namespace dexkit.schema;
 
 table FindClass {
-    search_package: string;
+    search_packages: [string];
+    exclude_packages: [string];
+    ignore_packages_case: bool;
     in_classes: [int64];
     matcher: ClassMatcher;
 }
 
 table FindMethod {
-    search_package: string;
+    search_packages: [string];
+    exclude_packages: [string];
+    ignore_packages_case: bool;
     in_classes: [int64];
     in_methods: [int64];
     matcher: MethodMatcher;
 }
 
 table FindField {
-    search_package: string;
+    search_packages: [string];
+    exclude_packages: [string];
+    ignore_packages_case: bool;
     in_classes: [int64];
     in_fields: [int64];
     matcher: FieldMatcher;
 }
 
 table BatchFindClassUsingStrings {
-    search_package: string;
+    search_packages: [string];
+    exclude_packages: [string];
+    ignore_packages_case: bool;
     in_classes: [int64];
     matchers: [BatchUsingStringsMatcher];
 }
 
 table BatchFindMethodUsingStrings {
-    search_package: string;
+    search_packages: [string];
+    exclude_packages: [string];
+    ignore_packages_case: bool;
     in_classes: [int64];
     in_methods: [int64];
     matchers: [BatchUsingStringsMatcher];

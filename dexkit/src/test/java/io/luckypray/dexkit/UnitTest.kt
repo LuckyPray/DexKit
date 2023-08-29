@@ -28,6 +28,16 @@ class UnitTest {
     }
 
     @Test
+    fun testPackages() {
+        bridge.findClass {
+            searchPackages("org.luckypray.dexkit.demo")
+            excludePackages("org.luckypray.dexkit.demo.annotations")
+        }.forEach {
+            println(it.className)
+        }
+    }
+
+    @Test
     fun testGetParameterNames() {
         bridge.findMethod {
             matcher {
@@ -149,7 +159,7 @@ class UnitTest {
     @Test
     fun testFindClassImpl() {
         val res = bridge.findClass {
-            searchPackage("org.luckypray.dexkit.demo")
+            searchPackages("org.luckypray.dexkit.demo")
             matcher {
                 superClass("AppCompatActivity", StringMatchType.EndsWith)
                 interfaces {
@@ -166,7 +176,7 @@ class UnitTest {
     @Test
     fun testFindClassImplIgnoreCase() {
         val res = bridge.findClass {
-            searchPackage("org.luckypray.dexkit.demo")
+            searchPackages("org.luckypray.dexkit.demo")
             matcher {
                 superClass("appcompatactivity", StringMatchType.EndsWith, true)
                 interfaces {
@@ -217,7 +227,7 @@ class UnitTest {
     fun test() {
         bridge.findClass {
             // Search within the specified package name range
-            searchPackage("org.luckypray.dexkit.demo")
+            searchPackages("org.luckypray.dexkit.demo")
             // ClassMatcher for class matching
             matcher {
                 className("org.luckypray.dexkit.demo.PlayActivity")

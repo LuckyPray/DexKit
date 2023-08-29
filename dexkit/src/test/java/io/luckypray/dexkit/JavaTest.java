@@ -42,7 +42,7 @@ public class JavaTest {
     public void readmeTest() {
         bridge.findClass(FindClass.create()
                 // Search within the specified package name range
-                .searchPackage("org.luckypray.dexkit.demo")
+                .searchPackages("org.luckypray.dexkit.demo")
                 .matcher(ClassMatcher.create()
                         // ClassMatcher for class matching
                         .className("org.luckypray.dexkit.demo.PlayActivity")
