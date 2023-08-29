@@ -232,7 +232,7 @@ DexKit::ExtractUseTypeNames(const schema::MethodMatcher *matcher) {
 
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::ParametersMatcher *matcher) {
-    if (!matcher) return {};
+    if (!matcher || !matcher->parameters()) return {};
     std::vector<std::string_view> result;
     for (auto i = 0; i < matcher->parameters()->size(); ++i) {
         auto res = ExtractUseTypeNames(matcher->parameters()->Get(i));
