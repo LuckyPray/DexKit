@@ -8,6 +8,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
+import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class FieldMatcher : BaseQuery() {
@@ -124,12 +125,22 @@ class FieldMatcher : BaseQuery() {
 
     fun annotationCount(count: Int) = also {
         this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.countRange(count)
+        this.annotations!!.count(count)
+    }
+
+    fun annotationCount(range: IntRange) = also {
+        this.annotations = annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(range)
+    }
+
+    fun annotationCount(range: kotlin.ranges.IntRange) = also {
+        this.annotations = annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(range)
     }
 
     fun annotationCount(min: Int, max: Int) = also {
         this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.countRange(min, max)
+        this.annotations!!.range(min, max)
     }
 
     fun getMethods(getMethods: MethodsMatcher) = also {
@@ -165,6 +176,11 @@ class FieldMatcher : BaseQuery() {
     @kotlin.internal.InlineOnly
     inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
         annotations(AnnotationsMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+        addAnnotation(AnnotationMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly

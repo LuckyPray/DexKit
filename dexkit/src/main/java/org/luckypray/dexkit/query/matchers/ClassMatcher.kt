@@ -9,6 +9,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
+import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import java.lang.IllegalStateException
 
@@ -156,12 +157,22 @@ class ClassMatcher : BaseQuery() {
 
     fun interfaceCount(count: Int) = also {
         this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.countRange(count)
+        this.interfaces!!.count(count)
+    }
+
+    fun interfaceCount(range: IntRange) = also {
+        this.interfaces = this.interfaces ?: InterfacesMatcher()
+        this.interfaces!!.range(range)
+    }
+
+    fun interfaceCount(range: kotlin.ranges.IntRange) = also {
+        this.interfaces = this.interfaces ?: InterfacesMatcher()
+        this.interfaces!!.range(range)
     }
 
     fun interfaceCount(min: Int, max: Int) = also {
         this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.countRange(min, max)
+        this.interfaces!!.range(min, max)
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
@@ -175,12 +186,22 @@ class ClassMatcher : BaseQuery() {
 
     fun annotationCount(count: Int) = also {
         this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.countRange(count)
+        this.annotations!!.count(count)
+    }
+
+    fun annotationCount(range: IntRange) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(range)
+    }
+
+    fun annotationCount(range: kotlin.ranges.IntRange) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(range)
     }
 
     fun annotationCount(min: Int, max: Int) = also {
         this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.countRange(min, max)
+        this.annotations!!.range(min, max)
     }
 
     fun fields(fields: FieldsMatcher) = also {
@@ -194,12 +215,22 @@ class ClassMatcher : BaseQuery() {
 
     fun fieldCount(count: Int) = also {
         this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.countRange(count)
+        this.fields!!.count(count)
+    }
+
+    fun fieldCount(range: IntRange) = also {
+        this.fields = this.fields ?: FieldsMatcher()
+        this.fields!!.range(range)
+    }
+
+    fun fieldCount(range: kotlin.ranges.IntRange) = also {
+        this.fields = this.fields ?: FieldsMatcher()
+        this.fields!!.range(range)
     }
 
     fun fieldCount(min: Int, max: Int) = also {
         this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.countRange(min, max)
+        this.fields!!.range(min, max)
     }
 
     fun methods(methods: MethodsMatcher) = also {
@@ -213,12 +244,22 @@ class ClassMatcher : BaseQuery() {
 
     fun methodCount(count: Int) = also {
         this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.countRange(count)
+        this.methods!!.count(count)
+    }
+
+    fun methodCount(range: IntRange) = also {
+        this.methods = this.methods ?: MethodsMatcher()
+        this.methods!!.range(range)
+    }
+
+    fun methodCount(range: kotlin.ranges.IntRange) = also {
+        this.methods = this.methods ?: MethodsMatcher()
+        this.methods!!.range(range)
     }
 
     fun methodCount(min: Int, max: Int) = also {
         this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.countRange(min, max)
+        this.methods!!.range(min, max)
     }
 
     fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {

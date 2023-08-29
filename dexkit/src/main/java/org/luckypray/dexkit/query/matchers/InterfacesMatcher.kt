@@ -42,15 +42,19 @@ class InterfacesMatcher : BaseQuery() {
         this.matchType = matchType
     }
 
-    fun countRange(range: IntRange) = also {
-        this.countRange = range
-    }
-
-    fun countRange(count: Int) = also {
+    fun count(count: Int) = also {
         this.countRange = IntRange(count)
     }
 
-    fun countRange(min: Int, max: Int) = also {
+    fun range(range: IntRange) = also {
+        this.countRange = range
+    }
+
+    fun range(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
+    }
+
+    fun range(min: Int, max: Int) = also {
         this.countRange = IntRange(min, max)
     }
 

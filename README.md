@@ -149,6 +149,7 @@ public class MainHook implements IXposedHookLoadPackage {
             bridge.findClass(FindClass.create()
                     // Search within the specified package name range
                     .searchPackages("org.luckypray.dexkit.demo")
+                    // Exclude the specified package name range
                     .excludePackages("org.luckypray.dexkit.demo.annotations")
                     .matcher(ClassMatcher.create()
                             // ClassMatcher for class matching
@@ -164,7 +165,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                     .addForType("android.widget.TextView")
                                     .addForType("android.os.Handler")
                                     // Specify the number of properties in the class
-                                    .countRange(3)
+                                    .count(3)
                             )
                             // MethodsMatcher for matching methods within the class
                             .methods(MethodsMatcher.create()
@@ -189,7 +190,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     .parameterTypes("boolean")
                                     ))
                                     // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                                    .countRange(1, 10)
+                                    .range(1, 10)
                             )
                             // AnnotationsMatcher for matching interfaces within the class
                             .annotations(AnnotationsMatcher.create()
@@ -236,6 +237,7 @@ class MainHook : IXposedHookLoadPackage {
             bridge.findClass {
                 // Search within the specified package name range
                 searchPackages = listOf("org.luckypray.dexkit.demo")
+                // Exclude the specified package name range
                 excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
                 // ClassMatcher for class matching
                 matcher {
@@ -266,12 +268,8 @@ class MainHook : IXposedHookLoadPackage {
                         add {
                             parameterTypes = listOf("android.view.View")
                             usingNumbers {
-                                add {
-                                    intValue(114514)
-                                }
-                                add {
-                                    floatValue(0.987f)
-                                }
+                                addInt(114514)
+                                addFloat(0.987f)
                             }
                         }
                         add {

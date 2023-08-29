@@ -46,19 +46,19 @@ class AnnotationElementsMatcher : BaseQuery() {
         this.matchType = matchType
     }
 
-    fun countRange(countRange: IntRange) = also {
+    fun range(countRange: IntRange) = also {
         this.countRange = countRange
     }
 
-    fun countRange(range: kotlin.ranges.IntRange) = also {
+    fun range(range: kotlin.ranges.IntRange) = also {
         countRange = IntRange(range)
     }
 
-    fun countRange(count: Int) = also {
+    fun count(count: Int) = also {
         this.countRange = IntRange(count)
     }
 
-    fun countRange(min: Int, max: Int) = also {
+    fun range(min: Int, max: Int) = also {
         this.countRange = IntRange(min, max)
     }
 

@@ -58,7 +58,7 @@ public class JavaTest {
                                 .addForType("android.widget.TextView")
                                 .addForType("android.os.Handler")
                                 // Specify the number of properties in the class
-                                .countRange(3)
+                                .count(3)
                         )
                         // MethodsMatcher for matching methods within the class
                         .methods(MethodsMatcher.create()
@@ -83,7 +83,7 @@ public class JavaTest {
                                                 .parameterTypes("boolean")
                                 ))
                                 // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                                .countRange(1, 10)
+                                .range(1, 10)
                         )
                         // AnnotationsMatcher for matching interfaces within the class
                         .annotations(AnnotationsMatcher.create()

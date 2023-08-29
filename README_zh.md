@@ -144,6 +144,7 @@ public class MainHook implements IXposedHookLoadPackage {
             bridge.findClass(FindClass.create()
                     // 从指定的包名范围内进行查找
                     .searchPackages("org.luckypray.dexkit.demo")
+                    // 排除指定的包名范围
                     .excludePackages("org.luckypray.dexkit.demo.annotations")
                     .matcher(ClassMatcher.create()
                             // ClassMatcher 针对类的匹配器
@@ -159,7 +160,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                     .addForType("android.widget.TextView")
                                     .addForType("android.os.Handler")
                                     // 指定类中属性的数量
-                                    .countRange(3)
+                                    .count(3)
                             )
                             // MethodsMatcher 针对类中包含方法的匹配器
                             .methods(MethodsMatcher.create()
@@ -184,7 +185,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     .parameterTypes("boolean")
                                     ))
                                     // 指定类中方法的数量，最少不少于1个，最多不超过10个
-                                    .countRange(1, 10)
+                                    .range(1, 10)
                             )
                             // AnnotationsMatcher 针对类中包含注解的匹配器
                             .annotations(AnnotationsMatcher.create()
@@ -231,6 +232,7 @@ class MainHook : IXposedHookLoadPackage {
             bridge.findClass {
                 // 从指定的包名范围内进行查找
                 searchPackages = listOf("org.luckypray.dexkit.demo")
+                // 排除指定的包名范围
                 excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
                 // ClassMatcher 针对类的匹配器
                 matcher {
@@ -261,12 +263,8 @@ class MainHook : IXposedHookLoadPackage {
                         add {
                             parameterTypes = listOf("android.view.View")
                             usingNumbers {
-                                add {
-                                    intValue(114514)
-                                }
-                                add {
-                                    floatValue(0.987f)
-                                }
+                                addInt(114514)
+                                addFloat(0.987f)
                             }
                         }
                         add {

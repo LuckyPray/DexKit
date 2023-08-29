@@ -34,19 +34,19 @@ class ParametersMatcher : BaseQuery() {
         this.parameters = parameters
     }
 
-    fun countRange(countRange: IntRange) = also {
-        this.countRange = countRange
-    }
-
-    fun countRange(range: kotlin.ranges.IntRange) = also {
-        countRange = IntRange(range)
-    }
-
-    fun countRange(count: Int) = also {
+    fun count(count: Int) = also {
         this.countRange = IntRange(count)
     }
 
-    fun countRange(min: Int, max: Int) = also {
+    fun range(countRange: IntRange) = also {
+        this.countRange = countRange
+    }
+
+    fun range(range: kotlin.ranges.IntRange) = also {
+        countRange = IntRange(range)
+    }
+
+    fun range(min: Int, max: Int) = also {
         this.countRange = IntRange(min, max)
     }
 

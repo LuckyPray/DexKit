@@ -72,6 +72,31 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<NumberEncodeValueMatcher>): super(elements)
 
+    // TODO add Object
+    fun addByte(value: Byte) = also {
+        add(NumberEncodeValueMatcher.createByte(value))
+    }
+
+    fun addShort(value: Short) = also {
+        add(NumberEncodeValueMatcher.createShort(value))
+    }
+
+    fun addInt(value: Int) = also {
+        add(NumberEncodeValueMatcher.createInt(value))
+    }
+
+    fun addLong(value: Long) = also {
+        add(NumberEncodeValueMatcher.createLong(value))
+    }
+
+    fun addFloat(value: Float) = also {
+        add(NumberEncodeValueMatcher.createFloat(value))
+    }
+
+    fun addDouble(value: Double) = also {
+        add(NumberEncodeValueMatcher.createDouble(value))
+    }
+
     @kotlin.internal.InlineOnly
     inline fun add(init: NumberEncodeValueMatcher.() -> Unit) = also {
         add(NumberEncodeValueMatcher().apply(init))

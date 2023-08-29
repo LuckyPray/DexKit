@@ -82,22 +82,22 @@ class AnnotationMatcher : BaseQuery() {
 
     fun annotationCountRange(countRange: IntRange) = also {
         annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).countRange(countRange)
+        (annotations as AnnotationsMatcher).range(countRange)
     }
 
     fun annotationCountRange(range: kotlin.ranges.IntRange) = also {
         annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).countRange(range)
+        (annotations as AnnotationsMatcher).range(range)
     }
 
     fun annotationCount(count: Int) = also {
         annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).countRange(count)
+        (annotations as AnnotationsMatcher).count(count)
     }
 
     fun annotationCountRange(min: Int, max: Int) = also {
         annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).countRange(min, max)
+        (annotations as AnnotationsMatcher).range(min, max)
     }
 
     fun elements(elements: AnnotationElementsMatcher) = also {
@@ -116,17 +116,17 @@ class AnnotationMatcher : BaseQuery() {
 
     fun elementCountRange(countRange: IntRange) = also {
         elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).countRange(countRange)
+        (elements as AnnotationElementsMatcher).range(countRange)
     }
 
     fun elementCountRange(range: kotlin.ranges.IntRange) = also {
         elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).countRange(range)
+        (elements as AnnotationElementsMatcher).range(range)
     }
 
     fun elementCount(count: Int) = also {
         elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).countRange(count)
+        (elements as AnnotationElementsMatcher).count(count)
     }
 
     // region DSL

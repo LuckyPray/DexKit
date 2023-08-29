@@ -105,7 +105,7 @@ class UnitTest {
                     addForType("java.lang.String")
                     addForType("android.widget.TextView")
                     addForType("android.os.Handler")
-                    countRange(3)
+                    count(3)
                 }
             }
         }
@@ -164,7 +164,7 @@ class UnitTest {
                 superClass("AppCompatActivity", StringMatchType.EndsWith)
                 interfaces {
                     add("android.view.View\$OnClickListener")
-                    countRange(1)
+                    count(1)
                 }
             }
         }
@@ -181,7 +181,7 @@ class UnitTest {
                 superClass("appcompatactivity", StringMatchType.EndsWith, true)
                 interfaces {
                     add("android.view.View\$OnClicklistener", StringMatchType.Equals, true)
-                    countRange(1)
+                    count(1)
                 }
             }
         }
@@ -258,12 +258,8 @@ class UnitTest {
                     add {
                         parameterTypes = listOf("android.view.View")
                         usingNumbers {
-                            add {
-                                intValue(114514)
-                            }
-                            add {
-                                floatValue(0.987f)
-                            }
+                            addInt(114514)
+                            addFloat(0.987f)
                         }
                     }
                     add {

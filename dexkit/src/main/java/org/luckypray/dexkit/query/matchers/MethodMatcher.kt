@@ -125,7 +125,7 @@ class MethodMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         set(value) {
             opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.size = IntRange(value)
+            opCodesMatcher!!.sizeRange = IntRange(value)
         }
     var opRange: kotlin.ranges.IntRange
         @JvmSynthetic
@@ -133,7 +133,7 @@ class MethodMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         set(value) {
             opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.size = IntRange(value)
+            opCodesMatcher!!.sizeRange = IntRange(value)
         }
     var usingStrings: List<String>
         @JvmSynthetic
@@ -218,16 +218,51 @@ class MethodMatcher : BaseQuery() {
 
     fun parameterCount(count: Int) = also {
         this.parameters ?: let { this.parameters = ParametersMatcher() }
-        this.parameters!!.apply { countRange(count) }
+        this.parameters!!.apply { count(count) }
+    }
+
+    fun parameterCount(countRange: IntRange) = also {
+        this.parameters ?: let { this.parameters = ParametersMatcher() }
+        this.parameters!!.apply { range(countRange) }
+    }
+
+    fun parameterCount(range: kotlin.ranges.IntRange) = also {
+        this.parameters ?: let { this.parameters = ParametersMatcher() }
+        this.parameters!!.apply { range(range) }
     }
 
     fun parameterCount(min: Int, max: Int) = also {
         this.parameters ?: let { this.parameters = ParametersMatcher() }
-        this.parameters!!.apply { countRange(min, max) }
+        this.parameters!!.apply { range(min, max) }
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
         this.annotations = annotations
+    }
+
+    fun addAnnotation(annotationMatcher: AnnotationMatcher) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.add(annotationMatcher)
+    }
+
+    fun annotationCount(count: Int) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.count(count)
+    }
+
+    fun annotationCount(range: IntRange) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(range)
+    }
+
+    fun annotationCount(range: kotlin.ranges.IntRange) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(range)
+    }
+
+    fun annotationCount(min: Int, max: Int) = also {
+        this.annotations = this.annotations ?: AnnotationsMatcher()
+        this.annotations!!.range(min, max)
     }
 
     fun opCodes(opCodes: OpCodesMatcher) = also {
@@ -309,6 +344,11 @@ class MethodMatcher : BaseQuery() {
     @kotlin.internal.InlineOnly
     inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
         annotations(AnnotationsMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+        addAnnotation(AnnotationMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly

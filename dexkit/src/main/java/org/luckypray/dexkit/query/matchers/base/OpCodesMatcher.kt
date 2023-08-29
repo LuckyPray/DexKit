@@ -14,7 +14,7 @@ class OpCodesMatcher : BaseQuery {
     @set:JvmSynthetic
     var matchType: OpCodeMatchType = OpCodeMatchType.Contains
     @set:JvmSynthetic
-    var size: IntRange? = null
+    var sizeRange: IntRange? = null
 
     constructor()
 
@@ -26,7 +26,7 @@ class OpCodesMatcher : BaseQuery {
     ) {
         this.opCodes = opCodes
         this.matchType = matchType
-        this.size = opCodeSize
+        this.sizeRange = opCodeSize
     }
 
     @JvmOverloads
@@ -37,7 +37,7 @@ class OpCodesMatcher : BaseQuery {
     ) {
         this.opCodes = opCodes.toList()
         this.matchType = matchType
-        this.size = opCodeSize
+        this.sizeRange = opCodeSize
     }
 
     fun opCodes(opCodes: List<Int>) = also { this.opCodes = opCodes }
@@ -50,8 +50,25 @@ class OpCodesMatcher : BaseQuery {
         this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
     }
 
-    fun matchType(matchType: OpCodeMatchType) = also { this.matchType = matchType }
-    fun opCodeSize(opCodeSize: IntRange?) = also { this.size = opCodeSize }
+    fun matchType(matchType: OpCodeMatchType) = also {
+        this.matchType = matchType
+    }
+
+    fun range(range: IntRange?) = also {
+        this.sizeRange = range
+    }
+
+    fun range(range: kotlin.ranges.IntRange) = also {
+        this.sizeRange = IntRange(range)
+    }
+
+    fun size(size: Int) = also {
+        this.sizeRange = IntRange(size)
+    }
+
+    fun range(min: Int, max: Int) = also {
+        this.sizeRange = IntRange(min, max)
+    }
 
     companion object {
         @JvmStatic
@@ -106,7 +123,7 @@ class OpCodesMatcher : BaseQuery {
             fbb,
             opCodes?.map { it.toShort() }?.let { InnerOpCodesMatcher.createOpCodesVector(fbb, it.toShortArray()) } ?: 0,
             matchType.value,
-            size?.build(fbb) ?: 0
+            sizeRange?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root
