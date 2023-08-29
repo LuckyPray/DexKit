@@ -582,20 +582,24 @@ std::string_view DexItem::GetFieldDescriptor(uint32_t field_idx) {
 
 inline bool is_primitive_type_name(std::string_view type_name) {
     return type_name == "boolean" || type_name == "byte" || type_name == "char" || type_name == "short"
-           || type_name == "int" || type_name == "long" || type_name == "float" || type_name == "double" || "void";
+           || type_name == "int" || type_name == "long" || type_name == "float" || type_name == "double"
+           || type_name == "void";
 }
 
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {
     for (auto &type_name: types) {
         if (is_primitive_type_name(type_name)) {
-            continue;
-        }
-        std::string type_name_str("L");
-        type_name_str += type_name;
-        type_name_str += ";";
-        std::replace(type_name_str.begin(), type_name_str.end(), '.', '/');
-        if (!type_ids_map.contains(type_name_str)) {
-            return false;
+            if (!type_ids_map.contains(type_name)) {
+                return false;
+            }
+        } else {
+            std::string type_name_str("L");
+            type_name_str += type_name;
+            type_name_str += ";";
+            std::replace(type_name_str.begin(), type_name_str.end(), '.', '/');
+            if (!type_ids_map.contains(type_name_str)) {
+                return false;
+            }
         }
     }
     return true;
