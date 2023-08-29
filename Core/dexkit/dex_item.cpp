@@ -587,11 +587,11 @@ inline bool is_primitive_type_name(std::string_view type_name) {
 }
 
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {
+    // TODO: array type checker
     for (auto &type_name: types) {
         if (is_primitive_type_name(type_name)) {
-            if (!type_ids_map.contains(type_name)) {
-                return false;
-            }
+            // TODO: check primitive type
+            continue;
         } else {
             std::string type_name_str("L");
             type_name_str += type_name;
