@@ -9,12 +9,16 @@ import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.result.ClassData
 
 class FindClass : BaseQuery() {
-    private var searchPackages: List<String>? = null
-    private var excludePackages: List<String>? = null
+    @set:JvmSynthetic
+    var searchPackages: List<String>? = null
+    @set:JvmSynthetic
+    var excludePackages: List<String>? = null
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
-    private var searchClasses: LongArray? = null
-    private var matcher: ClassMatcher? = null
+    @set:JvmSynthetic
+    var searchClasses: List<ClassData>? = null
+    var matcher: ClassMatcher? = null
+        private set
 
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -37,7 +41,7 @@ class FindClass : BaseQuery() {
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
-        this.searchClasses = classList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchClasses = classList
     }
 
     fun matcher(matcher: ClassMatcher) = also {
@@ -61,10 +65,16 @@ class FindClass : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFindClass.createFindClass(
             fbb,
-            searchPackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
-            excludePackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            searchPackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            excludePackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses?.let { InnerFindClass.createInClassesVector(fbb, it) } ?: 0,
+            searchClasses
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerFindClass.createInClassesVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

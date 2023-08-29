@@ -8,20 +8,31 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 
 class ParameterMatcher : BaseQuery() {
-    private var annotations: AnnotationsMatcher? = null
-    private var type: ClassMatcher? = null
+    var annotations: AnnotationsMatcher? = null
+        private set
+    var typeMatcher: ClassMatcher? = null
+        private set
+
+    var type: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            type(value)
+        }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
         this.annotations = annotations
     }
 
-    fun type(type: ClassMatcher) = also { this.type = type }
+    fun type(type: ClassMatcher) = also { this.typeMatcher = type }
     fun type(
         typeName: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.type = ClassMatcher().className(typeName, matchType, ignoreCase)
+        this.typeMatcher = ClassMatcher().className(typeName, matchType, ignoreCase)
     }
 
     // region DSL
@@ -47,7 +58,7 @@ class ParameterMatcher : BaseQuery() {
         val root = InnerParameterMatcher.createParameterMatcher(
             fbb,
             annotations?.build(fbb) ?: 0,
-            type?.build(fbb) ?: 0
+            typeMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

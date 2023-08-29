@@ -9,31 +9,42 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class BatchUsingStringsMatcher @JvmOverloads constructor(
-    private var unionKey: String,
-    private var usingStrings: List<StringMatcher> = StringMatcherList(),
+    @set:JvmSynthetic
+    var unionKey: String,
+    @set:JvmSynthetic
+    var usingStringsMatcher: List<StringMatcher> = StringMatcherList(),
 ) : BaseQuery() {
+
+    var usingStrings: List<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            usingStringsMatcher = value.map { StringMatcher(it) }
+        }
 
     fun unionKey(unionKey: String) = also {
         this.unionKey = unionKey
     }
 
-    fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
-        this.usingStrings = usingStrings
+    fun usingStrings(usingStrings: StringMatcherList) = also {
+        this.usingStringsMatcher = usingStrings
     }
 
     fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStrings = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
     }
 
     fun usingStrings(vararg usingString: String) = also {
-        this.usingStrings = usingString.map { StringMatcher(it) }
+        this.usingStringsMatcher = usingString.map { StringMatcher(it) }
     }
 
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
-        usingStringsMatcher(StringMatcherList().apply(init))
+    inline fun usingStrings(init: StringMatcherList.() -> Unit) = also {
+        usingStrings(StringMatcherList().apply(init))
     }
 
     // endregion
@@ -49,11 +60,11 @@ class BatchUsingStringsMatcher @JvmOverloads constructor(
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         if (unionKey.isEmpty()) throw IllegalAccessException("unionKey not be empty")
-        if (usingStrings.isEmpty()) throw IllegalAccessException("matchers not be empty")
+        if (usingStringsMatcher.isEmpty()) throw IllegalAccessException("matchers not be empty")
         val root = InnerBatchUsingStringsMatcher.createBatchUsingStringsMatcher(
             fbb,
             fbb.createString(unionKey),
-            fbb.createVectorOfTables(usingStrings.map { it.build(fbb) }.toIntArray())
+            fbb.createVectorOfTables(usingStringsMatcher.map { it.build(fbb) }.toIntArray())
         )
         fbb.finish(root)
         return root

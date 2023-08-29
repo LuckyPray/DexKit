@@ -9,9 +9,29 @@ import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class MethodsMatcher : BaseQuery() {
-    private var methods: List<MethodMatcher>? = null
-    private var matchType: MatchType = MatchType.Contains
-    private var countRange: IntRange? = null
+    var methods: List<MethodMatcher>? = null
+        private set
+    @set:JvmSynthetic
+    var matchType: MatchType = MatchType.Contains
+    var countRange: IntRange? = null
+        private set
+
+    var count: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            countRange = IntRange(value)
+        }
+    var range: kotlin.ranges.IntRange
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            countRange = IntRange(value)
+        }
 
     fun methods(methods: List<MethodMatcher>) = also {
         this.methods = methods

@@ -7,10 +7,11 @@ import org.luckypray.dexkit.InnerUsingFieldMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.UsingType
 
-class UsingFieldMatcher @JvmOverloads constructor(
-    private var matcher: FieldMatcher? = null,
-    private var usingType: UsingType = UsingType.Any
-) : BaseQuery() {
+class UsingFieldMatcher : BaseQuery() {
+    var matcher: FieldMatcher? = null
+        private set
+    @set:JvmSynthetic
+    var usingType: UsingType = UsingType.Any
 
     fun matcher(matcher: FieldMatcher) = also {
         this.matcher = matcher
@@ -31,13 +32,7 @@ class UsingFieldMatcher @JvmOverloads constructor(
 
     companion object {
         @JvmStatic
-        @JvmOverloads
-        fun create(
-            matcher: FieldMatcher? = null,
-            usingType: UsingType = UsingType.Any
-        ): UsingFieldMatcher {
-            return UsingFieldMatcher(matcher, usingType)
-        }
+        fun create() = UsingFieldMatcher()
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {

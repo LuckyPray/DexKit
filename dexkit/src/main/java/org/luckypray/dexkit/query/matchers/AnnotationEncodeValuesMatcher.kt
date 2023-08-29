@@ -10,9 +10,12 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationEncodeValuesMatcher : BaseQuery() {
-    private var matchers: List<AnnotationEncodeValueMatcher>? = null
-    private var matchType: MatchType = MatchType.Contains
-    private var valueCount: IntRange? = null
+    var matchers: List<AnnotationEncodeValueMatcher>? = null
+        private set
+    @set:JvmSynthetic
+    var matchType: MatchType = MatchType.Contains
+    var valueCount: IntRange? = null
+        private set
 
     fun matchers(matchers: List<AnnotationEncodeValueMatcher>) = also {
         this.matchers = matchers

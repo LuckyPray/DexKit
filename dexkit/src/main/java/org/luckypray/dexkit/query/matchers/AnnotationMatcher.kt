@@ -14,14 +14,29 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.matchers.base.TargetElementTypesMatcher
 
 class AnnotationMatcher : BaseQuery() {
-    private var typeName: StringMatcher? = null
-    private var targetElementTypes: TargetElementTypesMatcher? = null
-    private var policy: RetentionPolicyType? = null
-    private var annotations: AnnotationsMatcher? = null
-    private var elements: AnnotationElementsMatcher? = null
+    var typeNameMatcher: StringMatcher? = null
+        private set
+    var targetElementTypes: TargetElementTypesMatcher? = null
+        private set
+    @set:JvmSynthetic
+    var policy: RetentionPolicyType? = null
+    var annotations: AnnotationsMatcher? = null
+        private set
+    var elements: AnnotationElementsMatcher? = null
+        private set
+
+    var typeName: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            typeNameMatcher = typeNameMatcher ?: StringMatcher(value)
+            typeNameMatcher!!.value = value
+        }
 
     fun typeName(typeName: StringMatcher) = also {
-        this.typeName = typeName
+        this.typeNameMatcher = typeName
     }
 
     @JvmOverloads
@@ -30,7 +45,7 @@ class AnnotationMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
-        this.typeName = StringMatcher(typeName, matchType, ignoreCase)
+        this.typeNameMatcher = StringMatcher(typeName, matchType, ignoreCase)
     }
 
     fun targetElementTypes(targetElementTypes: TargetElementTypesMatcher) = also {
@@ -141,7 +156,7 @@ class AnnotationMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationMatcher.createAnnotationMatcher(
             fbb,
-            typeName?.build(fbb) ?: 0,
+            typeNameMatcher?.build(fbb) ?: 0,
             targetElementTypes?.build(fbb) ?: 0,
             policy?.value ?: 0,
             annotations?.build(fbb) ?: 0,

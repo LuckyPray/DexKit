@@ -10,13 +10,18 @@ import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.FieldData
 
 class FindField : BaseQuery() {
-    private var searchPackages: List<String>? = null
-    private var excludePackages: List<String>? = null
+    @set:JvmSynthetic
+    var searchPackages: List<String>? = null
+    @set:JvmSynthetic
+    var excludePackages: List<String>? = null
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
-    private var searchClasses: LongArray? = null
-    private var searchFields: LongArray? = null
-    private var matcher: FieldMatcher? = null
+    @set:JvmSynthetic
+    var searchClasses: List<ClassData>? = null
+    @set:JvmSynthetic
+    var searchFields: List<FieldData>? = null
+    var matcher: FieldMatcher? = null
+        private set
 
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -39,11 +44,11 @@ class FindField : BaseQuery() {
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
-        this.searchClasses = classList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchClasses = classList
     }
 
     fun searchInField(fieldList: List<FieldData>) = also {
-        this.searchFields = fieldList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchFields = fieldList
     }
 
     fun matcher(matcher: FieldMatcher) = also {
@@ -67,11 +72,19 @@ class FindField : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFindField.createFindField(
             fbb,
-            searchPackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
-            excludePackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            searchPackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            excludePackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses?.let { InnerFindField.createInClassesVector(fbb, it) } ?: 0,
-            searchFields?.let { InnerFindField.createInFieldsVector(fbb, it) } ?: 0,
+            searchClasses
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerFindField.createInClassesVector(fbb, it) } ?: 0,
+            searchFields
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerFindField.createInFieldsVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

@@ -28,6 +28,7 @@ class AnnotationEncodeValueMatcher : IQuery {
         private set
 
     constructor()
+
     constructor(value: BaseQuery, type: AnnotationEncodeValueType) {
         this.value = value
         this.type = type

@@ -7,11 +7,25 @@ import org.luckypray.dexkit.InnerStringMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 
-class StringMatcher @JvmOverloads constructor(
-    private var value: String? = null,
-    private var matchType: StringMatchType = StringMatchType.Contains,
-    private var ignoreCase: Boolean = false
-) : BaseQuery() {
+class StringMatcher : BaseQuery {
+    @set:JvmSynthetic
+    var value: String? = null
+    @set:JvmSynthetic
+    var matchType: StringMatchType = StringMatchType.Contains
+    @set:JvmSynthetic
+    var ignoreCase: Boolean = false
+
+    constructor()
+    @JvmOverloads
+    constructor(
+        value: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) {
+        this.value = value
+        this.matchType = matchType
+        this.ignoreCase = ignoreCase
+    }
 
     @JvmSynthetic
     internal fun getValue() = value
@@ -32,7 +46,7 @@ class StringMatcher @JvmOverloads constructor(
         @JvmStatic
         @JvmOverloads
         fun create(
-            value: String? = null,
+            value: String,
             matchType: StringMatchType = StringMatchType.Contains,
             ignoreCase: Boolean = false
         ) = StringMatcher(value, matchType, ignoreCase)

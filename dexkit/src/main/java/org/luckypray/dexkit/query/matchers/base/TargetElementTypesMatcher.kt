@@ -8,10 +8,22 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.TargetElementType
 
-class TargetElementTypesMatcher @JvmOverloads constructor(
-    private var types: List<TargetElementType>? = null,
-    private var matchType: MatchType = MatchType.Equal
-) : BaseQuery() {
+class TargetElementTypesMatcher  : BaseQuery {
+    @set:JvmSynthetic
+    var types: List<TargetElementType>? = null
+    @set:JvmSynthetic
+    var matchType: MatchType = MatchType.Contains
+
+    constructor()
+
+    @JvmOverloads
+    constructor(
+        types: List<TargetElementType>,
+        matchType: MatchType = MatchType.Contains
+    ) {
+        this.types = types
+        this.matchType = matchType
+    }
 
     fun types(types: List<TargetElementType>) = also {
         this.types = types
@@ -28,7 +40,7 @@ class TargetElementTypesMatcher @JvmOverloads constructor(
     companion object {
         @JvmStatic
         fun create(
-            types: List<TargetElementType>? = null,
+            types: List<TargetElementType>,
             matchType: MatchType = MatchType.Equal
         ) = TargetElementTypesMatcher(types, matchType)
     }

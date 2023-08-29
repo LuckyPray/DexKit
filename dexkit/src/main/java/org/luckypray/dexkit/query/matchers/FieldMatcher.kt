@@ -11,34 +11,84 @@ import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class FieldMatcher : BaseQuery() {
-    private var name: StringMatcher? = null
-    private var modifiers: AccessFlagsMatcher? = null
-    private var declaredClass: ClassMatcher? = null
-    private var type: ClassMatcher? = null
-    private var annotations: AnnotationsMatcher? = null
-    private var getMethods: MethodsMatcher? = null
-    private var putMethods: MethodsMatcher? = null
+    var nameMatcher: StringMatcher? = null
+        private set
+    var modifiersMatcher: AccessFlagsMatcher? = null
+        private set
+    var classMatcher: ClassMatcher? = null
+        private set
+    var typeMatcher: ClassMatcher? = null
+        private set
+    var annotations: AnnotationsMatcher? = null
+        private set
+    var getMethods: MethodsMatcher? = null
+        private set
+    var putMethods: MethodsMatcher? = null
+        private set
+
+    var name: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            name(value)
+        }
+    var modifiers: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
+            modifiersMatcher!!.modifiers = value
+        }
+    var modifiersMatchType: MatchType
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
+            modifiersMatcher!!.matchType = value
+        }
+    var declaredClass: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            declaredClass(value)
+        }
+    var type: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            type(value)
+        }
 
     fun name(name: StringMatcher) = also {
-        this.name = name
+        this.nameMatcher = name
     }
 
     @JvmOverloads
     fun name(name: String, ignoreCase: Boolean = false) = also {
-        this.name = StringMatcher(name, StringMatchType.Equals, ignoreCase)
+        this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
     }
 
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
-        this.modifiers = modifiers
+        this.modifiersMatcher = modifiers
     }
 
     @JvmOverloads
     fun modifiers(modifiers: Int, matchType: MatchType = MatchType.Equal) = also {
-        this.modifiers = AccessFlagsMatcher(modifiers, matchType)
+        this.modifiersMatcher = AccessFlagsMatcher(modifiers, matchType)
     }
 
     fun declaredClass(declaredClass: ClassMatcher) = also {
-        this.declaredClass = declaredClass
+        this.classMatcher = declaredClass
     }
 
     @JvmOverloads
@@ -47,11 +97,11 @@ class FieldMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.declaredClass = ClassMatcher().className(className, matchType, ignoreCase)
+        this.classMatcher = ClassMatcher().className(className, matchType, ignoreCase)
     }
 
     fun type(type: ClassMatcher) = also {
-        this.type = type
+        this.typeMatcher = type
     }
 
     @JvmOverloads
@@ -60,7 +110,7 @@ class FieldMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.type = ClassMatcher().className(typeName, matchType, ignoreCase)
+        this.typeMatcher = ClassMatcher().className(typeName, matchType, ignoreCase)
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
@@ -147,10 +197,10 @@ class FieldMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFieldMatcher.createFieldMatcher(
             fbb,
-            name?.build(fbb) ?: 0,
-            modifiers?.build(fbb) ?: 0,
-            declaredClass?.build(fbb) ?: 0,
-            type?.build(fbb) ?: 0,
+            nameMatcher?.build(fbb) ?: 0,
+            modifiersMatcher?.build(fbb) ?: 0,
+            classMatcher?.build(fbb) ?: 0,
+            typeMatcher?.build(fbb) ?: 0,
             annotations?.build(fbb) ?: 0,
             getMethods?.build(fbb) ?: 0,
             putMethods?.build(fbb) ?: 0

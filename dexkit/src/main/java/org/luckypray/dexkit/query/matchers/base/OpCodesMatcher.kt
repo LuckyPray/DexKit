@@ -9,9 +9,12 @@ import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.util.OpCodeUtil
 
 class OpCodesMatcher : BaseQuery {
-    private var opCodes: List<Int>? = null
-    private var matchType: OpCodeMatchType = OpCodeMatchType.Contains
-    private var methodOpCodeSize: IntRange? = null
+    @set:JvmSynthetic
+    var opCodes: List<Int>? = null
+    @set:JvmSynthetic
+    var matchType: OpCodeMatchType = OpCodeMatchType.Contains
+    @set:JvmSynthetic
+    var size: IntRange? = null
 
     constructor()
 
@@ -23,7 +26,7 @@ class OpCodesMatcher : BaseQuery {
     ) {
         this.opCodes = opCodes
         this.matchType = matchType
-        this.methodOpCodeSize = opCodeSize
+        this.size = opCodeSize
     }
 
     @JvmOverloads
@@ -34,7 +37,7 @@ class OpCodesMatcher : BaseQuery {
     ) {
         this.opCodes = opCodes.toList()
         this.matchType = matchType
-        this.methodOpCodeSize = opCodeSize
+        this.size = opCodeSize
     }
 
     fun opCodes(opCodes: List<Int>) = also { this.opCodes = opCodes }
@@ -48,7 +51,7 @@ class OpCodesMatcher : BaseQuery {
     }
 
     fun matchType(matchType: OpCodeMatchType) = also { this.matchType = matchType }
-    fun opCodeSize(opCodeSize: IntRange?) = also { this.methodOpCodeSize = opCodeSize }
+    fun opCodeSize(opCodeSize: IntRange?) = also { this.size = opCodeSize }
 
     companion object {
         @JvmStatic
@@ -103,7 +106,7 @@ class OpCodesMatcher : BaseQuery {
             fbb,
             opCodes?.map { it.toShort() }?.let { InnerOpCodesMatcher.createOpCodesVector(fbb, it.toShortArray()) } ?: 0,
             matchType.value,
-            methodOpCodeSize?.build(fbb) ?: 0
+            size?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

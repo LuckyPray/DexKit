@@ -13,18 +13,86 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import java.lang.IllegalStateException
 
 class ClassMatcher : BaseQuery() {
-    private var source: StringMatcher? = null
-    private var className: StringMatcher? = null
-    private var modifiers: AccessFlagsMatcher? = null
-    private var superClass: ClassMatcher? = null
-    private var interfaces: InterfacesMatcher? = null
-    private var annotations: AnnotationsMatcher? = null
-    private var fields: FieldsMatcher? = null
-    private var methods: MethodsMatcher? = null
-    private var usingStrings: List<StringMatcher>? = null
+    var sourceMatcher: StringMatcher? = null
+        private set
+    var classNameMatcher: StringMatcher? = null
+        private set
+    var modifiersMatcher: AccessFlagsMatcher? = null
+        private set
+    var superClassMatcher: ClassMatcher? = null
+        private set
+    var interfaces: InterfacesMatcher? = null
+        private set
+    var annotations: AnnotationsMatcher? = null
+        private set
+    var fields: FieldsMatcher? = null
+        private set
+    var methods: MethodsMatcher? = null
+        private set
+    var usingStringsMatcher: List<StringMatcher>? = null
+        private set
+
+    var sourceName: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            sourceMatcher = sourceMatcher ?: StringMatcher()
+            sourceMatcher!!.value = value
+        }
+    var sourceMatchType: StringMatchType
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            sourceMatcher = sourceMatcher ?: StringMatcher()
+            sourceMatcher!!.matchType = value
+        }
+    var className: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            className(value)
+        }
+    var modifiers: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
+            modifiersMatcher!!.modifiers = value
+        }
+    var modifiersMatchType: MatchType
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
+            modifiersMatcher!!.matchType = value
+        }
+    var superClass: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            superClass(value)
+        }
+    var usingStrings: List<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            usingStringsMatcher = value.map { StringMatcher(it) }
+        }
 
     fun sourceName(matcher: StringMatcher) = also {
-        this.source = matcher
+        this.sourceMatcher = matcher
     }
 
     @JvmOverloads
@@ -32,9 +100,9 @@ class ClassMatcher : BaseQuery() {
         source: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
-    ) = also { this.source = StringMatcher(source, matchType, ignoreCase) }
+    ) = also { this.sourceMatcher = StringMatcher(source, matchType, ignoreCase) }
 
-    fun className(matcher: StringMatcher) = also { this.className = matcher }
+    fun className(matcher: StringMatcher) = also { this.classNameMatcher = matcher }
 
     @JvmOverloads
     fun className(
@@ -42,20 +110,20 @@ class ClassMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.className = StringMatcher(className, matchType, ignoreCase)
+        this.classNameMatcher = StringMatcher(className, matchType, ignoreCase)
     }
 
     fun modifiers(matcher: AccessFlagsMatcher) = also {
-        this.modifiers = matcher
+        this.modifiersMatcher = matcher
     }
 
     @JvmOverloads
     fun modifiers(modifiers: Int, matchType: MatchType = MatchType.Equal) = also {
-        this.modifiers = AccessFlagsMatcher(modifiers, matchType)
+        this.modifiersMatcher = AccessFlagsMatcher(modifiers, matchType)
     }
 
     fun superClass(superClass: ClassMatcher) = also {
-        this.superClass = superClass
+        this.superClassMatcher = superClass
     }
 
     @JvmOverloads
@@ -64,7 +132,7 @@ class ClassMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.superClass = ClassMatcher().className(StringMatcher(className, matchType, ignoreCase))
+        this.superClassMatcher = ClassMatcher().className(StringMatcher(className, matchType, ignoreCase))
     }
 
     fun interfaces(interfaces: InterfacesMatcher) = also {
@@ -154,19 +222,19 @@ class ClassMatcher : BaseQuery() {
     }
 
     fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
-        this.usingStrings = usingStrings
+        this.usingStringsMatcher = usingStrings
     }
 
     fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStrings = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
     }
 
     fun addUsingString(usingString: StringMatcher) = also {
-        usingStrings = usingStrings ?: StringMatcherList()
-        if (usingStrings !is StringMatcherList) {
-            usingStrings = StringMatcherList(usingStrings!!)
+        usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
+        if (usingStringsMatcher !is StringMatcherList) {
+            usingStringsMatcher = StringMatcherList(usingStringsMatcher!!)
         }
-        (usingStrings as MutableList<StringMatcher>).add(usingString)
+        (usingStringsMatcher as MutableList<StringMatcher>).add(usingString)
     }
 
     @JvmOverloads
@@ -179,7 +247,7 @@ class ClassMatcher : BaseQuery() {
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.usingStrings = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
     }
 
     // region DSL
@@ -242,20 +310,20 @@ class ClassMatcher : BaseQuery() {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        if (className?.getValue()?.isEmpty() == true) {
+        if (classNameMatcher?.getValue()?.isEmpty() == true) {
             throw IllegalStateException("className not be empty")
         }
         val root = InnerClassMatcher.createClassMatcher(
             fbb,
-            source?.build(fbb) ?: 0,
-            className?.build(fbb) ?: 0,
-            modifiers?.build(fbb) ?: 0,
-            superClass?.build(fbb) ?: 0,
+            sourceMatcher?.build(fbb) ?: 0,
+            classNameMatcher?.build(fbb) ?: 0,
+            modifiersMatcher?.build(fbb) ?: 0,
+            superClassMatcher?.build(fbb) ?: 0,
             interfaces?.build(fbb) ?: 0,
             annotations?.build(fbb) ?: 0,
             fields?.build(fbb) ?: 0,
             methods?.build(fbb) ?: 0,
-            usingStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0
+            usingStringsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0
         )
         fbb.finish(root)
         return root

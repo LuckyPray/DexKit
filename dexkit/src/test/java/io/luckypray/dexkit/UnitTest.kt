@@ -227,35 +227,36 @@ class UnitTest {
     fun test() {
         bridge.findClass {
             // Search within the specified package name range
-            searchPackages("org.luckypray.dexkit.demo")
+            searchPackages = listOf("org.luckypray.dexkit.demo")
+            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
             // ClassMatcher for class matching
             matcher {
-                className("org.luckypray.dexkit.demo.PlayActivity")
+                className = "org.luckypray.dexkit.demo.PlayActivity"
                 // FieldsMatcher for matching properties within the class
                 fields {
                     // Add a matcher for properties
                     add {
-                        modifiers(Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL)
-                        type("java.lang.String")
-                        name("TAG")
+                        modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
+                        type = "java.lang.String"
+                        name = "TAG"
                     }
                     addForType("android.widget.TextView")
                     addForType("android.os.Handler")
                     // Specify the number of properties in the class
-                    countRange(count = 3)
+                    count = 3
                 }
                 // MethodsMatcher for matching methods within the class
                 methods {
                     // Add a matcher for methods
                     add {
-                        modifiers(Modifier.PROTECTED)
-                        name("onCreate")
-                        returnType("void")
-                        parameterTypes("android.os.Bundle")
-                        usingStrings("onCreate")
+                        modifiers = Modifier.PROTECTED
+                        name = "onCreate"
+                        returnType = "void"
+                        parameterTypes = listOf("android.os.Bundle")
+                        usingStrings = listOf("onCreate")
                     }
                     add {
-                        parameterTypes("android.view.View")
+                        parameterTypes = listOf("android.view.View")
                         usingNumbers {
                             add {
                                 intValue(114514)
@@ -266,19 +267,19 @@ class UnitTest {
                         }
                     }
                     add {
-                        modifiers(Modifier.PUBLIC)
-                        parameterTypes("boolean")
+                        modifiers = Modifier.PUBLIC
+                        parameterTypes = listOf("boolean")
                     }
                     // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                    countRange(1..10)
+                    range = 1..10
                 }
                 // AnnotationsMatcher for matching interfaces within the class
                 annotations {
                     add {
-                        typeName("Router", StringMatchType.EndsWith)
+                        typeName = "org.luckypray.dexkit.demo.annotations.Router"
                         elements {
                             add {
-                                name("path")
+                                name = "path"
                                 matcher {
                                     stringValue("/play")
                                 }
@@ -287,7 +288,7 @@ class UnitTest {
                     }
                 }
                 // Strings used by all methods in the class
-                usingStrings("PlayActivity", "onClick", "onCreate")
+                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
             }
         }.forEach {
             // Print the found class: org.luckypray.dexkit.demo.PlayActivity

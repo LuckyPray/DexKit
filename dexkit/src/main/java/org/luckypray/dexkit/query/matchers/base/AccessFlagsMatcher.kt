@@ -7,16 +7,28 @@ import org.luckypray.dexkit.InnerAccessFlagsMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 
-class AccessFlagsMatcher @JvmOverloads constructor(
-    private var modifiers: Int,
-    private var matchType: MatchType = MatchType.Equal
-) : BaseQuery() {
+class AccessFlagsMatcher  : BaseQuery {
+    @set:JvmSynthetic
+    var modifiers: Int = 0
+    @set:JvmSynthetic
+    var matchType: MatchType = MatchType.Contains
+
+    constructor()
+
+    @JvmOverloads
+    constructor(
+        modifiers: Int,
+        matchType: MatchType = MatchType.Contains
+    ) {
+        this.modifiers = modifiers
+        this.matchType = matchType
+    }
 
     companion object {
         @JvmOverloads
         fun create(
             modifiers: Int,
-            matchType: MatchType = MatchType.Equal
+            matchType: MatchType = MatchType.Contains
         ) = AccessFlagsMatcher(modifiers, matchType)
     }
     

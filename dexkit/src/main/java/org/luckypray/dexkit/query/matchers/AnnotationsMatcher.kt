@@ -9,9 +9,29 @@ import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationsMatcher : BaseQuery() {
-    private var annotations: List<AnnotationMatcher>? = null
-    private var matchType: MatchType = MatchType.Contains
-    private var countRange: IntRange? = null
+    var annotations: List<AnnotationMatcher>? = null
+        private set
+    @set:JvmSynthetic
+    var matchType: MatchType = MatchType.Contains
+    var countRange: IntRange? = null
+        private set
+
+    var count: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            countRange = IntRange(value)
+        }
+    var range: kotlin.ranges.IntRange
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            countRange = IntRange(value)
+        }
 
     fun annotations(annotations: List<AnnotationMatcher>) = also {
         this.annotations = annotations
@@ -45,6 +65,7 @@ class AnnotationsMatcher : BaseQuery() {
         (annotations as MutableList<AnnotationMatcher>).add(annotation)
     }
 
+    // TODO addAll
     fun add(typeName: String) = also {
         add(AnnotationMatcher().apply { typeName(typeName) })
     }

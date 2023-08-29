@@ -16,41 +16,154 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.util.OpCodeUtil
 
 class MethodMatcher : BaseQuery() {
-    private var name: StringMatcher? = null
-    private var modifiers: AccessFlagsMatcher? = null
-    private var declaredClass: ClassMatcher? = null
-    private var returnType: ClassMatcher? = null
-    private var parameters: ParametersMatcher? = null
-    private var annotations: AnnotationsMatcher? = null
-    private var opCodes: OpCodesMatcher? = null
-    private var usingStrings: List<StringMatcher>? = null
-    private var usingFields: List<UsingFieldMatcher>? = null
-    private var usingNumbers: List<NumberEncodeValueMatcher>? = null
-    private var invokeMethods: MethodsMatcher? = null
-    private var callMethods: MethodsMatcher? = null
+    var nameMatcher: StringMatcher? = null
+        private set
+    var modifiersMatcher: AccessFlagsMatcher? = null
+        private set
+    var classMatcher: ClassMatcher? = null
+        private set
+    var returnTypeMatcher: ClassMatcher? = null
+        private set
+    var parameters: ParametersMatcher? = null
+        private set
+    var annotations: AnnotationsMatcher? = null
+        private set
+    var opCodesMatcher: OpCodesMatcher? = null
+        private set
+    var usingStringsMatcher: List<StringMatcher>? = null
+        private set
+    var usingFields: List<UsingFieldMatcher>? = null
+        private set
+    // TODO use Object?
+    var usingNumbers: List<NumberEncodeValueMatcher>? = null
+        private set
+    var invokeMethods: MethodsMatcher? = null
+        private set
+    var callMethods: MethodsMatcher? = null
+        private set
+
+    var name: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            name(value)
+        }
+    var modifiers: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
+            modifiersMatcher!!.modifiers = value
+        }
+    var modifiersMatchType: MatchType
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
+            modifiersMatcher!!.matchType = value
+        }
+    var declaredClass: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            declaredClass(value)
+        }
+    var returnType: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError("Use returnType.className")
+        @JvmSynthetic
+        set(value) {
+            returnType(value)
+        }
+    var parameterTypes: List<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError("Use parameters.parameterTypes")
+        @JvmSynthetic
+        set(value) {
+            parameterTypes(value)
+        }
+    var opCodes: List<Int>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
+            opCodesMatcher!!.opCodes = value
+        }
+    var opNames: List<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
+            opCodesMatcher!!.opCodes = value.map { OpCodeUtil.getOpCode(it) }
+        }
+    var opMatchType: OpCodeMatchType
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
+            opCodesMatcher!!.matchType = value
+        }
+    var opSize: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
+            opCodesMatcher!!.size = IntRange(value)
+        }
+    var opRange: kotlin.ranges.IntRange
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
+            opCodesMatcher!!.size = IntRange(value)
+        }
+    var usingStrings: List<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            usingStrings(value)
+        }
 
     fun name(name: StringMatcher) = also {
-        this.name = name
+        this.nameMatcher = name
     }
 
     @JvmOverloads
     fun name(name: String, ignoreCase: Boolean = false) = also {
-        this.name = StringMatcher(name, StringMatchType.Equals, ignoreCase)
+        this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
     }
 
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
-        this.modifiers = modifiers
+        this.modifiersMatcher = modifiers
     }
 
     @JvmOverloads
     fun modifiers(modifiers: Int, matchType: MatchType = MatchType.Equal) = also {
-        this.modifiers = AccessFlagsMatcher(modifiers, matchType)
+        this.modifiersMatcher = AccessFlagsMatcher(modifiers, matchType)
     }
 
     fun declaredClass(declaredClass: ClassMatcher) = also {
-        this.declaredClass = declaredClass
+        this.classMatcher = declaredClass
     }
 
     @JvmOverloads
@@ -59,11 +172,11 @@ class MethodMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.declaredClass = ClassMatcher().className(declaredClassName, matchType, ignoreCase)
+        this.classMatcher = ClassMatcher().className(declaredClassName, matchType, ignoreCase)
     }
 
     fun returnType(returnType: ClassMatcher) = also {
-        this.returnType = returnType
+        this.returnTypeMatcher = returnType
     }
 
     @JvmOverloads
@@ -72,11 +185,20 @@ class MethodMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.returnType = ClassMatcher().className(returnTypeName, matchType, ignoreCase)
+        this.returnTypeMatcher = ClassMatcher().className(returnTypeName, matchType, ignoreCase)
     }
 
     fun parameters(parameters: ParametersMatcher) = also {
         this.parameters = parameters
+    }
+
+    fun parameterTypes(parameterType: List<String?>) = also {
+        this.parameters = ParametersMatcher().apply {
+            parameterType.forEach {
+                val paramMatcher = it?.let { ParameterMatcher().type(it) }
+                add(paramMatcher)
+            }
+        }
     }
 
     fun parameterTypes(vararg parameterTypes: String?) = also {
@@ -109,7 +231,7 @@ class MethodMatcher : BaseQuery() {
     }
 
     fun opCodes(opCodes: OpCodesMatcher) = also {
-        this.opCodes = opCodes
+        this.opCodesMatcher = opCodes
     }
 
     fun opCodes(
@@ -117,7 +239,7 @@ class MethodMatcher : BaseQuery() {
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) = also {
-        this.opCodes = OpCodesMatcher(opCodes, matchType, opCodeSize)
+        this.opCodesMatcher = OpCodesMatcher(opCodes, matchType, opCodeSize)
     }
 
     fun opNames(
@@ -125,19 +247,19 @@ class MethodMatcher : BaseQuery() {
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) = also {
-        this.opCodes = OpCodesMatcher.createForOpNames(opNames, matchType, opCodeSize)
+        this.opCodesMatcher = OpCodesMatcher.createForOpNames(opNames, matchType, opCodeSize)
     }
 
     fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
-        this.usingStrings = usingStrings
+        this.usingStringsMatcher = usingStrings
     }
 
     fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStrings = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.usingStrings = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
     }
 
     fun usingFields(usingFields: List<UsingFieldMatcher>) = also {
@@ -235,14 +357,14 @@ class MethodMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerMethodMatcher.createMethodMatcher(
             fbb,
-            name?.build(fbb) ?: 0,
-            modifiers?.build(fbb) ?: 0,
-            declaredClass?.build(fbb) ?: 0,
-            returnType?.build(fbb) ?: 0,
+            nameMatcher?.build(fbb) ?: 0,
+            modifiersMatcher?.build(fbb) ?: 0,
+            classMatcher?.build(fbb) ?: 0,
+            returnTypeMatcher?.build(fbb) ?: 0,
             parameters?.build(fbb) ?: 0,
             annotations?.build(fbb) ?: 0,
-            opCodes?.build(fbb) ?: 0,
-            usingStrings?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            opCodesMatcher?.build(fbb) ?: 0,
+            usingStringsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             usingFields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             usingNumbers?.map { it.type!!.value }?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it.toUByteArray()) } ?: 0,
             usingNumbers?.map { it.value!!.build(fbb) }?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it.toIntArray()) } ?: 0,

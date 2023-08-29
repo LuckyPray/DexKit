@@ -12,13 +12,18 @@ import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 
 class BatchFindMethodUsingStrings : BaseQuery() {
-    private var searchPackages: List<String>? = null
-    private var excludePackages: List<String>? = null
+    @set:JvmSynthetic
+    var searchPackages: List<String>? = null
+    @set:JvmSynthetic
+    var excludePackages: List<String>? = null
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
-    private var searchClasses: LongArray? = null
-    private var searchMethods: LongArray? = null
-    private var matchers: List<BatchUsingStringsMatcher>? = null
+    @set:JvmSynthetic
+    var searchClasses: List<ClassData>? = null
+    @set:JvmSynthetic
+    var searchMethods: List<MethodData>? = null
+    var matchers: List<BatchUsingStringsMatcher>? = null
+        private set
 
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -41,11 +46,11 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     }
 
     fun searchInClasses(classes: List<ClassData>) = also {
-        this.searchClasses = classes.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchClasses = classes
     }
 
     fun searchInMethods(methods: List<MethodData>) = also {
-        this.searchMethods = methods.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchMethods = methods
     }
 
     fun matchers(matchers: List<BatchUsingStringsMatcher>) = also {
@@ -66,7 +71,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun matcher(init: BatchUsingStringsMatcherList.() -> Unit) = also {
+    inline fun matchers(init: BatchUsingStringsMatcherList.() -> Unit) = also {
         matchers(BatchUsingStringsMatcherList().apply(init))
     }
 
@@ -81,11 +86,19 @@ class BatchFindMethodUsingStrings : BaseQuery() {
         matchers ?: throw IllegalAccessException("matchers must be set")
         val root = InnerBatchFindMethodUsingStrings.createBatchFindMethodUsingStrings(
             fbb,
-            searchPackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
-            excludePackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            searchPackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            excludePackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses?.let { InnerBatchFindMethodUsingStrings.createInClassesVector(fbb, it) } ?: 0,
-            searchMethods?.let { InnerBatchFindMethodUsingStrings.createInMethodsVector(fbb, it) } ?: 0,
+            searchClasses
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerBatchFindMethodUsingStrings.createInClassesVector(fbb, it) } ?: 0,
+            searchMethods
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerBatchFindMethodUsingStrings.createInMethodsVector(fbb, it) } ?: 0,
             fbb.createVectorOfTables(matchers!!.map { it.build(fbb) }.toIntArray())
         )
         fbb.finish(root)

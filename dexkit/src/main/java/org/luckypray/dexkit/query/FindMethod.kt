@@ -10,13 +10,18 @@ import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 
 class FindMethod : BaseQuery() {
-    private var searchPackages: List<String>? = null
-    private var excludePackages: List<String>? = null
+    @set:JvmSynthetic
+    var searchPackages: List<String>? = null
+    @set:JvmSynthetic
+    var excludePackages: List<String>? = null
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
-    private var searchClasses: LongArray? = null
-    private var searchMethods: LongArray? = null
-    private var matcher: MethodMatcher? = null
+    @set:JvmSynthetic
+    var searchClasses: List<ClassData>? = null
+    @set:JvmSynthetic
+    var searchMethods: List<MethodData>? = null
+    var matcher: MethodMatcher? = null
+        private set
 
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -39,11 +44,11 @@ class FindMethod : BaseQuery() {
     }
 
     fun searchInClass(classList: List<ClassData>) = also {
-        this.searchClasses = classList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchClasses = classList
     }
 
     fun searchInMethod(methodList: List<MethodData>) = also {
-        this.searchMethods = methodList.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchMethods = methodList
     }
     fun matcher(matcher: MethodMatcher) = also {
         this.matcher = matcher
@@ -66,11 +71,19 @@ class FindMethod : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFindMethod.createFindMethod(
             fbb,
-            searchPackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
-            excludePackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            searchPackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            excludePackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses?.let { InnerFindMethod.createInClassesVector(fbb, it) } ?: 0,
-            searchMethods?.let { InnerFindMethod.createInMethodsVector(fbb, it) } ?: 0,
+            searchClasses
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerFindMethod.createInClassesVector(fbb, it) } ?: 0,
+            searchMethods
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerFindMethod.createInMethodsVector(fbb, it) } ?: 0,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

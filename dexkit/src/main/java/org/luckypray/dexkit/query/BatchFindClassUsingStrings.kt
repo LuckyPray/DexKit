@@ -11,12 +11,16 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.result.ClassData
 
 class BatchFindClassUsingStrings : BaseQuery() {
-    private var searchPackages: List<String>? = null
-    private var excludePackages: List<String>? = null
+    @set:JvmSynthetic
+    var searchPackages: List<String>? = null
+    @set:JvmSynthetic
+    var excludePackages: List<String>? = null
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
-    private var searchClasses: LongArray? = null
-    private var matchers: List<BatchUsingStringsMatcher>? = null
+    @set:JvmSynthetic
+    var searchClasses: List<ClassData>? = null
+    var matchers: List<BatchUsingStringsMatcher>? = null
+        private set
 
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -39,7 +43,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
     }
 
     fun searchIn(classes: List<ClassData>) = also {
-        this.searchClasses = classes.map { getEncodeId(it.dexId, it.id) }.toLongArray()
+        this.searchClasses = classes
     }
 
     fun matchers(matchers: List<BatchUsingStringsMatcher>) = also {
@@ -60,7 +64,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun matcher(init: BatchUsingStringsMatcherList.() -> Unit) = also {
+    inline fun matchers(init: BatchUsingStringsMatcherList.() -> Unit) = also {
         matchers(BatchUsingStringsMatcherList().apply(init))
     }
 
@@ -75,10 +79,16 @@ class BatchFindClassUsingStrings : BaseQuery() {
         matchers ?: throw IllegalAccessException("matchers must be set")
         val root = InnerBatchFindClassUsingStrings.createBatchFindClassUsingStrings(
             fbb,
-            searchPackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
-            excludePackages?.map { fbb.createString(it) }?.let { fbb.createVectorOfTables(it.toIntArray()) } ?: 0,
+            searchPackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            excludePackages
+                ?.map { fbb.createString(it) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses?.let { InnerBatchFindClassUsingStrings.createInClassesVector(fbb, it) } ?: 0,
+            searchClasses
+                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+                ?.let { InnerBatchFindClassUsingStrings.createInClassesVector(fbb, it) } ?: 0,
             fbb.createVectorOfTables(matchers!!.map { it.build(fbb) }.toIntArray())
         )
         fbb.finish(root)
