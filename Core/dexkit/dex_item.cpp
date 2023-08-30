@@ -2,6 +2,7 @@
 
 #include "utils/byte_code_util.h"
 #include "utils/opcode_util.h"
+#include "utils/dex_descriptor_util.h"
 
 namespace dexkit {
 
@@ -29,10 +30,14 @@ int DexItem::InitCache() {
     }
 
     type_names.resize(reader.TypeIds().size());
+    type_name_array_count.resize(reader.TypeIds().size());
     auto type_names_it = type_names.begin();
     int idx = 0;
     for (auto &type_id: reader.TypeIds()) {
         *type_names_it = strings[type_id.descriptor_idx];
+        auto array_count = type_names_it->find_first_not_of('[');
+        DEXKIT_CHECK(array_count != std::string::npos);
+        type_name_array_count[idx] = array_count;
         type_ids_map[*type_names_it++] = idx++;
     }
 
@@ -580,29 +585,11 @@ std::string_view DexItem::GetFieldDescriptor(uint32_t field_idx) {
     return field_desc.value();
 }
 
-inline bool is_primitive_type_name(std::string_view type_name) {
-    return type_name == "boolean" || type_name == "byte" || type_name == "char" || type_name == "short"
-           || type_name == "int" || type_name == "long" || type_name == "float" || type_name == "double"
-           || type_name == "void";
-}
-
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {
-    // TODO: array type checker
-    for (auto &type_name: types) {
-        if (is_primitive_type_name(type_name)) {
-            // TODO: check primitive type
-            continue;
-        } else {
-            std::string type_name_str("L");
-            type_name_str += type_name;
-            type_name_str += ";";
-            std::replace(type_name_str.begin(), type_name_str.end(), '.', '/');
-            if (!type_ids_map.contains(type_name_str)) {
-                return false;
-            }
-        }
-    }
-    return true;
+    auto all_of = std::ranges::all_of(types, [this](std::string_view type_name) {
+        return this->type_ids_map.contains(NameToDescriptor(type_name));
+    });
+    return all_of;
 }
 
 }

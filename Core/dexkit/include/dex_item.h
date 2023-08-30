@@ -106,7 +106,6 @@ private:
     std::string_view GetFieldDescriptor(uint32_t field_idx);
 
     static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
-    static bool IsTypeNameMatched(std::string_view type_name, const schema::StringMatcher *matcher);
     static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
     static std::set<std::string_view> BuildBatchFindKeywordsMap(
             const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher,
@@ -161,6 +160,7 @@ private:
     // string constants, sorted by string value
     std::vector<std::string_view> strings;
     std::vector<std::string_view> type_names;
+    std::vector<uint8_t> type_name_array_count;
     phmap::flat_hash_map<std::string_view /*type_name*/, uint32_t /*type_id*/> type_ids_map;
     std::vector<uint32_t /*class_def_id*/> type_def_idx;
     // dex declared types flag
