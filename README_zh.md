@@ -49,7 +49,7 @@ dependencies {
 ```
 
 > **Note**
-> 新版 ArtifactId 变更为`dexkit`
+> DexKit `2.0.0-alpha` 的 ArtifactId 为 `dexkit`
 
 DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
