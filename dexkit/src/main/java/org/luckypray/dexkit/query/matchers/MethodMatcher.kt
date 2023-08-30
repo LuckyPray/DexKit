@@ -59,17 +59,7 @@ class MethodMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
-            modifiersMatcher!!.modifiers = value
-        }
-    var modifiersMatchType: MatchType
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
-            modifiersMatcher!!.matchType = value
+            modifiers(value)
         }
     var declaredClass: String
         @JvmSynthetic
@@ -87,7 +77,7 @@ class MethodMatcher : BaseQuery() {
         set(value) {
             returnType(value)
         }
-    var parameterTypes: List<String>
+    var parameterTypes: List<String?>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError("Use parameters.parameterTypes")
@@ -100,40 +90,14 @@ class MethodMatcher : BaseQuery() {
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         set(value) {
-            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.opCodes = value
+            opCodes(value)
         }
     var opNames: List<String>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         set(value) {
-            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.opCodes = value.map { OpCodeUtil.getOpCode(it) }
-        }
-    var opMatchType: OpCodeMatchType
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        set(value) {
-            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.matchType = value
-        }
-    var opSize: Int
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        set(value) {
-            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.sizeRange = IntRange(value)
-        }
-    var opRange: kotlin.ranges.IntRange
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        set(value) {
-            opCodesMatcher = opCodesMatcher ?: OpCodesMatcher()
-            opCodesMatcher!!.sizeRange = IntRange(value)
+            opNames(value)
         }
     var usingStrings: List<String>
         @JvmSynthetic

@@ -33,23 +33,13 @@ class ClassMatcher : BaseQuery() {
     var usingStringsMatcher: List<StringMatcher>? = null
         private set
 
-    var sourceName: String
+    var source: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            sourceMatcher = sourceMatcher ?: StringMatcher()
-            sourceMatcher!!.value = value
-        }
-    var sourceMatchType: StringMatchType
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            sourceMatcher = sourceMatcher ?: StringMatcher()
-            sourceMatcher!!.matchType = value
+            source(value)
         }
     var className: String
         @JvmSynthetic
@@ -65,17 +55,7 @@ class ClassMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
-            modifiersMatcher!!.modifiers = value
-        }
-    var modifiersMatchType: MatchType
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
-            modifiersMatcher!!.matchType = value
+            modifiers(value)
         }
     var superClass: String
         @JvmSynthetic
@@ -89,10 +69,10 @@ class ClassMatcher : BaseQuery() {
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         set(value) {
-            usingStringsMatcher = value.map { StringMatcher(it) }
+            usingStrings(value)
         }
 
-    fun sourceName(matcher: StringMatcher) = also {
+    fun source(matcher: StringMatcher) = also {
         this.sourceMatcher = matcher
     }
 

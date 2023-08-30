@@ -41,17 +41,7 @@ class FieldMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
-            modifiersMatcher!!.modifiers = value
-        }
-    var modifiersMatchType: MatchType
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            modifiersMatcher = modifiersMatcher ?: AccessFlagsMatcher()
-            modifiersMatcher!!.matchType = value
+            modifiers(value)
         }
     var declaredClass: String
         @JvmSynthetic
