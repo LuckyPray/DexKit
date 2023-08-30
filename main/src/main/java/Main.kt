@@ -37,12 +37,12 @@ fun main() {
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
         val startTime = System.currentTimeMillis()
-        bridge.findClass {
+        bridge.findMethod {
             searchPackages("org.luckypraY.dexkit.demo")
             excludePackages("org.luckypray.dexkit.demo.annotations")
             ignorePackagesCase = true
         }.forEach {
-            println(it.className)
+            println(it.getInvokeMethods())
         }
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }

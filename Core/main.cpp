@@ -607,29 +607,29 @@ int DexKitPackageTest(dexkit::DexKit &dexkit) {
 
 
     flatbuffers::FlatBufferBuilder fbb;
-    auto find = CreateFindClass(
+    auto find = CreateFindMethod(
             fbb,
             fbb.CreateVectorOfStrings({"Org.luckypray.dexkit.demo"}),
             fbb.CreateVectorOfStrings({"org.luckypray.dexkit.demo.annotations"}),
-            false
+            true
     );
     fbb.Finish(find);
 
     auto buf = fbb.GetBufferPointer();
-    auto query = From<FindClass>(buf);
+    auto query = From<FindMethod>(buf);
     printf("build query: %p, size: %d\n", query, fbb.GetSize());
-    auto builder = dexkit.FindClass(query);
+    auto builder = dexkit.FindMethod(query);
     auto buffer = builder->GetBufferPointer();
     auto size = builder->GetSize();
     printf("buffer size: %d\n", size);
 
-    auto result = From<ClassMetaArrayHolder>(buffer);
-    if (result->classes()) {
-        printf("result->classes()->size() = %d\n", result->classes()->size());
-        for (int i = 0; i < result->classes()->size(); ++i) {
-            auto item = result->classes()->Get(i);
-            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
-                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+    auto result = From<MethodMetaArrayHolder>(buffer);
+    if (result->methods()) {
+        printf("result->methods()->size() = %d\n", result->methods()->size());
+        for (int i = 0; i < result->methods()->size(); ++i) {
+            auto item = result->methods()->Get(i);
+            printf("dex: %02d, idx: %d, methods: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
         }
     }
     return 0;

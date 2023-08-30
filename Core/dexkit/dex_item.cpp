@@ -542,6 +542,42 @@ DexItem::GetMethodOpCodes(uint32_t method_idx) {
     return op_seq.has_value() ? op_seq.value() : std::vector<uint8_t>();
 }
 
+std::vector<MethodBean> DexItem::GetCallMethods(uint32_t method_idx) {
+    auto &method_caller = this->method_caller_ids[method_idx];
+    std::vector<MethodBean> beans;
+    for (auto caller_id: method_caller) {
+        beans.emplace_back(GetMethodBean(caller_id));
+    }
+    return beans;
+}
+
+std::vector<MethodBean> DexItem::GetInvokeMethods(uint32_t method_idx) {
+    auto &method_invoking = this->method_invoking_ids[method_idx];
+    std::vector<MethodBean> beans;
+    for (auto invoking_id: method_invoking) {
+        beans.emplace_back(GetMethodBean(invoking_id));
+    }
+    return beans;
+}
+
+std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
+    auto &method_ids = this->field_get_method_ids[field_idx];
+    std::vector<MethodBean> beans;
+    for (auto method_id: method_ids) {
+        beans.emplace_back(GetMethodBean(method_id));
+    }
+    return beans;
+}
+
+std::vector<MethodBean> DexItem::FieldPutMethods(uint32_t field_idx) {
+    auto &method_ids = this->field_put_method_ids[field_idx];
+    std::vector<MethodBean> beans;
+    for (auto method_id: method_ids) {
+        beans.emplace_back(GetMethodBean(method_id));
+    }
+    return beans;
+}
+
 std::string_view DexItem::GetMethodDescriptor(uint32_t method_idx) {
     auto &method_desc = this->method_descriptors[method_idx];
     if (method_desc != std::nullopt) {

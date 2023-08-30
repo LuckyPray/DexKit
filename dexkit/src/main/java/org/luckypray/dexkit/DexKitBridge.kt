@@ -318,6 +318,46 @@ class DexKitBridge : Closeable {
         return list
     }
 
+    fun getCallMethods(encodeId: Long): List<MethodData> {
+        val res = nativeGetCallMethods(token, encodeId)
+        val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<MethodData>()
+        for (i in 0 until holder.methodsLength) {
+            list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
+        }
+        return list
+    }
+
+    fun getInvokeMethods(encodeId: Long): List<MethodData> {
+        val res = nativeGetInvokeMethods(token, encodeId)
+        val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<MethodData>()
+        for (i in 0 until holder.methodsLength) {
+            list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
+        }
+        return list
+    }
+
+    fun fieldGetMethods(encodeId: Long): List<MethodData> {
+        val res = nativeFieldGetMethods(token, encodeId)
+        val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<MethodData>()
+        for (i in 0 until holder.methodsLength) {
+            list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
+        }
+        return list
+    }
+
+    fun fieldPutMethods(encodeId: Long): List<MethodData> {
+        val res = nativeFieldPutMethods(token, encodeId)
+        val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<MethodData>()
+        for (i in 0 until holder.methodsLength) {
+            list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
+        }
+        return list
+    }
+
     @kotlin.internal.InlineOnly
     internal inline fun getMethodOpCodes(encodeId: Long): List<Int> {
         return nativeGetMethodOpCodes(token, encodeId).toList()
@@ -415,6 +455,18 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetMethodOpCodes(nativePtr: Long, methodId: Long): IntArray
+
+        @JvmStatic
+        private external fun nativeGetCallMethods(nativePtr: Long, encodeId: Long): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetInvokeMethods(nativePtr: Long, encodeId: Long): ByteArray
+
+        @JvmStatic
+        private external fun nativeFieldGetMethods(nativePtr: Long, encodeId: Long): ByteArray
+
+        @JvmStatic
+        private external fun nativeFieldPutMethods(nativePtr: Long, encodeId: Long): ByteArray
 
     }
 

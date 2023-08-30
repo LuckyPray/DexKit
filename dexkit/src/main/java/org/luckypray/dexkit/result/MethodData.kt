@@ -115,6 +115,14 @@ class MethodData private constructor(
         return getOpCodes().map { OpCodeUtil.getOpFormat(it) }
     }
 
+    fun getCallMethods(): List<MethodData> {
+        return bridge.getCallMethods(getEncodeId(dexId, id))
+    }
+
+    fun getInvokeMethods(): List<MethodData> {
+        return bridge.getInvokeMethods(getEncodeId(dexId, id))
+    }
+
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, className)

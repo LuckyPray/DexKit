@@ -548,6 +548,78 @@ DexKit::GetMethodOpCodes(int64_t encode_method_id) {
     return dex_items[dex_id]->GetMethodOpCodes(method_id);
 }
 
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetCallMethods(int64_t encode_method_id) {
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->GetCallMethods(method_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetInvokeMethods(int64_t encode_method_id) {
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->GetInvokeMethods(method_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::FieldGetMethods(int64_t encode_field_id) {
+    auto dex_id = encode_field_id >> 32;
+    auto field_id = encode_field_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->FieldGetMethods(field_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::FieldPutMethods(int64_t encode_field_id) {
+    auto dex_id = encode_field_id >> 32;
+    auto field_id = encode_field_id & UINT32_MAX;
+    auto result = dex_items[dex_id]->FieldPutMethods(field_id);
+
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
+    for (auto &bean: result) {
+        auto res = bean.CreateMethodMeta(*builder);
+        builder->Finish(res);
+        offsets.emplace_back(res);
+    }
+    auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
+    builder->Finish(array_holder);
+    return builder;
+}
+
 void
 DexKit::BuildPackagesMatchTrie(
         const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,

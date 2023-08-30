@@ -43,6 +43,10 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetParameterAnnotations(int64_t encode_method_id);
     std::optional<std::vector<std::optional<std::string_view>>> GetParameterNames(int64_t encode_method_id);
     std::vector<uint8_t> GetMethodOpCodes(int64_t encode_method_id);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetCallMethods(int64_t encode_method_id);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetInvokeMethods(int64_t encode_method_id);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldGetMethods(int64_t encode_field_id);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldPutMethods(int64_t encode_field_id);
 
 
 private:

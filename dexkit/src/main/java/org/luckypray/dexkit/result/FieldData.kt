@@ -67,6 +67,14 @@ class FieldData private constructor(
         return bridge.getFieldAnnotations(getEncodeId(dexId, id))
     }
 
+    fun getMethods(): List<MethodData> {
+        return bridge.fieldGetMethods(getEncodeId(dexId, id))
+    }
+
+    fun putMethods(): List<MethodData> {
+        return bridge.fieldPutMethods(getEncodeId(dexId, id))
+    }
+
     @Throws(ClassNotFoundException::class)
     fun getTypeInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, className)

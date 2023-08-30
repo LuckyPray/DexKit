@@ -2,7 +2,7 @@
 
 #include <string_view>
 #include <vector>
-
+#include <ranges>
 
 #include "beans.h"
 #include "common.h"
@@ -89,6 +89,10 @@ public:
     std::vector<std::vector<AnnotationBean>> GetParameterAnnotationBeans(uint32_t method_idx);
     std::optional<std::vector<std::optional<std::string_view>>> GetParameterNames(uint32_t method_idx);
     std::vector<uint8_t> GetMethodOpCodes(uint32_t method_idx);
+    std::vector<MethodBean> GetCallMethods(uint32_t method_idx);
+    std::vector<MethodBean> GetInvokeMethods(uint32_t method_idx);
+    std::vector<MethodBean> FieldGetMethods(uint32_t field_idx);
+    std::vector<MethodBean> FieldPutMethods(uint32_t field_idx);
 
     bool CheckAllTypeNamesDeclared(std::vector<std::string_view> &types);
 
