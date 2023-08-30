@@ -622,10 +622,12 @@ std::string_view DexItem::GetFieldDescriptor(uint32_t field_idx) {
 }
 
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {
-    auto all_of = std::ranges::all_of(types, [this](std::string_view type_name) {
-        return this->type_ids_map.contains(NameToDescriptor(type_name));
-    });
-    return all_of;
+    for (auto &type: types) { // NOLINT
+        if (!this->type_ids_map.contains(NameToDescriptor(type))) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }
