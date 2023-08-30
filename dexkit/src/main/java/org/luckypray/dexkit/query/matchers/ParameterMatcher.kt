@@ -26,7 +26,11 @@ class ParameterMatcher : BaseQuery() {
         this.annotations = annotations
     }
 
-    fun type(type: ClassMatcher) = also { this.typeMatcher = type }
+    fun type(type: ClassMatcher) = also {
+        this.typeMatcher = type
+    }
+
+    @JvmOverloads
     fun type(
         typeName: String,
         matchType: StringMatchType = StringMatchType.Equals,

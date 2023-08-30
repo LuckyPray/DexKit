@@ -24,6 +24,7 @@ class AnnotationMatcher : BaseQuery() {
         private set
     var elements: AnnotationElementsMatcher? = null
         private set
+    // TODO: methods / fields
 
     var typeName: String
         @JvmSynthetic
@@ -42,7 +43,7 @@ class AnnotationMatcher : BaseQuery() {
     @JvmOverloads
     fun typeName(
         typeName: String,
-        matchType: StringMatchType = StringMatchType.Contains,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.typeNameMatcher = StringMatcher(typeName, matchType, ignoreCase)
@@ -54,7 +55,7 @@ class AnnotationMatcher : BaseQuery() {
 
     fun targetElementTypes(
         targetElementTypes: List<TargetElementType>,
-        matchType: MatchType = MatchType.Equal
+        matchType: MatchType = MatchType.Contains
     ) = also {
         this.targetElementTypes = TargetElementTypesMatcher().apply {
             types(targetElementTypes)

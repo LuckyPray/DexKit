@@ -99,7 +99,7 @@ class ClassMatcher : BaseQuery() {
     @JvmOverloads
     fun source(
         source: String,
-        matchType: StringMatchType = StringMatchType.Equals,
+        matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also { this.sourceMatcher = StringMatcher(source, matchType, ignoreCase) }
 
@@ -119,7 +119,10 @@ class ClassMatcher : BaseQuery() {
     }
 
     @JvmOverloads
-    fun modifiers(modifiers: Int, matchType: MatchType = MatchType.Equal) = also {
+    fun modifiers(
+        modifiers: Int,
+        matchType: MatchType = MatchType.Contains
+    ) = also {
         this.modifiersMatcher = AccessFlagsMatcher(modifiers, matchType)
     }
 

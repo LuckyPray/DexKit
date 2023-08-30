@@ -158,7 +158,10 @@ class MethodMatcher : BaseQuery() {
     }
 
     @JvmOverloads
-    fun modifiers(modifiers: Int, matchType: MatchType = MatchType.Equal) = also {
+    fun modifiers(
+        modifiers: Int,
+        matchType: MatchType = MatchType.Contains
+    ) = also {
         this.modifiersMatcher = AccessFlagsMatcher(modifiers, matchType)
     }
 
@@ -269,6 +272,7 @@ class MethodMatcher : BaseQuery() {
         this.opCodesMatcher = opCodes
     }
 
+    @JvmOverloads
     fun opCodes(
         opCodes: List<Int>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
@@ -277,6 +281,7 @@ class MethodMatcher : BaseQuery() {
         this.opCodesMatcher = OpCodesMatcher(opCodes, matchType, opCodeSize)
     }
 
+    @JvmOverloads
     fun opNames(
         opNames: List<String>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,

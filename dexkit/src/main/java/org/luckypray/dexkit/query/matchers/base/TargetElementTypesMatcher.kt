@@ -41,7 +41,7 @@ class TargetElementTypesMatcher  : BaseQuery {
         @JvmStatic
         fun create(
             types: List<TargetElementType>,
-            matchType: MatchType = MatchType.Equal
+            matchType: MatchType = MatchType.Contains
         ) = TargetElementTypesMatcher(types, matchType)
     }
     

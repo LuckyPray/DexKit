@@ -75,7 +75,10 @@ class FieldMatcher : BaseQuery() {
     }
 
     @JvmOverloads
-    fun name(name: String, ignoreCase: Boolean = false) = also {
+    fun name(
+        name: String,
+        ignoreCase: Boolean = false
+    ) = also {
         this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
     }
 
@@ -84,7 +87,10 @@ class FieldMatcher : BaseQuery() {
     }
 
     @JvmOverloads
-    fun modifiers(modifiers: Int, matchType: MatchType = MatchType.Equal) = also {
+    fun modifiers(
+        modifiers: Int,
+        matchType: MatchType = MatchType.Contains
+    ) = also {
         this.modifiersMatcher = AccessFlagsMatcher(modifiers, matchType)
     }
 

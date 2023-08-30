@@ -53,7 +53,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
     @JvmOverloads
     fun matchers(
         map: Map<String, List<String>>,
-        matchType: StringMatchType = StringMatchType.SimilarRegex,
+        matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
         this.matchers = map.map { (key, value) ->
