@@ -742,6 +742,9 @@ bool DexItem::IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *
 }
 
 bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
     auto &method_def = this->reader.MethodIds()[method_idx];
     auto method_name = this->strings[method_def.name_idx];
     if (!IsStringMatched(method_name, matcher->method_name())) {
