@@ -25,14 +25,14 @@ void DexKit::SetThreadNum(int num) {
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
     std::lock_guard<std::mutex> lock(_mutex);
-    dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size));
+    dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size, this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
 }
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
     std::lock_guard<std::mutex> lock(_mutex);
-    dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
+    dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
 }
@@ -40,7 +40,7 @@ Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
 Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
     std::lock_guard<std::mutex> lock(_mutex);
     for (auto &dex_image: dex_images) {
-        dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image)));
+        dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
     }
     std::sort(dex_items.begin(), dex_items.end());
     return Error::SUCCESS;
@@ -75,7 +75,7 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
                     return;
                 }
                 int idx = ort_size + dex_pair.first - 1;
-                dex_items[idx] = std::make_unique<DexItem>(idx, std::move(ptr));
+                dex_items[idx] = std::make_unique<DexItem>(idx, std::move(ptr), this);
             });
         }
     }
@@ -618,6 +618,16 @@ DexKit::FieldPutMethods(int64_t encode_field_id) {
     auto array_holder = schema::CreateMethodMetaArrayHolder(*builder, builder->CreateVector(offsets));
     builder->Finish(array_holder);
     return builder;
+}
+
+DexItem *DexKit::GetClassDeclaredDexItem(std::string_view class_name) {
+    auto dex_idx = this->class_declare_dex_map[class_name];
+    return this->dex_items[dex_idx].get();
+}
+
+void DexKit::PutDeclaredClass(std::string_view class_name, uint16_t dex_id) {
+    std::lock_guard lock(this->_put_class_mutex);
+    this->class_declare_dex_map[class_name] = dex_id;
 }
 
 void

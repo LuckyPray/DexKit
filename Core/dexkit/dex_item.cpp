@@ -6,15 +6,17 @@
 
 namespace dexkit {
 
-DexItem::DexItem(uint32_t id, uint8_t *data, size_t size) :
+DexItem::DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit) :
         _image(std::make_unique<MemMap>(data, size)),
+        dexkit(dexkit),
         reader(_image->addr(), _image->len()),
         dex_id(id) {
     InitCache();
 }
 
-DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap) :
+DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap, DexKit *dexkit) :
         _image(std::move(mmap)),
+        dexkit(dexkit),
         reader(_image->addr(), _image->len()),
         dex_id(id) {
     InitCache();
@@ -336,6 +338,9 @@ int DexItem::InitCache() {
                 method_parameter_annotation.emplace_back(ann_vec);
             }
         }
+    }
+    for (auto &class_def: reader.ClassDefs()) {
+        dexkit->PutDeclaredClass(type_names[class_def.class_idx], dex_id);
     }
     return 0;
 }

@@ -17,14 +17,17 @@
 #include "ThreadVariable.h"
 #include "file_helper.h"
 #include "package_trie.h"
+#include "dexkit.h"
 
 namespace dexkit {
+
+class DexKit;
 
 class DexItem {
 public:
 
-    explicit DexItem(uint32_t id, uint8_t *data, size_t size);
-    explicit DexItem(uint32_t id, std::unique_ptr<MemMap> mmap);
+    explicit DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit);
+    explicit DexItem(uint32_t id, std::unique_ptr<MemMap> mmap, DexKit *dexkit);
     ~DexItem() = default;
     DexItem(DexItem &&) = default;
     DexItem &operator=(DexItem &&) = default;
@@ -149,6 +152,7 @@ private:
     bool IsFieldPutMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
 
 private:
+    DexKit *dexkit;
     std::unique_ptr<MemMap> _image;
     dex::Reader reader;
 

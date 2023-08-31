@@ -13,6 +13,8 @@
 
 namespace dexkit {
 
+class DexItem;
+
 class DexKit {
 public:
 
@@ -48,18 +50,22 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldGetMethods(int64_t encode_field_id);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldPutMethods(int64_t encode_field_id);
 
+    DexItem *GetClassDeclaredDexItem(std::string_view class_name);
+    void PutDeclaredClass(std::string_view class_name, uint16_t dex_id);
 
 private:
     std::mutex _mutex;
+    std::shared_mutex _put_class_mutex;
     std::atomic<uint32_t> dex_cnt = 0;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
+    phmap::flat_hash_map<std::string_view, uint16_t /*dex_id*/> class_declare_dex_map;
 
     static void
     BuildPackagesMatchTrie(
             const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,
             const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *exclude_packages,
-            const bool ignore_package_case,
+            bool ignore_package_case,
             trie::PackageTrie &trie
     );
 
