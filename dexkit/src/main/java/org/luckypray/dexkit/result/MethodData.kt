@@ -67,8 +67,8 @@ class MethodData private constructor(
 
     val name get() = methodName
 
-    val paramSignList: List<String> by lazy {
-        DexSignUtil.getParamSignList(paramSign)
+    val paramTypeNames: List<String> by lazy {
+        DexSignUtil.getParamTypeNames(paramSign)
     }
 
     val returnTypeName: String by lazy {
@@ -149,7 +149,7 @@ class MethodData private constructor(
                 append("${Modifier.toString(modifiers)} ")
             }
             append("$returnTypeName $methodName(")
-            append(paramSignList.joinToString(", "))
+            append(paramTypeNames.joinToString(", "))
             append(")")
         }
     }

@@ -34,7 +34,7 @@ object DexSignUtil {
     }
 
     @JvmStatic
-    fun getParamSignList(paramsSign: String): List<String> {
+    fun getParamTypeNames(paramsSign: String): List<String> {
         val params = mutableListOf<String>()
         var left = 0
         var right = 0
