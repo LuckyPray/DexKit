@@ -171,7 +171,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
             auto element = retention_annotation->elements[0];
             auto field_idx = element->value->u.enum_value->orig_index;
             DEXKIT_CHECK(this->retention_map.contains(field_idx));
-            if (retention_map[field_idx] != matcher->policy()) {
+            if (this->retention_map[field_idx] != matcher->policy()) {
                 return false;
             }
         }
@@ -182,7 +182,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
             for (auto element: target_annotation->elements) {
                 auto field_idx = element->value->u.enum_value->orig_index;
                 DEXKIT_CHECK(this->target_element_map.contains(field_idx));
-                target_flags |= 1 << (uint8_t) target_element_map[field_idx];
+                target_flags |= 1 << (uint8_t) this->target_element_map[field_idx];
             }
 
             for (int i = 0; i < target_element_types->types()->size(); ++i) {
@@ -553,7 +553,7 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
     real_keywords = std::get<2>(*ptr);
 
     std::set<std::string_view> search_set;
-    for (auto method_idx: class_method_ids[type_idx]) {
+    for (auto method_idx: this->class_method_ids[type_idx]) {
         auto &using_strings = this->method_using_string_ids[method_idx];
         for (auto idx: using_strings) {
             auto str = this->strings[idx];
@@ -589,6 +589,7 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
 
 // NOLINTNEXTLINE
 bool DexItem::IsSuperClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher) {
+    // TODO check cross
     if (matcher && !this->type_def_flag[type_idx]) {
         return false;
     }
@@ -795,7 +796,7 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
         return true;
     }
     auto method_def = this->reader.MethodIds()[method_idx];
-    const auto type_list = proto_type_list[method_def.proto_idx];
+    const auto type_list = this->proto_type_list[method_def.proto_idx];
     auto type_list_size = type_list == nullptr ? 0 : type_list->size;
     if (matcher->parameter_count()) {
         if (type_list_size < matcher->parameter_count()->min()
@@ -858,7 +859,7 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
             return false;
         }
 
-        if (matcher_opcodes.size() > 0) {
+        if (!matcher_opcodes.empty()) {
             auto index = kmp::FindIndex(opt_opcodes.value(), matcher_opcodes);
             if (index == -1) {
                 return false;
@@ -1068,7 +1069,7 @@ bool DexItem::IsInvokingMethodsMatched(uint32_t method_idx, const schema::Method
     if (matcher == nullptr) {
         return true;
     }
-    const auto invoking_methods = method_invoking_ids[method_idx];
+    const auto invoking_methods = this->method_invoking_ids[method_idx];
     if (matcher->method_count()) {
         if (invoking_methods.size() < matcher->method_count()->min()
         || invoking_methods.size() > matcher->method_count()->max()) {
@@ -1114,7 +1115,7 @@ bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMat
     if (matcher == nullptr) {
         return true;
     }
-    const auto &ids = method_caller_ids[method_idx];
+    const auto &ids = this->method_caller_ids[method_idx];
     if (matcher->method_count()) {
         if (ids.size() < matcher->method_count()->min() || ids.size() > matcher->method_count()->max()) {
             return false;
@@ -1202,7 +1203,7 @@ bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::Methods
     if (matcher == nullptr) {
         return true;
     }
-    const auto ids = field_get_method_ids[field_idx];
+    const auto ids = this->field_get_method_ids[field_idx];
     if (matcher->method_count()) {
         if (ids.size() < matcher->method_count()->min() || ids.size() > matcher->method_count()->max()) {
             return false;
@@ -1244,7 +1245,7 @@ bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::Methods
     if (matcher == nullptr) {
         return true;
     }
-    const auto ids = field_put_method_ids[field_idx];
+    const auto ids = this->field_put_method_ids[field_idx];
     if (matcher->method_count()) {
         if (ids.size() < matcher->method_count()->min() || ids.size() > matcher->method_count()->max()) {
             return false;
