@@ -133,6 +133,9 @@ int DexItem::InitCache() {
     field_get_method_ids.resize(reader.FieldIds().size());
     field_put_method_ids.resize(reader.FieldIds().size());
 
+    method_cross_info.resize(reader.MethodIds().size());
+    field_cross_info.resize(reader.FieldIds().size());
+
     auto class_def_idx = 0;
     for (auto &class_def: reader.ClassDefs()) {
         auto def_idx = class_def_idx++;
@@ -238,9 +241,9 @@ int DexItem::InitCache() {
                                           (op >= 0x67 && op <= 0x6d));
                         auto index = ReadShort(ptr);
                         if (is_getter) {
-                            field_get_method_ids[index].emplace_back(method_id);
+                            field_get_method_ids[index].emplace_back(dex_id, method_id);
                         } else {
-                            field_put_method_ids[index].emplace_back(method_id);
+                            field_put_method_ids[index].emplace_back(dex_id, method_id);
                         }
                         method_using_fields.emplace_back(index, is_getter);
                         break;
@@ -250,7 +253,7 @@ int DexItem::InitCache() {
                     case dex::k3rc: // invoke-kind/range
                     {
                         auto index = ReadShort(ptr);
-                        method_caller_ids[index].emplace_back(method_id);
+                        method_caller_ids[index].emplace_back(dex_id, method_id);
                         method_invoking.emplace_back(index);
                         break;
                     }
@@ -287,6 +290,15 @@ int DexItem::InitCache() {
                 p += width;
             }
         }
+    }
+
+    auto method_idx = 0;
+    for (auto &method_def: reader.MethodIds()) {
+        auto def_idx = method_idx++;
+        if (type_def_flag[method_def.class_idx]) {
+            continue;
+        }
+        class_method_ids[method_def.class_idx].emplace_back(def_idx);
     }
 
     class_annotations.resize(reader.TypeIds().size());
@@ -340,9 +352,75 @@ int DexItem::InitCache() {
         }
     }
     for (auto &class_def: reader.ClassDefs()) {
-        dexkit->PutDeclaredClass(type_names[class_def.class_idx], dex_id);
+        dexkit->PutDeclaredClass(type_names[class_def.class_idx], dex_id, class_def.class_idx);
     }
     return 0;
+}
+
+void DexItem::PutCrossRef() {
+    if (this->put_cross_flag) {
+        return;
+    }
+    for (int type_idx = 0; type_idx < type_names.size(); ++type_idx) {
+        if (!this->type_def_flag[type_idx] && type_names[type_idx][0] != '[') {
+            auto declared_pair = dexkit->GetClassDeclaredPair(type_names[type_idx]);
+            auto origin_dex = declared_pair.first;
+            auto origin_type_idx = declared_pair.second;
+
+            std::vector<uint32_t> method_ids;
+            std::vector<uint32_t> field_ids;
+            // current dex
+            std::swap(method_ids, this->class_method_ids[type_idx]);
+            std::swap(field_ids, this->class_field_ids[type_idx]);
+
+            // no declared in any dex
+            if (origin_dex == nullptr) {
+                continue;
+            }
+            auto &mutex = origin_dex->GetTypeDefMutex(origin_type_idx);
+            std::lock_guard lock(mutex);
+            // declared dex
+            auto &origin_method_ids = origin_dex->class_method_ids[origin_type_idx];
+            auto &origin_field_ids = origin_dex->class_field_ids[origin_type_idx];
+
+            for (int ori_i = 0, cur_i = 0; ori_i < origin_method_ids.size() && cur_i < method_ids.size(); ++ori_i) {
+                auto origin_method_idx = origin_method_ids[ori_i];
+                auto curr_method_idx = method_ids[cur_i];
+                auto origin_method_descriptor = origin_dex->GetMethodDescriptor(origin_method_idx);
+                auto curr_method_descriptor = this->GetMethodDescriptor(curr_method_idx);
+                if (curr_method_descriptor != origin_method_descriptor) {
+                    continue;
+                }
+                method_cross_info[curr_method_idx] = {origin_dex->dex_id, origin_method_idx};
+                auto &origin_caller_id = origin_dex->method_caller_ids[origin_method_idx];
+                auto &curr_caller_id = this->method_caller_ids[curr_method_idx];
+                origin_caller_id.insert(origin_caller_id.end(), curr_caller_id.begin(), curr_caller_id.end());
+                ++cur_i;
+            }
+            for (int ori_i = 0, cur_i = 0; ori_i < origin_field_ids.size() && cur_i < field_ids.size(); ++ori_i) {
+                auto origin_field_idx = origin_field_ids[ori_i];
+                auto curr_field_idx = field_ids[cur_i];
+                auto origin_field_descriptor = origin_dex->GetFieldDescriptor(origin_field_idx);
+                auto curr_field_descriptor = this->GetFieldDescriptor(curr_field_idx);
+                if (origin_field_descriptor != curr_field_descriptor) {
+                    continue;
+                }
+                field_cross_info[curr_field_idx] = {origin_dex->dex_id, origin_field_idx};
+                auto &origin_get_method_id = origin_dex->field_get_method_ids[origin_field_idx];
+                auto &curr_get_method_id = this->field_get_method_ids[curr_field_idx];
+                origin_get_method_id.insert(origin_get_method_id.end(), curr_get_method_id.begin(), curr_get_method_id.end());
+                auto &origin_put_method_id = origin_dex->field_put_method_ids[origin_field_idx];
+                auto &curr_put_method_id = this->field_put_method_ids[curr_field_idx];
+                origin_put_method_id.insert(origin_put_method_id.end(), curr_put_method_id.begin(), curr_put_method_id.end());
+                ++cur_i;
+            }
+        }
+    }
+    this->put_cross_flag = true;
+}
+
+std::mutex &DexItem::GetTypeDefMutex(uint32_t type_idx) {
+    return (*type_def_mutexes)[type_idx % type_def_mutexes->size()];
 }
 
 ClassBean DexItem::GetClassBean(uint32_t type_idx) {
@@ -550,8 +628,13 @@ DexItem::GetMethodOpCodes(uint32_t method_idx) {
 std::vector<MethodBean> DexItem::GetCallMethods(uint32_t method_idx) {
     auto &method_caller = this->method_caller_ids[method_idx];
     std::vector<MethodBean> beans;
-    for (auto caller_id: method_caller) {
-        beans.emplace_back(GetMethodBean(caller_id));
+    for (auto &[ori_dex_id, caller_id]: method_caller) {
+        if (ori_dex_id == this->dex_id) {
+            beans.emplace_back(GetMethodBean(caller_id));
+        } else {
+            auto dex = dexkit->GetDexItem(ori_dex_id);
+            beans.emplace_back(dex->GetMethodBean(caller_id));
+        }
     }
     return beans;
 }
@@ -568,8 +651,13 @@ std::vector<MethodBean> DexItem::GetInvokeMethods(uint32_t method_idx) {
 std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
     auto &method_ids = this->field_get_method_ids[field_idx];
     std::vector<MethodBean> beans;
-    for (auto method_id: method_ids) {
-        beans.emplace_back(GetMethodBean(method_id));
+    for (auto &[ori_dex_id, method_id]: method_ids) {
+        if (ori_dex_id == this->dex_id) {
+            beans.emplace_back(GetMethodBean(method_id));
+        } else {
+            auto dex = dexkit->GetDexItem(ori_dex_id);
+            beans.emplace_back(dex->GetMethodBean(method_id));
+        }
     }
     return beans;
 }
@@ -577,8 +665,13 @@ std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
 std::vector<MethodBean> DexItem::FieldPutMethods(uint32_t field_idx) {
     auto &method_ids = this->field_put_method_ids[field_idx];
     std::vector<MethodBean> beans;
-    for (auto method_id: method_ids) {
-        beans.emplace_back(GetMethodBean(method_id));
+    for (auto &[ori_dex_id, method_id]: method_ids) {
+        if (ori_dex_id == this->dex_id) {
+            beans.emplace_back(GetMethodBean(method_id));
+        } else {
+            auto dex = dexkit->GetDexItem(ori_dex_id);
+            beans.emplace_back(dex->GetMethodBean(method_id));
+        }
     }
     return beans;
 }

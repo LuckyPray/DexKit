@@ -97,10 +97,12 @@ public:
     std::vector<MethodBean> FieldPutMethods(uint32_t field_idx);
 
     bool CheckAllTypeNamesDeclared(std::vector<std::string_view> &types);
+    void PutCrossRef();
 
 private:
 
     int InitCache();
+    inline std::mutex &GetTypeDefMutex(uint32_t type_idx);
 
     phmap::flat_hash_map<uint32_t, std::vector<std::string_view>>
     InitBatchFindStringsMap(
@@ -156,6 +158,8 @@ private:
     std::unique_ptr<MemMap> _image;
     dex::Reader reader;
 
+    bool put_cross_flag = false;
+
     uint32_t dex_flag = 0;
     uint32_t dex_id;
 
@@ -163,6 +167,9 @@ private:
     uint32_t annotation_retention_class_id = dex::kNoIndex;
     phmap::flat_hash_map<uint32_t /*field_id*/, schema::TargetElementType> target_element_map;
     phmap::flat_hash_map<uint32_t /*field_id*/, schema::RetentionPolicyType> retention_map;
+
+    // mutex hash pool
+    std::unique_ptr<std::array<std::mutex, 32>> type_def_mutexes = std::make_unique<std::array<std::mutex, 32>>();
 
     // string constants, sorted by string value
     std::vector<std::string_view> strings;
@@ -191,13 +198,18 @@ private:
     std::vector<std::vector<ir::Annotation *>> field_annotations;
     std::vector<std::vector<std::vector<ir::Annotation *>>> method_parameter_annotations;
 
-    std::vector<std::vector<uint32_t /*call_method_id*/>> method_caller_ids;
-    std::vector<std::vector<uint32_t /*invoke_method_id*/>> method_invoking_ids;
+    std::vector<std::optional<std::pair<uint16_t, uint32_t>>> method_cross_info;
+    std::vector<std::optional<std::pair<uint16_t, uint32_t>>> field_cross_info;
+
     std::vector<std::vector<EncodeNumber /*using_number*/>> method_using_number;
     std::vector<std::vector<uint32_t /*using_string*/>> method_using_string_ids;
+    // TODO need check type declared
+    std::vector<std::vector<uint32_t /*invoke_method_id*/>> method_invoking_ids;
     std::vector<std::vector<std::pair<uint32_t /*method_id*/, bool /*is_getting*/>>> method_using_field_ids;
-    std::vector<std::vector<uint32_t /*field_id*/>> field_get_method_ids;
-    std::vector<std::vector<uint32_t /*field_id*/>> field_put_method_ids;
+    // maybe cross dex
+    std::vector<std::vector<std::pair<uint16_t /*dex_id*/, uint32_t /*call_method_id*/>>> method_caller_ids;
+    std::vector<std::vector<std::pair<uint16_t /*dex_id*/, uint32_t /*field_id*/>>> field_get_method_ids;
+    std::vector<std::vector<std::pair<uint16_t /*dex_id*/, uint32_t /*field_id*/>>> field_put_method_ids;
 };
 
 } // namespace dexkit

@@ -413,7 +413,14 @@ bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matc
     if (matcher == nullptr) {
         return true;
     }
-    // TODO: cross dex get type
+    if (!type_def_flag[type_idx]) {
+        // try matched in declared dex
+        auto &type_name = type_names[type_idx];
+        auto declared_info = dexkit->GetClassDeclaredPair(type_name);
+        if (declared_info.first) {
+            return declared_info.first->IsClassMatched(declared_info.second, matcher);
+        }
+    }
     if (!IsTypeNameMatched(type_idx, matcher->class_name())) {
         return false;
     }
@@ -518,6 +525,9 @@ bool DexItem::IsClassSmaliSourceMatched(uint32_t type_idx, const schema::StringM
     if (matcher == nullptr) {
         return true;
     }
+    if (!this->type_def_flag[type_idx]) {
+        return false;
+    }
     auto smali_source = this->class_source_files[type_idx];
     return IsStringMatched(smali_source, matcher);
 }
@@ -525,6 +535,9 @@ bool DexItem::IsClassSmaliSourceMatched(uint32_t type_idx, const schema::StringM
 bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassMatcher *matcher) {
     if (matcher->using_strings() == nullptr) {
         return true;
+    }
+    if (!this->type_def_flag[type_idx]) {
+        return false;
     }
 
     typedef acdat::AhoCorasickDoubleArrayTrie<std::string_view> AcTrie;
@@ -589,9 +602,8 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
 
 // NOLINTNEXTLINE
 bool DexItem::IsSuperClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher) {
-    // TODO check cross
-    if (matcher && !this->type_def_flag[type_idx]) {
-        return false;
+    if (matcher == nullptr) {
+        return true;
     }
     auto super_class_idx = this->reader.ClassDefs()[this->type_def_idx[type_idx]].superclass_idx;
     return IsClassMatched(super_class_idx, matcher);
@@ -643,7 +655,10 @@ bool DexItem::IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMat
 }
 
 bool DexItem::IsClassAnnotationMatched(uint32_t type_idx, const schema::AnnotationsMatcher *matcher) {
-    if (matcher && !this->type_def_flag[type_idx]) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (!this->type_def_flag[type_idx]) {
         return false;
     }
     if (!IsAnnotationsMatched(this->class_annotations[type_idx], matcher)) {
@@ -742,9 +757,15 @@ bool DexItem::IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *
     return true;
 }
 
+// NOLINTNEXTLINE
 bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
+    }
+    auto &cross_info = this->method_cross_info[method_idx];
+    if (cross_info.has_value()) {
+        auto dex = dexkit->GetDexItem(cross_info->first);
+        return dex->IsMethodMatched(cross_info->second, matcher);
     }
     auto &method_def = this->reader.MethodIds()[method_idx];
     auto method_name = this->strings[method_def.name_idx];
@@ -1125,8 +1146,13 @@ bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMat
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
-            return this->IsMethodMatched(method_idx, matcher);
+        auto IsMethodMatched = [this](std::pair<uint16_t, uint32_t> method_info, const schema::MethodMatcher *matcher) {
+            if (method_info.first == this->dex_id) {
+                return this->IsMethodMatched(method_info.second, matcher);
+            } else {
+                auto dex = dexkit->GetDexItem(method_info.first);
+                return dex->IsMethodMatched(method_info.second, matcher);
+            }
         };
 
         typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
@@ -1141,7 +1167,7 @@ bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMat
         }
 
         auto method_matchers = *ptr;
-        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
+        Hungarian<std::pair<uint16_t, uint32_t>, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != method_matchers.size()) {
             return false;
@@ -1169,9 +1195,15 @@ bool DexItem::IsUsingFieldMatched(std::pair<uint32_t, bool> field, const schema:
     return true;
 }
 
+// NOLINTNEXTLINE
 bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
+    }
+    auto &cross_info = this->field_cross_info[field_idx];
+    if (cross_info.has_value()) {
+        auto dex = dexkit->GetDexItem(cross_info->first);
+        return dex->IsFieldMatched(cross_info->second, matcher);
     }
     auto &field_def = this->reader.FieldIds()[field_idx];
     auto field_name = this->strings[field_def.name_idx];
@@ -1213,8 +1245,13 @@ bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::Methods
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
-            return this->IsMethodMatched(method_idx, matcher);
+        auto IsMethodMatched = [this](std::pair<uint16_t, uint32_t> method_idx, const schema::MethodMatcher *matcher) {
+            if (method_idx.first == this->dex_id) {
+                return this->IsMethodMatched(method_idx.second, matcher);
+            } else {
+                auto dex = dexkit->GetDexItem(method_idx.first);
+                return dex->IsMethodMatched(method_idx.second, matcher);
+            }
         };
 
         typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
@@ -1229,7 +1266,7 @@ bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::Methods
         }
 
         auto method_matchers = *ptr;
-        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
+        Hungarian<std::pair<uint16_t, uint32_t>, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != method_matchers.size()) {
             return false;
@@ -1255,8 +1292,13 @@ bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::Methods
         if (matcher->methods()->size() > ids.size()) {
             return false;
         }
-        auto IsMethodMatched = [this](uint32_t method_idx, const schema::MethodMatcher *matcher) {
-            return this->IsMethodMatched(method_idx, matcher);
+        auto IsMethodMatched = [this](std::pair<uint16_t, uint32_t> method_idx, const schema::MethodMatcher *matcher) {
+            if (method_idx.first == this->dex_id) {
+                return this->IsMethodMatched(method_idx.second, matcher);
+            } else {
+                auto dex = dexkit->GetDexItem(method_idx.first);
+                return dex->IsMethodMatched(method_idx.second, matcher);
+            }
         };
 
         typedef std::vector<const schema::MethodMatcher *> MethodMatcher;
@@ -1271,7 +1313,7 @@ bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::Methods
         }
 
         auto method_matchers = *ptr;
-        Hungarian<uint32_t, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
+        Hungarian<std::pair<uint16_t, uint32_t>, const schema::MethodMatcher *> hungarian(ids, method_matchers, IsMethodMatched);
         auto count = hungarian.solve();
         if (count != method_matchers.size()) {
             return false;

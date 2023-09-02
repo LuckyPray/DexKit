@@ -28,6 +28,7 @@ public:
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
     Error ExportDexFile(std::string_view path);
+    void BuildCrossRef();
     [[nodiscard]] int GetDexNum() const;
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
@@ -50,16 +51,18 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldGetMethods(int64_t encode_field_id);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldPutMethods(int64_t encode_field_id);
 
-    DexItem *GetClassDeclaredDexItem(std::string_view class_name);
-    void PutDeclaredClass(std::string_view class_name, uint16_t dex_id);
+    std::pair<DexItem *, uint32_t> GetClassDeclaredPair(std::string_view class_name);
+    DexItem *GetDexItem(uint16_t dex_id);
+    void PutDeclaredClass(std::string_view class_name, uint16_t dex_id, uint32_t type_idx);
 
 private:
     std::mutex _mutex;
     std::shared_mutex _put_class_mutex;
     std::atomic<uint32_t> dex_cnt = 0;
+    bool cross_ref_build = false;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
-    phmap::flat_hash_map<std::string_view, uint16_t /*dex_id*/> class_declare_dex_map;
+    phmap::flat_hash_map<std::string_view, std::pair<uint16_t /*dex_id*/, uint32_t /*type_idx*/>> class_declare_dex_map;
 
     static void
     BuildPackagesMatchTrie(

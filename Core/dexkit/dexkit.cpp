@@ -24,6 +24,9 @@ void DexKit::SetThreadNum(int num) {
 }
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
+    if (cross_ref_build) {
+        return Error::ADD_DEX_AFTER_CROSS_BUILD;
+    }
     std::lock_guard<std::mutex> lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size, this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
@@ -31,6 +34,9 @@ Error DexKit::AddDex(uint8_t *data, size_t size) {
 }
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
+    if (cross_ref_build) {
+        return Error::ADD_DEX_AFTER_CROSS_BUILD;
+    }
     std::lock_guard<std::mutex> lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
@@ -38,15 +44,21 @@ Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
 }
 
 Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
+    if (cross_ref_build) {
+        return Error::ADD_DEX_AFTER_CROSS_BUILD;
+    }
     std::lock_guard<std::mutex> lock(_mutex);
     for (auto &dex_image: dex_images) {
         dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
     }
-    std::sort(dex_items.begin(), dex_items.end());
+    std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
 }
 
 Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
+    if (cross_ref_build) {
+        return Error::ADD_DEX_AFTER_CROSS_BUILD;
+    }
     auto map = MemMap(apk_path);
     if (!map.ok()) {
         return Error::FILE_NOT_FOUND;
@@ -83,6 +95,19 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
     return Error::SUCCESS;
 }
 
+void DexKit::BuildCrossRef() {
+    if (cross_ref_build) {
+        return;
+    }
+    ThreadPool pool(dex_items.size());
+    for (auto &dex_item: dex_items) {
+        pool.enqueue([&dex_item]() {
+            dex_item->PutCrossRef();
+        });
+    }
+    cross_ref_build = true;
+}
+
 Error DexKit::ExportDexFile(std::string_view path) {
     for (auto &dex_item: dex_items) {
         auto image = dex_item->GetImage();
@@ -108,6 +133,7 @@ int DexKit::GetDexNum() const {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FindClass(const schema::FindClass *query) {
+    BuildCrossRef();
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     if (query->in_classes()) {
         for (auto encode_idx: *query->in_classes()) {
@@ -152,6 +178,7 @@ DexKit::FindClass(const schema::FindClass *query) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FindMethod(const schema::FindMethod *query) {
+    BuildCrossRef();
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     std::map<uint32_t, std::set<uint32_t>> dex_method_map;
     if (query->in_classes()) {
@@ -203,6 +230,7 @@ DexKit::FindMethod(const schema::FindMethod *query) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FindField(const schema::FindField *query) {
+    BuildCrossRef();
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     std::map<uint32_t, std::set<uint32_t>> dex_field_map;
     if (query->in_classes()) {
@@ -620,14 +648,22 @@ DexKit::FieldPutMethods(int64_t encode_field_id) {
     return builder;
 }
 
-DexItem *DexKit::GetClassDeclaredDexItem(std::string_view class_name) {
-    auto dex_idx = this->class_declare_dex_map[class_name];
-    return this->dex_items[dex_idx].get();
+std::pair<DexItem *, uint32_t> DexKit::GetClassDeclaredPair(std::string_view class_name) {
+    auto find = this->class_declare_dex_map.find(class_name);
+    if (find == this->class_declare_dex_map.end()) {
+        return {nullptr, 0};
+    }
+    auto class_info = find->second;
+    return {this->dex_items[class_info.first].get(), class_info.second};
 }
 
-void DexKit::PutDeclaredClass(std::string_view class_name, uint16_t dex_id) {
+DexItem *DexKit::GetDexItem(uint16_t dex_id) {
+    return this->dex_items[dex_id].get();
+}
+
+void DexKit::PutDeclaredClass(std::string_view class_name, uint16_t dex_id, uint32_t type_idx) {
     std::lock_guard lock(this->_put_class_mutex);
-    this->class_declare_dex_map[class_name] = dex_id;
+    this->class_declare_dex_map[class_name] = {dex_id, type_idx};
 }
 
 void
