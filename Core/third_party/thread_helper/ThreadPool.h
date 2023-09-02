@@ -64,7 +64,7 @@ inline ThreadPool::ThreadPool(size_t threads)
                         std::function<void()> task;
 
                         {
-                            std::unique_lock<std::mutex> lock(this->queue_mutex);
+                            std::unique_lock lock(this->queue_mutex);
                             this->condition.wait(lock,
                                                  [this] { return this->stop || !this->tasks.empty(); });
                             if (this->stop && this->tasks.empty())
@@ -91,7 +91,7 @@ auto ThreadPool::enqueue(F &&f, Args &&... args)
 
     std::future<return_type> res = task->get_future();
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+        std::unique_lock lock(queue_mutex);
 
         // don't allow enqueueing after stopping the pool
         if (stop)
@@ -110,7 +110,7 @@ auto ThreadPool::enqueue(F &&f, Args &&... args)
 // the destructor joins all threads
 inline ThreadPool::~ThreadPool() {
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+        std::unique_lock lock(queue_mutex);
         stop = true;
     }
     condition.notify_all();

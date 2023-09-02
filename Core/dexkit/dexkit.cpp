@@ -14,7 +14,7 @@ DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
     if (unzip_thread_num > 0) {
         _thread_num = unzip_thread_num;
     }
-    std::lock_guard<std::mutex> lock(_mutex);
+    std::lock_guard lock(_mutex);
     AddZipPath(apk_path, unzip_thread_num);
     std::sort(dex_items.begin(), dex_items.end(), comp);
 }
@@ -27,7 +27,7 @@ Error DexKit::AddDex(uint8_t *data, size_t size) {
     if (cross_ref_build) {
         return Error::ADD_DEX_AFTER_CROSS_BUILD;
     }
-    std::lock_guard<std::mutex> lock(_mutex);
+    std::lock_guard lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size, this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
@@ -37,7 +37,7 @@ Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
     if (cross_ref_build) {
         return Error::ADD_DEX_AFTER_CROSS_BUILD;
     }
-    std::lock_guard<std::mutex> lock(_mutex);
+    std::lock_guard lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
@@ -47,9 +47,17 @@ Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
     if (cross_ref_build) {
         return Error::ADD_DEX_AFTER_CROSS_BUILD;
     }
-    std::lock_guard<std::mutex> lock(_mutex);
-    for (auto &dex_image: dex_images) {
-        dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
+    std::lock_guard lock(_mutex);
+    dex_items.resize(dex_items.size() + dex_images.size());
+    {
+        ThreadPool pool(_thread_num);
+        auto index = dex_items.size();
+        for (auto &dex_image: dex_images) {
+            pool.enqueue([this, &dex_image, index]() {
+                dex_items[index] = std::make_unique<DexItem>(index, std::move(dex_image), this);
+            });
+            index++;
+        }
     }
     std::sort(dex_items.begin(), dex_items.end(), comp);
     return Error::SUCCESS;
@@ -74,19 +82,19 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
         }
         dex_pairs.emplace_back(idx, entry);
     }
-    int ort_size = (int) dex_items.size();
-    int new_size = (int) (ort_size + dex_pairs.size());
+    int old_size = (int) dex_items.size();
+    int new_size = (int) (old_size + dex_pairs.size());
     dex_items.resize(new_size);
     {
         ThreadPool pool(unzip_thread_num == 0 ? _thread_num : unzip_thread_num);
         for (auto &dex_pair: dex_pairs) {
-            pool.enqueue([this, &dex_pair, ort_size]() {
+            pool.enqueue([this, &dex_pair, old_size]() {
                 auto dex_image = dex_pair.second->uncompress();
                 auto ptr = std::make_unique<MemMap>(std::move(dex_image));
                 if (!ptr->ok()) {
                     return;
                 }
-                int idx = ort_size + dex_pair.first - 1;
+                int idx = old_size + dex_pair.first - 1;
                 dex_items[idx] = std::make_unique<DexItem>(idx, std::move(ptr), this);
             });
         }

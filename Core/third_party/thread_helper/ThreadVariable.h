@@ -31,7 +31,7 @@ public:
 
     static void ClearThreadVariables() {
         auto thread_id = std::this_thread::get_id();
-        std::unique_lock<std::shared_mutex> lock(_lock);
+        std::unique_lock lock(_lock);
         if (_thread_variables.find(thread_id) != _thread_variables.end()) {
             _thread_variables.erase(thread_id);
         }
