@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id "com.android.library"
     id "maven-publish"
@@ -97,6 +99,11 @@ android {
     buildFeatures {
         prefab true
     }
+}
+
+tasks.withType(KotlinCompile).configureEach {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
+    kotlinOptions.languageVersion = "1.5"
 }
 
 dependencies {
