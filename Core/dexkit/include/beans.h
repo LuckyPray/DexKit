@@ -9,8 +9,8 @@ namespace dexkit {
 
 class ClassBean {
 public:
-    uint32_t id;
-    uint32_t dex_id;
+    uint32_t id = -1;
+    uint32_t dex_id = -1;
     std::string_view source_file;
     uint32_t access_flags = 0;
     std::string_view dex_descriptor;
@@ -26,12 +26,12 @@ public:
 
 class MethodBean {
 public:
-    uint32_t id;
-    uint32_t dex_id;
-    uint32_t class_id;
-    uint32_t access_flags;
+    uint32_t id = -1;
+    uint32_t dex_id = -1;
+    uint32_t class_id = -1;
+    uint32_t access_flags = 0;
     std::string_view dex_descriptor;
-    uint32_t return_type;
+    uint32_t return_type = -1;
     std::vector<uint32_t> parameter_types;
 
 public:
@@ -41,12 +41,12 @@ public:
 
 class FieldBean {
 public:
-    uint32_t id;
-    uint32_t dex_id;
-    uint32_t class_id;
-    uint32_t access_flags;
+    uint32_t id = -1;
+    uint32_t dex_id = -1;
+    uint32_t class_id = -1;
+    uint32_t access_flags = 0;
     std::string_view dex_descriptor;
-    uint32_t type_id;
+    uint32_t type_id = -1;
 
 public:
     flatbuffers::Offset<schema::FieldMeta>

@@ -423,12 +423,18 @@ std::mutex &DexItem::GetTypeDefMutex(uint32_t type_idx) {
     return (*type_def_mutexes)[type_idx % type_def_mutexes->size()];
 }
 
+// NOLINTNEXTLINE
 ClassBean DexItem::GetClassBean(uint32_t type_idx) {
+    if (!this->type_def_flag[type_idx]) {
+        auto pair = dexkit->GetClassDeclaredPair(this->type_names[type_idx]);
+        if (pair.first) {
+            return pair.first->GetClassBean(pair.second);
+        }
+    }
     ClassBean bean;
     bean.id = type_idx;
     bean.dex_id = this->dex_id;
     bean.dex_descriptor = this->type_names[type_idx];
-    // cross dex reference
     if (this->type_def_flag[type_idx]) {
         auto &class_def = this->reader.ClassDefs()[this->type_def_idx[type_idx]];
         bean.source_file = this->class_source_files[type_idx];
@@ -446,8 +452,15 @@ ClassBean DexItem::GetClassBean(uint32_t type_idx) {
     return bean;
 }
 
+// NOLINTNEXTLINE
 MethodBean DexItem::GetMethodBean(uint32_t method_idx) {
     auto &method_def = this->reader.MethodIds()[method_idx];
+    if (!this->type_def_flag[method_def.class_idx]) {
+        auto cross_info = this->method_cross_info[method_idx];
+        if (cross_info.has_value()) {
+            return this->dexkit->GetDexItem(cross_info->first)->GetMethodBean(cross_info->second);
+        }
+    }
     auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
     auto &type_list = this->proto_type_list[method_def.proto_idx];
     MethodBean bean;
@@ -467,8 +480,15 @@ MethodBean DexItem::GetMethodBean(uint32_t method_idx) {
     return bean;
 }
 
+// NOLINTNEXTLINE
 FieldBean DexItem::GetFieldBean(uint32_t field_idx) {
     auto &field_def = this->reader.FieldIds()[field_idx];
+    if (!this->type_def_flag[field_def.class_idx]) {
+        auto cross_info = this->field_cross_info[field_idx];
+        if (cross_info.has_value()) {
+            return this->dexkit->GetDexItem(cross_info->first)->GetFieldBean(cross_info->second);
+        }
+    }
     FieldBean bean;
     bean.id = field_idx;
     bean.dex_id = this->dex_id;

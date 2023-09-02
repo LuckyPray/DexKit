@@ -218,7 +218,12 @@ DexKit::FindMethod(const schema::FindMethod *query) {
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     std::vector<flatbuffers::Offset<schema::MethodMeta>> offsets;
+    std::set<std::string_view> declared_set;
     for (auto &bean: result) {
+        if (declared_set.contains(bean.dex_descriptor)) {
+            continue;
+        }
+        declared_set.emplace(bean.dex_descriptor);
         auto res = bean.CreateMethodMeta(*builder);
         builder->Finish(res);
         offsets.emplace_back(res);
@@ -270,7 +275,12 @@ DexKit::FindField(const schema::FindField *query) {
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
     std::vector<flatbuffers::Offset<schema::FieldMeta>> offsets;
+    std::set<std::string_view> declared_set;
     for (auto &bean: result) {
+        if (declared_set.contains(bean.dex_descriptor)) {
+            continue;
+        }
+        declared_set.emplace(bean.dex_descriptor);
         auto res = bean.CreateFieldMeta(*builder);
         builder->Finish(res);
         offsets.emplace_back(res);
