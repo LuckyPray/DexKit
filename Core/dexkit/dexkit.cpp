@@ -48,10 +48,12 @@ Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
         return Error::ADD_DEX_AFTER_CROSS_BUILD;
     }
     std::lock_guard lock(_mutex);
-    dex_items.resize(dex_items.size() + dex_images.size());
+    auto old_size = dex_items.size();
+    auto new_size = old_size + dex_images.size();
+    dex_items.resize(new_size);
     {
         ThreadPool pool(_thread_num);
-        auto index = dex_items.size();
+        auto index = old_size;
         for (auto &dex_image: dex_images) {
             pool.enqueue([this, &dex_image, index]() {
                 dex_items[index] = std::make_unique<DexItem>(index, std::move(dex_image), this);
