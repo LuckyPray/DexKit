@@ -189,7 +189,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     .modifiers(Modifier.PUBLIC)
                                                     .parameterTypes("boolean")
                                     ))
-                                    // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
+                                    // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                                     .range(1, 10)
                             )
                             // AnnotationsMatcher for matching interfaces within the class
@@ -276,7 +276,7 @@ class MainHook : IXposedHookLoadPackage {
                             modifiers = Modifier.PUBLIC
                             parameterTypes = listOf("boolean")
                         }
-                        // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
+                        // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                         range = 1..10
                     }
                     // AnnotationsMatcher for matching interfaces within the class
