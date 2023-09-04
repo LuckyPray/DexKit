@@ -148,7 +148,11 @@ class MethodData private constructor(
             if (modifiers != 0) {
                 append("${Modifier.toString(modifiers)} ")
             }
-            append("$returnTypeName $methodName(")
+            append(returnTypeName)
+            append(" ")
+            append(className)
+            append(".")
+            append(methodName)
             append(paramTypeNames.joinToString(", "))
             append(")")
         }

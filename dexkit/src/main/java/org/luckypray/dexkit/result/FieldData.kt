@@ -85,6 +85,7 @@ class FieldData private constructor(
         return getFieldInstance(classLoader, this)
     }
 
+
     override fun toString(): String {
         return buildString {
             if (modifiers > 0) {
@@ -92,8 +93,9 @@ class FieldData private constructor(
             }
             append(typeName)
             append(" ")
+            append(className)
+            append(".")
             append(fieldName)
-            append(";")
         }
     }
 

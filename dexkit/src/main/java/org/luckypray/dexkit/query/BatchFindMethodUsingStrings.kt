@@ -6,7 +6,7 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerBatchFindMethodUsingStrings
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.matchers.BatchUsingStringsMatcher
+import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
@@ -22,7 +22,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     var searchClasses: List<ClassData>? = null
     @set:JvmSynthetic
     var searchMethods: List<MethodData>? = null
-    var matchers: List<BatchUsingStringsMatcher>? = null
+    var matcherGroups: List<StringMatchersGroup>? = null
         private set
 
     fun searchPackages(vararg searchPackages: String) = also {
@@ -53,8 +53,8 @@ class BatchFindMethodUsingStrings : BaseQuery() {
         this.searchMethods = methods
     }
 
-    fun matchers(matchers: List<BatchUsingStringsMatcher>) = also {
-        this.matchers = matchers
+    fun matchers(matchers: List<StringMatchersGroup>) = also {
+        this.matcherGroups = matchers
     }
 
     @JvmOverloads
@@ -63,16 +63,37 @@ class BatchFindMethodUsingStrings : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
-        this.matchers = map.map { (key, value) ->
-            BatchUsingStringsMatcher(key, value.map { StringMatcher(it, matchType, ignoreCase) })
+        this.matcherGroups = map.map { (key, value) ->
+            StringMatchersGroup(key, value.map { StringMatcher(it, matchType, ignoreCase) })
         }
+    }
+
+    fun addGroup(matcher: StringMatchersGroup) = also {
+        matcherGroups = matcherGroups ?: mutableListOf()
+        if (matcherGroups !is MutableList) {
+            matcherGroups = matcherGroups!!.toMutableList()
+        }
+        (matcherGroups as MutableList).add(matcher)
     }
 
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun matchers(init: BatchUsingStringsMatcherList.() -> Unit) = also {
-        matchers(BatchUsingStringsMatcherList().apply(init))
+    inline fun matchers(init: StringMatchersGroupList.() -> Unit) = also {
+        matchers(StringMatchersGroupList().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addGroup(init: StringMatchersGroup.() -> Unit) = also {
+        addGroup(StringMatchersGroup().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addGroup(
+        groupName: String,
+        init: StringMatcherList.() -> Unit
+    ) = also {
+        addGroup(StringMatchersGroup(groupName, StringMatcherList().apply(init)))
     }
 
     // endregion
@@ -83,7 +104,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        matchers ?: throw IllegalAccessException("matchers must be set")
+        matcherGroups ?: throw IllegalAccessException("matchers must be set")
         val root = InnerBatchFindMethodUsingStrings.createBatchFindMethodUsingStrings(
             fbb,
             searchPackages
@@ -99,7 +120,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
             searchMethods
                 ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerBatchFindMethodUsingStrings.createInMethodsVector(fbb, it) } ?: 0,
-            fbb.createVectorOfTables(matchers!!.map { it.build(fbb) }.toIntArray())
+            fbb.createVectorOfTables(matcherGroups!!.map { it.build(fbb) }.toIntArray())
         )
         fbb.finish(root)
         return root

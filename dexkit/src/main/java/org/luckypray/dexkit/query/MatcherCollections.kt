@@ -4,7 +4,7 @@ package org.luckypray.dexkit.query
 
 import org.luckypray.dexkit.query.base.IQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.matchers.BatchUsingStringsMatcher
+import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.FieldMatcher
 import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
@@ -17,6 +17,16 @@ class StringMatcherList : ArrayList<StringMatcher>, IQuery {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<StringMatcher>): super(elements)
+
+    var usingStrings: List<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            clear()
+            addAll(value.map { StringMatcher(it) })
+        }
 
     @JvmOverloads
     fun add(
@@ -103,23 +113,23 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
     }
 }
 
-class BatchUsingStringsMatcherList : ArrayList<BatchUsingStringsMatcher>, IQuery {
+class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
-    constructor(elements: Collection<BatchUsingStringsMatcher>): super(elements)
+    constructor(elements: Collection<StringMatchersGroup>): super(elements)
 
     fun add(
         unionKey: String,
         matchers: List<StringMatcher>
     ) = also {
-        add(BatchUsingStringsMatcher(unionKey, matchers))
+        add(StringMatchersGroup(unionKey, matchers))
     }
 
     fun add(
         unionKey: String,
         vararg matchers: StringMatcher
     ) = also {
-        add(BatchUsingStringsMatcher(unionKey, matchers.toList()))
+        add(StringMatchersGroup(unionKey, matchers.toList()))
     }
 
     fun add(
@@ -127,14 +137,14 @@ class BatchUsingStringsMatcherList : ArrayList<BatchUsingStringsMatcher>, IQuery
         ignoreCase: Boolean,
         vararg strings: String
     ) = also {
-        add(BatchUsingStringsMatcher(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, ignoreCase) }))
+        add(StringMatchersGroup(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, ignoreCase) }))
     }
 
     fun add(
         unionKey: String,
         vararg strings: String
     ) = also {
-        add(BatchUsingStringsMatcher(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, false) }))
+        add(StringMatchersGroup(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, false) }))
     }
 
     @kotlin.internal.InlineOnly
@@ -142,7 +152,7 @@ class BatchUsingStringsMatcherList : ArrayList<BatchUsingStringsMatcher>, IQuery
         unionKey: String,
         init: StringMatcherList.() -> Unit
     ) = also {
-        add(BatchUsingStringsMatcher(unionKey, StringMatcherList().apply(init)))
+        add(StringMatchersGroup(unionKey, StringMatcherList().apply(init)))
     }
 }
 
