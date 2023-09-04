@@ -86,13 +86,13 @@ class DexKitBridge : Closeable {
         nativeExportDexFile(token, outPath)
     }
 
-    fun batchFindClassUsingStrings(batchFind: BatchFindClassUsingStrings): Map<String, List<ClassData>> {
+    fun batchFindClassUsingStrings(batchFind: BatchFindClassUsingStrings): Map<String, ClassDataList> {
         val fbb = FlatBufferBuilder()
         batchFind.build(fbb)
         return this.batchFindClassUsingStrings(fbb)
     }
 
-    fun batchFindMethodUsingStrings(batchFind: BatchFindMethodUsingStrings): Map<String, List<MethodData>> {
+    fun batchFindMethodUsingStrings(batchFind: BatchFindMethodUsingStrings): Map<String, MethodDataList> {
         val fbb = FlatBufferBuilder()
         batchFind.build(fbb)
         return this.batchFindMethodUsingStrings(fbb)
@@ -119,12 +119,12 @@ class DexKitBridge : Closeable {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, List<ClassData>> {
+    inline fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, ClassDataList> {
         return batchFindClassUsingStrings(BatchFindClassUsingStrings().apply(init))
     }
 
     @kotlin.internal.InlineOnly
-    inline fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, List<MethodData>> {
+    inline fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, MethodDataList> {
         return batchFindMethodUsingStrings(BatchFindMethodUsingStrings().apply(init))
     }
 
