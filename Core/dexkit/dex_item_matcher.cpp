@@ -430,22 +430,22 @@ bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matc
     if (!IsClassAccessFlagsMatched(type_idx, matcher->access_flags())) {
         return false;
     }
+    if (!IsClassUsingStringsMatched(type_idx, matcher)) {
+        return false;
+    }
+    if (!IsClassAnnotationMatched(type_idx, matcher->annotations())) {
+        return false;
+    }
     if (!IsSuperClassMatched(type_idx, matcher->super_class())) {
         return false;
     }
     if (!IsInterfacesMatched(type_idx, matcher->interfaces())) {
         return false;
     }
-    if (!IsClassAnnotationMatched(type_idx, matcher->annotations())) {
-        return false;
-    }
     if (!IsFieldsMatched(type_idx, matcher->fields())) {
         return false;
     }
     if (!IsMethodsMatched(type_idx, matcher->methods())) {
-        return false;
-    }
-    if (!IsClassUsingStringsMatched(type_idx, matcher)) {
         return false;
     }
     return true;
@@ -459,10 +459,17 @@ bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *
     auto type_name = this->type_names[type_idx];
     auto component_type_name = type_name.substr(type_array_count);
 
-    // TODO cache
-    auto match_str = matcher->value()->string_view();
-    auto match_type = matcher->match_type();
-    ConvertSimilarRegex(match_str, match_type);
+    auto match_ptr = ThreadVariable::GetThreadVariable<std::pair<std::string_view, schema::StringMatchType>>(POINT_CASE(matcher));
+    if (match_ptr == nullptr) {
+        auto match_str = matcher->value()->string_view();
+        auto match_type = matcher->match_type();
+        ConvertSimilarRegex(match_str, match_type);
+        auto match_pair = std::make_pair(match_str, match_type);
+        ThreadVariable::SetThreadVariable<std::pair<std::string_view, schema::StringMatchType>>(POINT_CASE(matcher), match_pair);
+        match_ptr = ThreadVariable::GetThreadVariable<std::pair<std::string_view, schema::StringMatchType>>(POINT_CASE(matcher));
+    }
+    auto match_str = match_ptr->first;
+    auto match_type = match_ptr->second;
 
     typedef std::pair<std::string, uint8_t> MatchPair;
     auto ptr = ThreadVariable::GetThreadVariable<MatchPair>(POINT_CASE(matcher->value()));
@@ -775,6 +782,15 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsAccessFlagsMatched(this->method_access_flags[method_idx], matcher->access_flags())) {
         return false;
     }
+    if (!IsOpCodesMatched(method_idx, matcher->op_codes())) {
+        return false;
+    }
+    if (!IsMethodUsingStringsMatched(method_idx, matcher)) {
+        return false;
+    }
+    if (!IsAnnotationsMatched(this->method_annotations[method_idx], matcher->annotations())) {
+        return false;
+    }
     if (!IsClassMatched(method_def.class_idx, matcher->declaring_class())) {
         return false;
     }
@@ -785,22 +801,10 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsParametersMatched(method_idx, matcher->parameters())) {
         return false;
     }
-    if (!IsAnnotationsMatched(this->method_annotations[method_idx], matcher->annotations())) {
-        return false;
-    }
-    if (!IsOpCodesMatched(method_idx, matcher->op_codes())) {
-        return false;
-    }
-    if (!IsOpCodesMatched(method_idx, matcher->op_codes())) {
-        return false;
-    }
-    if (!IsMethodUsingStringsMatched(method_idx, matcher)) {
+    if (!IsUsingNumbersMatched(method_idx, matcher)) {
         return false;
     }
     if (!IsUsingFieldsMatched(method_idx, matcher)) {
-        return false;
-    }
-    if (!IsUsingNumbersMatched(method_idx, matcher)) {
         return false;
     }
     if (!IsInvokingMethodsMatched(method_idx, matcher->invoking_methods())) {
@@ -1066,6 +1070,7 @@ bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMat
         if (GetNumberSize(number.type) != GetNumberSize(matcher.type)) {
             return false;
         }
+        // TODO only check double && long
         switch (matcher.type) {
             case BYTE: return number.value.L8 == matcher.value.L8;
             case SHORT: return number.value.L16 == matcher.value.L16;
