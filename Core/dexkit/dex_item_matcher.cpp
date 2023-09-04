@@ -8,7 +8,7 @@ class Hungarian {
 private:
     std::vector<U> left;
     std::vector<T> right;
-    std::vector<std::vector<bool>> map;
+    std::vector<std::vector<int8_t>> map;
     std::vector<int> p;
     std::vector<bool> vis;
     std::function<bool(T&, U&)> judge;
@@ -25,7 +25,7 @@ public:
         for (int i = 0; i < left.size(); ++i) {
             map[i].resize(right.size());
         }
-        p.resize(right.size());
+        p.resize(right.size(), -1);
         vis.resize(right.size());
         this->judge = match;
     }
@@ -33,10 +33,11 @@ public:
     // NOLINTNEXTLINE
     bool dfs(int i) {
         for (int j = 0; j < right.size(); ++j) {
-            if (!map[i][j]) map[i][j] = judge(right[j], left[i]);
-            if (map[i][j] && !vis[j]) {
+            if (vis[j]) continue;
+            if (!map[i][j]) map[i][j] = judge(right[j], left[i]) ? 1 : -1;
+            if (map[i][j] > 0) {
                 vis[j] = true;
-                if (!p[j] || dfs(p[j])) {
+                if (p[j] < 0 || dfs(p[j])) {
                     p[j] = i;
                     return true;
                 }
@@ -52,9 +53,10 @@ public:
         int ans = 0;
         for (int i = 0; i < left.size(); ++i) {
             std::fill(vis.begin(), vis.end(), false);
-            if (dfs(i)) {
-                ans++;
+            if (!dfs(i)) {
+                return 0;
             }
+            ans++;
         }
         return ans;
     }
