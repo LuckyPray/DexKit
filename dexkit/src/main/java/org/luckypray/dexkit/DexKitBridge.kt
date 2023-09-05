@@ -471,6 +471,8 @@ class DexKitBridge : Closeable {
     }
 
     protected fun finalize() {
-        close()
+        runCatching {
+            close()
+        }
     }
 }
