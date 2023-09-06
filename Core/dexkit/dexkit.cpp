@@ -160,12 +160,12 @@ DexKit::FindClass(const schema::FindClass *query) {
     std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &resolve_types, &packageTrie]() -> std::vector<ClassBean> {
-            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-                return dex_item->FindClass(query, class_set, packageTrie);
+        if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+            auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE);
+            for (auto &f: res) {
+                futures.emplace_back(std::move(f));
             }
-            return {};
-        }));
+        }
     }
 
     std::vector<ClassBean> result;
@@ -212,12 +212,12 @@ DexKit::FindMethod(const schema::FindMethod *query) {
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &method_set = dex_method_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &method_set, &resolve_types, &packageTrie]() -> std::vector<MethodBean> {
-            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-                return dex_item->FindMethod(query, class_set, method_set, packageTrie);
+        if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+            auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, pool, BATCH_SIZE);
+            for (auto &f: res) {
+                futures.emplace_back(std::move(f));
             }
-            return {};
-        }));
+        }
     }
 
     std::vector<MethodBean> result;
@@ -269,12 +269,12 @@ DexKit::FindField(const schema::FindField *query) {
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &field_set = dex_field_map[dex_item->GetDexId()];
-        futures.push_back(pool.enqueue([&dex_item, &query, &class_set, &field_set, &resolve_types, &packageTrie]() -> std::vector<FieldBean> {
-            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-                return dex_item->FindField(query, class_set, field_set, packageTrie);
+        if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+            auto res = dex_item->FindField(query, class_set, field_set, packageTrie, pool, BATCH_SIZE);
+            for (auto &f: res) {
+                futures.emplace_back(std::move(f));
             }
-            return {};
-        }));
+        }
     }
 
     std::vector<FieldBean> result;

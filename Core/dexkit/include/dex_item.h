@@ -15,6 +15,7 @@
 #include "schema/results_generated.h"
 #include "acdat/Builder.h"
 #include "ThreadVariable.h"
+#include "ThreadPool.h"
 #include "file_helper.h"
 #include "package_trie.h"
 #include "dexkit.h"
@@ -41,22 +42,54 @@ public:
         return dex_id;
     }
 
+    std::vector<std::future<std::vector<ClassBean>>>
+    FindClass(
+            const schema::FindClass *query,
+            std::set<uint32_t> &in_class_set,
+            trie::PackageTrie &packageTrie,
+            ThreadPool &pool,
+            uint32_t split_num
+    );
+    std::vector<std::future<std::vector<MethodBean>>>
+    FindMethod(
+            const schema::FindMethod *query,
+            std::set<uint32_t> &in_class_set,
+            std::set<uint32_t> &in_method_set,
+            trie::PackageTrie &packageTrie,
+            ThreadPool &pool,
+            uint32_t split_num
+    );
+    std::vector<std::future<std::vector<FieldBean>>>
+    FindField(
+            const schema::FindField *query,
+            std::set<uint32_t> &in_class_set,
+            std::set<uint32_t> &in_field_set,
+            trie::PackageTrie &packageTrie,
+            ThreadPool &pool,
+            uint32_t split_num
+    );
     std::vector<ClassBean> FindClass(
             const schema::FindClass *query,
             std::set<uint32_t> &in_class_set,
-            trie::PackageTrie &packageTrie
+            trie::PackageTrie &packageTrie,
+            uint32_t start,
+            uint32_t end
     );
     std::vector<MethodBean> FindMethod(
             const schema::FindMethod *query,
             std::set<uint32_t> &in_class_set,
             std::set<uint32_t> &in_method_set,
-            trie::PackageTrie &packageTrie
+            trie::PackageTrie &packageTrie,
+            uint32_t start,
+            uint32_t end
     );
     std::vector<FieldBean> FindField(
             const schema::FindField *query,
             std::set<uint32_t> &in_class_set,
             std::set<uint32_t> &in_field_set,
-            trie::PackageTrie &packageTrie
+            trie::PackageTrie &packageTrie,
+            uint32_t start,
+            uint32_t end
     );
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,

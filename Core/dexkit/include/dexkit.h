@@ -11,6 +11,8 @@
 #include "dex_item.h"
 #include "package_trie.h"
 
+#define BATCH_SIZE 5000
+
 namespace dexkit {
 
 class DexItem;
