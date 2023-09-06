@@ -40,6 +40,8 @@ public:
     auto enqueue(F &&f, Args &&... args)
     -> std::future<typename std::invoke_result<F, Args...>::type>;
 
+    void skip_unexec_tasks() { _skip_unexec_tasks = true; }
+
     ~ThreadPool();
 
 private:
@@ -52,6 +54,7 @@ private:
     std::mutex queue_mutex;
     std::condition_variable condition;
     bool stop;
+    bool _skip_unexec_tasks = false;
 };
 
 // the constructor just launches some amount of workers
@@ -86,7 +89,13 @@ auto ThreadPool::enqueue(F &&f, Args &&... args)
     using return_type = typename std::invoke_result<F, Args...>::type;
 
     auto task = std::make_shared<std::packaged_task<return_type()> >(
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+            [f = std::forward<F>(f), args = std::make_tuple(std::forward<Args>(args)...), this]() mutable {
+                if (this->_skip_unexec_tasks) {
+                    if constexpr (std::is_same_v<return_type, void>) return;
+                    return return_type();
+                }
+                return std::apply(f, args);
+            }
     );
 
     std::future<return_type> res = task->get_future();
