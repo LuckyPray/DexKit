@@ -55,7 +55,7 @@ class StringMatcher : BaseQuery {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         value ?: throw IllegalArgumentException("value must not be null")
         if (value!!.isEmpty() && matchType != StringMatchType.Equals) {
-            throw IllegalAccessException("value '$value' is empty, matchType must be equal")
+            throw IllegalAccessException("value '$value' is empty, matchType must be equals")
         }
         val root = InnerStringMatcher.createStringMatcher(
             fbb,

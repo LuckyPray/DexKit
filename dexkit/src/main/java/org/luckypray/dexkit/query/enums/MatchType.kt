@@ -4,6 +4,6 @@ import org.luckypray.dexkit.InnerMatchType
 
 enum class MatchType(val value: Byte) {
     Contains(InnerMatchType.Contains),
-    Equal(InnerMatchType.Equal),
+    Equals(InnerMatchType.Equal),
     ;
 }
