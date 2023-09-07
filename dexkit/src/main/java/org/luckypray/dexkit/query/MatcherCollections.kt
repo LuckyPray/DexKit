@@ -24,9 +24,18 @@ class StringMatcherList : ArrayList<StringMatcher>, IQuery {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            clear()
-            addAll(value.map { StringMatcher(it) })
+            usingStrings(value)
         }
+
+    fun usingStrings(usingStrings: List<String>) = also {
+        clear()
+        addAll(usingStrings.map { StringMatcher(it) })
+    }
+
+    fun usingStrings(vararg usingStrings: String) = also {
+        clear()
+        addAll(usingStrings.map { StringMatcher(it) })
+    }
 
     @JvmOverloads
     fun add(

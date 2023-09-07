@@ -10,7 +10,7 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationElementsMatcher : BaseQuery() {
-    var elementsMatcher: List<AnnotationElementMatcher>? = null
+    var elementsMatcher: MutableList<AnnotationElementMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
@@ -27,11 +27,11 @@ class AnnotationElementsMatcher : BaseQuery() {
         }
 
     fun elements(elements: List<AnnotationElementMatcher>) = also {
-        this.elementsMatcher = elements
+        this.elementsMatcher = elements.toMutableList()
     }
 
     fun elements(vararg elements: AnnotationElementMatcher) = also {
-        this.elementsMatcher = elements.toList()
+        this.elementsMatcher = elements.toMutableList()
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -56,10 +56,7 @@ class AnnotationElementsMatcher : BaseQuery() {
 
     fun add(element: AnnotationElementMatcher) = also {
         elementsMatcher = elementsMatcher ?: mutableListOf()
-        if (elementsMatcher !is MutableList) {
-            elementsMatcher = elementsMatcher!!.toMutableList()
-        }
-        (elementsMatcher as MutableList<AnnotationElementMatcher>).add(element)
+        elementsMatcher!!.add(element)
     }
 
     @JvmOverloads

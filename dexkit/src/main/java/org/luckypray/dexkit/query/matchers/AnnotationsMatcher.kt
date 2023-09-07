@@ -9,7 +9,7 @@ import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationsMatcher : BaseQuery() {
-    var annotationsMatcher: List<AnnotationMatcher>? = null
+    var annotationsMatcher: MutableList<AnnotationMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
@@ -26,7 +26,7 @@ class AnnotationsMatcher : BaseQuery() {
         }
 
     fun annotations(annotations: List<AnnotationMatcher>) = also {
-        this.annotationsMatcher = annotations
+        this.annotationsMatcher = annotations.toMutableList()
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -51,10 +51,7 @@ class AnnotationsMatcher : BaseQuery() {
 
     fun add(annotation: AnnotationMatcher) = also {
         annotationsMatcher = annotationsMatcher ?: mutableListOf()
-        if (annotationsMatcher !is MutableList) {
-            annotationsMatcher = annotationsMatcher!!.toMutableList()
-        }
-        (annotationsMatcher as MutableList<AnnotationMatcher>).add(annotation)
+        annotationsMatcher!!.add(annotation)
     }
 
     fun add(typeName: String) = also {

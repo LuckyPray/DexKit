@@ -30,7 +30,7 @@ class ClassMatcher : BaseQuery() {
         private set
     var methodsMatcher: MethodsMatcher? = null
         private set
-    var usingStringsMatcher: List<StringMatcher>? = null
+    var usingStringsMatcher: MutableList<StringMatcher>? = null
         private set
 
     var source: String
@@ -245,20 +245,21 @@ class ClassMatcher : BaseQuery() {
         this.methodsMatcher!!.count(min, max)
     }
 
-    fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
+    fun usingStrings(usingStrings: StringMatcherList) = also {
         this.usingStringsMatcher = usingStrings
     }
 
     fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
+    }
+
+    fun usingStrings(vararg usingStrings: String) = also {
+        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
     }
 
     fun addUsingString(usingString: StringMatcher) = also {
         usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
-        if (usingStringsMatcher !is StringMatcherList) {
-            usingStringsMatcher = StringMatcherList(usingStringsMatcher!!)
-        }
-        (usingStringsMatcher as MutableList<StringMatcher>).add(usingString)
+        usingStringsMatcher!!.add(usingString)
     }
 
     @JvmOverloads
@@ -268,10 +269,6 @@ class ClassMatcher : BaseQuery() {
         ignoreCase: Boolean = false
     ) = also {
         addUsingString(StringMatcher(usingString, matchType, ignoreCase))
-    }
-
-    fun usingStrings(vararg usingStrings: String) = also {
-        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
     }
 
     // region DSL
@@ -322,8 +319,8 @@ class ClassMatcher : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
-        usingStringsMatcher(StringMatcherList().apply(init))
+    inline fun usingStrings(init: StringMatcherList.() -> Unit) = also {
+        usingStrings(StringMatcherList().apply(init))
     }
 
     // endregion

@@ -11,7 +11,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class FieldsMatcher : BaseQuery() {
-    var fieldsMatcher: List<FieldMatcher>? = null
+    var fieldsMatcher: MutableList<FieldMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
@@ -28,7 +28,7 @@ class FieldsMatcher : BaseQuery() {
         }
 
     fun fields(fields: List<FieldMatcher>) = also {
-        this.fieldsMatcher = fields
+        this.fieldsMatcher = fields.toMutableList()
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -53,10 +53,7 @@ class FieldsMatcher : BaseQuery() {
 
     fun add(matcher: FieldMatcher) = also {
         fieldsMatcher = fieldsMatcher ?: FieldMatcherList()
-        if (fieldsMatcher !is FieldMatcherList) {
-            fieldsMatcher = FieldMatcherList(fieldsMatcher!!)
-        }
-        (fieldsMatcher as FieldMatcherList).add(matcher)
+        fieldsMatcher!!.add(matcher)
     }
 
     fun addForName(name: String) = also {

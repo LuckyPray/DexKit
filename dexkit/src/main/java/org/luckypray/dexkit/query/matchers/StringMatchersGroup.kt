@@ -13,13 +13,13 @@ class StringMatchersGroup : BaseQuery {
 
     @set:JvmSynthetic
     var groupName: String? = null
-    var stringMatchers: List<StringMatcher> = StringMatcherList()
+    var stringMatchers = mutableListOf<StringMatcher>()
         private set
 
     constructor()
     constructor(groupName: String, stringMatchers: List<StringMatcher>) {
         this.groupName = groupName
-        this.stringMatchers = stringMatchers
+        this.stringMatchers = stringMatchers.toMutableList()
     }
 
     var usingStrings: List<String>
@@ -28,7 +28,7 @@ class StringMatchersGroup : BaseQuery {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            stringMatchers = value.map { StringMatcher(it) }
+            usingStrings(value)
         }
 
     fun groupName(groupName: String) = also {
@@ -40,18 +40,15 @@ class StringMatchersGroup : BaseQuery {
     }
 
     fun usingStrings(usingStrings: List<String>) = also {
-        this.stringMatchers = usingStrings.map { StringMatcher(it) }
+        this.stringMatchers = StringMatcherList(usingStrings.map { StringMatcher(it) })
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.stringMatchers = usingStrings.map { StringMatcher(it) }
+        this.stringMatchers = StringMatcherList(usingStrings.map { StringMatcher(it) })
     }
 
     fun add(matcher: StringMatcher) = also {
-        if (stringMatchers !is MutableList) {
-            stringMatchers = stringMatchers.toMutableList()
-        }
-        (stringMatchers as MutableList).add(matcher)
+        stringMatchers.add(matcher)
     }
 
     @JvmOverloads

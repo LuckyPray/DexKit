@@ -8,7 +8,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class ParametersMatcher : BaseQuery() {
-    var parametersMatcher: List<ParameterMatcher?>? = null
+    var parametersMatcher: MutableList<ParameterMatcher?>? = null
         private set
     var rangeMatcher: IntRange? = null
         private set
@@ -22,8 +22,8 @@ class ParametersMatcher : BaseQuery() {
             count(value)
         }
 
-    fun parameters(parameters: List<ParameterMatcher?>) = also {
-        this.parametersMatcher = parameters
+    fun params(parameters: List<ParameterMatcher?>) = also {
+        this.parametersMatcher = parameters.toMutableList()
     }
 
     fun count(count: Int) = also {
@@ -44,16 +44,13 @@ class ParametersMatcher : BaseQuery() {
 
     fun add(matcher: ParameterMatcher?) = also {
         parametersMatcher = parametersMatcher ?: mutableListOf()
-        if (parametersMatcher !is MutableList) {
-            parametersMatcher = parametersMatcher!!.toMutableList()
-        }
-        (parametersMatcher as MutableList<ParameterMatcher?>).add(matcher)
+        parametersMatcher!!.add(matcher)
     }
 
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun ParametersMatcher.add(init: ParameterMatcher.() -> Unit) = also {
+    inline fun add(init: ParameterMatcher.() -> Unit) = also {
         add(ParameterMatcher().apply(init))
     }
 

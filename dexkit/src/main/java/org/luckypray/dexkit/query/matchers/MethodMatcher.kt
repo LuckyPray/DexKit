@@ -32,11 +32,11 @@ class MethodMatcher : BaseQuery() {
         private set
     var opCodesMatcher: OpCodesMatcher? = null
         private set
-    var usingStringsMatcher: List<StringMatcher>? = null
+    var usingStringsMatcher: MutableList<StringMatcher>? = null
         private set
-    var usingFieldsMatcher: List<UsingFieldMatcher>? = null
+    var usingFieldsMatcher: MutableList<UsingFieldMatcher>? = null
         private set
-    var usingNumbersMatcher: List<NumberEncodeValueMatcher>? = null
+    var usingNumbersMatcher: MutableList<NumberEncodeValueMatcher>? = null
         private set
     var invokeMethodsMatcher: MethodsMatcher? = null
         private set
@@ -172,28 +172,28 @@ class MethodMatcher : BaseQuery() {
         this.paramsMatcher = parameters
     }
 
-    fun paramTypes(parameterType: List<String?>) = also {
+    fun paramTypes(paramTypes: List<String?>) = also {
         this.paramsMatcher = ParametersMatcher().apply {
-            parameterType.forEach {
+            paramTypes.forEach {
                 val paramMatcher = it?.let { ParameterMatcher().type(it) }
                 add(paramMatcher)
             }
         }
     }
 
-    fun paramTypes(vararg parameterTypes: String?) = also {
+    fun paramTypes(vararg paramTypes: String?) = also {
         this.paramsMatcher = ParametersMatcher().apply {
-            parameters(listOf())
-            parameterTypes.forEach {
+            params(listOf())
+            paramTypes.forEach {
                 val paramMatcher = it?.let { ParameterMatcher().type(it) }
                 add(paramMatcher)
             }
         }
     }
 
-    fun addParamType(parameterType: String?) = also {
+    fun addParamType(paramType: String?) = also {
         paramsMatcher = paramsMatcher ?: ParametersMatcher()
-        paramsMatcher!!.add(parameterType?.let { ParameterMatcher().type(parameterType) })
+        paramsMatcher!!.add(paramType?.let { ParameterMatcher().type(paramType) })
     }
 
     fun paramCount(count: Int) = also {
@@ -267,20 +267,40 @@ class MethodMatcher : BaseQuery() {
         this.opCodesMatcher = OpCodesMatcher.createForOpNames(opNames, matchType, opCodeSize)
     }
 
-    fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
+    fun usingStrings(usingStrings: StringMatcherList) = also {
         this.usingStringsMatcher = usingStrings
     }
 
     fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }
+        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
+    }
+
+    fun addUsingString(usingString: StringMatcher) = also {
+        usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
+        usingStringsMatcher!!.add(usingString)
+    }
+
+    @JvmOverloads
+    fun addUsingString(
+        usingString: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
+        usingStringsMatcher!!.add(StringMatcher(usingString, matchType, ignoreCase))
     }
 
     fun usingFields(usingFields: List<UsingFieldMatcher>) = also {
-        this.usingFieldsMatcher = usingFields
+        this.usingFieldsMatcher = usingFields.toMutableList()
+    }
+
+    fun addUsingField(usingField: UsingFieldMatcher) = also {
+        usingFieldsMatcher = usingFieldsMatcher ?: UsingFieldMatcherList()
+        usingFieldsMatcher!!.add(usingField)
     }
 
     fun usingNumbers(usingNumbers: NumberEncodeValueMatcherList) = also {
@@ -288,19 +308,16 @@ class MethodMatcher : BaseQuery() {
     }
 
     fun usingNumbers(usingNumbers: List<Number>) = also {
-        this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }
+        this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }.toMutableList()
     }
 
     fun usingNumbers(vararg usingNumbers: Number) = also {
-        this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }
+        this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }.toMutableList()
     }
 
     fun addUsingNumber(usingNumber: Number) = also {
         usingNumbersMatcher = usingNumbersMatcher ?: NumberEncodeValueMatcherList()
-        if (usingNumbersMatcher !is NumberEncodeValueMatcherList) {
-            usingNumbersMatcher = NumberEncodeValueMatcherList(usingNumbersMatcher!!)
-        }
-        (usingNumbersMatcher as NumberEncodeValueMatcherList).add(NumberEncodeValueMatcher().value(usingNumber))
+        usingNumbersMatcher!!.add(NumberEncodeValueMatcher().value(usingNumber))
     }
 
     fun invokeMethods(invokeMethods: MethodsMatcher) = also {
@@ -350,13 +367,18 @@ class MethodMatcher : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun usingStringsMatcher(init: StringMatcherList.() -> Unit) = also {
-        usingStringsMatcher(StringMatcherList().apply(init))
+    inline fun usingStrings(init: StringMatcherList.() -> Unit) = also {
+        usingStrings(StringMatcherList().apply(init))
     }
 
     @kotlin.internal.InlineOnly
     inline fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
         usingFields(UsingFieldMatcherList().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addUsingField(init: UsingFieldMatcher.() -> Unit) = also {
+        addUsingField(UsingFieldMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly

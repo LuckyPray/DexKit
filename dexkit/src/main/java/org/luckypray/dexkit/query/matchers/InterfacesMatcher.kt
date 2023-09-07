@@ -10,7 +10,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class InterfacesMatcher : BaseQuery() {
-    var interfacesMatcher: List<ClassMatcher>? = null
+    var interfacesMatcher: MutableList<ClassMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
@@ -27,7 +27,7 @@ class InterfacesMatcher : BaseQuery() {
         }
 
     fun interfaces(interfaces: List<ClassMatcher>) = also {
-        this.interfacesMatcher = interfaces
+        this.interfacesMatcher = interfaces.toMutableList()
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -52,10 +52,7 @@ class InterfacesMatcher : BaseQuery() {
 
     fun add(interfaceMatcher: ClassMatcher) = also {
         interfacesMatcher = interfacesMatcher ?: mutableListOf()
-        if (interfacesMatcher !is MutableList) {
-            interfacesMatcher = interfacesMatcher!!.toMutableList()
-        }
-        (interfacesMatcher as MutableList<ClassMatcher>).add(interfaceMatcher)
+        interfacesMatcher!!.add(interfaceMatcher)
     }
 
     @JvmOverloads

@@ -9,7 +9,7 @@ import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class MethodsMatcher : BaseQuery() {
-    var methodsMatcher: List<MethodMatcher>? = null
+    var methodsMatcher: MutableList<MethodMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
@@ -26,7 +26,7 @@ class MethodsMatcher : BaseQuery() {
         }
 
     fun methods(methods: List<MethodMatcher>) = also {
-        this.methodsMatcher = methods
+        this.methodsMatcher = methods.toMutableList()
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -51,10 +51,7 @@ class MethodsMatcher : BaseQuery() {
 
     fun add(method: MethodMatcher) = also {
         methodsMatcher = methodsMatcher ?: mutableListOf()
-        if (methodsMatcher !is MutableList) {
-            methodsMatcher = methodsMatcher!!.toMutableList()
-        }
-        (methodsMatcher as MutableList<MethodMatcher>).add(method)
+        methodsMatcher!!.add(method)
     }
 
     fun add(methodName: String) = also {

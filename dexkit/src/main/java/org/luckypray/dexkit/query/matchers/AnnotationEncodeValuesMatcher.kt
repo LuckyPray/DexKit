@@ -10,7 +10,7 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationEncodeValuesMatcher : BaseQuery() {
-    var encodeValuesMatcher: List<AnnotationEncodeValueMatcher>? = null
+    var encodeValuesMatcher: MutableList<AnnotationEncodeValueMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
@@ -27,7 +27,7 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
         }
 
     fun matchers(matchers: List<AnnotationEncodeValueMatcher>) = also {
-        this.encodeValuesMatcher = matchers
+        this.encodeValuesMatcher = matchers.toMutableList()
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -52,10 +52,7 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
 
     fun add(matcher: AnnotationEncodeValueMatcher) = also {
         encodeValuesMatcher = encodeValuesMatcher ?: mutableListOf()
-        if (encodeValuesMatcher !is MutableList) {
-            encodeValuesMatcher = encodeValuesMatcher!!.toMutableList()
-        }
-        (encodeValuesMatcher as MutableList<AnnotationEncodeValueMatcher>).add(matcher)
+        encodeValuesMatcher!!.add(matcher)
     }
 
     // region DSL

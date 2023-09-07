@@ -4,7 +4,6 @@ import io.luckypray.dexkit.util.loadLibrary
 import org.junit.Test
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.result.MethodData
 import java.io.File
 import java.lang.reflect.Modifier
 

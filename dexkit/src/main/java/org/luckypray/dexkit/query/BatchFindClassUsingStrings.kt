@@ -19,7 +19,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
     var ignorePackagesCase: Boolean = false
     @set:JvmSynthetic
     var searchClasses: List<ClassData>? = null
-    var matcherGroups: List<StringMatchersGroup>? = null
+    var matcherGroups: MutableList<StringMatchersGroup>? = null
         private set
 
     fun searchPackages(vararg searchPackages: String) = also {
@@ -47,7 +47,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
     }
 
     fun matchers(matchers: List<StringMatchersGroup>) = also {
-        this.matcherGroups = matchers
+        this.matcherGroups = matchers.toMutableList()
     }
 
     @JvmOverloads
@@ -58,15 +58,12 @@ class BatchFindClassUsingStrings : BaseQuery() {
     ) = also {
         this.matcherGroups = map.map { (key, value) ->
             StringMatchersGroup(key, value.map { StringMatcher(it, matchType, ignoreCase) })
-        }
+        }.toMutableList()
     }
 
     fun addGroup(matcher: StringMatchersGroup) = also {
         matcherGroups = matcherGroups ?: mutableListOf()
-        if (matcherGroups !is MutableList) {
-            matcherGroups = matcherGroups!!.toMutableList()
-        }
-        (matcherGroups as MutableList).add(matcher)
+        matcherGroups!!.add(matcher)
     }
 
     // region DSL
