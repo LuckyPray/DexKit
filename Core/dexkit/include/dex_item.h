@@ -48,7 +48,8 @@ public:
             std::set<uint32_t> &in_class_set,
             trie::PackageTrie &packageTrie,
             ThreadPool &pool,
-            uint32_t split_num
+            uint32_t split_num,
+            bool &find_fist_flag
     );
     std::vector<std::future<std::vector<MethodBean>>>
     FindMethod(
@@ -57,7 +58,8 @@ public:
             std::set<uint32_t> &in_method_set,
             trie::PackageTrie &packageTrie,
             ThreadPool &pool,
-            uint32_t split_num
+            uint32_t split_num,
+            bool &find_fist_flag
     );
     std::vector<std::future<std::vector<FieldBean>>>
     FindField(
@@ -66,14 +68,16 @@ public:
             std::set<uint32_t> &in_field_set,
             trie::PackageTrie &packageTrie,
             ThreadPool &pool,
-            uint32_t split_num
+            uint32_t split_num,
+            bool &find_fist_flag
     );
     std::vector<ClassBean> FindClass(
             const schema::FindClass *query,
             std::set<uint32_t> &in_class_set,
             trie::PackageTrie &packageTrie,
             uint32_t start,
-            uint32_t end
+            uint32_t end,
+            bool &find_fist_flag
     );
     std::vector<MethodBean> FindMethod(
             const schema::FindMethod *query,
@@ -81,7 +85,8 @@ public:
             std::set<uint32_t> &in_method_set,
             trie::PackageTrie &packageTrie,
             uint32_t start,
-            uint32_t end
+            uint32_t end,
+            bool &find_fist_flag
     );
     std::vector<FieldBean> FindField(
             const schema::FindField *query,
@@ -89,7 +94,8 @@ public:
             std::set<uint32_t> &in_field_set,
             trie::PackageTrie &packageTrie,
             uint32_t start,
-            uint32_t end
+            uint32_t end,
+            bool &find_fist_flag
     );
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,
@@ -236,7 +242,6 @@ private:
 
     std::vector<std::vector<EncodeNumber /*using_number*/>> method_using_number;
     std::vector<std::vector<uint32_t /*using_string*/>> method_using_string_ids;
-    // TODO need check type declared
     std::vector<std::vector<uint32_t /*invoke_method_id*/>> method_invoking_ids;
     std::vector<std::vector<std::pair<uint32_t /*method_id*/, bool /*is_getting*/>>> method_using_field_ids;
     // maybe cross dex

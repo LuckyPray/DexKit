@@ -225,7 +225,7 @@ int DexKitFindClassUsingStrings(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassUsingStrings Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, 0, false, 0,
+            fbb, 0, 0, false, 0, false,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -278,7 +278,7 @@ int DexKitFindClassTest(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassTest Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, 0, false, 0,
+            fbb, 0, 0, false, 0, false,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -386,13 +386,103 @@ int DexKitFindClassTest(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindClassFieldsTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindClassTest Start-----------\n");
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindClass(
+            fbb, 0, 0, false, 0, true,
+            CreateClassMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    CreateFieldsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<FieldMatcher>>{
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("java.util.concurrent.ConcurrentHashMap"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    ),
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("android.content.SharedPreferences"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    ),
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("long"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    )
+                            }),
+                            MatchType::Contains
+                    )
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindClass>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindClass(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<ClassMetaArrayHolder>(buffer);
+    if (result->classes()) {
+        printf("result->classes()->size() = %d\n", result->classes()->size());
+        for (int i = 0; i < result->classes()->size(); ++i) {
+            auto item = result->classes()->Get(i);
+            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+        }
+    }
+    return 0;
+}
 
 int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindClassUsingAnnotationTest Start-----------\n");
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
-            fbb, 0, 0, false, 0,
+            fbb, 0, 0, false, 0, false,
             CreateClassMatcher(
                     fbb,
                     0,
@@ -474,7 +564,7 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
-            fbb, 0, 0, false, 0, 0,
+            fbb, 0, 0, false, 0, 0, false,
             CreateMethodMatcher(
                     fbb,
                     0,
@@ -543,7 +633,7 @@ int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
 
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindMethod(
-            fbb, 0, 0, false, 0, 0,
+            fbb, 0, 0, false, 0, 0, false,
             CreateMethodMatcher(
                     fbb,
                     0,
@@ -635,12 +725,229 @@ int DexKitPackageTest(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindParameterTypeArray(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindParameterTypeArray Start-----------\n");
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindMethod(
+            fbb, 0, 0, false, 0, 0, false,
+            CreateMethodMatcher(
+                    fbb,
+                    0,
+                    0,
+                    CreateClassMatcher(
+                            fbb,
+                            0,
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("com/tencent/mobileqq/pb/MessageMicro"),
+                                    StringMatchType::Equal,
+                                    false
+                            )
+                    ),
+                    0,
+                    CreateParametersMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<ParameterMatcher>>{
+                                    CreateParameterMatcher(fbb),
+                                    CreateParameterMatcher(
+                                            fbb,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("java.lang.String[]"),
+                                                            StringMatchType::Equal
+                                                    )
+                                            )
+                                    ),
+                                    CreateParameterMatcher(fbb),
+                                    CreateParameterMatcher(fbb)
+                            })
+                    ),
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindMethod>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindMethod(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<MethodMetaArrayHolder>(buffer);
+    if (result->methods()) {
+        printf("result->classes()->size() = %d\n", result->methods()->size());
+        for (int i = 0; i < result->methods()->size(); ++i) {
+            auto item = result->methods()->Get(i);
+            printf("dex: %02d, idx: %d, descriptor: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
+int DexKitFindFieldTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitTest Start-----------\n");
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindField(
+            fbb, 0, 0, false, 0, 0, false,
+            CreateFieldMatcher(
+                    fbb,
+                    0,
+                    0,
+                    CreateClassMatcher(
+                            fbb,
+                            0,
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("at.t2"),
+                                    StringMatchType::Equal,
+                                    false
+                            )
+                    ),
+                    CreateClassMatcher(
+                            fbb,
+                            0,
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("boolean"),
+                                    StringMatchType::Equal,
+                                    false
+                            )
+                    ),
+                    0,
+                    CreateMethodsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
+                                    CreateMethodMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("at.t2"),
+                                                            StringMatchType::Equal
+                                                    )
+                                            ),
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("boolean"),
+                                                            StringMatchType::Equal
+                                                    )
+                                            ),
+                                            CreateParametersMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateIntRange(fbb, 0, 0)
+                                            ),
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            CreateMethodsMatcher(
+                                                    fbb,
+                                                    fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
+                                                            CreateMethodMatcher(
+                                                                    fbb,
+                                                                    0,
+                                                                    0,
+                                                                    CreateClassMatcher(
+                                                                            fbb,
+                                                                            CreateStringMatcher(
+                                                                                    fbb,
+                                                                                    fbb.CreateString(
+                                                                                            "AlphaSettingDialogUtils.kt"),
+                                                                                    StringMatchType::Equal
+                                                                            )
+                                                                    ),
+                                                                    CreateClassMatcher(
+                                                                            fbb,
+                                                                            0,
+                                                                            CreateStringMatcher(
+                                                                                    fbb,
+                                                                                    fbb.CreateString(
+                                                                                            "android.graphics.drawable.Drawable"),
+                                                                                    StringMatchType::Equal
+                                                                            )
+                                                                    ),
+                                                                    CreateParametersMatcher(
+                                                                            fbb,
+                                                                            fbb.CreateVector(std::vector<flatbuffers::Offset<ParameterMatcher>>{
+                                                                                    CreateParameterMatcher(
+                                                                                            fbb,
+                                                                                            0,
+                                                                                            CreateClassMatcher(
+                                                                                                    fbb,
+                                                                                                    0,
+                                                                                                    CreateStringMatcher(
+                                                                                                            fbb,
+                                                                                                            fbb.CreateString(
+                                                                                                                    "android.content.Context"),
+                                                                                                            StringMatchType::Equal
+                                                                                                    )
+                                                                                            )
+                                                                                    )
+                                                                            })
+                                                                    )
+                                                            )
+                                                    })
+                                            )
+                                    )
+                            })
+                    )
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindField>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindField(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<FieldMetaArrayHolder>(buffer);
+    if (result->fields()) {
+        printf("result->classes()->size() = %d\n", result->fields()->size());
+        for (int i = 0; i < result->fields()->size(); ++i) {
+            auto item = result->fields()->Get(i);
+            printf("dex: %02d, idx: %d, descriptor: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
 
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/demo.apk");
-//    dexkit.SetThreadNum(1);
+    auto dexkit = dexkit::DexKit("../apks/wyy_8.10.61.apk");
+//    dexkit.SetThreadNum(32);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "unzip and init full cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
@@ -655,10 +962,13 @@ int main() {
 //    DexKitBatchFindMethodTest(dexkit);
 //    DexKitFindClassUsingStrings(dexkit);
 //    DexKitFindClassTest(dexkit);
+    DexKitFindClassFieldsTest(dexkit);
 //    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindMethodCaller(dexkit);
 //    DexKitFindClassUsingAnnotationTest(dexkit);
-    DexKitPackageTest(dexkit);
+//    DexKitPackageTest(dexkit);
+//    DexKitFindParameterTypeArray(dexkit);
+//    DexKitFindFieldTest(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

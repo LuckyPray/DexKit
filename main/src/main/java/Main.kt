@@ -26,7 +26,7 @@ fun loadLibrary(name: String) {
 fun main() {
     loadLibrary("dexkit")
     println("current work dir: ${File("").absolutePath}")
-    val file = File("apk/demo.apk")
+    val file = File("apk/wyy_8.10.61.apk")
     if (!file.exists()) {
         println("apk not found")
         return
@@ -37,13 +37,32 @@ fun main() {
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
         val startTime = System.currentTimeMillis()
-        bridge.findMethod {
-            searchPackages("org.luckypraY.dexkit.demo")
-            excludePackages("org.luckypray.dexkit.demo.annotations")
-            ignorePackagesCase = true
-        }.forEach {
-            println(it.getInvokeMethods())
-        }
+        for (i in 1..10)
+            bridge.findClass {
+//                searchPackages("com/netease/cloudmusic")
+                findFirst = true
+                matcher {
+                    fields {
+                        addForType("java.util.concurrent.ConcurrentHashMap")
+                        addForType("android.content.SharedPreferences")
+                        addForType("long")
+                    }
+//                    methods {
+//                        add {
+//                            modifiers = Modifier.PRIVATE
+//                            parameterTypes = listOf("java.lang.String")
+//                            returnType = "okhttp3.Cookie"
+//                        }
+//                        add {
+//                            modifiers = Modifier.PUBLIC
+//                            returnType = "java.lang.String"
+//                        }
+//                    }
+//                    usingStrings = listOf("MUSIC_U", "MUSIC_A")
+                }
+            }.forEach {
+                println("find class: ${it.dexDescriptor}")
+            }
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }
 }

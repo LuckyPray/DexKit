@@ -4,6 +4,7 @@ import io.luckypray.dexkit.util.loadLibrary
 import org.junit.Test
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.result.MethodData
 import java.io.File
 import java.lang.reflect.Modifier
 
@@ -258,8 +259,10 @@ class UnitTest {
                     add {
                         parameterTypes = listOf("android.view.View")
                         usingNumbers {
+                            addByte(0)
                             addInt(114514)
                             addFloat(0.987f)
+//                            add(0)
                         }
                     }
                     add {
@@ -294,4 +297,97 @@ class UnitTest {
         }
     }
 
+    @Test
+    fun test1() {
+        lateinit var methodData: MethodData
+        bridge.findMethod {
+            matcher {
+                declaredClass = "at.t2"
+                returnType = "boolean"
+                parameterCount(0)
+                addCall {
+                    declaredClass {
+                        source("AlphaSettingDialogUtils.kt",StringMatchType.Equals)
+                    }
+                    returnType = "android.graphics.drawable.Drawable"
+                    parameterTypes("android.content.Context")
+                }
+            }
+        }.forEach {
+            methodData = it
+            println(it.dexDescriptor)
+        }
+        bridge.findField {
+            matcher {
+                declaredClass = "at.t2"
+                type("boolean")
+                modifiers(Modifier.STATIC)
+                addGetMethod {
+                    declaredClass = methodData.className
+                    returnType = methodData.returnTypeName
+                    parameterTypes = methodData.paramTypeNames
+                    name = methodData.methodName
+                }
+            }
+        }.also {
+            if(it.isEmpty()){
+                println("匹配结果为空")
+            }
+        }.forEach {
+            println("匹配结果" + it.dexDescriptor)
+        }
+    }
+
+    @Test
+    fun test2() {
+        bridge.findMethod {
+            matcher {
+                declaredClass = "gd3.a"
+                parameterTypes("android.view.MotionEvent")
+                returnType = "void"
+                usingStrings("event")
+                addCall {//匹配 gd3.a$d 的 b 方法
+                    returnType = "void"
+                    parameterTypes("android.view.MotionEvent")
+                    usingStrings("event")
+                    declaredClass {
+                        className("\$",StringMatchType.Contains)
+                        addInterface {
+                            // 接口的方法
+                            addMethod {
+                                name = "b"
+                                // 调用了接口的方法
+                                addCall {
+                                    //匹配 bc3.i0$c 的 onLongPress 方法
+                                    name = "onLongPress"
+                                    returnType = "void"
+                                    parameterTypes("android.view.MotionEvent")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }.also {
+            if (it.isEmpty()) {
+                println("匹配结果为空")
+            }
+        }.forEach {
+            println("匹配结果" + it.dexDescriptor)
+        }
+    }
+
+    @Test
+    fun test3() {
+        bridge.findField {
+            matcher {
+                type = "android.widget.TextView"
+                addPutMethod {
+                    name = "onCreate"
+                }
+            }
+        }.forEach {
+            println(it.dexDescriptor)
+        }
+    }
 }

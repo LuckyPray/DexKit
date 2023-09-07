@@ -41,7 +41,8 @@ struct FindClass FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_EXCLUDE_PACKAGES = 6,
     VT_IGNORE_PACKAGES_CASE = 8,
     VT_IN_CLASSES = 10,
-    VT_MATCHER = 12
+    VT_FIND_FIRST = 12,
+    VT_MATCHER = 14
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *search_packages() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_SEARCH_PACKAGES);
@@ -54,6 +55,9 @@ struct FindClass FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<int64_t> *in_classes() const {
     return GetPointer<const ::flatbuffers::Vector<int64_t> *>(VT_IN_CLASSES);
+  }
+  bool find_first() const {
+    return GetField<uint8_t>(VT_FIND_FIRST, 0) != 0;
   }
   const dexkit::schema::ClassMatcher *matcher() const {
     return GetPointer<const dexkit::schema::ClassMatcher *>(VT_MATCHER);
@@ -69,6 +73,7 @@ struct FindClass FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_IGNORE_PACKAGES_CASE, 1) &&
            VerifyOffset(verifier, VT_IN_CLASSES) &&
            verifier.VerifyVector(in_classes()) &&
+           VerifyField<uint8_t>(verifier, VT_FIND_FIRST, 1) &&
            VerifyOffset(verifier, VT_MATCHER) &&
            verifier.VerifyTable(matcher()) &&
            verifier.EndTable();
@@ -91,6 +96,9 @@ struct FindClassBuilder {
   void add_in_classes(::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_classes) {
     fbb_.AddOffset(FindClass::VT_IN_CLASSES, in_classes);
   }
+  void add_find_first(bool find_first) {
+    fbb_.AddElement<uint8_t>(FindClass::VT_FIND_FIRST, static_cast<uint8_t>(find_first), 0);
+  }
   void add_matcher(::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher) {
     fbb_.AddOffset(FindClass::VT_MATCHER, matcher);
   }
@@ -111,12 +119,14 @@ inline ::flatbuffers::Offset<FindClass> CreateFindClass(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> exclude_packages = 0,
     bool ignore_packages_case = false,
     ::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_classes = 0,
+    bool find_first = false,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher = 0) {
   FindClassBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
   builder_.add_in_classes(in_classes);
   builder_.add_exclude_packages(exclude_packages);
   builder_.add_search_packages(search_packages);
+  builder_.add_find_first(find_first);
   builder_.add_ignore_packages_case(ignore_packages_case);
   return builder_.Finish();
 }
@@ -132,6 +142,7 @@ inline ::flatbuffers::Offset<FindClass> CreateFindClassDirect(
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *exclude_packages = nullptr,
     bool ignore_packages_case = false,
     const std::vector<int64_t> *in_classes = nullptr,
+    bool find_first = false,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> matcher = 0) {
   auto search_packages__ = search_packages ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*search_packages) : 0;
   auto exclude_packages__ = exclude_packages ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*exclude_packages) : 0;
@@ -142,6 +153,7 @@ inline ::flatbuffers::Offset<FindClass> CreateFindClassDirect(
       exclude_packages__,
       ignore_packages_case,
       in_classes__,
+      find_first,
       matcher);
 }
 
@@ -154,7 +166,8 @@ struct FindMethod FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_IGNORE_PACKAGES_CASE = 8,
     VT_IN_CLASSES = 10,
     VT_IN_METHODS = 12,
-    VT_MATCHER = 14
+    VT_FIND_FIRST = 14,
+    VT_MATCHER = 16
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *search_packages() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_SEARCH_PACKAGES);
@@ -170,6 +183,9 @@ struct FindMethod FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<int64_t> *in_methods() const {
     return GetPointer<const ::flatbuffers::Vector<int64_t> *>(VT_IN_METHODS);
+  }
+  bool find_first() const {
+    return GetField<uint8_t>(VT_FIND_FIRST, 0) != 0;
   }
   const dexkit::schema::MethodMatcher *matcher() const {
     return GetPointer<const dexkit::schema::MethodMatcher *>(VT_MATCHER);
@@ -187,6 +203,7 @@ struct FindMethod FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(in_classes()) &&
            VerifyOffset(verifier, VT_IN_METHODS) &&
            verifier.VerifyVector(in_methods()) &&
+           VerifyField<uint8_t>(verifier, VT_FIND_FIRST, 1) &&
            VerifyOffset(verifier, VT_MATCHER) &&
            verifier.VerifyTable(matcher()) &&
            verifier.EndTable();
@@ -212,6 +229,9 @@ struct FindMethodBuilder {
   void add_in_methods(::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_methods) {
     fbb_.AddOffset(FindMethod::VT_IN_METHODS, in_methods);
   }
+  void add_find_first(bool find_first) {
+    fbb_.AddElement<uint8_t>(FindMethod::VT_FIND_FIRST, static_cast<uint8_t>(find_first), 0);
+  }
   void add_matcher(::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher) {
     fbb_.AddOffset(FindMethod::VT_MATCHER, matcher);
   }
@@ -233,6 +253,7 @@ inline ::flatbuffers::Offset<FindMethod> CreateFindMethod(
     bool ignore_packages_case = false,
     ::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_methods = 0,
+    bool find_first = false,
     ::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher = 0) {
   FindMethodBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
@@ -240,6 +261,7 @@ inline ::flatbuffers::Offset<FindMethod> CreateFindMethod(
   builder_.add_in_classes(in_classes);
   builder_.add_exclude_packages(exclude_packages);
   builder_.add_search_packages(search_packages);
+  builder_.add_find_first(find_first);
   builder_.add_ignore_packages_case(ignore_packages_case);
   return builder_.Finish();
 }
@@ -256,6 +278,7 @@ inline ::flatbuffers::Offset<FindMethod> CreateFindMethodDirect(
     bool ignore_packages_case = false,
     const std::vector<int64_t> *in_classes = nullptr,
     const std::vector<int64_t> *in_methods = nullptr,
+    bool find_first = false,
     ::flatbuffers::Offset<dexkit::schema::MethodMatcher> matcher = 0) {
   auto search_packages__ = search_packages ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*search_packages) : 0;
   auto exclude_packages__ = exclude_packages ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*exclude_packages) : 0;
@@ -268,6 +291,7 @@ inline ::flatbuffers::Offset<FindMethod> CreateFindMethodDirect(
       ignore_packages_case,
       in_classes__,
       in_methods__,
+      find_first,
       matcher);
 }
 
@@ -280,7 +304,8 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_IGNORE_PACKAGES_CASE = 8,
     VT_IN_CLASSES = 10,
     VT_IN_FIELDS = 12,
-    VT_MATCHER = 14
+    VT_FIND_FIRST = 14,
+    VT_MATCHER = 16
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *search_packages() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_SEARCH_PACKAGES);
@@ -296,6 +321,9 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<int64_t> *in_fields() const {
     return GetPointer<const ::flatbuffers::Vector<int64_t> *>(VT_IN_FIELDS);
+  }
+  bool find_first() const {
+    return GetField<uint8_t>(VT_FIND_FIRST, 0) != 0;
   }
   const dexkit::schema::FieldMatcher *matcher() const {
     return GetPointer<const dexkit::schema::FieldMatcher *>(VT_MATCHER);
@@ -313,6 +341,7 @@ struct FindField FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(in_classes()) &&
            VerifyOffset(verifier, VT_IN_FIELDS) &&
            verifier.VerifyVector(in_fields()) &&
+           VerifyField<uint8_t>(verifier, VT_FIND_FIRST, 1) &&
            VerifyOffset(verifier, VT_MATCHER) &&
            verifier.VerifyTable(matcher()) &&
            verifier.EndTable();
@@ -338,6 +367,9 @@ struct FindFieldBuilder {
   void add_in_fields(::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_fields) {
     fbb_.AddOffset(FindField::VT_IN_FIELDS, in_fields);
   }
+  void add_find_first(bool find_first) {
+    fbb_.AddElement<uint8_t>(FindField::VT_FIND_FIRST, static_cast<uint8_t>(find_first), 0);
+  }
   void add_matcher(::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher) {
     fbb_.AddOffset(FindField::VT_MATCHER, matcher);
   }
@@ -359,6 +391,7 @@ inline ::flatbuffers::Offset<FindField> CreateFindField(
     bool ignore_packages_case = false,
     ::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_classes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<int64_t>> in_fields = 0,
+    bool find_first = false,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
   FindFieldBuilder builder_(_fbb);
   builder_.add_matcher(matcher);
@@ -366,6 +399,7 @@ inline ::flatbuffers::Offset<FindField> CreateFindField(
   builder_.add_in_classes(in_classes);
   builder_.add_exclude_packages(exclude_packages);
   builder_.add_search_packages(search_packages);
+  builder_.add_find_first(find_first);
   builder_.add_ignore_packages_case(ignore_packages_case);
   return builder_.Finish();
 }
@@ -382,6 +416,7 @@ inline ::flatbuffers::Offset<FindField> CreateFindFieldDirect(
     bool ignore_packages_case = false,
     const std::vector<int64_t> *in_classes = nullptr,
     const std::vector<int64_t> *in_fields = nullptr,
+    bool find_first = false,
     ::flatbuffers::Offset<dexkit::schema::FieldMatcher> matcher = 0) {
   auto search_packages__ = search_packages ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*search_packages) : 0;
   auto exclude_packages__ = exclude_packages ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*exclude_packages) : 0;
@@ -394,6 +429,7 @@ inline ::flatbuffers::Offset<FindField> CreateFindFieldDirect(
       ignore_packages_case,
       in_classes__,
       in_fields__,
+      find_first,
       matcher);
 }
 

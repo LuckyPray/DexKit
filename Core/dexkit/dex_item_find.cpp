@@ -8,7 +8,8 @@ DexItem::FindClass(
         std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie,
         ThreadPool &pool,
-        uint32_t slice_size
+        uint32_t slice_size,
+        bool &find_fist_flag
 ) {
     std::vector<std::future<std::vector<ClassBean>>> futures;
     uint32_t split_count;
@@ -21,8 +22,8 @@ DexItem::FindClass(
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
         futures.emplace_back(pool.enqueue(
-                [this, query, &in_class_set, &packageTrie, i, slice_size] {
-                    return FindClass(query, in_class_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.ClassDefs().size()));
+                [this, query, &in_class_set, &packageTrie, i, slice_size, &find_fist_flag] {
+                    return FindClass(query, in_class_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.ClassDefs().size()), find_fist_flag);
                 }
         ));
     }
@@ -36,7 +37,8 @@ DexItem::FindMethod(
         std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie,
         ThreadPool &pool,
-        uint32_t slice_size
+        uint32_t slice_size,
+        bool &find_fist_flag
 ) {
     std::vector<std::future<std::vector<MethodBean>>> futures;
     uint32_t split_count;
@@ -49,8 +51,8 @@ DexItem::FindMethod(
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
         futures.emplace_back(pool.enqueue(
-                [this, query, &in_class_set, &in_method_set, &packageTrie, i, slice_size] {
-                    return FindMethod(query, in_class_set, in_method_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.MethodIds().size()));
+                [this, query, &in_class_set, &in_method_set, &packageTrie, i, slice_size, &find_fist_flag] {
+                    return FindMethod(query, in_class_set, in_method_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.MethodIds().size()), find_fist_flag);
                 }
         ));
     }
@@ -64,7 +66,8 @@ DexItem::FindField(
         std::set<uint32_t> &in_field_set,
         trie::PackageTrie &packageTrie,
         ThreadPool &pool,
-        uint32_t slice_size
+        uint32_t slice_size,
+        bool &find_fist_flag
 ) {
     std::vector<std::future<std::vector<FieldBean>>> futures;
     uint32_t split_count;
@@ -77,8 +80,8 @@ DexItem::FindField(
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
         futures.emplace_back(pool.enqueue(
-                [this, query, &in_class_set, &in_field_set, &packageTrie, i, slice_size] {
-                    return FindField(query, in_class_set, in_field_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.FieldIds().size()));
+                [this, query, &in_class_set, &in_field_set, &packageTrie, i, slice_size, &find_fist_flag] {
+                    return FindField(query, in_class_set, in_field_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.FieldIds().size()), find_fist_flag);
                 }
         ));
     }
@@ -91,11 +94,13 @@ DexItem::FindClass(
         std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie,
         uint32_t start,
-        uint32_t end
+        uint32_t end,
+        bool &find_fist_flag
 ) {
 
     std::vector<uint32_t> find_result;
     for (auto i = start; i < end; ++i) {
+        if (query->find_first() && find_fist_flag) break;
         auto &class_def = this->reader.ClassDefs()[i];
         if (query->in_classes() && !in_class_set.contains(class_def.class_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
@@ -106,6 +111,10 @@ DexItem::FindClass(
 
         if (IsClassMatched(class_def.class_idx, query->matcher())) {
             find_result.emplace_back(class_def.class_idx);
+            if (query->find_first()) {
+                find_fist_flag = true;
+                break;
+            }
         }
     }
 
@@ -124,11 +133,13 @@ DexItem::FindMethod(
         std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie,
         uint32_t start,
-        uint32_t end
+        uint32_t end,
+        bool &find_fist_flag
 ) {
 
     std::vector<uint32_t> find_result;
     for (auto method_idx = start; method_idx < end; ++method_idx) {
+        if (query->find_first() && find_fist_flag) break;
         auto &method_def = this->reader.MethodIds()[method_idx];
         if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
@@ -140,6 +151,10 @@ DexItem::FindMethod(
 
         if (IsMethodMatched(method_idx, query->matcher())) {
             find_result.emplace_back(method_idx);
+            if (query->find_first()) {
+                find_fist_flag = true;
+                break;
+            }
         }
     }
 
@@ -158,12 +173,14 @@ DexItem::FindField(
         std::set<uint32_t> &in_field_set,
         trie::PackageTrie &packageTrie,
         uint32_t start,
-        uint32_t end
+        uint32_t end,
+        bool &find_fist_flag
 ) {
 
     std::vector<uint32_t> find_result;
     auto index = 0;
     for (auto field_idx = start; field_idx < end; ++field_idx) {
+        if (query->find_first() && find_fist_flag) break;
         auto &field_def = this->reader.FieldIds()[field_idx];
         if (query->in_classes() && !in_class_set.contains(field_def.class_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
@@ -175,6 +192,10 @@ DexItem::FindField(
 
         if (IsFieldMatched(field_idx, query->matcher())) {
             find_result.emplace_back(field_idx);
+            if (query->find_first()) {
+                find_fist_flag = true;
+                break;
+            }
         }
     }
 

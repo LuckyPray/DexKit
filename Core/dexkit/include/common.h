@@ -60,4 +60,10 @@ constexpr uint8_t GetNumberSize(NumberType type) {
     }
 }
 
+inline bool NumberTypeEqual(NumberType a, NumberType b) {
+    if (a < FLOAT && b < FLOAT) return true;
+    if (a >= FLOAT && b >= FLOAT) return true;
+    return false;
+}
+
 }

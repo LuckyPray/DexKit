@@ -17,6 +17,8 @@ class FindClass : BaseQuery() {
     var ignorePackagesCase: Boolean = false
     @set:JvmSynthetic
     var searchClasses: List<ClassData>? = null
+    @set:JvmSynthetic
+    var findFirst: Boolean = false
     var matcher: ClassMatcher? = null
         private set
 
@@ -75,6 +77,7 @@ class FindClass : BaseQuery() {
             searchClasses
                 ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerFindClass.createInClassesVector(fbb, it) } ?: 0,
+            findFirst,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

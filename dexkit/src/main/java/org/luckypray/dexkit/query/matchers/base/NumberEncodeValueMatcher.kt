@@ -25,6 +25,18 @@ class NumberEncodeValueMatcher {
         this.type = type
     }
 
+    fun value(value: Any) = also {
+        when (value) {
+            is Byte -> byteValue(value)
+            is Short -> shortValue(value)
+            is Int -> intValue(value)
+            is Long -> longValue(value)
+            is Float -> floatValue(value)
+            is Double -> doubleValue(value)
+            else -> throw IllegalArgumentException("value must be number type")
+        }
+    }
+
     fun byteValue(value: Byte) = also {
         this.value = EncodeValueByte(value)
         this.type = NumberEncodeValueType.ByteValue
@@ -58,6 +70,9 @@ class NumberEncodeValueMatcher {
     companion object {
         @JvmStatic
         fun create() = NumberEncodeValueMatcher()
+
+        @JvmStatic
+        fun create(value: Any) = NumberEncodeValueMatcher().value(value)
 
         @JvmStatic
         fun createByte(value: Byte) = NumberEncodeValueMatcher().byteValue(value)

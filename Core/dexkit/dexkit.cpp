@@ -156,12 +156,13 @@ DexKit::FindClass(const schema::FindClass *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    bool find_fist_flag = false;
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-            auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE);
+            auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE / 2, find_fist_flag);
             for (auto &f: res) {
                 futures.emplace_back(std::move(f));
             }
@@ -171,7 +172,12 @@ DexKit::FindClass(const schema::FindClass *query) {
     std::vector<ClassBean> result;
     for (auto &f: futures) {
         auto vec = f.get();
+        if (vec.empty()) continue;
         result.insert(result.end(), vec.begin(), vec.end());
+        if (query->find_first()) {
+            pool.skip_unexec_tasks();
+            break;
+        }
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
@@ -207,13 +213,14 @@ DexKit::FindMethod(const schema::FindMethod *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    bool find_fist_flag = false;
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<MethodBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &method_set = dex_method_map[dex_item->GetDexId()];
         if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-            auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, pool, BATCH_SIZE);
+            auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
             for (auto &f: res) {
                 futures.emplace_back(std::move(f));
             }
@@ -223,7 +230,12 @@ DexKit::FindMethod(const schema::FindMethod *query) {
     std::vector<MethodBean> result;
     for (auto &f: futures) {
         auto vec = f.get();
+        if (vec.empty()) continue;
         result.insert(result.end(), vec.begin(), vec.end());
+        if (query->find_first()) {
+            pool.skip_unexec_tasks();
+            break;
+        }
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
@@ -264,13 +276,14 @@ DexKit::FindField(const schema::FindField *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    bool find_fist_flag = false;
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<FieldBean>>> futures;
     for (auto &dex_item: dex_items) {
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &field_set = dex_field_map[dex_item->GetDexId()];
         if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-            auto res = dex_item->FindField(query, class_set, field_set, packageTrie, pool, BATCH_SIZE);
+            auto res = dex_item->FindField(query, class_set, field_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
             for (auto &f: res) {
                 futures.emplace_back(std::move(f));
             }
@@ -280,7 +293,12 @@ DexKit::FindField(const schema::FindField *query) {
     std::vector<FieldBean> result;
     for (auto &f: futures) {
         auto vec = f.get();
+        if (vec.empty()) continue;
         result.insert(result.end(), vec.begin(), vec.end());
+        if (query->find_first()) {
+            pool.skip_unexec_tasks();
+            break;
+        }
     }
 
     auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();

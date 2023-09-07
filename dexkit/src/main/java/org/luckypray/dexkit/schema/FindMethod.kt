@@ -112,9 +112,23 @@ internal class `-FindMethod` : Table() {
             false
         }
     }
+    val findFirst : Boolean
+        get() {
+            val o = __offset(14)
+            return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
+        }
+    fun mutateFindFirst(findFirst: Boolean) : Boolean {
+        val o = __offset(14)
+        return if (o != 0) {
+            bb.put(o + bb_pos, (if(findFirst) 1 else 0).toByte())
+            true
+        } else {
+            false
+        }
+    }
     val matcher : `-MethodMatcher`? get() = matcher(`-MethodMatcher`())
     fun matcher(obj: `-MethodMatcher`) : `-MethodMatcher`? {
-        val o = __offset(14)
+        val o = __offset(16)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -128,17 +142,18 @@ internal class `-FindMethod` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFindMethod(builder: FlatBufferBuilder, searchPackagesOffset: Int, excludePackagesOffset: Int, ignorePackagesCase: Boolean, inClassesOffset: Int, inMethodsOffset: Int, matcherOffset: Int) : Int {
-            builder.startTable(6)
+        fun createFindMethod(builder: FlatBufferBuilder, searchPackagesOffset: Int, excludePackagesOffset: Int, ignorePackagesCase: Boolean, inClassesOffset: Int, inMethodsOffset: Int, findFirst: Boolean, matcherOffset: Int) : Int {
+            builder.startTable(7)
             addMatcher(builder, matcherOffset)
             addInMethods(builder, inMethodsOffset)
             addInClasses(builder, inClassesOffset)
             addExcludePackages(builder, excludePackagesOffset)
             addSearchPackages(builder, searchPackagesOffset)
+            addFindFirst(builder, findFirst)
             addIgnorePackagesCase(builder, ignorePackagesCase)
             return endFindMethod(builder)
         }
-        fun startFindMethod(builder: FlatBufferBuilder) = builder.startTable(6)
+        fun startFindMethod(builder: FlatBufferBuilder) = builder.startTable(7)
         fun addSearchPackages(builder: FlatBufferBuilder, searchPackages: Int) = builder.addOffset(0, searchPackages, 0)
         fun createSearchPackagesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
@@ -176,7 +191,8 @@ internal class `-FindMethod` : Table() {
             return builder.endVector()
         }
         fun startInMethodsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
-        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(5, matcher, 0)
+        fun addFindFirst(builder: FlatBufferBuilder, findFirst: Boolean) = builder.addBoolean(5, findFirst, false)
+        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(6, matcher, 0)
         fun endFindMethod(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

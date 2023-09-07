@@ -15,6 +15,14 @@ cmake {
             generator.set(generators.ninja)
             // if you want disable jni log enable it
             // cmakeArgs.add("-DDISABLE_DEXKIT_LOG=ON")
+            def configFlags = [
+                    "-Og",
+                    "-flto=full",
+                    "-DNDEBUG",
+            ].join(" ")
+            cmakeArgs.add("-DCMAKE_BUILD_TYPE=Release")
+            cmakeArgs.add("-DCMAKE_CXX_FLAGS_RELEASE=$configFlags")
+            cmakeArgs.add("-DCMAKE_C_FLAGS_RELEASE=$configFlags")
         }
     }
 }

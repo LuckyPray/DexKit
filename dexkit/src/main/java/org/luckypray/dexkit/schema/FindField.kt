@@ -112,9 +112,23 @@ internal class `-FindField` : Table() {
             false
         }
     }
+    val findFirst : Boolean
+        get() {
+            val o = __offset(14)
+            return if(o != 0) 0.toByte() != bb.get(o + bb_pos) else false
+        }
+    fun mutateFindFirst(findFirst: Boolean) : Boolean {
+        val o = __offset(14)
+        return if (o != 0) {
+            bb.put(o + bb_pos, (if(findFirst) 1 else 0).toByte())
+            true
+        } else {
+            false
+        }
+    }
     val matcher : `-FieldMatcher`? get() = matcher(`-FieldMatcher`())
     fun matcher(obj: `-FieldMatcher`) : `-FieldMatcher`? {
-        val o = __offset(14)
+        val o = __offset(16)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
         } else {
@@ -128,17 +142,18 @@ internal class `-FindField` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFindField(builder: FlatBufferBuilder, searchPackagesOffset: Int, excludePackagesOffset: Int, ignorePackagesCase: Boolean, inClassesOffset: Int, inFieldsOffset: Int, matcherOffset: Int) : Int {
-            builder.startTable(6)
+        fun createFindField(builder: FlatBufferBuilder, searchPackagesOffset: Int, excludePackagesOffset: Int, ignorePackagesCase: Boolean, inClassesOffset: Int, inFieldsOffset: Int, findFirst: Boolean, matcherOffset: Int) : Int {
+            builder.startTable(7)
             addMatcher(builder, matcherOffset)
             addInFields(builder, inFieldsOffset)
             addInClasses(builder, inClassesOffset)
             addExcludePackages(builder, excludePackagesOffset)
             addSearchPackages(builder, searchPackagesOffset)
+            addFindFirst(builder, findFirst)
             addIgnorePackagesCase(builder, ignorePackagesCase)
             return endFindField(builder)
         }
-        fun startFindField(builder: FlatBufferBuilder) = builder.startTable(6)
+        fun startFindField(builder: FlatBufferBuilder) = builder.startTable(7)
         fun addSearchPackages(builder: FlatBufferBuilder, searchPackages: Int) = builder.addOffset(0, searchPackages, 0)
         fun createSearchPackagesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
@@ -176,7 +191,8 @@ internal class `-FindField` : Table() {
             return builder.endVector()
         }
         fun startInFieldsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(8, numElems, 8)
-        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(5, matcher, 0)
+        fun addFindFirst(builder: FlatBufferBuilder, findFirst: Boolean) = builder.addBoolean(5, findFirst, false)
+        fun addMatcher(builder: FlatBufferBuilder, matcher: Int) = builder.addOffset(6, matcher, 0)
         fun endFindField(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

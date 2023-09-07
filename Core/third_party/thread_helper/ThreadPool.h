@@ -40,7 +40,11 @@ public:
     auto enqueue(F &&f, Args &&... args)
     -> std::future<typename std::invoke_result<F, Args...>::type>;
 
-    void skip_unexec_tasks() { _skip_unexec_tasks = true; }
+    void skip_unexec_tasks() {
+        std::unique_lock lock(this->queue_mutex);
+        _skip_unexec_tasks = true;
+    }
+    bool is_done() const { return stop; }
 
     ~ThreadPool();
 
@@ -49,12 +53,16 @@ private:
     std::vector<std::thread> workers;
     // the task queue
     std::queue<std::function<void()> > tasks;
-
+    std::mutex init_lock;
+    std::mutex wait_lock;
+    std::condition_variable init_condition;
+    std::atomic<int> ready_tasks = 0;
     // synchronization
     std::mutex queue_mutex;
     std::condition_variable condition;
     bool stop;
     bool _skip_unexec_tasks = false;
+    std::vector<std::thread::id> _thread_ids;
 };
 
 // the constructor just launches some amount of workers
@@ -62,7 +70,21 @@ inline ThreadPool::ThreadPool(size_t threads)
         : stop(false) {
     for (size_t i = 0; i < threads; ++i)
         workers.emplace_back(
-                [this] {
+                [this, threads] {
+                    {
+                        std::unique_lock lock(this->init_lock);
+                        this->_thread_ids.push_back(std::this_thread::get_id());
+                    }
+                    ThreadVariable::InitThreadVariableMap();
+                    this->ready_tasks++;
+                    if (this->ready_tasks == threads) {
+                        this->init_condition.notify_all();
+                    }
+                    {
+                        std::unique_lock lock(init_lock);
+                        this->init_condition.wait(lock,
+                                                [this, threads] { return this->ready_tasks == threads; });
+                    }
                     for (;;) {
                         std::function<void()> task;
 
@@ -109,7 +131,6 @@ auto ThreadPool::enqueue(F &&f, Args &&... args)
 
         tasks.emplace([task]() {
             (*task)();
-            ThreadVariable::ClearThreadVariables();
         });
     }
     condition.notify_one();
@@ -125,4 +146,5 @@ inline ThreadPool::~ThreadPool() {
     condition.notify_all();
     for (std::thread &worker: workers)
         worker.join();
+    ThreadVariable::ClearThreadVariables(_thread_ids);
 }

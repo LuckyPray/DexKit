@@ -20,6 +20,8 @@ class FindField : BaseQuery() {
     var searchClasses: List<ClassData>? = null
     @set:JvmSynthetic
     var searchFields: List<FieldData>? = null
+    @set:JvmSynthetic
+    var findFirst: Boolean = false
     var matcher: FieldMatcher? = null
         private set
 
@@ -85,6 +87,7 @@ class FindField : BaseQuery() {
             searchFields
                 ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerFindField.createInFieldsVector(fbb, it) } ?: 0,
+            findFirst,
             matcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

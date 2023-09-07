@@ -82,7 +82,18 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<NumberEncodeValueMatcher>): super(elements)
 
-    // TODO add Object
+    fun add(value: Any) = also {
+        when (value) {
+            is Byte -> addByte(value)
+            is Short -> addShort(value)
+            is Int -> addInt(value)
+            is Long -> addLong(value)
+            is Float -> addFloat(value)
+            is Double -> addDouble(value)
+            else -> throw IllegalArgumentException("value must be a number")
+        }
+    }
+
     fun addByte(value: Byte) = also {
         add(NumberEncodeValueMatcher.createByte(value))
     }
@@ -119,40 +130,32 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
     constructor(elements: Collection<StringMatchersGroup>): super(elements)
 
     fun add(
-        unionKey: String,
+        groupName: String,
         matchers: List<StringMatcher>
     ) = also {
-        add(StringMatchersGroup(unionKey, matchers))
+        add(StringMatchersGroup(groupName, matchers))
     }
 
     fun add(
-        unionKey: String,
+        groupName: String,
         vararg matchers: StringMatcher
     ) = also {
-        add(StringMatchersGroup(unionKey, matchers.toList()))
+        add(StringMatchersGroup(groupName, matchers.toList()))
     }
 
     fun add(
-        unionKey: String,
-        ignoreCase: Boolean,
+        groupName: String,
         vararg strings: String
     ) = also {
-        add(StringMatchersGroup(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, ignoreCase) }))
-    }
-
-    fun add(
-        unionKey: String,
-        vararg strings: String
-    ) = also {
-        add(StringMatchersGroup(unionKey, strings.map { StringMatcher(it, StringMatchType.SimilarRegex, false) }))
+        add(StringMatchersGroup(groupName, strings.map { StringMatcher(it) }))
     }
 
     @kotlin.internal.InlineOnly
     inline fun add(
-        unionKey: String,
+        groupName: String,
         init: StringMatcherList.() -> Unit
     ) = also {
-        add(StringMatchersGroup(unionKey, StringMatcherList().apply(init)))
+        add(StringMatchersGroup(groupName, StringMatcherList().apply(init)))
     }
 }
 
