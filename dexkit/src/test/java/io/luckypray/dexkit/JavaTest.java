@@ -1,8 +1,6 @@
 package io.luckypray.dexkit;
 
 import static org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher.createString;
-import static org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher.createFloat;
-import static org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher.createInt;
 import static io.luckypray.dexkit.util.LibLoader.loadLibrary;
 
 import org.junit.Test;
@@ -68,27 +66,22 @@ public class JavaTest {
                                                 .modifiers(Modifier.PROTECTED)
                                                 .name("onCreate")
                                                 .returnType("void")
-                                                .parameterTypes("android.os.Bundle")
+                                                .paramTypes("android.os.Bundle")
                                                 .usingStrings("onCreate"),
                                         MethodMatcher.create()
-                                                .parameterTypes("android.view.View")
-                                                .usingNumbers(
-                                                        List.of(
-                                                                createInt(114514),
-                                                                createFloat(0.987f)
-                                                        )
-                                                ),
+                                                .paramTypes("android.view.View")
+                                                .usingNumbers(114514, 0.987f),
                                         MethodMatcher.create()
                                                 .modifiers(Modifier.PUBLIC)
-                                                .parameterTypes("boolean")
+                                                .paramTypes("boolean")
                                 ))
                                 // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                                .range(1, 10)
+                                .count(1, 10)
                         )
                         // AnnotationsMatcher for matching interfaces within the class
                         .annotations(AnnotationsMatcher.create()
                                 .add(AnnotationMatcher.create()
-                                        .typeName("org.luckypray.dexkit.demo.annotations.Router")
+                                        .type("org.luckypray.dexkit.demo.annotations.Router")
                                         .addElement(
                                                 AnnotationElementMatcher.create()
                                                         .name("path")

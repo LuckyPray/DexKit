@@ -10,39 +10,52 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationEncodeValuesMatcher : BaseQuery() {
-    var matchers: List<AnnotationEncodeValueMatcher>? = null
+    var encodeValuesMatcher: List<AnnotationEncodeValueMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
-    var valueCount: IntRange? = null
+    var rangeMatcher: IntRange? = null
         private set
 
+    var count: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            count(value)
+        }
+
     fun matchers(matchers: List<AnnotationEncodeValueMatcher>) = also {
-        this.matchers = matchers
+        this.encodeValuesMatcher = matchers
     }
 
     fun matchType(matchType: MatchType) = also {
         this.matchType = matchType
     }
 
-    fun valueCount(valueCount: IntRange?) = also {
-        this.valueCount = valueCount
+    fun count(count: Int) = also {
+        this.rangeMatcher = IntRange(count)
     }
 
-    fun valueCount(count: Int) = also {
-        this.valueCount = IntRange(count)
+    fun count(range: IntRange) = also {
+        this.rangeMatcher = range
     }
 
-    fun valueCount(min: Int, max: Int) = also {
-        this.valueCount = IntRange(min, max)
+    fun count(range: kotlin.ranges.IntRange) = also {
+        rangeMatcher = IntRange(range)
+    }
+
+    fun count(min: Int, max: Int) = also {
+        this.rangeMatcher = IntRange(min, max)
     }
 
     fun add(matcher: AnnotationEncodeValueMatcher) = also {
-        matchers = matchers ?: mutableListOf()
-        if (matchers !is MutableList) {
-            matchers = matchers!!.toMutableList()
+        encodeValuesMatcher = encodeValuesMatcher ?: mutableListOf()
+        if (encodeValuesMatcher !is MutableList) {
+            encodeValuesMatcher = encodeValuesMatcher!!.toMutableList()
         }
-        (matchers as MutableList<AnnotationEncodeValueMatcher>).add(matcher)
+        (encodeValuesMatcher as MutableList<AnnotationEncodeValueMatcher>).add(matcher)
     }
 
     // region DSL
@@ -63,10 +76,10 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationEncodeArrayMatcher.createAnnotationEncodeArrayMatcher(
             fbb,
-            matchers?.map { it.type!!.value }?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it.toUByteArray()) } ?: 0,
-            matchers?.map { it.value!!.build(fbb) }?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it.toIntArray()) } ?: 0,
+            encodeValuesMatcher?.map { it.type!!.value }?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it.toUByteArray()) } ?: 0,
+            encodeValuesMatcher?.map { it.value!!.build(fbb) }?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it.toIntArray()) } ?: 0,
             matchType.value,
-            valueCount?.build(fbb) ?: 0
+            rangeMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

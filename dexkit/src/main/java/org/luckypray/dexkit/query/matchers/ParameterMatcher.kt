@@ -8,7 +8,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
 
 class ParameterMatcher : BaseQuery() {
-    var annotations: AnnotationsMatcher? = null
+    var annotationsMatcher: AnnotationsMatcher? = null
         private set
     var typeMatcher: ClassMatcher? = null
         private set
@@ -23,7 +23,7 @@ class ParameterMatcher : BaseQuery() {
         }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
-        this.annotations = annotations
+        this.annotationsMatcher = annotations
     }
 
     fun type(type: ClassMatcher) = also {
@@ -61,7 +61,7 @@ class ParameterMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerParameterMatcher.createParameterMatcher(
             fbb,
-            annotations?.build(fbb) ?: 0,
+            annotationsMatcher?.build(fbb) ?: 0,
             typeMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

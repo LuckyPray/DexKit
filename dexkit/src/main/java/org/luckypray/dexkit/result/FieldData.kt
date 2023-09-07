@@ -67,11 +67,11 @@ class FieldData private constructor(
         return bridge.getFieldAnnotations(getEncodeId(dexId, id))
     }
 
-    fun getMethods(): List<MethodData> {
+    fun getReadMethods(): List<MethodData> {
         return bridge.fieldGetMethods(getEncodeId(dexId, id))
     }
 
-    fun putMethods(): List<MethodData> {
+    fun getWriteMethods(): List<MethodData> {
         return bridge.fieldPutMethods(getEncodeId(dexId, id))
     }
 

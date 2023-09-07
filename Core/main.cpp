@@ -387,7 +387,7 @@ int DexKitFindClassTest(dexkit::DexKit &dexkit) {
 }
 
 int DexKitFindClassFieldsTest(dexkit::DexKit &dexkit) {
-    printf("-----------DexKitFindClassTest Start-----------\n");
+    printf("-----------DexKitFindClassFieldsTest Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
     auto find = CreateFindClass(
             fbb, 0, 0, false, 0, true,

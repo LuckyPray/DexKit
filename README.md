@@ -179,12 +179,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     .usingStrings("onCreate"),
                                             MethodMatcher.create()
                                                     .parameterTypes("android.view.View")
-                                                    .usingNumbers(
-                                                            List.of(
-                                                                    createInt(114514),
-                                                                    createFloat(0.987f)
-                                                            )
-                                                    ),
+                                                    .usingNumbers(114514, 0.987f),
                                             MethodMatcher.create()
                                                     .modifiers(Modifier.PUBLIC)
                                                     .parameterTypes("boolean")
@@ -277,7 +272,7 @@ class MainHook : IXposedHookLoadPackage {
                             parameterTypes = listOf("boolean")
                         }
                         // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
-                        range = 1..10
+                        count(1..10)
                     }
                     // AnnotationsMatcher for matching interfaces within the class
                     annotations {

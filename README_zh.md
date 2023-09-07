@@ -174,12 +174,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     .usingStrings("onCreate"),
                                             MethodMatcher.create()
                                                     .parameterTypes("android.view.View")
-                                                    .usingNumbers(
-                                                            List.of(
-                                                                    createInt(114514),
-                                                                    createFloat(0.987f)
-                                                            )
-                                                    ),
+                                                    .usingNumbers(114514, 0.987f),
                                             MethodMatcher.create()
                                                     .modifiers(Modifier.PUBLIC)
                                                     .parameterTypes("boolean")
@@ -271,7 +266,7 @@ class MainHook : IXposedHookLoadPackage {
                             parameterTypes = listOf("boolean")
                         }
                         // 指定类中方法的数量，最少不少于1个，最多不超过10个
-                        range = 1..10
+                        count(1..10)
                     }
                     // AnnotationsMatcher 针对类中包含注解的匹配器
                     annotations {

@@ -16,8 +16,7 @@ cmake {
             // if you want disable jni log enable it
             // cmakeArgs.add("-DDISABLE_DEXKIT_LOG=ON")
             def configFlags = [
-                    "-Og",
-                    "-flto=full",
+                    "-O3",
                     "-DNDEBUG",
             ].join(" ")
             cmakeArgs.add("-DCMAKE_BUILD_TYPE=Release")

@@ -56,7 +56,7 @@ table AnnotationElementsMatcher {
 }
 
 table AnnotationMatcher {
-    type_name: StringMatcher;
+    type: ClassMatcher;
     target_element_types: TargetElementTypesMatcher;
     policy: RetentionPolicyType;
     annotations: AnnotationsMatcher;

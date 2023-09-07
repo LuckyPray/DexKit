@@ -10,54 +10,51 @@ import org.luckypray.dexkit.query.enums.RetentionPolicyType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.enums.TargetElementType
 import org.luckypray.dexkit.query.matchers.base.IntRange
-import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.matchers.base.TargetElementTypesMatcher
 
 class AnnotationMatcher : BaseQuery() {
-    var typeNameMatcher: StringMatcher? = null
+    var typeMatcher: ClassMatcher? = null
         private set
-    var targetElementTypes: TargetElementTypesMatcher? = null
+    var targetElementTypesMatcher: TargetElementTypesMatcher? = null
         private set
     @set:JvmSynthetic
     var policy: RetentionPolicyType? = null
-    var annotations: AnnotationsMatcher? = null
+    var annotationsMatcher: AnnotationsMatcher? = null
         private set
-    var elements: AnnotationElementsMatcher? = null
+    var elementsMatcher: AnnotationElementsMatcher? = null
         private set
-    // TODO: methods / fields
 
-    var typeName: String
+    var type: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            typeNameMatcher = typeNameMatcher ?: StringMatcher(value)
-            typeNameMatcher!!.value = value
+            type(value)
         }
 
-    fun typeName(typeName: StringMatcher) = also {
-        this.typeNameMatcher = typeName
+    fun type(typeMatcher: ClassMatcher) = also {
+        this.typeMatcher = typeMatcher
     }
 
     @JvmOverloads
-    fun typeName(
+    fun type(
         typeName: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.typeNameMatcher = StringMatcher(typeName, matchType, ignoreCase)
+        typeMatcher = ClassMatcher().className(typeName, matchType, ignoreCase)
     }
 
     fun targetElementTypes(targetElementTypes: TargetElementTypesMatcher) = also {
-        this.targetElementTypes = targetElementTypes
+        this.targetElementTypesMatcher = targetElementTypes
     }
 
     fun targetElementTypes(
         targetElementTypes: List<TargetElementType>,
         matchType: MatchType = MatchType.Contains
     ) = also {
-        this.targetElementTypes = TargetElementTypesMatcher().apply {
+        this.targetElementTypesMatcher = TargetElementTypesMatcher().apply {
             types(targetElementTypes)
             matchType(matchType)
         }
@@ -68,69 +65,79 @@ class AnnotationMatcher : BaseQuery() {
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
-        this.annotations = annotations
+        this.annotationsMatcher = annotations
     }
 
     fun addAnnotation(annotation: AnnotationMatcher) = also {
-        annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).add(annotation)
+        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        (annotationsMatcher as AnnotationsMatcher).add(annotation)
     }
 
     fun annotationMatchType(matchType: MatchType) = also {
-        annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).matchType(matchType)
-    }
-
-    fun annotationCountRange(countRange: IntRange) = also {
-        annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).range(countRange)
-    }
-
-    fun annotationCountRange(range: kotlin.ranges.IntRange) = also {
-        annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).range(range)
+        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        (annotationsMatcher as AnnotationsMatcher).matchType(matchType)
     }
 
     fun annotationCount(count: Int) = also {
-        annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).count(count)
+        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        (annotationsMatcher as AnnotationsMatcher).count(count)
     }
 
-    fun annotationCountRange(min: Int, max: Int) = also {
-        annotations = annotations ?: AnnotationsMatcher()
-        (annotations as AnnotationsMatcher).range(min, max)
+    fun annotationCount(range: IntRange) = also {
+        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        (annotationsMatcher as AnnotationsMatcher).count(range)
+    }
+
+    fun annotationCount(range: kotlin.ranges.IntRange) = also {
+        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        (annotationsMatcher as AnnotationsMatcher).count(range)
+    }
+
+    fun annotationCount(min: Int, max: Int) = also {
+        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        (annotationsMatcher as AnnotationsMatcher).count(min, max)
     }
 
     fun elements(elements: AnnotationElementsMatcher) = also {
-        this.elements = elements
+        this.elementsMatcher = elements
     }
 
     fun addElement(element: AnnotationElementMatcher) = also {
-        elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).add(element)
+        elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
+        (elementsMatcher as AnnotationElementsMatcher).add(element)
     }
 
     fun elementMatchType(matchType: MatchType) = also {
-        elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).matchType(matchType)
-    }
-
-    fun elementCountRange(countRange: IntRange) = also {
-        elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).range(countRange)
-    }
-
-    fun elementCountRange(range: kotlin.ranges.IntRange) = also {
-        elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).range(range)
+        elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
+        (elementsMatcher as AnnotationElementsMatcher).matchType(matchType)
     }
 
     fun elementCount(count: Int) = also {
-        elements = elements ?: AnnotationElementsMatcher()
-        (elements as AnnotationElementsMatcher).count(count)
+        elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
+        (elementsMatcher as AnnotationElementsMatcher).count(count)
+    }
+
+    fun elementCount(range: IntRange) = also {
+        elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
+        (elementsMatcher as AnnotationElementsMatcher).count(range)
+    }
+
+    fun elementCount(range: kotlin.ranges.IntRange) = also {
+        elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
+        (elementsMatcher as AnnotationElementsMatcher).count(range)
+    }
+
+    fun elementCount(min: Int, max: Int) = also {
+        elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
+        (elementsMatcher as AnnotationElementsMatcher).count(min, max)
     }
 
     // region DSL
+
+    @kotlin.internal.InlineOnly
+    inline fun type(init: ClassMatcher.() -> Unit) = also {
+        type(ClassMatcher().apply(init))
+    }
 
     @kotlin.internal.InlineOnly
     inline fun targetElementTypes(init: TargetElementTypesMatcher.() -> Unit) = also {
@@ -157,11 +164,11 @@ class AnnotationMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationMatcher.createAnnotationMatcher(
             fbb,
-            typeNameMatcher?.build(fbb) ?: 0,
-            targetElementTypes?.build(fbb) ?: 0,
+            typeMatcher?.build(fbb) ?: 0,
+            targetElementTypesMatcher?.build(fbb) ?: 0,
             policy?.value ?: 0,
-            annotations?.build(fbb) ?: 0,
-            elements?.build(fbb) ?: 0
+            annotationsMatcher?.build(fbb) ?: 0,
+            elementsMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

@@ -82,7 +82,7 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<NumberEncodeValueMatcher>): super(elements)
 
-    fun add(value: Any) = also {
+    fun add(value: Number) = also {
         when (value) {
             is Byte -> addByte(value)
             is Short -> addShort(value)
@@ -90,7 +90,6 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
             is Long -> addLong(value)
             is Float -> addFloat(value)
             is Double -> addDouble(value)
-            else -> throw IllegalArgumentException("value must be a number")
         }
     }
 

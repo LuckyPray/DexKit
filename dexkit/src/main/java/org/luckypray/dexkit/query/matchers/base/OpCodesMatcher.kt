@@ -13,8 +13,25 @@ class OpCodesMatcher : BaseQuery {
     var opCodes: List<Int>? = null
     @set:JvmSynthetic
     var matchType: OpCodeMatchType = OpCodeMatchType.Contains
-    @set:JvmSynthetic
-    var sizeRange: IntRange? = null
+    var rangeMatcher: IntRange? = null
+        private set
+
+    var size: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            size(value)
+        }
+    var range: kotlin.ranges.IntRange
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            range(value)
+        }
 
     constructor()
 
@@ -26,7 +43,7 @@ class OpCodesMatcher : BaseQuery {
     ) {
         this.opCodes = opCodes
         this.matchType = matchType
-        this.sizeRange = opCodeSize
+        this.rangeMatcher = opCodeSize
     }
 
     @JvmOverloads
@@ -37,7 +54,7 @@ class OpCodesMatcher : BaseQuery {
     ) {
         this.opCodes = opCodes.toList()
         this.matchType = matchType
-        this.sizeRange = opCodeSize
+        this.rangeMatcher = opCodeSize
     }
 
     fun opCodes(opCodes: List<Int>) = also { this.opCodes = opCodes }
@@ -55,19 +72,19 @@ class OpCodesMatcher : BaseQuery {
     }
 
     fun range(range: IntRange?) = also {
-        this.sizeRange = range
+        this.rangeMatcher = range
     }
 
     fun range(range: kotlin.ranges.IntRange) = also {
-        this.sizeRange = IntRange(range)
-    }
-
-    fun size(size: Int) = also {
-        this.sizeRange = IntRange(size)
+        this.rangeMatcher = IntRange(range)
     }
 
     fun range(min: Int, max: Int) = also {
-        this.sizeRange = IntRange(min, max)
+        this.rangeMatcher = IntRange(min, max)
+    }
+
+    fun size(size: Int) = also {
+        this.rangeMatcher = IntRange(size)
     }
 
     companion object {
@@ -123,7 +140,7 @@ class OpCodesMatcher : BaseQuery {
             fbb,
             opCodes?.map { it.toShort() }?.let { InnerOpCodesMatcher.createOpCodesVector(fbb, it.toShortArray()) } ?: 0,
             matchType.value,
-            sizeRange?.build(fbb) ?: 0
+            rangeMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

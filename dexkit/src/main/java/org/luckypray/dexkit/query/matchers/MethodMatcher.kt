@@ -16,7 +16,6 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
-import org.luckypray.dexkit.util.OpCodeUtil
 
 class MethodMatcher : BaseQuery() {
     var nameMatcher: StringMatcher? = null
@@ -27,22 +26,21 @@ class MethodMatcher : BaseQuery() {
         private set
     var returnTypeMatcher: ClassMatcher? = null
         private set
-    var parameters: ParametersMatcher? = null
+    var paramsMatcher: ParametersMatcher? = null
         private set
-    var annotations: AnnotationsMatcher? = null
+    var annotationsMatcher: AnnotationsMatcher? = null
         private set
     var opCodesMatcher: OpCodesMatcher? = null
         private set
     var usingStringsMatcher: List<StringMatcher>? = null
         private set
-    var usingFields: List<UsingFieldMatcher>? = null
+    var usingFieldsMatcher: List<UsingFieldMatcher>? = null
         private set
-    // TODO use Object?
-    var usingNumbers: List<NumberEncodeValueMatcher>? = null
+    var usingNumbersMatcher: List<NumberEncodeValueMatcher>? = null
         private set
-    var invokeMethods: MethodsMatcher? = null
+    var invokeMethodsMatcher: MethodsMatcher? = null
         private set
-    var callMethods: MethodsMatcher? = null
+    var callMethodsMatcher: MethodsMatcher? = null
         private set
 
     var name: String
@@ -72,18 +70,26 @@ class MethodMatcher : BaseQuery() {
     var returnType: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError("Use returnType.className")
+        get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
             returnType(value)
         }
-    var parameterTypes: List<String?>
+    var paramTypes: List<String?>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError("Use parameters.parameterTypes")
+        get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            parameterTypes(value)
+            paramTypes(value)
+        }
+    var paramCount: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            paramCount(value)
         }
     var opCodes: List<Int>
         @JvmSynthetic
@@ -98,6 +104,13 @@ class MethodMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         set(value) {
             opNames(value)
+        }
+    var usingNumbers: List<Number>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        set(value) {
+            usingNumbers(value)
         }
     var usingStrings: List<String>
         @JvmSynthetic
@@ -155,12 +168,12 @@ class MethodMatcher : BaseQuery() {
         this.returnTypeMatcher = ClassMatcher().className(returnTypeName, matchType, ignoreCase)
     }
 
-    fun parameters(parameters: ParametersMatcher) = also {
-        this.parameters = parameters
+    fun params(parameters: ParametersMatcher) = also {
+        this.paramsMatcher = parameters
     }
 
-    fun parameterTypes(parameterType: List<String?>) = also {
-        this.parameters = ParametersMatcher().apply {
+    fun paramTypes(parameterType: List<String?>) = also {
+        this.paramsMatcher = ParametersMatcher().apply {
             parameterType.forEach {
                 val paramMatcher = it?.let { ParameterMatcher().type(it) }
                 add(paramMatcher)
@@ -168,8 +181,8 @@ class MethodMatcher : BaseQuery() {
         }
     }
 
-    fun parameterTypes(vararg parameterTypes: String?) = also {
-        this.parameters = ParametersMatcher().apply {
+    fun paramTypes(vararg parameterTypes: String?) = also {
+        this.paramsMatcher = ParametersMatcher().apply {
             parameters(listOf())
             parameterTypes.forEach {
                 val paramMatcher = it?.let { ParameterMatcher().type(it) }
@@ -178,58 +191,58 @@ class MethodMatcher : BaseQuery() {
         }
     }
 
-    fun addParameterType(parameterType: String?) = also {
-        parameters = parameters ?: ParametersMatcher()
-        parameters!!.add(parameterType?.let { ParameterMatcher().type(parameterType) })
+    fun addParamType(parameterType: String?) = also {
+        paramsMatcher = paramsMatcher ?: ParametersMatcher()
+        paramsMatcher!!.add(parameterType?.let { ParameterMatcher().type(parameterType) })
     }
 
-    fun parameterCount(count: Int) = also {
-        this.parameters ?: let { this.parameters = ParametersMatcher() }
-        this.parameters!!.apply { count(count) }
+    fun paramCount(count: Int) = also {
+        this.paramsMatcher ?: let { this.paramsMatcher = ParametersMatcher() }
+        this.paramsMatcher!!.count(count)
     }
 
-    fun parameterCount(countRange: IntRange) = also {
-        this.parameters ?: let { this.parameters = ParametersMatcher() }
-        this.parameters!!.apply { range(countRange) }
+    fun paramCount(range: IntRange) = also {
+        this.paramsMatcher ?: let { this.paramsMatcher = ParametersMatcher() }
+        this.paramsMatcher!!.count(range)
     }
 
-    fun parameterCount(range: kotlin.ranges.IntRange) = also {
-        this.parameters ?: let { this.parameters = ParametersMatcher() }
-        this.parameters!!.apply { range(range) }
+    fun paramCount(range: kotlin.ranges.IntRange) = also {
+        this.paramsMatcher ?: let { this.paramsMatcher = ParametersMatcher() }
+        this.paramsMatcher!!.count(range)
     }
 
-    fun parameterCount(min: Int, max: Int) = also {
-        this.parameters ?: let { this.parameters = ParametersMatcher() }
-        this.parameters!!.apply { range(min, max) }
+    fun paramCount(min: Int, max: Int) = also {
+        this.paramsMatcher ?: let { this.paramsMatcher = ParametersMatcher() }
+        this.paramsMatcher!!.count(min, max)
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
-        this.annotations = annotations
+        this.annotationsMatcher = annotations
     }
 
     fun addAnnotation(annotationMatcher: AnnotationMatcher) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.add(annotationMatcher)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.add(annotationMatcher)
     }
 
     fun annotationCount(count: Int) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.count(count)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(count)
     }
 
     fun annotationCount(range: IntRange) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(range)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(range)
     }
 
     fun annotationCount(range: kotlin.ranges.IntRange) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(range)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(range)
     }
 
     fun annotationCount(min: Int, max: Int) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(min, max)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(min, max)
     }
 
     fun opCodes(opCodes: OpCodesMatcher) = also {
@@ -267,29 +280,45 @@ class MethodMatcher : BaseQuery() {
     }
 
     fun usingFields(usingFields: List<UsingFieldMatcher>) = also {
-        this.usingFields = usingFields
+        this.usingFieldsMatcher = usingFields
     }
 
-    fun usingNumbers(usingNumbers: List<NumberEncodeValueMatcher>) = also {
-        this.usingNumbers = usingNumbers
+    fun usingNumbers(usingNumbers: NumberEncodeValueMatcherList) = also {
+        this.usingNumbersMatcher = usingNumbers
+    }
+
+    fun usingNumbers(usingNumbers: List<Number>) = also {
+        this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }
+    }
+
+    fun usingNumbers(vararg usingNumbers: Number) = also {
+        this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }
+    }
+
+    fun addUsingNumber(usingNumber: Number) = also {
+        usingNumbersMatcher = usingNumbersMatcher ?: NumberEncodeValueMatcherList()
+        if (usingNumbersMatcher !is NumberEncodeValueMatcherList) {
+            usingNumbersMatcher = NumberEncodeValueMatcherList(usingNumbersMatcher!!)
+        }
+        (usingNumbersMatcher as NumberEncodeValueMatcherList).add(NumberEncodeValueMatcher().value(usingNumber))
     }
 
     fun invokeMethods(invokeMethods: MethodsMatcher) = also {
-        this.invokeMethods = invokeMethods
+        this.invokeMethodsMatcher = invokeMethods
     }
 
     fun addInvoke(invokeMethod: MethodMatcher) = also {
-        invokeMethods = invokeMethods ?: MethodsMatcher()
-        invokeMethods!!.add(invokeMethod)
+        invokeMethodsMatcher = invokeMethodsMatcher ?: MethodsMatcher()
+        invokeMethodsMatcher!!.add(invokeMethod)
     }
 
     fun callMethods(callMethods: MethodsMatcher) = also {
-        this.callMethods = callMethods
+        this.callMethodsMatcher = callMethods
     }
 
     fun addCall(callMethod: MethodMatcher) = also {
-        callMethods = callMethods ?: MethodsMatcher()
-        callMethods!!.add(callMethod)
+        callMethodsMatcher = callMethodsMatcher ?: MethodsMatcher()
+        callMethodsMatcher!!.add(callMethod)
     }
 
     // region DSL
@@ -306,8 +335,8 @@ class MethodMatcher : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun parameters(init: ParametersMatcher.() -> Unit) = also {
-        parameters(ParametersMatcher().apply(init))
+    inline fun params(init: ParametersMatcher.() -> Unit) = also {
+        params(ParametersMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly
@@ -370,15 +399,15 @@ class MethodMatcher : BaseQuery() {
             modifiersMatcher?.build(fbb) ?: 0,
             classMatcher?.build(fbb) ?: 0,
             returnTypeMatcher?.build(fbb) ?: 0,
-            parameters?.build(fbb) ?: 0,
-            annotations?.build(fbb) ?: 0,
+            paramsMatcher?.build(fbb) ?: 0,
+            annotationsMatcher?.build(fbb) ?: 0,
             opCodesMatcher?.build(fbb) ?: 0,
             usingStringsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
-            usingFields?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
-            usingNumbers?.map { it.type!!.value }?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it.toUByteArray()) } ?: 0,
-            usingNumbers?.map { it.value!!.build(fbb) }?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it.toIntArray()) } ?: 0,
-            invokeMethods?.build(fbb) ?: 0,
-            callMethods?.build(fbb) ?: 0
+            usingFieldsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            usingNumbersMatcher?.map { it.type!!.value }?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it.toUByteArray()) } ?: 0,
+            usingNumbersMatcher?.map { it.value!!.build(fbb) }?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it.toIntArray()) } ?: 0,
+            invokeMethodsMatcher?.build(fbb) ?: 0,
+            callMethodsMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

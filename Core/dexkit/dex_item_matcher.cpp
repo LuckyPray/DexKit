@@ -154,7 +154,7 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (matcher == nullptr) {
         return true;
     }
-    if (!IsTypeNameMatched(annotation->type->orig_index, matcher->type_name())) {
+    if (!IsClassMatched(annotation->type->orig_index, matcher->type())) {
         return false;
     }
     auto type_annotations = this->class_annotations[annotation->type->orig_index];

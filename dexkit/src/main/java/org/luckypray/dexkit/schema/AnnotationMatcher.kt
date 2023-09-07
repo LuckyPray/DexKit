@@ -28,8 +28,8 @@ internal class `-AnnotationMatcher` : Table() {
         __init(_i, _bb)
         return this
     }
-    val typeName : `-StringMatcher`? get() = typeName(`-StringMatcher`())
-    fun typeName(obj: `-StringMatcher`) : `-StringMatcher`? {
+    val type : `-ClassMatcher`? get() = type(`-ClassMatcher`())
+    fun type(obj: `-ClassMatcher`) : `-ClassMatcher`? {
         val o = __offset(4)
         return if (o != 0) {
             obj.__assign(__indirect(o + bb_pos), bb)
@@ -85,17 +85,17 @@ internal class `-AnnotationMatcher` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMatcher(builder: FlatBufferBuilder, typeNameOffset: Int, targetElementTypesOffset: Int, policy: Byte, annotationsOffset: Int, elementsOffset: Int) : Int {
+        fun createAnnotationMatcher(builder: FlatBufferBuilder, typeOffset: Int, targetElementTypesOffset: Int, policy: Byte, annotationsOffset: Int, elementsOffset: Int) : Int {
             builder.startTable(5)
             addElements(builder, elementsOffset)
             addAnnotations(builder, annotationsOffset)
             addTargetElementTypes(builder, targetElementTypesOffset)
-            addTypeName(builder, typeNameOffset)
+            addType(builder, typeOffset)
             addPolicy(builder, policy)
             return endAnnotationMatcher(builder)
         }
         fun startAnnotationMatcher(builder: FlatBufferBuilder) = builder.startTable(5)
-        fun addTypeName(builder: FlatBufferBuilder, typeName: Int) = builder.addOffset(0, typeName, 0)
+        fun addType(builder: FlatBufferBuilder, type: Int) = builder.addOffset(0, type, 0)
         fun addTargetElementTypes(builder: FlatBufferBuilder, targetElementTypes: Int) = builder.addOffset(1, targetElementTypes, 0)
         fun addPolicy(builder: FlatBufferBuilder, policy: Byte) = builder.addByte(2, policy, 0)
         fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(3, annotations, 0)

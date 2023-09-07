@@ -20,11 +20,11 @@ class FieldMatcher : BaseQuery() {
         private set
     var typeMatcher: ClassMatcher? = null
         private set
-    var annotations: AnnotationsMatcher? = null
+    var annotationsMatcher: AnnotationsMatcher? = null
         private set
-    var getMethods: MethodsMatcher? = null
+    var getMethodsMatcher: MethodsMatcher? = null
         private set
-    var putMethods: MethodsMatcher? = null
+    var putMethodsMatcher: MethodsMatcher? = null
         private set
 
     var name: String
@@ -111,50 +111,50 @@ class FieldMatcher : BaseQuery() {
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
-        this.annotations = annotations
+        this.annotationsMatcher = annotations
     }
 
     fun addAnnotation(annotation: AnnotationMatcher) = also {
-        this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.add(annotation)
+        this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.add(annotation)
     }
 
     fun annotationCount(count: Int) = also {
-        this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.count(count)
+        this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(count)
     }
 
     fun annotationCount(range: IntRange) = also {
-        this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(range)
+        this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(range)
     }
 
     fun annotationCount(range: kotlin.ranges.IntRange) = also {
-        this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(range)
+        this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(range)
     }
 
     fun annotationCount(min: Int, max: Int) = also {
-        this.annotations = annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(min, max)
+        this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(min, max)
     }
 
     fun getMethods(getMethods: MethodsMatcher) = also {
-        this.getMethods = getMethods
+        this.getMethodsMatcher = getMethods
     }
 
     fun addGetMethod(getMethod: MethodMatcher) = also {
-        this.getMethods = getMethods ?: MethodsMatcher()
-        this.getMethods!!.add(getMethod)
+        this.getMethodsMatcher = getMethodsMatcher ?: MethodsMatcher()
+        this.getMethodsMatcher!!.add(getMethod)
     }
 
     fun putMethods(putMethods: MethodsMatcher) = also {
-        this.putMethods = putMethods
+        this.putMethodsMatcher = putMethods
     }
 
     fun addPutMethod(putMethod: MethodMatcher) = also {
-        this.putMethods = putMethods ?: MethodsMatcher()
-        this.putMethods!!.add(putMethod)
+        this.putMethodsMatcher = putMethodsMatcher ?: MethodsMatcher()
+        this.putMethodsMatcher!!.add(putMethod)
     }
 
     // region DSL
@@ -213,9 +213,9 @@ class FieldMatcher : BaseQuery() {
             modifiersMatcher?.build(fbb) ?: 0,
             classMatcher?.build(fbb) ?: 0,
             typeMatcher?.build(fbb) ?: 0,
-            annotations?.build(fbb) ?: 0,
-            getMethods?.build(fbb) ?: 0,
-            putMethods?.build(fbb) ?: 0
+            annotationsMatcher?.build(fbb) ?: 0,
+            getMethodsMatcher?.build(fbb) ?: 0,
+            putMethodsMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

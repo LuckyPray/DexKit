@@ -2,6 +2,7 @@
 
 namespace dexkit {
 
+// TODO InvokeMethods、CallMethods、GetMethods、PutMethods 嵌套处理层数
 std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::ClassMatcher *matcher) {
     if (!matcher) return {};
@@ -58,8 +59,9 @@ std::vector<std::string_view> // NOLINTNEXTLINE
 DexKit::ExtractUseTypeNames(const schema::AnnotationMatcher *matcher) {
     if (!matcher) return {};
     std::vector<std::string_view> result;
-    if (matcher->type_name() && matcher->type_name()->match_type() == schema::StringMatchType::Equal && !matcher->type_name()->ignore_case()) {
-        result.emplace_back(matcher->type_name()->value()->string_view());
+    if (matcher->type()) {
+        auto res = ExtractUseTypeNames(matcher->type());
+        result.insert(result.end(), res.begin(), res.end());
     }
     if (matcher->elements()) {
         auto res = ExtractUseTypeNames(matcher->elements());

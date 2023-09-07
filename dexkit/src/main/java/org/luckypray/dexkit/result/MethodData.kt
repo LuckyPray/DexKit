@@ -115,7 +115,7 @@ class MethodData private constructor(
         return getOpCodes().map { OpCodeUtil.getOpFormat(it) }
     }
 
-    fun getCallMethods(): List<MethodData> {
+    fun getMethodCallers(): List<MethodData> {
         return bridge.getCallMethods(getEncodeId(dexId, id))
     }
 

@@ -10,11 +10,11 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class InterfacesMatcher : BaseQuery() {
-    var interfaces: List<ClassMatcher>? = null
+    var interfacesMatcher: List<ClassMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
-    var countRange: IntRange? = null
+    var rangeMatcher: IntRange? = null
         private set
 
     var count: Int
@@ -23,19 +23,11 @@ class InterfacesMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            countRange = IntRange(value)
-        }
-    var range: kotlin.ranges.IntRange
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            countRange = IntRange(value)
+            count(value)
         }
 
     fun interfaces(interfaces: List<ClassMatcher>) = also {
-        this.interfaces = interfaces
+        this.interfacesMatcher = interfaces
     }
 
     fun matchType(matchType: MatchType) = also {
@@ -43,27 +35,27 @@ class InterfacesMatcher : BaseQuery() {
     }
 
     fun count(count: Int) = also {
-        this.countRange = IntRange(count)
+        this.rangeMatcher = IntRange(count)
     }
 
-    fun range(range: IntRange) = also {
-        this.countRange = range
+    fun count(range: IntRange) = also {
+        this.rangeMatcher = range
     }
 
-    fun range(range: kotlin.ranges.IntRange) = also {
-        countRange = IntRange(range)
+    fun count(range: kotlin.ranges.IntRange) = also {
+        rangeMatcher = IntRange(range)
     }
 
-    fun range(min: Int, max: Int) = also {
-        this.countRange = IntRange(min, max)
+    fun count(min: Int, max: Int) = also {
+        this.rangeMatcher = IntRange(min, max)
     }
 
     fun add(interfaceMatcher: ClassMatcher) = also {
-        interfaces = interfaces ?: mutableListOf()
-        if (interfaces !is MutableList) {
-            interfaces = interfaces!!.toMutableList()
+        interfacesMatcher = interfacesMatcher ?: mutableListOf()
+        if (interfacesMatcher !is MutableList) {
+            interfacesMatcher = interfacesMatcher!!.toMutableList()
         }
-        (interfaces as MutableList<ClassMatcher>).add(interfaceMatcher)
+        (interfacesMatcher as MutableList<ClassMatcher>).add(interfaceMatcher)
     }
 
     @JvmOverloads
@@ -92,10 +84,10 @@ class InterfacesMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerInterfacesMatcher.createInterfacesMatcher(
             fbb,
-            interfaces?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }
+            interfacesMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }
                 ?: 0,
             matchType.value,
-            countRange?.build(fbb) ?: 0
+            rangeMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

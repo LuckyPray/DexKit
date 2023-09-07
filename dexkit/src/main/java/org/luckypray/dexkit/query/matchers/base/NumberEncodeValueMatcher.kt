@@ -20,12 +20,15 @@ class NumberEncodeValueMatcher {
         private set
 
     constructor()
-    constructor(value: BaseQuery, type: NumberEncodeValueType) {
+    constructor(value: Number) {
+        value(value)
+    }
+    private constructor(value: BaseQuery, type: NumberEncodeValueType) {
         this.value = value
         this.type = type
     }
 
-    fun value(value: Any) = also {
+    fun value(value: Number) = also {
         when (value) {
             is Byte -> byteValue(value)
             is Short -> shortValue(value)
@@ -33,7 +36,6 @@ class NumberEncodeValueMatcher {
             is Long -> longValue(value)
             is Float -> floatValue(value)
             is Double -> doubleValue(value)
-            else -> throw IllegalArgumentException("value must be number type")
         }
     }
 
@@ -72,7 +74,7 @@ class NumberEncodeValueMatcher {
         fun create() = NumberEncodeValueMatcher()
 
         @JvmStatic
-        fun create(value: Any) = NumberEncodeValueMatcher().value(value)
+        fun create(value: Number) = NumberEncodeValueMatcher().value(value)
 
         @JvmStatic
         fun createByte(value: Byte) = NumberEncodeValueMatcher().byteValue(value)

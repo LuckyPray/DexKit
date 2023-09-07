@@ -22,13 +22,13 @@ class ClassMatcher : BaseQuery() {
         private set
     var superClassMatcher: ClassMatcher? = null
         private set
-    var interfaces: InterfacesMatcher? = null
+    var interfacesMatcher: InterfacesMatcher? = null
         private set
-    var annotations: AnnotationsMatcher? = null
+    var annotationsMatcher: AnnotationsMatcher? = null
         private set
-    var fields: FieldsMatcher? = null
+    var fieldsMatcher: FieldsMatcher? = null
         private set
-    var methods: MethodsMatcher? = null
+    var methodsMatcher: MethodsMatcher? = null
         private set
     var usingStringsMatcher: List<StringMatcher>? = null
         private set
@@ -120,12 +120,12 @@ class ClassMatcher : BaseQuery() {
     }
 
     fun interfaces(interfaces: InterfacesMatcher) = also {
-        this.interfaces = interfaces
+        this.interfacesMatcher = interfaces
     }
 
     fun addInterface(interfaceMatcher: ClassMatcher) = also {
-        this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.add(interfaceMatcher)
+        this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
+        this.interfacesMatcher!!.add(interfaceMatcher)
     }
 
     @JvmOverloads
@@ -134,115 +134,115 @@ class ClassMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.add(ClassMatcher().className(className, matchType, ignoreCase))
+        this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
+        this.interfacesMatcher!!.add(ClassMatcher().className(className, matchType, ignoreCase))
     }
 
     fun interfaceCount(count: Int) = also {
-        this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.count(count)
+        this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
+        this.interfacesMatcher!!.count(count)
     }
 
     fun interfaceCount(range: IntRange) = also {
-        this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.range(range)
+        this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
+        this.interfacesMatcher!!.count(range)
     }
 
     fun interfaceCount(range: kotlin.ranges.IntRange) = also {
-        this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.range(range)
+        this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
+        this.interfacesMatcher!!.count(range)
     }
 
     fun interfaceCount(min: Int, max: Int) = also {
-        this.interfaces = this.interfaces ?: InterfacesMatcher()
-        this.interfaces!!.range(min, max)
+        this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
+        this.interfacesMatcher!!.count(min, max)
     }
 
     fun annotations(annotations: AnnotationsMatcher) = also {
-        this.annotations = annotations
+        this.annotationsMatcher = annotations
     }
 
     fun addAnnotation(annotationMatcher: AnnotationMatcher) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.add(annotationMatcher)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.add(annotationMatcher)
     }
 
     fun annotationCount(count: Int) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.count(count)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(count)
     }
 
     fun annotationCount(range: IntRange) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(range)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(range)
     }
 
     fun annotationCount(range: kotlin.ranges.IntRange) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(range)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(range)
     }
 
     fun annotationCount(min: Int, max: Int) = also {
-        this.annotations = this.annotations ?: AnnotationsMatcher()
-        this.annotations!!.range(min, max)
+        this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
+        this.annotationsMatcher!!.count(min, max)
     }
 
     fun fields(fields: FieldsMatcher) = also {
-        this.fields = fields
+        this.fieldsMatcher = fields
     }
 
     fun addField(fieldMatcher: FieldMatcher) = also {
-        this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.add(fieldMatcher)
+        this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
+        this.fieldsMatcher!!.add(fieldMatcher)
     }
 
     fun fieldCount(count: Int) = also {
-        this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.count(count)
+        this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
+        this.fieldsMatcher!!.count(count)
     }
 
     fun fieldCount(range: IntRange) = also {
-        this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.range(range)
+        this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
+        this.fieldsMatcher!!.count(range)
     }
 
     fun fieldCount(range: kotlin.ranges.IntRange) = also {
-        this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.range(range)
+        this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
+        this.fieldsMatcher!!.count(range)
     }
 
     fun fieldCount(min: Int, max: Int) = also {
-        this.fields = this.fields ?: FieldsMatcher()
-        this.fields!!.range(min, max)
+        this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
+        this.fieldsMatcher!!.count(min, max)
     }
 
     fun methods(methods: MethodsMatcher) = also {
-        this.methods = methods
+        this.methodsMatcher = methods
     }
 
     fun addMethod(methodMatcher: MethodMatcher) = also {
-        this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.add(methodMatcher)
+        this.methodsMatcher = this.methodsMatcher ?: MethodsMatcher()
+        this.methodsMatcher!!.add(methodMatcher)
     }
 
     fun methodCount(count: Int) = also {
-        this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.count(count)
+        this.methodsMatcher = this.methodsMatcher ?: MethodsMatcher()
+        this.methodsMatcher!!.count(count)
     }
 
     fun methodCount(range: IntRange) = also {
-        this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.range(range)
+        this.methodsMatcher = this.methodsMatcher ?: MethodsMatcher()
+        this.methodsMatcher!!.count(range)
     }
 
     fun methodCount(range: kotlin.ranges.IntRange) = also {
-        this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.range(range)
+        this.methodsMatcher = this.methodsMatcher ?: MethodsMatcher()
+        this.methodsMatcher!!.count(range)
     }
 
     fun methodCount(min: Int, max: Int) = also {
-        this.methods = this.methods ?: MethodsMatcher()
-        this.methods!!.range(min, max)
+        this.methodsMatcher = this.methodsMatcher ?: MethodsMatcher()
+        this.methodsMatcher!!.count(min, max)
     }
 
     fun usingStringsMatcher(usingStrings: List<StringMatcher>) = also {
@@ -343,10 +343,10 @@ class ClassMatcher : BaseQuery() {
             classNameMatcher?.build(fbb) ?: 0,
             modifiersMatcher?.build(fbb) ?: 0,
             superClassMatcher?.build(fbb) ?: 0,
-            interfaces?.build(fbb) ?: 0,
-            annotations?.build(fbb) ?: 0,
-            fields?.build(fbb) ?: 0,
-            methods?.build(fbb) ?: 0,
+            interfacesMatcher?.build(fbb) ?: 0,
+            annotationsMatcher?.build(fbb) ?: 0,
+            fieldsMatcher?.build(fbb) ?: 0,
+            methodsMatcher?.build(fbb) ?: 0,
             usingStringsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0
         )
         fbb.finish(root)

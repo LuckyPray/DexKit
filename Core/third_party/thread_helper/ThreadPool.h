@@ -44,7 +44,6 @@ public:
         std::unique_lock lock(this->queue_mutex);
         _skip_unexec_tasks = true;
     }
-    bool is_done() const { return stop; }
 
     ~ThreadPool();
 

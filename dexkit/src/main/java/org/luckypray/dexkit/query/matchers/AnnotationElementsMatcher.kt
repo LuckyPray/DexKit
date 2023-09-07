@@ -10,11 +10,11 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationElementsMatcher : BaseQuery() {
-    var elements: List<AnnotationElementMatcher>? = null
+    var elementsMatcher: List<AnnotationElementMatcher>? = null
         private set
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
-    var countRange: IntRange? = null
+    var rangeMatcher: IntRange? = null
         private set
 
     var count: Int
@@ -23,51 +23,43 @@ class AnnotationElementsMatcher : BaseQuery() {
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            countRange = IntRange(value)
-        }
-    var range: kotlin.ranges.IntRange
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            countRange = IntRange(value)
+            count(value)
         }
 
     fun elements(elements: List<AnnotationElementMatcher>) = also {
-        this.elements = elements
+        this.elementsMatcher = elements
     }
 
     fun elements(vararg elements: AnnotationElementMatcher) = also {
-        this.elements = elements.toList()
+        this.elementsMatcher = elements.toList()
     }
 
     fun matchType(matchType: MatchType) = also {
         this.matchType = matchType
     }
 
-    fun range(countRange: IntRange) = also {
-        this.countRange = countRange
-    }
-
-    fun range(range: kotlin.ranges.IntRange) = also {
-        countRange = IntRange(range)
-    }
-
     fun count(count: Int) = also {
-        this.countRange = IntRange(count)
+        this.rangeMatcher = IntRange(count)
     }
 
-    fun range(min: Int, max: Int) = also {
-        this.countRange = IntRange(min, max)
+    fun count(range: IntRange) = also {
+        this.rangeMatcher = range
+    }
+
+    fun count(range: kotlin.ranges.IntRange) = also {
+        rangeMatcher = IntRange(range)
+    }
+
+    fun count(min: Int, max: Int) = also {
+        this.rangeMatcher = IntRange(min, max)
     }
 
     fun add(element: AnnotationElementMatcher) = also {
-        elements = elements ?: mutableListOf()
-        if (elements !is MutableList) {
-            elements = elements!!.toMutableList()
+        elementsMatcher = elementsMatcher ?: mutableListOf()
+        if (elementsMatcher !is MutableList) {
+            elementsMatcher = elementsMatcher!!.toMutableList()
         }
-        (elements as MutableList<AnnotationElementMatcher>).add(element)
+        (elementsMatcher as MutableList<AnnotationElementMatcher>).add(element)
     }
 
     @JvmOverloads
@@ -95,9 +87,9 @@ class AnnotationElementsMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationElementsMatcher.createAnnotationElementsMatcher(
             fbb,
-            elements?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            elementsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
             matchType.value,
-            countRange?.build(fbb) ?: 0
+            rangeMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root
