@@ -499,6 +499,26 @@ FieldBean DexItem::GetFieldBean(uint32_t field_idx) {
     return bean;
 }
 
+std::optional<MethodBean> DexItem::GetMethodBean(uint32_t type_idx, std::string_view method_descriptor) {
+    auto &methods = this->class_method_ids[type_idx];
+    for (auto method_idx: methods) {
+        if (this->GetMethodDescriptor(method_idx) == method_descriptor) {
+            return this->GetMethodBean(method_idx);
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<FieldBean> DexItem::GetFieldBean(uint32_t type_idx, std::string_view method_descriptor) {
+    auto &fields = this->class_field_ids[type_idx];
+    for (auto field_idx: fields) {
+        if (this->GetFieldDescriptor(field_idx) == method_descriptor) {
+            return this->GetFieldBean(field_idx);
+        }
+    }
+    return std::nullopt;
+}
+
 // NOLINTNEXTLINE
 AnnotationBean DexItem::GetAnnotationBean(ir::Annotation *annotation) {
     AnnotationBean bean;

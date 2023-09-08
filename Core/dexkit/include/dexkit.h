@@ -39,6 +39,10 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
 
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetClassData(const std::string_view descriptor);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetMethodData(const std::string_view descriptor);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetFieldData(const std::string_view descriptor);
+
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetClassByIds(const std::vector<int64_t> &encode_ids);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetMethodByIds(const std::vector<int64_t> &encode_ids);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetFieldByIds(const std::vector<int64_t> &encode_ids);

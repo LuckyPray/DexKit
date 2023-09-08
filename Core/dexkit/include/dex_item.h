@@ -119,6 +119,9 @@ public:
     MethodBean GetMethodBean(uint32_t method_idx);
     FieldBean GetFieldBean(uint32_t field_idx);
 
+    std::optional<MethodBean> GetMethodBean(uint32_t type_idx, std::string_view method_descriptor);
+    std::optional<FieldBean> GetFieldBean(uint32_t type_idx, std::string_view method_descriptor);
+
     AnnotationBean GetAnnotationBean(ir::Annotation *annotation);
     AnnotationEncodeValueBean GetAnnotationEncodeValueBean(ir::EncodedValue *encoded_value);
     AnnotationElementBean GetAnnotationElementBean(ir::AnnotationElement *annotation_element);

@@ -224,75 +224,41 @@ class UnitTest {
     }
 
     @Test
-    fun test() {
-        bridge.findClass {
-            // Search within the specified package name range
-            searchPackages = listOf("org.luckypray.dexkit.demo")
-            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
-            // ClassMatcher for class matching
-            matcher {
-                className = "org.luckypray.dexkit.demo.PlayActivity"
-                // FieldsMatcher for matching properties within the class
-                fields {
-                    // Add a matcher for properties
-                    add {
-                        modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
-                        type = "java.lang.String"
-                        name = "TAG"
-                    }
-                    addForType("android.widget.TextView")
-                    addForType("android.os.Handler")
-                    // Specify the number of properties in the class
-                    count = 3
-                }
-                // MethodsMatcher for matching methods within the class
-                methods {
-                    // Add a matcher for methods
-                    add {
-                        modifiers = Modifier.PROTECTED
-                        name = "onCreate"
-                        returnType = "void"
-                        paramTypes = listOf("android.os.Bundle")
-                        usingStrings = listOf("onCreate")
-                    }
-                    add {
-                        paramTypes = listOf("android.view.View")
-                        usingNumbers {
-                            addByte(0)
-                            addInt(114514)
-                            addFloat(0.987f)
-//                            add(0)
-                        }
-                    }
-                    add {
-                        modifiers = Modifier.PUBLIC
-                        paramTypes = listOf("boolean")
-                    }
-                    // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                    count(1..10)
-                }
-                // AnnotationsMatcher for matching interfaces within the class
-                annotations {
-                    add {
-                        type = "org.luckypray.dexkit.demo.annotations.Router"
-                        elements {
-                            add {
-                                name = "path"
-                                matcher {
-                                    stringValue("/play")
-                                }
-                            }
-                        }
-                    }
-                }
-                // Strings used by all methods in the class
-                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
-            }
-        }.forEach {
-            // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            println(it.className)
-            // Get the corresponding class instance
-//            val clazz = it.getInstance(loadPackageParam.classLoader)
+    fun testGetClassData() {
+        val res = bridge.getClassData("Lorg/luckypray/dexkit/demo/MainActivity;")
+        assert(res != null)
+        assert(res!!.className == "org.luckypray.dexkit.demo.MainActivity")
+        res.getMethods().forEach {
+            println(it.dexDescriptor)
         }
+    }
+
+    @Test
+    fun testGetConstructorData() {
+        val res = bridge.getMethodData("Lorg/luckypray/dexkit/demo/MainActivity;-><init>()V")
+        assert(res != null)
+        assert(res!!.className == "org.luckypray.dexkit.demo.MainActivity")
+        assert(res.methodName == "<init>")
+        assert(res.methodSign == "()V")
+        assert(res.isConstructor)
+    }
+
+    @Test
+    fun testGetMethodData() {
+        val res = bridge.getMethodData("Lorg/luckypray/dexkit/demo/MainActivity;->onClick(Landroid/view/View;)V")
+        assert(res != null)
+        assert(res!!.className == "org.luckypray.dexkit.demo.MainActivity")
+        assert(res.methodName == "onClick")
+        assert(res.methodSign == "(Landroid/view/View;)V")
+        assert(res.isMethod)
+    }
+
+    @Test
+    fun testGetFieldData() {
+        val res = bridge.getFieldData("Lorg/luckypray/dexkit/demo/MainActivity;->TAG:Ljava/lang/String;")
+        assert(res != null)
+        assert(res!!.className == "org.luckypray.dexkit.demo.MainActivity")
+        assert(res.fieldName == "TAG")
+        assert(res.typeName == "java.lang.String")
     }
 }

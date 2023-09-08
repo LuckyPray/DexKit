@@ -15,7 +15,11 @@ import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
 import org.luckypray.dexkit.result.AnnotationData
+import org.luckypray.dexkit.util.DexSignUtil
 import java.io.Closeable
+import java.lang.reflect.Constructor
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.nio.ByteBuffer
 
 class DexKitBridge : Closeable {
@@ -114,6 +118,40 @@ class DexKitBridge : Closeable {
         val fbb = FlatBufferBuilder()
         fieldMatcher.build(fbb)
         return this.findField(fbb)
+    }
+
+    fun getClassData(clazz: Class<*>): ClassData? {
+        return getClassData(DexSignUtil.getDexDescriptor(clazz))
+    }
+
+    fun getClassData(dexDescriptor: String): ClassData? {
+        return nativeGetClassData(token, dexDescriptor)?.let {
+            ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
+        }
+    }
+
+    fun getMethodData(method: Method): MethodData? {
+        return getMethodData(DexSignUtil.getMethodSign(method))
+    }
+
+    fun getMethodData(constructor: Constructor<*>): MethodData? {
+        return getMethodData(DexSignUtil.getConstructorSign(constructor))
+    }
+
+    fun getMethodData(dexDescriptor: String): MethodData? {
+        return nativeGetMethodData(token, dexDescriptor)?.let {
+            MethodData.from(this, InnerMethodMeta.getRootAsMethodMeta(ByteBuffer.wrap(it)))
+        }
+    }
+
+    fun getFieldData(field: Field): FieldData? {
+        return getFieldData(DexSignUtil.getDexDescriptor(field))
+    }
+
+    fun getFieldData(dexDescriptor: String): FieldData? {
+        return nativeGetFieldData(token, dexDescriptor)?.let {
+            FieldData.from(this, InnerFieldMeta.getRootAsFieldMeta(ByteBuffer.wrap(it)))
+        }
     }
 
     // region DSL
@@ -318,7 +356,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    fun getCallMethods(encodeId: Long): List<MethodData> {
+    @kotlin.internal.InlineOnly
+    internal inline fun getCallMethods(encodeId: Long): List<MethodData> {
         val res = nativeGetCallMethods(token, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<MethodData>()
@@ -328,7 +367,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    fun getInvokeMethods(encodeId: Long): List<MethodData> {
+    @kotlin.internal.InlineOnly
+    internal inline fun getInvokeMethods(encodeId: Long): List<MethodData> {
         val res = nativeGetInvokeMethods(token, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<MethodData>()
@@ -338,7 +378,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    fun fieldGetMethods(encodeId: Long): List<MethodData> {
+    @kotlin.internal.InlineOnly
+    internal inline fun readFieldMethods(encodeId: Long): List<MethodData> {
         val res = nativeFieldGetMethods(token, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<MethodData>()
@@ -348,7 +389,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    fun fieldPutMethods(encodeId: Long): List<MethodData> {
+    @kotlin.internal.InlineOnly
+    internal inline fun writeFieldMethods(encodeId: Long): List<MethodData> {
         val res = nativeFieldPutMethods(token, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<MethodData>()
@@ -428,6 +470,15 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeFindField(nativePtr: Long, bytes: ByteArray): ByteArray
+
+        @JvmStatic
+        private external fun nativeGetClassData(nativePtr: Long, dexDescriptor: String): ByteArray?
+
+        @JvmStatic
+        private external fun nativeGetMethodData(nativePtr: Long, dexDescriptor: String): ByteArray?
+
+        @JvmStatic
+        private external fun nativeGetFieldData(nativePtr: Long, dexDescriptor: String): ByteArray?
 
         @JvmStatic
         private external fun nativeGetClassByIds(nativePtr: Long, ids: LongArray): ByteArray

@@ -109,7 +109,7 @@ void DexKit::BuildCrossRef() {
     if (cross_ref_build) {
         return;
     }
-    ThreadPool pool(dex_items.size());
+    ThreadPool pool(std::min((int) _thread_num * 2, (int) dex_items.size()));
     for (auto &dex_item: dex_items) {
         pool.enqueue([&dex_item]() {
             dex_item->PutCrossRef();
@@ -156,10 +156,23 @@ DexKit::FindClass(const schema::FindClass *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    // fast search declared class
+    DexItem *fast_search_dex = nullptr;
+    if (query->matcher()) {
+        auto class_name = query->matcher()->class_name();
+        if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
+            auto [dex, type_idx] = GetClassDeclaredPair(class_name->value()->string_view());
+            fast_search_dex = dex;
+        }
+    }
+
     bool find_fist_flag = false;
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<ClassBean>>> futures;
     for (auto &dex_item: dex_items) {
+        if (fast_search_dex && fast_search_dex != dex_item.get()) {
+            continue;
+        }
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
             auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE / 2, find_fist_flag);
@@ -213,10 +226,26 @@ DexKit::FindMethod(const schema::FindMethod *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    // fast search declared class
+    DexItem *fast_search_dex = nullptr;
+    if (query->matcher()) {
+        auto declaring_class = query->matcher()->declaring_class();
+        if (declaring_class) {
+            auto class_name = declaring_class->class_name();
+            if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
+                auto [dex, type_idx] = GetClassDeclaredPair(class_name->value()->string_view());
+                fast_search_dex = dex;
+            }
+        }
+    }
+
     bool find_fist_flag = false;
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<MethodBean>>> futures;
     for (auto &dex_item: dex_items) {
+        if (fast_search_dex && fast_search_dex != dex_item.get()) {
+            continue;
+        }
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &method_set = dex_method_map[dex_item->GetDexId()];
         if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
@@ -276,10 +305,26 @@ DexKit::FindField(const schema::FindField *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    // fast search declared class
+    DexItem *fast_search_dex = nullptr;
+    if (query->matcher()) {
+        auto declaring_class = query->matcher()->declaring_class();
+        if (declaring_class) {
+            auto class_name = declaring_class->class_name();
+            if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
+                auto [dex, type_idx] = GetClassDeclaredPair(class_name->value()->string_view());
+                fast_search_dex = dex;
+            }
+        }
+    }
+
     bool find_fist_flag = false;
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<FieldBean>>> futures;
     for (auto &dex_item: dex_items) {
+        if (fast_search_dex && fast_search_dex != dex_item.get()) {
+            continue;
+        }
         auto &class_set = dex_class_map[dex_item->GetDexId()];
         auto &field_set = dex_field_map[dex_item->GetDexId()];
         if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
@@ -457,6 +502,53 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
     auto array_holder = schema::CreateBatchMethodMetaArrayHolder(*fbb, fbb->CreateVector(offsets));
     fbb->Finish(array_holder);
     return fbb;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetClassData(const std::string_view descriptor) {
+    auto [dex, type_id] = this->GetClassDeclaredPair(descriptor);
+    if (dex == nullptr) {
+        return nullptr;
+    }
+    auto bean = dex->GetClassBean(type_id);
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    auto res = bean.CreateClassMeta(*builder);
+    builder->Finish(res);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetMethodData(const std::string_view descriptor) {
+    auto class_descriptor = descriptor.substr(0, descriptor.find("->"));
+    auto [dex, type_id] = this->GetClassDeclaredPair(class_descriptor);
+    if (dex == nullptr) {
+        return nullptr;
+    }
+    auto bean = dex->GetMethodBean(type_id, descriptor);
+    if (!bean.has_value()) {
+        return nullptr;
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    auto res = bean->CreateMethodMeta(*builder);
+    builder->Finish(res);
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetFieldData(const std::string_view descriptor) {
+    auto class_descriptor = descriptor.substr(0, descriptor.find("->"));
+    auto [dex, type_id] = this->GetClassDeclaredPair(class_descriptor);
+    if (dex == nullptr) {
+        return nullptr;
+    }
+    auto bean = dex->GetFieldBean(type_id, descriptor);
+    if (!bean.has_value()) {
+        return nullptr;
+    }
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    auto res = bean->CreateFieldMeta(*builder);
+    builder->Finish(res);
+    return builder;
 }
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>

@@ -3,10 +3,12 @@
 package org.luckypray.dexkit.util
 
 import java.lang.reflect.Constructor
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 object DexSignUtil {
 
+    @JvmStatic
     private fun primitiveTypeName(typeSign: String): String {
         return when (typeSign) {
             "Z" -> "boolean"
@@ -22,6 +24,7 @@ object DexSignUtil {
         }
     }
 
+    @JvmStatic
     fun getSimpleName(sign: String): String {
         val arrDimensions = sign.filter { it == '[' }.length
         var type = sign.substring(arrDimensions)
@@ -93,6 +96,42 @@ object DexSignUtil {
             append("(")
             append(constructor.parameterTypes.joinToString("") { getTypeSign(it) })
             append(")V")
+        }
+    }
+
+    @JvmStatic
+    fun getDexDescriptor(clazz: Class<*>): String {
+        return "L${clazz.name.replace('.', '/')};"
+    }
+
+    @JvmStatic
+    fun getDexDescriptor(method: Method): String {
+        return buildString {
+            append(getTypeSign(method.declaringClass))
+            append("->")
+            append(method.name)
+            append(getMethodSign(method))
+        }
+    }
+
+    @JvmStatic
+    fun getDexDescriptor(constructor: Constructor<*>): String {
+        return buildString {
+            append(getTypeSign(constructor.declaringClass))
+            append("->")
+            append("<init>")
+            append(getConstructorSign(constructor))
+        }
+    }
+
+    @JvmStatic
+    fun getDexDescriptor(field: Field): String {
+        return buildString {
+            append(getTypeSign(field.declaringClass))
+            append("->")
+            append(field.name)
+            append(":")
+            append(getTypeSign(field.type))
         }
     }
 }

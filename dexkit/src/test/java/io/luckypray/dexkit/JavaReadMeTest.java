@@ -19,7 +19,7 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-public class JavaTest {
+public class JavaReadMeTest {
 
     private static DexKitBridge bridge;
 
