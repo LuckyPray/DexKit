@@ -146,12 +146,6 @@ private:
     int InitCache();
     inline std::mutex &GetTypeDefMutex(uint32_t type_idx);
 
-    phmap::flat_hash_map<uint32_t, std::vector<std::string_view>>
-    InitBatchFindStringsMap(
-            acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
-            phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
-    );
-
     std::string_view GetMethodDescriptor(uint32_t method_idx);
     std::string_view GetFieldDescriptor(uint32_t field_idx);
 

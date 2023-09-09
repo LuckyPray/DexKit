@@ -2,38 +2,6 @@
 
 namespace dexkit {
 
-phmap::flat_hash_map<uint32_t, std::vector<std::string_view>>
-DexItem::InitBatchFindStringsMap(
-        acdat::AhoCorasickDoubleArrayTrie<std::string_view> &acTrie,
-        phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
-) {
-    phmap::flat_hash_map<uint32_t /*string_idx*/, std::vector<std::string_view>> strings_map;
-
-    for (auto i = 0; i < this->strings.size(); ++i) {
-        std::string_view string = this->strings[i];
-        auto hits = acTrie.ParseText(string);
-        for (auto &hit: hits) {
-            auto match_type = match_type_map[hit.value];
-            bool match;
-            switch (match_type) {
-                case schema::StringMatchType::Contains: match = true; break;
-                case schema::StringMatchType::StartWith: match = (hit.begin == 0); break;
-                case schema::StringMatchType::EndWith: match = (hit.end == string.size()); break;
-                case schema::StringMatchType::Equal: match = (hit.begin == 0 && hit.end == string.size()); break;
-                case schema::StringMatchType::SimilarRegex: abort();
-            }
-            if (match) {
-                if (strings_map.contains(i)) {
-                    strings_map[i].emplace_back(hit.value);
-                } else {
-                    strings_map[i] = {hit.value};
-                }
-            }
-        }
-    }
-    return strings_map;
-}
-
 std::vector<BatchFindClassItemBean>
 DexItem::BatchFindClassUsingStrings(
         const schema::BatchFindClassUsingStrings *query,
@@ -43,8 +11,6 @@ DexItem::BatchFindClassUsingStrings(
         std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie
 ) {
-    auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
-    if (strings_map.empty()) return {};
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
@@ -59,9 +25,20 @@ DexItem::BatchFindClassUsingStrings(
         std::set<std::string_view> search_set;
         for (auto method_idx: class_method_ids[type_idx]) {
             for (auto string_idx: method_using_string_ids[method_idx]) {
-                if (strings_map.contains(string_idx)) {
-                    for (auto &string: strings_map[string_idx]) {
-                        search_set.emplace(string);
+                auto str = this->strings[string_idx];
+                auto hits = acTrie.ParseText(str);
+                for (auto &hit: hits) {
+                    auto match_type = match_type_map[hit.value];
+                    bool match;
+                    switch (match_type) {
+                        case schema::StringMatchType::Contains: match = true; break;
+                        case schema::StringMatchType::StartWith: match = (hit.begin == 0); break;
+                        case schema::StringMatchType::EndWith: match = (hit.end == str.size()); break;
+                        case schema::StringMatchType::Equal: match = (hit.begin == 0 && hit.end == str.size()); break;
+                        case schema::StringMatchType::SimilarRegex: abort();
+                    }
+                    if (match) {
+                        search_set.emplace(hit.value);
                     }
                 }
             }
@@ -104,8 +81,6 @@ DexItem::BatchFindMethodUsingStrings(
         std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie
 ) {
-    auto strings_map = InitBatchFindStringsMap(acTrie, match_type_map);
-    if (strings_map.empty()) return {};
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
@@ -124,9 +99,20 @@ DexItem::BatchFindMethodUsingStrings(
 
             std::set<std::string_view> search_set;
             for (auto string_idx: method_using_string_ids[method_idx]) {
-                if (strings_map.contains(string_idx)) {
-                    for (auto &string: strings_map[string_idx]) {
-                        search_set.emplace(string);
+                auto str = this->strings[string_idx];
+                auto hits = acTrie.ParseText(str);
+                for (auto &hit: hits) {
+                    auto match_type = match_type_map[hit.value];
+                    bool match;
+                    switch (match_type) {
+                        case schema::StringMatchType::Contains: match = true; break;
+                        case schema::StringMatchType::StartWith: match = (hit.begin == 0); break;
+                        case schema::StringMatchType::EndWith: match = (hit.end == str.size()); break;
+                        case schema::StringMatchType::Equal: match = (hit.begin == 0 && hit.end == str.size()); break;
+                        case schema::StringMatchType::SimilarRegex: abort();
+                    }
+                    if (match) {
+                        search_set.emplace(hit.value);
                     }
                 }
             }

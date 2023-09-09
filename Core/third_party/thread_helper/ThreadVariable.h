@@ -35,7 +35,6 @@ public:
     static void SetThreadVariable(uint32_t key, Arg &&arg) {
         auto thread_id = std::this_thread::get_id();
         auto shared_ptr = std::make_shared<T>(std::forward<Arg>(arg));
-        std::unique_lock lock(*_lock_map[thread_id]);
         _thread_variables[thread_id][key] = shared_ptr;
     }
 
@@ -43,7 +42,6 @@ public:
     static std::shared_ptr<T> GetThreadVariable(uint32_t key) {
         auto thread_id = std::this_thread::get_id();
         auto &map = _thread_variables[thread_id];
-        std::shared_lock lock(*_lock_map[thread_id]);
         if (map.contains(key)) {
             auto &shared_ptr = map[key];
             return *reinterpret_cast<std::shared_ptr<T> *>(&shared_ptr);
@@ -61,7 +59,6 @@ public:
     static void ClearThreadVariables(std::vector<std::thread::id> &thread_ids) {
         std::shared_lock l(_lock);
         for (auto &thread_id : thread_ids) {
-            std::unique_lock lock(*_lock_map[thread_id]);
             _thread_variables[thread_id].clear();
         }
     }
