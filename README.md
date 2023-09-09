@@ -319,7 +319,7 @@ class MainHook : IXposedHookLoadPackage {
 
 ## Third-Party Open Source References
 
-- [slicer](https://cs.android.com/android/platform/superproject/+/master:tools/dexter/slicer/export/slicer/)
+- [slicer](https://cs.android.com/android/platform/superproject/+/main:tools/dexter/slicer/)
 - [ThreadPool](https://github.com/progschj/ThreadPool)
 - [parallel-hashmap](https://github.com/greg7mdp/parallel-hashmap)
 
