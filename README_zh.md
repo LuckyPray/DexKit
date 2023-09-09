@@ -140,69 +140,75 @@ public class MainHook implements IXposedHookLoadPackage {
         }
         // need minSdkVersion >= 23
         System.loadLibrary("dexkit");
-        try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
-            bridge.findClass(FindClass.create()
-                    // 从指定的包名范围内进行查找
-                    .searchPackages("org.luckypray.dexkit.demo")
-                    // 排除指定的包名范围
-                    .excludePackages("org.luckypray.dexkit.demo.annotations")
-                    .matcher(ClassMatcher.create()
-                            // ClassMatcher 针对类的匹配器
-                            .className("org.luckypray.dexkit.demo.PlayActivity")
-                            // FieldsMatcher 针对类中包含属性的匹配器
-                            .fields(FieldsMatcher.create()
-                                    // 添加对于属性的匹配器
-                                    .add(FieldMatcher.create()
-                                            .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
-                                            .type("java.lang.String")
-                                            .name("TAG")
-                                    )
-                                    .addForType("android.widget.TextView")
-                                    .addForType("android.os.Handler")
-                                    // 指定类中属性的数量
-                                    .count(3)
-                            )
-                            // MethodsMatcher 针对类中包含方法的匹配器
-                            .methods(MethodsMatcher.create()
-                                    // 添加对于方法的匹配器
-                                    .methods(List.of(
-                                            MethodMatcher.create()
-                                                    .modifiers(Modifier.PROTECTED)
-                                                    .name("onCreate")
-                                                    .returnType("void")
-                                                    .parameterTypes("android.os.Bundle")
-                                                    .usingStrings("onCreate"),
-                                            MethodMatcher.create()
-                                                    .parameterTypes("android.view.View")
-                                                    .usingNumbers(114514, 0.987f),
-                                            MethodMatcher.create()
-                                                    .modifiers(Modifier.PUBLIC)
-                                                    .parameterTypes("boolean")
-                                    ))
-                                    // 指定类中方法的数量，最少不少于1个，最多不超过10个
-                                    .range(1, 10)
-                            )
-                            // AnnotationsMatcher 针对类中包含注解的匹配器
-                            .annotations(AnnotationsMatcher.create()
-                                    .add(AnnotationMatcher.create()
-                                            .typeName("org.luckypray.dexkit.demo.annotations.Router")
-                                            .addElement(
-                                                    AnnotationElementMatcher.create()
-                                                            .name("path")
-                                                            .matcher(createString("/play"))
-                                            )
-                                    )
-                            )
-                            // 类中所有方法使用的字符串
-                            .usingStrings("PlayActivity", "onClick", "onCreate")
-                    )
-            ).forEach(classData -> {
-                // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-                System.out.println(classData.getClassName());
-                // 获取对应的类实例
-                Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
-            });
-        }
+        //
+        // !!! 切记使用完成后调用 bridge.close() 释放内存 !!!
+        // 
+        DexKitBridge bridge = DexKitBridge.create(apkPath);
+        bridge.findClass(FindClass.create()
+                // 从指定的包名范围内进行查找
+                .searchPackages("org.luckypray.dexkit.demo")
+                // 排除指定的包名范围
+                .excludePackages("org.luckypray.dexkit.demo.annotations")
+                .matcher(ClassMatcher.create()
+                        // ClassMatcher 针对类的匹配器
+                        .className("org.luckypray.dexkit.demo.PlayActivity")
+                        // FieldsMatcher 针对类中包含属性的匹配器
+                        .fields(FieldsMatcher.create()
+                                // 添加对于属性的匹配器
+                                .add(FieldMatcher.create()
+                                        .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
+                                        .type("java.lang.String")
+                                        .name("TAG")
+                                )
+                                .addForType("android.widget.TextView")
+                                .addForType("android.os.Handler")
+                                // 指定类中属性的数量
+                                .count(3)
+                        )
+                        // MethodsMatcher 针对类中包含方法的匹配器
+                        .methods(MethodsMatcher.create()
+                                // 添加对于方法的匹配器
+                                .methods(List.of(
+                                        MethodMatcher.create()
+                                                .modifiers(Modifier.PROTECTED)
+                                                .name("onCreate")
+                                                .returnType("void")
+                                                .parameterTypes("android.os.Bundle")
+                                                .usingStrings("onCreate"),
+                                        MethodMatcher.create()
+                                                .parameterTypes("android.view.View")
+                                                .usingNumbers(0.01, -1, 0.987, 0, 114514),
+                                        MethodMatcher.create()
+                                                .modifiers(Modifier.PUBLIC)
+                                                .parameterTypes("boolean")
+                                ))
+                                // 指定类中方法的数量，最少不少于1个，最多不超过10个
+                                .range(1, 10)
+                        )
+                        // AnnotationsMatcher 针对类中包含注解的匹配器
+                        .annotations(AnnotationsMatcher.create()
+                                .add(AnnotationMatcher.create()
+                                        .typeName("org.luckypray.dexkit.demo.annotations.Router")
+                                        .addElement(
+                                                AnnotationElementMatcher.create()
+                                                        .name("path")
+                                                        .matcher(createString("/play"))
+                                        )
+                                )
+                        )
+                        // 类中所有方法使用的字符串
+                        .usingStrings("PlayActivity", "onClick", "onCreate")
+                )
+        ).forEach(classData -> {
+            // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
+            System.out.println(classData.getClassName());
+            // 获取对应的类实例
+            Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
+        });
+        //
+        // !!! native 缓存一定要释放，避免内存泄漏 !!!
+        //
+        bridge.close();
     }
 }
 ```
@@ -223,75 +229,77 @@ class MainHook : IXposedHookLoadPackage {
         }
         // need minSdkVersion >= 23
         System.loadLibrary("dexkit")
-        DexKitBridge.create(apkPath)?.use { bridge ->
-            bridge.findClass {
-                // 从指定的包名范围内进行查找
-                searchPackages = listOf("org.luckypray.dexkit.demo")
-                // 排除指定的包名范围
-                excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
-                // ClassMatcher 针对类的匹配器
-                matcher {
-                    className = "org.luckypray.dexkit.demo.PlayActivity"
-                    // FieldsMatcher 针对类中包含属性的匹配器
-                    fields {
-                        // 添加对于属性的匹配器
-                        add {
-                            modifiers(Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL)
-                            type("java.lang.String")
-                            name("TAG")
-                        }
-                        addForType("android.widget.TextView")
-                        addForType("android.os.Handler")
-                        // 指定类中属性的数量
-                        count = 3
+        //
+        // !!! 切记使用完成后调用 bridge.close() 释放内存 !!!
+        // 
+        val bridge = DexKitBridge.create(apkPath)
+            ?: throw NullPointerException("DexKitBridge.create() failed")
+        bridge.findClass {
+            // 从指定的包名范围内进行查找
+            searchPackages = listOf("org.luckypray.dexkit.demo")
+            // 排除指定的包名范围
+            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
+            // ClassMatcher 针对类的匹配器
+            matcher {
+                className = "org.luckypray.dexkit.demo.PlayActivity"
+                // FieldsMatcher 针对类中包含属性的匹配器
+                fields {
+                    // 添加对于属性的匹配器
+                    add {
+                        modifiers(Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL)
+                        type("java.lang.String")
+                        name("TAG")
                     }
-                    // MethodsMatcher 针对类中包含方法的匹配器
-                    methods {
-                        // 添加对于方法的匹配器
-                        add {
-                            modifiers = Modifier.PROTECTED
-                            name = "onCreate"
-                            returnType = "void"
-                            parameterTypes = listOf("android.os.Bundle")
-                            usingStrings = listOf("onCreate")
-                        }
-                        add {
-                            parameterTypes = listOf("android.view.View")
-                            usingNumbers {
-                                addInt(114514)
-                                addFloat(0.987f)
-                            }
-                        }
-                        add {
-                            parameterTypes = listOf("boolean")
-                        }
-                        // 指定类中方法的数量，最少不少于1个，最多不超过10个
-                        count(1..10)
-                    }
-                    // AnnotationsMatcher 针对类中包含注解的匹配器
-                    annotations {
-                        add {
-                            typeName = "org.luckypray.dexkit.demo.annotations.Router"
-                            elements {
-                                add {
-                                    name = "path"
-                                    matcher {
-                                        stringValue("/play")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // 类中所有方法使用的字符串
-                    usingStrings = listOf("PlayActivity", "onClick", "onCreate")
+                    addForType("android.widget.TextView")
+                    addForType("android.os.Handler")
+                    // 指定类中属性的数量
+                    count = 3
                 }
-            }.forEach {
-                // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-                println(it.className)
-                // 获取对应的类实例
-                val clazz = it.getInstance(loadPackageParam.classLoader)
+                // MethodsMatcher 针对类中包含方法的匹配器
+                methods {
+                    // 添加对于方法的匹配器
+                    add {
+                        modifiers = Modifier.PROTECTED
+                        name = "onCreate"
+                        returnType = "void"
+                        parameterTypes = listOf("android.os.Bundle")
+                        usingStrings = listOf("onCreate")
+                    }
+                    add {
+                        parameterTypes = listOf("android.view.View")
+                        usingNumbers(0.01, -1, 0.987, 0, 114514)
+                    }
+                    add {
+                        parameterTypes = listOf("boolean")
+                    }
+                    // 指定类中方法的数量，最少不少于1个，最多不超过10个
+                    count(1..10)
+                }
+                // AnnotationsMatcher 针对类中包含注解的匹配器
+                annotations {
+                    add {
+                        typeName = "org.luckypray.dexkit.demo.annotations.Router"
+                        addElement {
+                            name = "path"
+                            value {
+                                stringValue("/play")
+                            }
+                        }
+                    }
+                }
+                // 类中所有方法使用的字符串
+                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
             }
+        }.forEach {
+            // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
+            println(it.className)
+            // 获取对应的类实例
+            val clazz = it.getInstance(loadPackageParam.classLoader)
         }
+        //
+        // !!! native 缓存一定要释放，避免内存泄漏 !!!
+        //
+        bridge.close();
     }
 }
 ```
