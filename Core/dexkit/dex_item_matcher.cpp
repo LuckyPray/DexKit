@@ -432,13 +432,13 @@ bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matc
     if (!IsClassAccessFlagsMatched(type_idx, matcher->access_flags())) {
         return false;
     }
+    if (!IsSuperClassMatched(type_idx, matcher->super_class())) {
+        return false;
+    }
     if (!IsClassUsingStringsMatched(type_idx, matcher)) {
         return false;
     }
     if (!IsClassAnnotationMatched(type_idx, matcher->annotations())) {
-        return false;
-    }
-    if (!IsSuperClassMatched(type_idx, matcher->super_class())) {
         return false;
     }
     if (!IsInterfacesMatched(type_idx, matcher->interfaces())) {
@@ -784,6 +784,9 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsAccessFlagsMatched(this->method_access_flags[method_idx], matcher->access_flags())) {
         return false;
     }
+    if (!IsClassMatched(method_def.class_idx, matcher->declaring_class())) {
+        return false;
+    }
     if (!IsOpCodesMatched(method_idx, matcher->op_codes())) {
         return false;
     }
@@ -791,9 +794,6 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
         return false;
     }
     if (!IsAnnotationsMatched(this->method_annotations[method_idx], matcher->annotations())) {
-        return false;
-    }
-    if (!IsClassMatched(method_def.class_idx, matcher->declaring_class())) {
         return false;
     }
     auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];

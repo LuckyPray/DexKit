@@ -156,40 +156,44 @@ DexKit::FindClass(const schema::FindClass *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    std::vector<ClassBean> result;
+
     // fast search declared class
     DexItem *fast_search_dex = nullptr;
     if (query->matcher()) {
         auto class_name = query->matcher()->class_name();
         if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
             auto [dex, type_idx] = GetClassDeclaredPair(class_name->value()->string_view());
-            fast_search_dex = dex;
-        }
-    }
-
-    bool find_fist_flag = false;
-    ThreadPool pool(_thread_num);
-    std::vector<std::future<std::vector<ClassBean>>> futures;
-    for (auto &dex_item: dex_items) {
-        if (fast_search_dex && fast_search_dex != dex_item.get()) {
-            continue;
-        }
-        auto &class_set = dex_class_map[dex_item->GetDexId()];
-        if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-            auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE / 2, find_fist_flag);
-            for (auto &f: res) {
-                futures.emplace_back(std::move(f));
+            if (dex) {
+                fast_search_dex = dex;
+                auto res = dex->FindClass(query, packageTrie, type_idx);
+                result.insert(result.end(), res.begin(), res.end());
             }
         }
     }
 
-    std::vector<ClassBean> result;
-    for (auto &f: futures) {
-        auto vec = f.get();
-        if (vec.empty()) continue;
-        result.insert(result.end(), vec.begin(), vec.end());
-        if (query->find_first()) {
-            pool.skip_unexec_tasks();
-            break;
+    if (fast_search_dex == nullptr) {
+        bool find_fist_flag = false;
+        ThreadPool pool(_thread_num);
+        std::vector<std::future<std::vector<ClassBean>>> futures;
+        for (auto &dex_item: dex_items) {
+            auto &class_set = dex_class_map[dex_item->GetDexId()];
+            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+                auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE / 2, find_fist_flag);
+                for (auto &f: res) {
+                    futures.emplace_back(std::move(f));
+                }
+            }
+        }
+
+        for (auto &f: futures) {
+            auto vec = f.get();
+            if (vec.empty()) continue;
+            result.insert(result.end(), vec.begin(), vec.end());
+            if (query->find_first()) {
+                pool.skip_unexec_tasks();
+                break;
+            }
         }
     }
 
@@ -226,6 +230,8 @@ DexKit::FindMethod(const schema::FindMethod *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    std::vector<MethodBean> result;
+
     // fast search declared class
     DexItem *fast_search_dex = nullptr;
     if (query->matcher()) {
@@ -234,36 +240,38 @@ DexKit::FindMethod(const schema::FindMethod *query) {
             auto class_name = declaring_class->class_name();
             if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
                 auto [dex, type_idx] = GetClassDeclaredPair(class_name->value()->string_view());
-                fast_search_dex = dex;
+                if (dex) {
+                    fast_search_dex = dex;
+                    auto res = dex->FindMethod(query, packageTrie, type_idx);
+                    result.insert(result.end(), res.begin(), res.end());
+                }
             }
         }
     }
 
-    bool find_fist_flag = false;
-    ThreadPool pool(_thread_num);
-    std::vector<std::future<std::vector<MethodBean>>> futures;
-    for (auto &dex_item: dex_items) {
-        if (fast_search_dex && fast_search_dex != dex_item.get()) {
-            continue;
-        }
-        auto &class_set = dex_class_map[dex_item->GetDexId()];
-        auto &method_set = dex_method_map[dex_item->GetDexId()];
-        if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-            auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
-            for (auto &f: res) {
-                futures.emplace_back(std::move(f));
+    if (fast_search_dex == nullptr) {
+        bool find_fist_flag = false;
+        ThreadPool pool(_thread_num);
+        std::vector<std::future<std::vector<MethodBean>>> futures;
+        for (auto &dex_item: dex_items) {
+            auto &class_set = dex_class_map[dex_item->GetDexId()];
+            auto &method_set = dex_method_map[dex_item->GetDexId()];
+            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+                auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
+                for (auto &f: res) {
+                    futures.emplace_back(std::move(f));
+                }
             }
         }
-    }
 
-    std::vector<MethodBean> result;
-    for (auto &f: futures) {
-        auto vec = f.get();
-        if (vec.empty()) continue;
-        result.insert(result.end(), vec.begin(), vec.end());
-        if (query->find_first()) {
-            pool.skip_unexec_tasks();
-            break;
+        for (auto &f: futures) {
+            auto vec = f.get();
+            if (vec.empty()) continue;
+            result.insert(result.end(), vec.begin(), vec.end());
+            if (query->find_first()) {
+                pool.skip_unexec_tasks();
+                break;
+            }
         }
     }
 
@@ -305,6 +313,8 @@ DexKit::FindField(const schema::FindField *query) {
     // build package match trie
     BuildPackagesMatchTrie(query->search_packages(), query->exclude_packages(), query->ignore_packages_case(), packageTrie);
 
+    std::vector<FieldBean> result;
+
     // fast search declared class
     DexItem *fast_search_dex = nullptr;
     if (query->matcher()) {
@@ -313,36 +323,38 @@ DexKit::FindField(const schema::FindField *query) {
             auto class_name = declaring_class->class_name();
             if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
                 auto [dex, type_idx] = GetClassDeclaredPair(class_name->value()->string_view());
-                fast_search_dex = dex;
+                if (dex) {
+                    fast_search_dex = dex;
+                    auto res = dex->FindField(query, packageTrie, type_idx);
+                    result.insert(result.end(), res.begin(), res.end());
+                }
             }
         }
     }
 
-    bool find_fist_flag = false;
-    ThreadPool pool(_thread_num);
-    std::vector<std::future<std::vector<FieldBean>>> futures;
-    for (auto &dex_item: dex_items) {
-        if (fast_search_dex && fast_search_dex != dex_item.get()) {
-            continue;
-        }
-        auto &class_set = dex_class_map[dex_item->GetDexId()];
-        auto &field_set = dex_field_map[dex_item->GetDexId()];
-        if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
-            auto res = dex_item->FindField(query, class_set, field_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
-            for (auto &f: res) {
-                futures.emplace_back(std::move(f));
+    if (fast_search_dex == nullptr) {
+        bool find_fist_flag = false;
+        ThreadPool pool(_thread_num);
+        std::vector<std::future<std::vector<FieldBean>>> futures;
+        for (auto &dex_item: dex_items) {
+            auto &class_set = dex_class_map[dex_item->GetDexId()];
+            auto &field_set = dex_field_map[dex_item->GetDexId()];
+            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+                auto res = dex_item->FindField(query, class_set, field_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
+                for (auto &f: res) {
+                    futures.emplace_back(std::move(f));
+                }
             }
         }
-    }
 
-    std::vector<FieldBean> result;
-    for (auto &f: futures) {
-        auto vec = f.get();
-        if (vec.empty()) continue;
-        result.insert(result.end(), vec.begin(), vec.end());
-        if (query->find_first()) {
-            pool.skip_unexec_tasks();
-            break;
+        for (auto &f: futures) {
+            auto vec = f.get();
+            if (vec.empty()) continue;
+            result.insert(result.end(), vec.begin(), vec.end());
+            if (query->find_first()) {
+                pool.skip_unexec_tasks();
+                break;
+            }
         }
     }
 

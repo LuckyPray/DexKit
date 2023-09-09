@@ -45,7 +45,7 @@ public:
     std::vector<std::future<std::vector<ClassBean>>>
     FindClass(
             const schema::FindClass *query,
-            std::set<uint32_t> &in_class_set,
+            const std::set<uint32_t> &in_class_set,
             trie::PackageTrie &packageTrie,
             ThreadPool &pool,
             uint32_t split_num,
@@ -54,8 +54,8 @@ public:
     std::vector<std::future<std::vector<MethodBean>>>
     FindMethod(
             const schema::FindMethod *query,
-            std::set<uint32_t> &in_class_set,
-            std::set<uint32_t> &in_method_set,
+            const std::set<uint32_t> &in_class_set,
+            const std::set<uint32_t> &in_method_set,
             trie::PackageTrie &packageTrie,
             ThreadPool &pool,
             uint32_t split_num,
@@ -64,8 +64,8 @@ public:
     std::vector<std::future<std::vector<FieldBean>>>
     FindField(
             const schema::FindField *query,
-            std::set<uint32_t> &in_class_set,
-            std::set<uint32_t> &in_field_set,
+            const std::set<uint32_t> &in_class_set,
+            const std::set<uint32_t> &in_field_set,
             trie::PackageTrie &packageTrie,
             ThreadPool &pool,
             uint32_t split_num,
@@ -73,7 +73,7 @@ public:
     );
     std::vector<ClassBean> FindClass(
             const schema::FindClass *query,
-            std::set<uint32_t> &in_class_set,
+            const std::set<uint32_t> &in_class_set,
             trie::PackageTrie &packageTrie,
             uint32_t start,
             uint32_t end,
@@ -81,8 +81,8 @@ public:
     );
     std::vector<MethodBean> FindMethod(
             const schema::FindMethod *query,
-            std::set<uint32_t> &in_class_set,
-            std::set<uint32_t> &in_method_set,
+            const std::set<uint32_t> &in_class_set,
+            const std::set<uint32_t> &in_method_set,
             trie::PackageTrie &packageTrie,
             uint32_t start,
             uint32_t end,
@@ -90,12 +90,27 @@ public:
     );
     std::vector<FieldBean> FindField(
             const schema::FindField *query,
-            std::set<uint32_t> &in_class_set,
-            std::set<uint32_t> &in_field_set,
+            const std::set<uint32_t> &in_class_set,
+            const std::set<uint32_t> &in_field_set,
             trie::PackageTrie &packageTrie,
             uint32_t start,
             uint32_t end,
             bool &find_fist_flag
+    );
+    std::vector<ClassBean> FindClass(
+            const schema::FindClass *query,
+            trie::PackageTrie &packageTrie,
+            uint32_t class_idx
+    );
+    std::vector<MethodBean> FindMethod(
+            const schema::FindMethod *query,
+            trie::PackageTrie &packageTrie,
+            uint32_t class_idx
+    );
+    std::vector<FieldBean> FindField(
+            const schema::FindField *query,
+            trie::PackageTrie &packageTrie,
+            uint32_t class_idx
     );
     std::vector<BatchFindClassItemBean> BatchFindClassUsingStrings(
             const schema::BatchFindClassUsingStrings *query,

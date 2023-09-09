@@ -5,7 +5,7 @@ namespace dexkit {
 std::vector<std::future<std::vector<ClassBean>>>
 DexItem::FindClass(
         const schema::FindClass *query,
-        std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie,
         ThreadPool &pool,
         uint32_t slice_size,
@@ -33,8 +33,8 @@ DexItem::FindClass(
 std::vector<std::future<std::vector<MethodBean>>>
 DexItem::FindMethod(
         const schema::FindMethod *query,
-        std::set<uint32_t> &in_class_set,
-        std::set<uint32_t> &in_method_set,
+        const std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie,
         ThreadPool &pool,
         uint32_t slice_size,
@@ -62,8 +62,8 @@ DexItem::FindMethod(
 std::vector<std::future<std::vector<FieldBean>>>
 DexItem::FindField(
         const schema::FindField *query,
-        std::set<uint32_t> &in_class_set,
-        std::set<uint32_t> &in_field_set,
+        const std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_field_set,
         trie::PackageTrie &packageTrie,
         ThreadPool &pool,
         uint32_t slice_size,
@@ -91,7 +91,7 @@ DexItem::FindField(
 std::vector<ClassBean>
 DexItem::FindClass(
         const schema::FindClass *query,
-        std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
@@ -129,8 +129,8 @@ DexItem::FindClass(
 std::vector<MethodBean>
 DexItem::FindMethod(
         const schema::FindMethod *query,
-        std::set<uint32_t> &in_class_set,
-        std::set<uint32_t> &in_method_set,
+        const std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
@@ -169,8 +169,8 @@ DexItem::FindMethod(
 std::vector<FieldBean>
 DexItem::FindField(
         const schema::FindField *query,
-        std::set<uint32_t> &in_class_set,
-        std::set<uint32_t> &in_field_set,
+        const std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_field_set,
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
@@ -178,7 +178,6 @@ DexItem::FindField(
 ) {
 
     std::vector<uint32_t> find_result;
-    auto index = 0;
     for (auto field_idx = start; field_idx < end; ++field_idx) {
         if (query->find_first() && find_fist_flag) break;
         auto &field_def = this->reader.FieldIds()[field_idx];
@@ -194,6 +193,97 @@ DexItem::FindField(
             find_result.emplace_back(field_idx);
             if (query->find_first()) {
                 find_fist_flag = true;
+                break;
+            }
+        }
+    }
+
+    std::vector<FieldBean> result;
+    result.reserve(find_result.size());
+    for (auto idx: find_result) {
+        result.emplace_back(GetFieldBean(idx));
+    }
+    return result;
+}
+
+std::vector<ClassBean>
+DexItem::FindClass(
+        const schema::FindClass *query,
+        trie::PackageTrie &packageTrie,
+        uint32_t class_idx
+) {
+
+    std::vector<uint32_t> find_result;
+    auto &class_def = this->reader.ClassDefs()[class_idx];
+    if (query->search_packages() || query->exclude_packages()) {
+        auto hit = packageTrie.search(this->type_names[class_def.class_idx], query->ignore_packages_case());
+        if (query->exclude_packages() && (hit & 1)) return {};
+        if (query->search_packages() && !(hit >> 1)) return {};
+    }
+
+    if (IsClassMatched(class_def.class_idx, query->matcher())) {
+        find_result.emplace_back(class_def.class_idx);
+    }
+
+    std::vector<ClassBean> result;
+    result.reserve(find_result.size());
+    for (auto idx: find_result) {
+        result.emplace_back(GetClassBean(idx));
+    }
+    return result;
+}
+
+std::vector<MethodBean>
+DexItem::FindMethod(
+        const schema::FindMethod *query,
+        trie::PackageTrie &packageTrie,
+        uint32_t class_idx
+) {
+
+    std::vector<uint32_t> find_result;
+    for (auto method_idx: this->class_method_ids[class_idx]) {
+        auto &method_def = this->reader.MethodIds()[method_idx];
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[method_def.class_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
+
+        if (IsMethodMatched(method_idx, query->matcher())) {
+            find_result.emplace_back(method_idx);
+            if (query->find_first()) {
+                break;
+            }
+        }
+    }
+
+    std::vector<MethodBean> result;
+    result.reserve(find_result.size());
+    for (auto idx: find_result) {
+        result.emplace_back(GetMethodBean(idx));
+    }
+    return result;
+}
+
+std::vector<FieldBean>
+DexItem::FindField(
+        const schema::FindField *query,
+        trie::PackageTrie &packageTrie,
+        uint32_t class_idx
+) {
+
+    std::vector<uint32_t> find_result;
+    for (auto field_idx: this->class_field_ids[class_idx]) {
+        auto &field_def = this->reader.FieldIds()[field_idx];
+        if (query->search_packages() || query->exclude_packages()) {
+            auto hit = packageTrie.search(this->type_names[field_def.class_idx], query->ignore_packages_case());
+            if (query->exclude_packages() && (hit & 1)) continue;
+            if (query->search_packages() && !(hit >> 1)) continue;
+        }
+
+        if (IsFieldMatched(field_idx, query->matcher())) {
+            find_result.emplace_back(field_idx);
+            if (query->find_first()) {
                 break;
             }
         }
