@@ -1069,19 +1069,10 @@ bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMat
     }
 
     auto IsNumberMatched = [](EncodeNumber number, EncodeNumber matcher) {
-        if (GetNumberSize(number.type) != GetNumberSize(matcher.type)) {
-            return false;
+        if (matcher.type >= FLOAT) {
+            return abs(GetDoubleValue(number) - GetDoubleValue(matcher)) < EPS;
         }
-        // TODO only check double && long
-        switch (matcher.type) {
-            case BYTE: return number.value.L8 == matcher.value.L8;
-            case SHORT: return number.value.L16 == matcher.value.L16;
-            case INT: return number.value.L32.int_value == matcher.value.L32.int_value;
-            case LONG: return number.value.L64.long_value == matcher.value.L64.long_value;
-            case FLOAT: return abs(number.value.L32.float_value - matcher.value.L32.float_value) < EPS;
-            case DOUBLE: return abs(number.value.L64.double_value - matcher.value.L64.double_value) < EPS;
-        }
-        return true;
+        return GetLongValue(number) == GetLongValue(matcher);
     };
 
     auto numbers = *ptr;

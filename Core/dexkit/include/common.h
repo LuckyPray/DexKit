@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
+#include <cmath>
 
 namespace dexkit {
 
@@ -60,10 +62,25 @@ constexpr uint8_t GetNumberSize(NumberType type) {
     }
 }
 
-inline bool NumberTypeEqual(NumberType a, NumberType b) {
-    if (a < FLOAT && b < FLOAT) return true;
-    if (a >= FLOAT && b >= FLOAT) return true;
-    return false;
+inline double GetDoubleValue(EncodeNumber number) {
+    switch (number.type) {
+        case INT:
+        case FLOAT: return number.value.L32.float_value;
+        case LONG:
+        case DOUBLE: return number.value.L64.double_value;
+        default: return NAN;
+    }
+}
+
+inline int64_t GetLongValue(EncodeNumber number) {
+    switch (number.type) {
+        case BYTE: return number.value.L8;
+        case SHORT: return number.value.L16;
+        case INT:
+        case FLOAT: return number.value.L32.int_value;
+        case LONG:
+        case DOUBLE: return number.value.L64.long_value;
+    }
 }
 
 }

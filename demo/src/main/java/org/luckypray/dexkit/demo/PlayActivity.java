@@ -37,6 +37,10 @@ public class PlayActivity extends AppCompatActivity {
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what) {
+                    case -1:
+                        Log.d(TAG, "handleMessage: -1");
+                        System.exit(0);
+                        break;
                     case 0:
                         runOnUiThread(() -> rollDice(false));
                         break;
@@ -51,7 +55,10 @@ public class PlayActivity extends AppCompatActivity {
         Button rollButton = findViewById(R.id.rollButton);
         rollButton.setOnClickListener(v -> {
             Log.d(TAG, "onClick: rollButton");
-            if (new Random().nextFloat() < 0.987f) {
+            float r = new Random().nextFloat();
+            if (r < 0.01) {
+                handler.sendEmptyMessage(-1);
+            } else if(r < 0.987f) {
                 handler.sendEmptyMessage(0);
             } else {
                 handler.sendEmptyMessage(114514);

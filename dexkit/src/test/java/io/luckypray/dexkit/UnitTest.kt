@@ -261,4 +261,15 @@ class UnitTest {
         assert(res.fieldName == "TAG")
         assert(res.typeName == "java.lang.String")
     }
+
+    @Test
+    fun testMethodUsingNumbers() {
+        val res = bridge.findMethod {
+            matcher {
+                usingNumbers(0, -1, 0.01, 0.987, 114514)
+            }
+        }
+        assert(res.size == 1)
+        assert(res.first().className == "org.luckypray.dexkit.demo.PlayActivity")
+    }
 }

@@ -942,11 +942,75 @@ int DexKitFindFieldTest(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindMethodUsingNumbers(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindMethodUsingNumbers Start-----------\n");
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindMethod(
+            fbb, 0, 0, false, 0, 0, false,
+            CreateMethodMatcher(
+                    fbb,
+                    0,
+                    0,
+                    CreateClassMatcher(
+                            fbb,
+                            0,
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("org.luckypray.dexkit.demo.PlayActivity"),
+                                    StringMatchType::Equal,
+                                    false
+                            )
+                    ),
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    fbb.CreateVector(std::vector<Number>{
+                            Number::EncodeValueInt,
+                            Number::EncodeValueLong,
+                            Number::EncodeValueFloat,
+                            Number::EncodeValueDouble,
+                            Number::EncodeValueLong
+                    }),
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<void>>{
+                            CreateEncodeValueInt(fbb, 0).Union(),
+                            CreateEncodeValueLong(fbb, -1).Union(),
+                            CreateEncodeValueFloat(fbb, 0.01).Union(),
+                            CreateEncodeValueDouble(fbb, 0.987f).Union(),
+                            CreateEncodeValueLong(fbb, 114514).Union()
+                    })
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindMethod>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindMethod(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<MethodMetaArrayHolder>(buffer);
+    if (result->methods()) {
+        printf("result->classes()->size() = %d\n", result->methods()->size());
+        for (int i = 0; i < result->methods()->size(); ++i) {
+            auto item = result->methods()->Get(i);
+            printf("dex: %02d, idx: %d, descriptor: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
 
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/wyy_8.10.61.apk");
+    auto dexkit = dexkit::DexKit("../apks/demo.apk");
 //    dexkit.SetThreadNum(32);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
@@ -962,13 +1026,14 @@ int main() {
 //    DexKitBatchFindMethodTest(dexkit);
 //    DexKitFindClassUsingStrings(dexkit);
 //    DexKitFindClassTest(dexkit);
-    DexKitFindClassFieldsTest(dexkit);
+//    DexKitFindClassFieldsTest(dexkit);
 //    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindMethodCaller(dexkit);
 //    DexKitFindClassUsingAnnotationTest(dexkit);
 //    DexKitPackageTest(dexkit);
 //    DexKitFindParameterTypeArray(dexkit);
 //    DexKitFindFieldTest(dexkit);
+    DexKitFindMethodUsingNumbers(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());
