@@ -75,7 +75,8 @@ class MethodsMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerMethodsMatcher.createMethodsMatcher(
             fbb,
-            methodsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            methodsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0
         )

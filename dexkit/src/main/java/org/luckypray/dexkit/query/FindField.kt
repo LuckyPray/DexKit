@@ -60,7 +60,7 @@ class FindField : BaseQuery() {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun FindField.matcher(init: FieldMatcher.() -> Unit) = also {
+    inline fun matcher(init: FieldMatcher.() -> Unit) = also {
         matcher(FieldMatcher().apply(init))
     }
 
@@ -74,18 +74,14 @@ class FindField : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFindField.createFindField(
             fbb,
-            searchPackages
-                ?.map { fbb.createString(it) }?.toIntArray()
+            searchPackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
-            excludePackages
-                ?.map { fbb.createString(it) }?.toIntArray()
+            excludePackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses
-                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchClasses?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerFindField.createInClassesVector(fbb, it) } ?: 0,
-            searchFields
-                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchFields?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerFindField.createInFieldsVector(fbb, it) } ?: 0,
             findFirst,
             matcher?.build(fbb) ?: 0

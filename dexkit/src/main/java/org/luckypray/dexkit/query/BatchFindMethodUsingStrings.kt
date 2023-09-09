@@ -117,18 +117,14 @@ class BatchFindMethodUsingStrings : BaseQuery() {
         }
         val root = InnerBatchFindMethodUsingStrings.createBatchFindMethodUsingStrings(
             fbb,
-            searchPackages
-                ?.map { fbb.createString(it) }?.toIntArray()
+            searchPackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
-            excludePackages
-                ?.map { fbb.createString(it) }?.toIntArray()
+            excludePackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses
-                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchClasses?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerBatchFindMethodUsingStrings.createInClassesVector(fbb, it) } ?: 0,
-            searchMethods
-                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchMethods?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerBatchFindMethodUsingStrings.createInMethodsVector(fbb, it) } ?: 0,
             fbb.createVectorOfTables(searchGroups!!.map { it.build(fbb) }.toIntArray())
         )

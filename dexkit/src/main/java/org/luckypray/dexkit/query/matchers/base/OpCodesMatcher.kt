@@ -138,7 +138,8 @@ class OpCodesMatcher : BaseQuery {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerOpCodesMatcher.createOpCodesMatcher(
             fbb,
-            opCodes?.map { it.toShort() }?.let { InnerOpCodesMatcher.createOpCodesVector(fbb, it.toShortArray()) } ?: 0,
+            opCodes?.map { it.toShort() }?.toShortArray()
+                ?.let { InnerOpCodesMatcher.createOpCodesVector(fbb, it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0
         )

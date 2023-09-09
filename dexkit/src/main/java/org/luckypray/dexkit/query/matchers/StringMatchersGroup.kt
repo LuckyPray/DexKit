@@ -85,7 +85,8 @@ class StringMatchersGroup : BaseQuery {
         val root = InnerBatchUsingStringsMatcher.createBatchUsingStringsMatcher(
             fbb,
             fbb.createString(groupName),
-            fbb.createVectorOfTables(stringMatchers.map { it.build(fbb) }.toIntArray())
+            stringMatchers.map { it.build(fbb) }.toIntArray()
+                .let { fbb.createVectorOfTables(it) }
         )
         fbb.finish(root)
         return root

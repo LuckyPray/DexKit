@@ -429,10 +429,14 @@ class MethodMatcher : BaseQuery() {
             paramsMatcher?.build(fbb) ?: 0,
             annotationsMatcher?.build(fbb) ?: 0,
             opCodesMatcher?.build(fbb) ?: 0,
-            usingStringsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
-            usingFieldsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
-            usingNumbersMatcher?.map { it.type!!.value }?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it.toUByteArray()) } ?: 0,
-            usingNumbersMatcher?.map { it.value!!.build(fbb) }?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it.toIntArray()) } ?: 0,
+            usingStringsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            usingFieldsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            usingNumbersMatcher?.map { it.type!!.value }?.toUByteArray()
+                ?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it) } ?: 0,
+            usingNumbersMatcher?.map { it.value!!.build(fbb) }?.toIntArray()
+                ?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it) } ?: 0,
             invokeMethodsMatcher?.build(fbb) ?: 0,
             callMethodsMatcher?.build(fbb) ?: 0
         )

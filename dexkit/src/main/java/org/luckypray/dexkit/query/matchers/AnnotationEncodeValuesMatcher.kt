@@ -73,8 +73,10 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationEncodeArrayMatcher.createAnnotationEncodeArrayMatcher(
             fbb,
-            encodeValuesMatcher?.map { it.type!!.value }?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it.toUByteArray()) } ?: 0,
-            encodeValuesMatcher?.map { it.value!!.build(fbb) }?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it.toIntArray()) } ?: 0,
+            encodeValuesMatcher?.map { it.type!!.value }?.toUByteArray()
+                ?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it) } ?: 0,
+            encodeValuesMatcher?.map { it.value!!.build(fbb) }?.toIntArray()
+                ?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0
         )

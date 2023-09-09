@@ -53,7 +53,7 @@ class FindClass : BaseQuery() {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun FindClass.matcher(init: ClassMatcher.() -> Unit) = also {
+    inline fun matcher(init: ClassMatcher.() -> Unit) = also {
         matcher(ClassMatcher().apply(init))
     }
 
@@ -67,15 +67,12 @@ class FindClass : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFindClass.createFindClass(
             fbb,
-            searchPackages
-                ?.map { fbb.createString(it) }?.toIntArray()
+            searchPackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
-            excludePackages
-                ?.map { fbb.createString(it) }?.toIntArray()
+            excludePackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses
-                ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchClasses?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerFindClass.createInClassesVector(fbb, it) } ?: 0,
             findFirst,
             matcher?.build(fbb) ?: 0

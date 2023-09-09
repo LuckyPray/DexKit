@@ -18,25 +18,6 @@ class StringMatcherList : ArrayList<StringMatcher>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<StringMatcher>): super(elements)
 
-    var usingStrings: List<String>
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            usingStrings(value)
-        }
-
-    fun usingStrings(usingStrings: List<String>) = also {
-        clear()
-        addAll(usingStrings.map { StringMatcher(it) })
-    }
-
-    fun usingStrings(vararg usingStrings: String) = also {
-        clear()
-        addAll(usingStrings.map { StringMatcher(it) })
-    }
-
     @JvmOverloads
     fun add(
         value: String,
@@ -139,23 +120,11 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
 
     fun add(
         groupName: String,
-        matchers: List<StringMatcher>
+        usingStrings: List<String>,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
     ) = also {
-        add(StringMatchersGroup(groupName, matchers))
-    }
-
-    fun add(
-        groupName: String,
-        vararg matchers: StringMatcher
-    ) = also {
-        add(StringMatchersGroup(groupName, matchers.toList()))
-    }
-
-    fun add(
-        groupName: String,
-        vararg strings: String
-    ) = also {
-        add(StringMatchersGroup(groupName, strings.map { StringMatcher(it) }))
+        add(StringMatchersGroup(groupName, usingStrings.map { StringMatcher(it, matchType, ignoreCase) }))
     }
 
     @kotlin.internal.InlineOnly
@@ -164,6 +133,11 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
         init: StringMatcherList.() -> Unit
     ) = also {
         add(StringMatchersGroup(groupName, StringMatcherList().apply(init)))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun add(init: StringMatchersGroup.() -> Unit) = also {
+        add(StringMatchersGroup().apply(init))
     }
 }
 

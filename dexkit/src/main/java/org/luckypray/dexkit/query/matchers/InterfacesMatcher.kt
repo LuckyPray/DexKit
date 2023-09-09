@@ -81,8 +81,8 @@ class InterfacesMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerInterfacesMatcher.createInterfacesMatcher(
             fbb,
-            interfacesMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) }
-                ?: 0,
+            interfacesMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0
         )

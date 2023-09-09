@@ -85,7 +85,8 @@ class FieldsMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerFieldsMatcher.createFieldsMatcher(
             fbb,
-            fieldsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            fieldsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0
         )

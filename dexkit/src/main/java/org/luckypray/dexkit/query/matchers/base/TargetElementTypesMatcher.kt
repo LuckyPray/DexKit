@@ -48,7 +48,8 @@ class TargetElementTypesMatcher  : BaseQuery {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerTargetElementTypesMatcher.createTargetElementTypesMatcher(
             fbb,
-            types?.let { fbb.createVectorOfTables(it.map { it.value.toInt() }.toIntArray()) } ?: 0,
+            types?.map { it.value }?.toByteArray()
+                ?.let { InnerTargetElementTypesMatcher.createTypesVector(fbb, it) } ?: 0,
             matchType.value
         )
         fbb.finish(root)

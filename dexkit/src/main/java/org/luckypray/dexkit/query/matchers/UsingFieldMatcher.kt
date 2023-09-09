@@ -36,7 +36,7 @@ class UsingFieldMatcher : BaseQuery() {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        if (matcher == null) throw IllegalArgumentException("UsingFieldMatcher matcher not set")
+        matcher ?: throw IllegalArgumentException("UsingFieldMatcher matcher not set")
         val root = InnerUsingFieldMatcher.createUsingFieldMatcher(
             fbb,
             matcher!!.build(fbb),

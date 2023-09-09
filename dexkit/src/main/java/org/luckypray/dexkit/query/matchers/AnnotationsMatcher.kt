@@ -75,7 +75,8 @@ class AnnotationsMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationsMatcher.createAnnotationsMatcher(
             fbb,
-            annotationsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            annotationsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0,
         )

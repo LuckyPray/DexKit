@@ -84,7 +84,8 @@ class AnnotationElementsMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerAnnotationElementsMatcher.createAnnotationElementsMatcher(
             fbb,
-            elementsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0,
+            elementsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0
         )

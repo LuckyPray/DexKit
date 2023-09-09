@@ -348,7 +348,8 @@ class ClassMatcher : BaseQuery() {
             annotationsMatcher?.build(fbb) ?: 0,
             fieldsMatcher?.build(fbb) ?: 0,
             methodsMatcher?.build(fbb) ?: 0,
-            usingStringsMatcher?.let { fbb.createVectorOfTables(it.map { it.build(fbb) }.toIntArray()) } ?: 0
+            usingStringsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0
         )
         fbb.finish(root)
         return root
