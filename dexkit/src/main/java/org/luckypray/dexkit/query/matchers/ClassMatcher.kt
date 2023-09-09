@@ -11,7 +11,6 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
-import java.lang.IllegalStateException
 
 class ClassMatcher : BaseQuery() {
     var sourceMatcher: StringMatcher? = null
@@ -249,16 +248,21 @@ class ClassMatcher : BaseQuery() {
         this.usingStringsMatcher = usingStrings
     }
 
-    fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
+    @JvmOverloads
+    fun usingStrings(
+        usingStrings: List<String>,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, matchType, ignoreCase) }.toMutableList()
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }.toMutableList()
     }
 
     fun addUsingString(usingString: StringMatcher) = also {
-        usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
         usingStringsMatcher!!.add(usingString)
     }
 

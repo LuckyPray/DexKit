@@ -4,7 +4,6 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFieldsMatcher
-import org.luckypray.dexkit.query.FieldMatcherList
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -52,7 +51,7 @@ class FieldsMatcher : BaseQuery() {
     }
 
     fun add(matcher: FieldMatcher) = also {
-        fieldsMatcher = fieldsMatcher ?: FieldMatcherList()
+        fieldsMatcher = fieldsMatcher ?: mutableListOf()
         fieldsMatcher!!.add(matcher)
     }
 

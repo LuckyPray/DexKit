@@ -39,12 +39,17 @@ class StringMatchersGroup : BaseQuery {
         this.stringMatchers = usingStrings
     }
 
-    fun usingStrings(usingStrings: List<String>) = also {
-        this.stringMatchers = StringMatcherList(usingStrings.map { StringMatcher(it) })
+    @JvmOverloads
+    fun usingStrings(
+        usingStrings: List<String>,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.stringMatchers = usingStrings.map { StringMatcher(it, matchType, ignoreCase) }.toMutableList()
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.stringMatchers = StringMatcherList(usingStrings.map { StringMatcher(it) })
+        this.stringMatchers = usingStrings.map { StringMatcher(it) }.toMutableList()
     }
 
     fun add(matcher: StringMatcher) = also {

@@ -22,7 +22,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     var searchClasses: List<ClassData>? = null
     @set:JvmSynthetic
     var searchMethods: List<MethodData>? = null
-    var matcherGroups: MutableList<StringMatchersGroup>? = null
+    var searchGroups: MutableList<StringMatchersGroup>? = null
         private set
 
     fun searchPackages(vararg searchPackages: String) = also {
@@ -54,23 +54,33 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     }
 
     fun matchers(matchers: List<StringMatchersGroup>) = also {
-        this.matcherGroups = matchers.toMutableList()
+        this.searchGroups = matchers.toMutableList()
     }
 
     @JvmOverloads
     fun matchers(
-        map: Map<String, List<String>>,
+        map: Map<String, Collection<String>>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
-        this.matcherGroups = map.map { (key, value) ->
+        this.searchGroups = map.map { (key, value) ->
             StringMatchersGroup(key, value.map { StringMatcher(it, matchType, ignoreCase) })
         }.toMutableList()
     }
 
-    fun addGroup(matcher: StringMatchersGroup) = also {
-        matcherGroups = matcherGroups ?: mutableListOf()
-        matcherGroups!!.add(matcher)
+    fun addSearchGroup(matcher: StringMatchersGroup) = also {
+        searchGroups = searchGroups ?: mutableListOf()
+        searchGroups!!.add(matcher)
+    }
+
+    @JvmOverloads
+    fun addSearchGroup(
+        groupName: String,
+        usingStrings: List<String>,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        addSearchGroup(StringMatchersGroup(groupName, usingStrings.map { StringMatcher(it, matchType, ignoreCase) }))
     }
 
     // region DSL
@@ -81,16 +91,16 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun addGroup(init: StringMatchersGroup.() -> Unit) = also {
-        addGroup(StringMatchersGroup().apply(init))
+    inline fun addSearchGroup(init: StringMatchersGroup.() -> Unit) = also {
+        addSearchGroup(StringMatchersGroup().apply(init))
     }
 
     @kotlin.internal.InlineOnly
-    inline fun addGroup(
+    inline fun addSearchGroup(
         groupName: String,
         init: StringMatcherList.() -> Unit
     ) = also {
-        addGroup(StringMatchersGroup(groupName, StringMatcherList().apply(init)))
+        addSearchGroup(StringMatchersGroup(groupName, StringMatcherList().apply(init)))
     }
 
     // endregion
@@ -101,7 +111,10 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        matcherGroups ?: throw IllegalAccessException("matchers must be set")
+        searchGroups ?: throw IllegalAccessException("searchGroups not be empty")
+        if (searchGroups!!.map { it.groupName }.toSet().size < searchGroups!!.size) {
+            throw IllegalAccessException("groupName must be unique")
+        }
         val root = InnerBatchFindMethodUsingStrings.createBatchFindMethodUsingStrings(
             fbb,
             searchPackages
@@ -117,7 +130,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
             searchMethods
                 ?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
                 ?.let { InnerBatchFindMethodUsingStrings.createInMethodsVector(fbb, it) } ?: 0,
-            fbb.createVectorOfTables(matcherGroups!!.map { it.build(fbb) }.toIntArray())
+            fbb.createVectorOfTables(searchGroups!!.map { it.build(fbb) }.toIntArray())
         )
         fbb.finish(root)
         return root

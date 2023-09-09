@@ -4,8 +4,8 @@ package org.luckypray.dexkit.query
 
 import org.luckypray.dexkit.query.base.IQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.FieldMatcher
+import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher

@@ -271,16 +271,21 @@ class MethodMatcher : BaseQuery() {
         this.usingStringsMatcher = usingStrings
     }
 
-    fun usingStrings(usingStrings: List<String>) = also {
-        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
+    @JvmOverloads
+    fun usingStrings(
+        usingStrings: List<String>,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, matchType, ignoreCase) }.toMutableList()
     }
 
     fun usingStrings(vararg usingStrings: String) = also {
-        this.usingStringsMatcher = StringMatcherList(usingStrings.map { StringMatcher(it) })
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }.toMutableList()
     }
 
     fun addUsingString(usingString: StringMatcher) = also {
-        usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
         usingStringsMatcher!!.add(usingString)
     }
 
@@ -290,7 +295,7 @@ class MethodMatcher : BaseQuery() {
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
-        usingStringsMatcher = usingStringsMatcher ?: StringMatcherList()
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
         usingStringsMatcher!!.add(StringMatcher(usingString, matchType, ignoreCase))
     }
 
@@ -299,7 +304,7 @@ class MethodMatcher : BaseQuery() {
     }
 
     fun addUsingField(usingField: UsingFieldMatcher) = also {
-        usingFieldsMatcher = usingFieldsMatcher ?: UsingFieldMatcherList()
+        usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
         usingFieldsMatcher!!.add(usingField)
     }
 
@@ -316,7 +321,7 @@ class MethodMatcher : BaseQuery() {
     }
 
     fun addUsingNumber(usingNumber: Number) = also {
-        usingNumbersMatcher = usingNumbersMatcher ?: NumberEncodeValueMatcherList()
+        usingNumbersMatcher = usingNumbersMatcher ?: mutableListOf()
         usingNumbersMatcher!!.add(NumberEncodeValueMatcher().value(usingNumber))
     }
 

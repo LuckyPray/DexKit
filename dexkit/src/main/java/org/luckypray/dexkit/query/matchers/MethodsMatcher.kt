@@ -61,7 +61,7 @@ class MethodsMatcher : BaseQuery() {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun MethodsMatcher.add(init: MethodMatcher.() -> Unit) = also {
+    inline fun add(init: MethodMatcher.() -> Unit) = also {
         add(MethodMatcher().apply(init))
     }
 
