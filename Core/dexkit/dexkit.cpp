@@ -150,7 +150,7 @@ DexKit::FindClass(const schema::FindClass *query) {
             dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
-    auto resolve_types = ExtractUseTypeNames(query->matcher());
+    auto resolve_types = ExtractUseTypeNames(query->matcher(), 1);
 
     trie::PackageTrie packageTrie;
     // build package match trie
@@ -220,7 +220,7 @@ DexKit::FindMethod(const schema::FindMethod *query) {
             dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
-    auto resolve_types = ExtractUseTypeNames(query->matcher());
+    auto resolve_types = ExtractUseTypeNames(query->matcher(), 1);
 
     trie::PackageTrie packageTrie;
     // build package match trie
@@ -299,7 +299,7 @@ DexKit::FindField(const schema::FindField *query) {
             dex_field_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
-    auto resolve_types = ExtractUseTypeNames(query->matcher());
+    auto resolve_types = ExtractUseTypeNames(query->matcher(), 1);
 
     trie::PackageTrie packageTrie;
     // build package match trie

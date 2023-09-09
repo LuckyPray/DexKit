@@ -12,7 +12,7 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 class AnnotationElementMatcher : BaseQuery() {
     var nameMatcher: StringMatcher? = null
         private set
-    var matcher: AnnotationEncodeValueMatcher? = null
+    var valueMatcher: AnnotationEncodeValueMatcher? = null
         private set
 
     var name: String
@@ -23,21 +23,29 @@ class AnnotationElementMatcher : BaseQuery() {
         set(value) {
             name(value)
         }
+    var value: AnnotationEncodeValueMatcher
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            value(value)
+        }
 
     @JvmOverloads
     fun name(name: String, ignoreCase: Boolean = false) = also {
         this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
     }
 
-    fun matcher(matcher: AnnotationEncodeValueMatcher) = also {
-        this.matcher = matcher
+    fun value(matcher: AnnotationEncodeValueMatcher) = also {
+        this.valueMatcher = matcher
     }
 
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun matcher(init: AnnotationEncodeValueMatcher.() -> Unit) = also {
-        matcher(AnnotationEncodeValueMatcher().apply(init))
+    inline fun value(init: AnnotationEncodeValueMatcher.() -> Unit) = also {
+        value(AnnotationEncodeValueMatcher().apply(init))
     }
 
     // endregion
@@ -51,8 +59,8 @@ class AnnotationElementMatcher : BaseQuery() {
         val root = InnerAnnotationElementMatcher.createAnnotationElementMatcher(
             fbb,
             nameMatcher?.build(fbb) ?: 0,
-            matcher?.type?.value ?: 0U,
-            matcher?.value?.build(fbb) ?: 0
+            valueMatcher?.type?.value ?: 0U,
+            valueMatcher?.value?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

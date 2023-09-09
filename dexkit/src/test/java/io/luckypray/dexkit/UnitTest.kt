@@ -5,7 +5,6 @@ import org.junit.Test
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
-import java.lang.reflect.Modifier
 
 
 class UnitTest {
@@ -78,12 +77,10 @@ class UnitTest {
             matcher {
                 addAnnotation {
                     type("Router", StringMatchType.EndsWith)
-                    elements {
-                        add {
-                            name("path")
-                            matcher {
-                                stringValue("/main")
-                            }
+                    addElement {
+                        name = "path"
+                        value {
+                            stringValue("/main", StringMatchType.Equals)
                         }
                     }
                 }

@@ -59,12 +59,7 @@ class KtReadMeTest {
                     }
                     add {
                         paramTypes = listOf("android.view.View")
-                        usingNumbers {
-                            addByte(0)
-                            addInt(114514)
-                            addFloat(0.987f)
-//                            add(0)
-                        }
+                        usingNumbers(0.01, -1, 0.987, 0, 114514)
                     }
                     add {
                         modifiers = Modifier.PUBLIC
@@ -77,12 +72,10 @@ class KtReadMeTest {
                 annotations {
                     add {
                         type = "org.luckypray.dexkit.demo.annotations.Router"
-                        elements {
-                            add {
-                                name = "path"
-                                matcher {
-                                    stringValue("/play")
-                                }
+                        addElement {
+                            name = "path"
+                            value {
+                                stringValue("/play")
                             }
                         }
                     }

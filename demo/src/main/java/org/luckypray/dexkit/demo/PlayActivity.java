@@ -38,7 +38,6 @@ public class PlayActivity extends AppCompatActivity {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case -1:
-                        Log.d(TAG, "handleMessage: -1");
                         System.exit(0);
                         break;
                     case 0:

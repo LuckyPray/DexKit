@@ -154,6 +154,11 @@ class AnnotationMatcher : BaseQuery() {
         elements(AnnotationElementsMatcher().apply(init))
     }
 
+    @kotlin.internal.InlineOnly
+    inline fun addElement(init: AnnotationElementMatcher.() -> Unit) = also {
+        addElement(AnnotationElementMatcher().apply(init))
+    }
+
     // endregion
 
     companion object {
