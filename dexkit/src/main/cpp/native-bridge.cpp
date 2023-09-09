@@ -638,6 +638,22 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetInvokeMethods(JNIEnv *env, jclas
     return ret;
 }
 
+DEXKIT_JNI jobjectArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingStrings(JNIEnv *env, jclass clazz,
+                                                                   jlong native_ptr,
+                                                                   jlong encode_method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetUsingStrings(encode_method_id);
+    jobjectArray ret = env->NewObjectArray(result.size(), env->FindClass("java/lang/String"), nullptr);
+    for (int i = 0; i < result.size(); ++i) {
+        env->SetObjectArrayElement(ret, i, env->NewStringUTF(result[i].data()));
+    }
+    return ret;
+}
+
 DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeFieldGetMethods(JNIEnv *env, jclass clazz,
                                                              jlong native_ptr,

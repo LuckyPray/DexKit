@@ -742,6 +742,13 @@ DexKit::GetInvokeMethods(int64_t encode_method_id) {
     return builder;
 }
 
+std::vector<std::string_view>
+DexKit::GetUsingStrings(int64_t encode_method_id) {
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    return dex_items[dex_id]->GetUsingStrings(method_id);
+}
+
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FieldGetMethods(int64_t encode_field_id) {
     auto dex_id = encode_field_id >> 32;

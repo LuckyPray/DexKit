@@ -702,6 +702,15 @@ std::vector<MethodBean> DexItem::GetInvokeMethods(uint32_t method_idx) {
     return beans;
 }
 
+std::vector<std::string_view> DexItem::GetUsingStrings(uint32_t method_idx) {
+    auto &method_using_strings = this->method_using_string_ids[method_idx];
+    std::vector<std::string_view> using_strings;
+    for (auto string_id: method_using_strings) {
+        using_strings.emplace_back(this->strings[string_id]);
+    }
+    return using_strings;
+}
+
 std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
     auto &method_ids = this->field_get_method_ids[field_idx];
     std::vector<MethodBean> beans;

@@ -260,6 +260,15 @@ class UnitTest {
     }
 
     @Test
+    fun testGetMethodUsingStrings() {
+        val res = bridge.getMethodData("Lorg/luckypray/dexkit/demo/PlayActivity;->onCreate(Landroid/os/Bundle;)V")
+        assert(res != null)
+        val usingStrings = res!!.getUsingStrings()
+        assert(usingStrings.size == 2)
+        usingStrings.containsAll(listOf("onCreate", "PlayActivity"))
+    }
+
+    @Test
     fun testMethodUsingNumbers() {
         val res = bridge.findMethod {
             matcher {

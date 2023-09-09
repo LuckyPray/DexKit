@@ -123,6 +123,10 @@ class MethodData private constructor(
         return bridge.getInvokeMethods(getEncodeId(dexId, id))
     }
 
+    fun getUsingStrings(): List<String> {
+        return bridge.getMethodUsingStrings(getEncodeId(dexId, id))
+    }
+
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, className)

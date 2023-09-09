@@ -54,6 +54,7 @@ public:
     std::vector<uint8_t> GetMethodOpCodes(int64_t encode_method_id);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetCallMethods(int64_t encode_method_id);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetInvokeMethods(int64_t encode_method_id);
+    std::vector<std::string_view> GetUsingStrings(int64_t encode_method_id);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldGetMethods(int64_t encode_field_id);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FieldPutMethods(int64_t encode_field_id);
 
