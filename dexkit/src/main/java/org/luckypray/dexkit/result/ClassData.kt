@@ -72,12 +72,24 @@ class ClassData private constructor(
         return bridge.getClassByIds(interfaceIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    fun getInterfaceCount(): Int {
+        return interfaceIds.size
+    }
+
     fun getMethods(): MethodDataList {
         return bridge.getMethodByIds(methodIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    fun getMethodCount(): Int {
+        return methodIds.size
+    }
+
     fun getFields(): FieldDataList {
         return bridge.getFieldByIds(fieldIds.map { getEncodeId(dexId, it) }.toLongArray())
+    }
+
+    fun getFieldCount(): Int {
+        return fieldIds.size
     }
 
     fun getAnnotations(): List<AnnotationData> {

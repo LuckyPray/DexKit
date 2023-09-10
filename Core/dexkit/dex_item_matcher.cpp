@@ -234,8 +234,7 @@ bool DexItem::IsAnnotationsMatched(const std::vector<ir::Annotation *> &annotati
             for (auto annotation : *matcher->annotations()) {
                 vec.push_back(annotation);
             }
-            ThreadVariable::SetThreadVariable<AnnotationMatcher>(POINT_CASE(matcher->annotations()), vec);
-            ptr = ThreadVariable::GetThreadVariable<AnnotationMatcher>(POINT_CASE(matcher->annotations()));
+            ptr = ThreadVariable::SetThreadVariable<AnnotationMatcher>(POINT_CASE(matcher->annotations()), vec);
         }
 
         auto annotation_matches = *ptr;
@@ -334,8 +333,7 @@ bool DexItem::IsAnnotationEncodeArrayMatcher(const std::vector<ir::EncodedValue 
                 auto value = matcher->values()->GetAs<void>(i);
                 values.emplace_back(type, value);
             }
-            ThreadVariable::SetThreadVariable<AnnotationEncodeValueMatcher>(POINT_CASE(matcher), values);
-            ptr = ThreadVariable::GetThreadVariable<AnnotationEncodeValueMatcher>(POINT_CASE(matcher));
+            ptr = ThreadVariable::SetThreadVariable<AnnotationEncodeValueMatcher>(POINT_CASE(matcher), values);
         }
 
         auto values = *ptr;
@@ -391,8 +389,7 @@ bool DexItem::IsAnnotationElementsMatched(const std::vector<ir::AnnotationElemen
             for (auto element : *matcher->elements()) {
                 matchers.push_back(element);
             }
-            ThreadVariable::SetThreadVariable<AnnotationElementMatcher>(POINT_CASE(matcher->elements()), matchers);
-            ptr = ThreadVariable::GetThreadVariable<AnnotationElementMatcher>(POINT_CASE(matcher->elements()));
+            ptr = ThreadVariable::SetThreadVariable<AnnotationElementMatcher>(POINT_CASE(matcher->elements()), matchers);
         }
 
         auto matchers = *ptr;
@@ -467,8 +464,7 @@ bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *
         auto match_type = matcher->match_type();
         ConvertSimilarRegex(match_str, match_type);
         auto match_pair = std::make_pair(match_str, match_type);
-        ThreadVariable::SetThreadVariable<std::pair<std::string_view, schema::StringMatchType>>(POINT_CASE(matcher), match_pair);
-        match_ptr = ThreadVariable::GetThreadVariable<std::pair<std::string_view, schema::StringMatchType>>(POINT_CASE(matcher));
+        match_ptr = ThreadVariable::SetThreadVariable<std::pair<std::string_view, schema::StringMatchType>>(POINT_CASE(matcher), match_pair);
     }
     auto match_str = match_ptr->first;
     auto match_type = match_ptr->second;
@@ -485,8 +481,7 @@ bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *
         bool start_flag = match_type == schema::StringMatchType::StartWith || match_type == schema::StringMatchType::Equal;
         bool end_flag = match_type == schema::StringMatchType::EndWith || match_type == schema::StringMatchType::Equal;
         auto match_name = NameToDescriptor(match_name_type, start_flag, end_flag);
-        ThreadVariable::SetThreadVariable<MatchPair>(POINT_CASE(matcher->value()), std::make_pair(match_name, array_count));
-        ptr = ThreadVariable::GetThreadVariable<MatchPair>(POINT_CASE(matcher->value()));
+        ptr = ThreadVariable::SetThreadVariable<MatchPair>(POINT_CASE(matcher->value()), std::make_pair(match_name, array_count));
     }
 
     auto match_pair = *ptr;
@@ -566,8 +561,7 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
         auto string_set = std::make_shared<StringSet>(result);
         acdat::Builder<std::string_view>().Build(keywords, trie.get());
         auto tuple = std::make_tuple(trie, map, string_set);
-        ThreadVariable::SetThreadVariable<KeywordsTuple>(POINT_CASE(matcher->using_strings()), tuple);
-        ptr = ThreadVariable::GetThreadVariable<KeywordsTuple>(POINT_CASE(matcher->using_strings()));
+        ptr = ThreadVariable::SetThreadVariable<KeywordsTuple>(POINT_CASE(matcher->using_strings()), tuple);
     }
 
     acTrie = std::get<0>(*ptr);
@@ -644,8 +638,7 @@ bool DexItem::IsInterfacesMatched(uint32_t type_idx, const schema::InterfacesMat
             for (auto interface_matcher : *matcher->interfaces()) {
                 vec.push_back(interface_matcher);
             }
-            ThreadVariable::SetThreadVariable<ClassMatcher>(POINT_CASE(matcher->interfaces()), vec);
-            ptr = ThreadVariable::GetThreadVariable<ClassMatcher>(POINT_CASE(matcher->interfaces()));
+            ptr = ThreadVariable::SetThreadVariable<ClassMatcher>(POINT_CASE(matcher->interfaces()), vec);
         }
 
         auto interface_matchers = *ptr;
@@ -702,8 +695,7 @@ bool DexItem::IsFieldsMatched(uint32_t type_idx, const schema::FieldsMatcher *ma
             for (auto field_matcher : *matcher->fields()) {
                 vec.push_back(field_matcher);
             }
-            ThreadVariable::SetThreadVariable<FieldMatcher>(POINT_CASE(matcher->fields()), vec);
-            ptr = ThreadVariable::GetThreadVariable<FieldMatcher>(POINT_CASE(matcher->fields()));
+            ptr = ThreadVariable::SetThreadVariable<FieldMatcher>(POINT_CASE(matcher->fields()), vec);
         }
 
         auto field_matchers = *ptr;
@@ -747,8 +739,7 @@ bool DexItem::IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *
             for (auto method_matcher : *matcher->methods()) {
                 vec.push_back(method_matcher);
             }
-            ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
-            ptr = ThreadVariable::GetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()));
+            ptr = ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
         }
 
         auto method_matchers = *ptr;
@@ -877,8 +868,7 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
                     vec.emplace_back(opcode);
                 }
             }
-            ThreadVariable::SetThreadVariable<OpCodeMatcher>(POINT_CASE(matcher->op_codes()), vec);
-            ptr = ThreadVariable::GetThreadVariable<OpCodeMatcher>(POINT_CASE(matcher->op_codes()));
+            ptr = ThreadVariable::SetThreadVariable<OpCodeMatcher>(POINT_CASE(matcher->op_codes()), vec);
         }
 
         auto matcher_opcodes = *ptr;
@@ -929,8 +919,7 @@ bool DexItem::IsMethodUsingStringsMatched(uint32_t method_idx, const schema::Met
         auto string_set = std::make_shared<StringSet>(result);
         acdat::Builder<std::string_view>().Build(keywords, trie.get());
         auto tuple = std::make_tuple(trie, map, string_set);
-        ThreadVariable::SetThreadVariable<KeywordsTuple>(POINT_CASE(matcher->using_strings()), tuple);
-        ptr = ThreadVariable::GetThreadVariable<KeywordsTuple>(POINT_CASE(matcher->using_strings()));
+        ptr = ThreadVariable::SetThreadVariable<KeywordsTuple>(POINT_CASE(matcher->using_strings()), tuple);
     }
 
     acTrie = std::get<0>(*ptr);
@@ -986,8 +975,7 @@ bool DexItem::IsUsingFieldsMatched(uint32_t method_idx, const schema::MethodMatc
         for (int i = 0; i < matcher->using_fields()->size(); ++i) {
             using_vec.push_back(matcher->using_fields()->Get(i));
         }
-        ThreadVariable::SetThreadVariable<UsingFieldMatcher>(POINT_CASE(matcher->using_fields()), using_vec);
-        ptr = ThreadVariable::GetThreadVariable<UsingFieldMatcher>(POINT_CASE(matcher->using_fields()));
+        ptr = ThreadVariable::SetThreadVariable<UsingFieldMatcher>(POINT_CASE(matcher->using_fields()), using_vec);
     }
 
     auto using_field_matchers = *ptr;
@@ -1064,8 +1052,7 @@ bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMat
             }
             numbers.push_back(number);
         }
-        ThreadVariable::SetThreadVariable<Numbers>(POINT_CASE(matcher->using_numbers()), numbers);
-        ptr = ThreadVariable::GetThreadVariable<Numbers>(POINT_CASE(matcher->using_numbers()));
+        ptr = ThreadVariable::SetThreadVariable<Numbers>(POINT_CASE(matcher->using_numbers()), numbers);
     }
 
     auto IsNumberMatched = [](EncodeNumber number, EncodeNumber matcher) {
@@ -1111,8 +1098,7 @@ bool DexItem::IsInvokingMethodsMatched(uint32_t method_idx, const schema::Method
             for (auto method_matcher : *matcher->methods()) {
                 vec.push_back(method_matcher);
             }
-            ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
-            ptr = ThreadVariable::GetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()));
+            ptr = ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
         }
 
         auto method_matchers = *ptr;
@@ -1160,8 +1146,7 @@ bool DexItem::IsCallMethodsMatched(uint32_t method_idx, const schema::MethodsMat
             for (auto method_matcher : *matcher->methods()) {
                 vec.push_back(method_matcher);
             }
-            ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
-            ptr = ThreadVariable::GetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()));
+            ptr = ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
         }
 
         auto method_matchers = *ptr;
@@ -1259,8 +1244,7 @@ bool DexItem::IsFieldGetMethodsMatched(uint32_t field_idx, const schema::Methods
             for (auto method_matcher : *matcher->methods()) {
                 vec.push_back(method_matcher);
             }
-            ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
-            ptr = ThreadVariable::GetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()));
+            ptr = ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
         }
 
         auto method_matchers = *ptr;
@@ -1306,8 +1290,7 @@ bool DexItem::IsFieldPutMethodsMatched(uint32_t field_idx, const schema::Methods
             for (auto method_matcher : *matcher->methods()) {
                 vec.push_back(method_matcher);
             }
-            ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
-            ptr = ThreadVariable::GetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()));
+            ptr = ThreadVariable::SetThreadVariable<MethodMatcher>(POINT_CASE(matcher->methods()), vec);
         }
 
         auto method_matchers = *ptr;
