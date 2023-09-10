@@ -13,12 +13,10 @@ methods, or properties.
 
 ---
 
-# Welcome to DexKit 2.0
+# DexKit 2.0
 
-> Special Note:
-> - The current version is actively under development, and there may be instability and missing features.
-> - Due to a project rewrite, comprehensive testing and validation haven't been performed, leading to potential issues.
-> - If you need a stable version, please use version [1.1.8](https://github.com/LuckyPray/DexKit/tree/1.1.x).
+At present, the 2.0 API is basically stable and needs to undergo final testing before it can be officially released.
+Documentation and comments will be gradually improved in the future.
 
 ## Supported APIs
 
@@ -27,7 +25,7 @@ Basic Features:
 - [x] Multi-condition class search
 - [x] Multi-condition method search
 - [x] Multi-condition field search
-- [x] Access annotations of classes/methods/properties/parameters
+- [x] Extract `Annotation` of classes/methods/fields/parameters
 
 ⭐️ Distinctive Features (Recommended):
 
@@ -51,7 +49,7 @@ dependencies {
 ```
 
 > **Note**
-> ArtifactId of DexKit `2.0.0-alpha` is `dexkit`.
+> Starting with **DexKit 2.0**, the new ArtifactId has been changed from `DexKit` to `dexkit`.
 
 DexKit current version: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
@@ -81,19 +79,23 @@ import org.luckypray.dexkit.demo.annotations.Router;
 
 @Router(path = "/play")
 public class PlayActivity extends AppCompatActivity {
-    private final String a = "PlayActivity";
-    private TextView b;
-    private Handler c;
+    private static final String TAG = "PlayActivity";
+    private TextView a;
+    private Handler b;
 
     public void d(View view) {
         Handler handler;
         int i;
-        Log.d("PlayActivity", "onClick: rollButton");
-        if (new Random().nextFloat() < 0.987f) {
-            handler = this.c;
+        Log.d(TAG, "onClick: rollButton");
+        float nextFloat = new Random().nextFloat();
+        if (nextFloat < 0.01d) {
+            handler = this.b;
+            i = -1;
+        } else if (nextFloat < 0.987f) {
+            handler = this.b;
             i = 0;
         } else {
-            handler = this.c;
+            handler = this.b;
             i = 114514;
         }
         handler.sendEmptyMessage(i);
@@ -102,24 +104,24 @@ public class PlayActivity extends AppCompatActivity {
     public void e(boolean z) {
         int i;
         if (!z) {
-            i = g.a();
+            i = RandomUtil.a();
         } else {
             i = 6;
         }
         String a = h.a("You rolled a ", i);
-        this.b.setText(a);
-        Log.d("PlayActivity", "rollDice: " + a);
+        this.a.setText(a);
+        Log.d(TAG, "rollDice: " + a);
     }
 
     protected void onCreate(Bundle bundle) {
         super/*androidx.fragment.app.FragmentActivity*/.onCreate(bundle);
         setContentView(0x7f0b001d);
-        Log.d("PlayActivity", "onCreate");
-        HandlerThread handlerThread = new HandlerThread("PlayActivity");
+        Log.d(TAG, "onCreate");
+        HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
-        this.c = new e(this, handlerThread.getLooper());
-        this.b = (TextView) findViewById(0x7f080134);
-        ((Button) findViewById(0x7f08013a)).setOnClickListener(new b(this));
+        this.b = new PlayActivity$1(this, handlerThread.getLooper());
+        this.a = (TextView) findViewById(0x7f080134);
+        ((Button) findViewById(0x7f08013a)).setOnClickListener(new a(this));
     }
 }
 ```
@@ -272,7 +274,7 @@ class MainHook : IXposedHookLoadPackage {
                     }
                     add {
                         parameterTypes = listOf("android.view.View")
-                        usingNumbers(0.01, -1, 0.987, 0, 114514)
+                        usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
                     }
                     add {
                         modifiers = Modifier.PUBLIC

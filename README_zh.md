@@ -12,12 +12,9 @@
 
 ---
 
-# 欢迎使用 DexKit 2.0
+# DexKit 2.0
 
-> 特别说明：
-> - 当前版本正在积极开发中，可能存在不稳定性和功能缺失
-> - 由于项目进行了重写，未进行充分的测试和验证，可能存在潜在问题
-> - 如果需您需要稳定版本，请使用 [1.1.8](https://github.com/LuckyPray/DexKit/tree/1.1.x) 版本
+目前 2.0 API 基本稳定，需要经过最终测试才能正式发布。 文档和注释今后会逐步完善。
 
 ## 支持的 API
 
@@ -26,7 +23,7 @@
 - [x] 多条件查找类
 - [x] 多条件查找方法
 - [x] 多条件查找属性
-- [x] 获取类/方法/属性/参数的注解
+- [x] 提取类/方法/属性/参数的注解
 
 ⭐️ 特色功能（推荐）：
 
@@ -49,7 +46,7 @@ dependencies {
 ```
 
 > **Note**
-> DexKit `2.0.0-alpha` 的 ArtifactId 为 `dexkit`
+> 从 **DexKit 2.0** 开始，新的 ArtifactId 已从 `DexKit` 更改为 `dexkit`。
 
 DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
@@ -78,19 +75,23 @@ import org.luckypray.dexkit.demo.annotations.Router;
 
 @Router(path = "/play")
 public class PlayActivity extends AppCompatActivity {
-    private final String a = "PlayActivity";
-    private TextView b;
-    private Handler c;
+    private static final String TAG = "PlayActivity";
+    private TextView a;
+    private Handler b;
 
     public void d(View view) {
         Handler handler;
         int i;
-        Log.d("PlayActivity", "onClick: rollButton");
-        if (new Random().nextFloat() < 0.987f) {
-            handler = this.c;
+        Log.d(TAG, "onClick: rollButton");
+        float nextFloat = new Random().nextFloat();
+        if (nextFloat < 0.01d) {
+            handler = this.b;
+            i = -1;
+        } else if (nextFloat < 0.987f) {
+            handler = this.b;
             i = 0;
         } else {
-            handler = this.c;
+            handler = this.b;
             i = 114514;
         }
         handler.sendEmptyMessage(i);
@@ -99,24 +100,24 @@ public class PlayActivity extends AppCompatActivity {
     public void e(boolean z) {
         int i;
         if (!z) {
-            i = g.a();
+            i = RandomUtil.a();
         } else {
             i = 6;
         }
         String a = h.a("You rolled a ", i);
-        this.b.setText(a);
-        Log.d("PlayActivity", "rollDice: " + a);
+        this.a.setText(a);
+        Log.d(TAG, "rollDice: " + a);
     }
 
     protected void onCreate(Bundle bundle) {
         super/*androidx.fragment.app.FragmentActivity*/.onCreate(bundle);
         setContentView(0x7f0b001d);
-        Log.d("PlayActivity", "onCreate");
-        HandlerThread handlerThread = new HandlerThread("PlayActivity");
+        Log.d(TAG, "onCreate");
+        HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
-        this.c = new e(this, handlerThread.getLooper());
-        this.b = (TextView) findViewById(0x7f080134);
-        ((Button) findViewById(0x7f08013a)).setOnClickListener(new b(this));
+        this.b = new PlayActivity$1(this, handlerThread.getLooper());
+        this.a = (TextView) findViewById(0x7f080134);
+        ((Button) findViewById(0x7f08013a)).setOnClickListener(new a(this));
     }
 }
 ```
@@ -267,7 +268,7 @@ class MainHook : IXposedHookLoadPackage {
                     }
                     add {
                         parameterTypes = listOf("android.view.View")
-                        usingNumbers(0.01, -1, 0.987, 0, 114514)
+                        usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
                     }
                     add {
                         parameterTypes = listOf("boolean")
