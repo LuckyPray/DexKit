@@ -26,7 +26,7 @@ fun loadLibrary(name: String) {
 fun main() {
     loadLibrary("dexkit")
     println("current work dir: ${File("").absolutePath}")
-    val file = File("apk/wyy_8.10.61.apk")
+    val file = File("apk/demo.apk")
     if (!file.exists()) {
         println("apk not found")
         return
@@ -37,32 +37,67 @@ fun main() {
 fun doSearch(path: String) {
     DexKitBridge.create(path)?.use { bridge ->
         val startTime = System.currentTimeMillis()
-        for (i in 1..10)
-            bridge.findClass {
-//                searchPackages("com/netease/cloudmusic")
-                findFirst = true
-                matcher {
-                    fields {
-                        addForType("java.util.concurrent.ConcurrentHashMap")
-                        addForType("android.content.SharedPreferences")
-                        addForType("long")
+        bridge.findClass {
+            // Search within the specified package name range
+            searchPackages = listOf("org.luckypray.dexkit.demo")
+            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
+            // ClassMatcher for class matching
+            matcher {
+                className = "org.luckypray.dexkit.demo.PlayActivity"
+                // FieldsMatcher for matching properties within the class
+                fields {
+                    // Add a matcher for properties
+                    add {
+                        modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
+                        type = "java.lang.String"
+                        name = "TAG"
                     }
-//                    methods {
-//                        add {
-//                            modifiers = Modifier.PRIVATE
-//                            parameterTypes = listOf("java.lang.String")
-//                            returnType = "okhttp3.Cookie"
-//                        }
-//                        add {
-//                            modifiers = Modifier.PUBLIC
-//                            returnType = "java.lang.String"
-//                        }
-//                    }
-//                    usingStrings = listOf("MUSIC_U", "MUSIC_A")
+                    addForType("android.widget.TextView")
+                    addForType("android.os.Handler")
+                    // Specify the number of properties in the class
+                    count = 3
                 }
-            }.forEach {
-                println("find class: ${it.dexDescriptor}")
+                // MethodsMatcher for matching methods within the class
+                methods {
+                    // Add a matcher for methods
+                    add {
+                        modifiers = Modifier.PROTECTED
+                        name = "onCreate"
+                        returnType = "void"
+                        paramTypes = listOf("android.os.Bundle")
+                        usingStrings = listOf("onCreate")
+                    }
+                    add {
+                        paramTypes = listOf("android.view.View")
+                        usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
+                    }
+                    add {
+                        modifiers = Modifier.PUBLIC
+                        paramTypes = listOf("boolean")
+                    }
+                    // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
+                    count(1..10)
+                }
+                // AnnotationsMatcher for matching interfaces within the class
+                annotations {
+                    add {
+                        type = "org.luckypray.dexkit.demo.annotations.Router"
+                        addElement {
+                            name = "path"
+                            value {
+                                stringValue("/play")
+                            }
+                        }
+                    }
+                }
+                // Strings used by all methods in the class
+                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
             }
+        }.forEach {
+            // Print the found class: org.luckypray.dexkit.demo.PlayActivity
+            println(it.className)
+            // Get the corresponding class instance
+        }
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
     }
 }
