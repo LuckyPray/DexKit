@@ -62,7 +62,7 @@ class AnnotationElementsMatcher : BaseQuery() {
     @JvmOverloads
     fun add(name: String, matcher: AnnotationEncodeValueMatcher? = null) = also {
         add(AnnotationElementMatcher().apply {
-            this.name(name)
+            name(name)
             matcher?.let { this.value(it) }
         })
     }

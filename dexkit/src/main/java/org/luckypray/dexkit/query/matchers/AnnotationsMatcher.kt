@@ -6,6 +6,7 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationsMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
+import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class AnnotationsMatcher : BaseQuery() {
@@ -54,8 +55,13 @@ class AnnotationsMatcher : BaseQuery() {
         annotationsMatcher!!.add(annotation)
     }
 
-    fun add(typeName: String) = also {
-        add(AnnotationMatcher().apply { type(typeName) })
+    @JvmOverloads
+    fun add(
+        typeName: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        add(AnnotationMatcher().apply { type(typeName, matchType, ignoreCase) })
     }
 
     // region DSL

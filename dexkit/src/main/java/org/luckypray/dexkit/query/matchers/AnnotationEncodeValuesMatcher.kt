@@ -6,8 +6,10 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationEncodeArrayMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
+import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
+import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
 class AnnotationEncodeValuesMatcher : BaseQuery() {
     var encodeValuesMatcher: MutableList<AnnotationEncodeValueMatcher>? = null
@@ -55,11 +57,112 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
         encodeValuesMatcher!!.add(matcher)
     }
 
+    fun addNumber(value: Number) = also {
+        add(AnnotationEncodeValueMatcher().apply {
+            when (value) {
+                is Byte -> byteValue(value)
+                is Short -> shortValue(value)
+                is Int -> intValue(value)
+                is Long -> longValue(value)
+                is Float -> floatValue(value)
+                is Double -> doubleValue(value)
+            }
+        })
+    }
+
+    fun addByte(value: Byte) = also {
+        add(AnnotationEncodeValueMatcher().apply { byteValue(value) })
+    }
+
+    fun addShort(value: Short) = also {
+        add(AnnotationEncodeValueMatcher().apply { shortValue(value) })
+    }
+
+    fun addInt(value: Int) = also {
+        add(AnnotationEncodeValueMatcher().apply { intValue(value) })
+    }
+
+    fun addLong(value: Long) = also {
+        add(AnnotationEncodeValueMatcher().apply { longValue(value) })
+    }
+
+    fun addFloat(value: Float) = also {
+        add(AnnotationEncodeValueMatcher().apply { floatValue(value) })
+    }
+
+    fun addDouble(value: Double) = also {
+        add(AnnotationEncodeValueMatcher().apply { doubleValue(value) })
+    }
+
+    fun addString(value: StringMatcher) = also {
+        add(AnnotationEncodeValueMatcher().apply { stringValue(value) })
+    }
+
+    @JvmOverloads
+    fun addString(
+        value: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        add(AnnotationEncodeValueMatcher().apply { stringValue(value, matchType, ignoreCase) })
+    }
+
+    fun addClass(value: ClassMatcher) = also {
+        add(AnnotationEncodeValueMatcher().apply { classValue(value) })
+    }
+
+    @JvmOverloads
+    fun addClass(
+        className: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        add(AnnotationEncodeValueMatcher().apply {
+            classValue { className(className, matchType, ignoreCase) }
+        })
+    }
+
+    fun addEnum(value: FieldMatcher) = also {
+        add(AnnotationEncodeValueMatcher().apply { enumValue(value) })
+    }
+
+    fun addArray(value: AnnotationEncodeValuesMatcher) = also {
+        add(AnnotationEncodeValueMatcher().apply { arrayValue(value) })
+    }
+
+    fun addAnnotation(value: AnnotationMatcher) = also {
+        add(AnnotationEncodeValueMatcher().apply { annotationValue(value) })
+    }
+
+    fun addBool(value: Boolean) = also {
+        add(AnnotationEncodeValueMatcher().apply { boolValue(value) })
+    }
+
     // region DSL
 
     @kotlin.internal.InlineOnly
     inline fun add(init: AnnotationEncodeValueMatcher.() -> Unit) = also {
         add(AnnotationEncodeValueMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addClass(init: ClassMatcher.() -> Unit) = also {
+        addClass(ClassMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addEnum(init: FieldMatcher.() -> Unit) = also {
+        addEnum(FieldMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addArray(init: AnnotationEncodeValuesMatcher.() -> Unit) = also {
+        addArray(AnnotationEncodeValuesMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+        addAnnotation(AnnotationMatcher().apply(init))
     }
 
     // endregion
