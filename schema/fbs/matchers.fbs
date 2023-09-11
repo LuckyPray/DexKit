@@ -59,7 +59,6 @@ table AnnotationMatcher {
     type: ClassMatcher;
     target_element_types: TargetElementTypesMatcher;
     policy: RetentionPolicyType;
-    annotations: AnnotationsMatcher;
     elements: AnnotationElementsMatcher;
 }
 

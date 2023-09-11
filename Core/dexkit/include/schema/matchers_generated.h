@@ -829,8 +829,7 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
     VT_TYPE = 4,
     VT_TARGET_ELEMENT_TYPES = 6,
     VT_POLICY = 8,
-    VT_ANNOTATIONS = 10,
-    VT_ELEMENTS = 12
+    VT_ELEMENTS = 10
   };
   const dexkit::schema::ClassMatcher *type() const {
     return GetPointer<const dexkit::schema::ClassMatcher *>(VT_TYPE);
@@ -840,9 +839,6 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   }
   dexkit::schema::RetentionPolicyType policy() const {
     return static_cast<dexkit::schema::RetentionPolicyType>(GetField<int8_t>(VT_POLICY, 0));
-  }
-  const dexkit::schema::AnnotationsMatcher *annotations() const {
-    return GetPointer<const dexkit::schema::AnnotationsMatcher *>(VT_ANNOTATIONS);
   }
   const dexkit::schema::AnnotationElementsMatcher *elements() const {
     return GetPointer<const dexkit::schema::AnnotationElementsMatcher *>(VT_ELEMENTS);
@@ -854,8 +850,6 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
            VerifyOffset(verifier, VT_TARGET_ELEMENT_TYPES) &&
            verifier.VerifyTable(target_element_types()) &&
            VerifyField<int8_t>(verifier, VT_POLICY, 1) &&
-           VerifyOffset(verifier, VT_ANNOTATIONS) &&
-           verifier.VerifyTable(annotations()) &&
            VerifyOffset(verifier, VT_ELEMENTS) &&
            verifier.VerifyTable(elements()) &&
            verifier.EndTable();
@@ -874,9 +868,6 @@ struct AnnotationMatcherBuilder {
   }
   void add_policy(dexkit::schema::RetentionPolicyType policy) {
     fbb_.AddElement<int8_t>(AnnotationMatcher::VT_POLICY, static_cast<int8_t>(policy), 0);
-  }
-  void add_annotations(::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations) {
-    fbb_.AddOffset(AnnotationMatcher::VT_ANNOTATIONS, annotations);
   }
   void add_elements(::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements) {
     fbb_.AddOffset(AnnotationMatcher::VT_ELEMENTS, elements);
@@ -897,11 +888,9 @@ inline ::flatbuffers::Offset<AnnotationMatcher> CreateAnnotationMatcher(
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type = 0,
     ::flatbuffers::Offset<dexkit::schema::TargetElementTypesMatcher> target_element_types = 0,
     dexkit::schema::RetentionPolicyType policy = dexkit::schema::RetentionPolicyType::Any,
-    ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements = 0) {
   AnnotationMatcherBuilder builder_(_fbb);
   builder_.add_elements(elements);
-  builder_.add_annotations(annotations);
   builder_.add_target_element_types(target_element_types);
   builder_.add_type(type);
   builder_.add_policy(policy);

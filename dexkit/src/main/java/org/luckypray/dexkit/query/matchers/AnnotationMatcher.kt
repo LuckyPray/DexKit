@@ -19,8 +19,6 @@ class AnnotationMatcher : BaseQuery() {
         private set
     @set:JvmSynthetic
     var policy: RetentionPolicyType? = null
-    var annotationsMatcher: AnnotationsMatcher? = null
-        private set
     var elementsMatcher: AnnotationElementsMatcher? = null
         private set
 
@@ -62,40 +60,6 @@ class AnnotationMatcher : BaseQuery() {
 
     fun policy(policy: RetentionPolicyType) = also {
         this.policy = policy
-    }
-
-    fun annotations(annotations: AnnotationsMatcher) = also {
-        this.annotationsMatcher = annotations
-    }
-
-    fun addAnnotation(annotation: AnnotationMatcher) = also {
-        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
-        (annotationsMatcher as AnnotationsMatcher).add(annotation)
-    }
-
-    fun annotationMatchType(matchType: MatchType) = also {
-        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
-        (annotationsMatcher as AnnotationsMatcher).matchType(matchType)
-    }
-
-    fun annotationCount(count: Int) = also {
-        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
-        (annotationsMatcher as AnnotationsMatcher).count(count)
-    }
-
-    fun annotationCount(range: IntRange) = also {
-        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
-        (annotationsMatcher as AnnotationsMatcher).count(range)
-    }
-
-    fun annotationCount(range: kotlin.ranges.IntRange) = also {
-        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
-        (annotationsMatcher as AnnotationsMatcher).count(range)
-    }
-
-    fun annotationCount(min: Int, max: Int) = also {
-        annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
-        (annotationsMatcher as AnnotationsMatcher).count(min, max)
     }
 
     fun elements(elements: AnnotationElementsMatcher) = also {
@@ -145,11 +109,6 @@ class AnnotationMatcher : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
-        annotations(AnnotationsMatcher().apply(init))
-    }
-
-    @kotlin.internal.InlineOnly
     inline fun elements(init: AnnotationElementsMatcher.() -> Unit) = also {
         elements(AnnotationElementsMatcher().apply(init))
     }
@@ -172,7 +131,6 @@ class AnnotationMatcher : BaseQuery() {
             typeMatcher?.build(fbb) ?: 0,
             targetElementTypesMatcher?.build(fbb) ?: 0,
             policy?.value ?: 0,
-            annotationsMatcher?.build(fbb) ?: 0,
             elementsMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)

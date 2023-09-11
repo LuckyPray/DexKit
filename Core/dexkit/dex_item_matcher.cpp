@@ -202,9 +202,6 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
             }
         }
     }
-    if (!IsAnnotationsMatched(type_annotations, matcher->annotations())) {
-        return false;
-    }
     if (!IsAnnotationElementsMatched(annotation->elements, matcher->elements())) {
         return false;
     }
