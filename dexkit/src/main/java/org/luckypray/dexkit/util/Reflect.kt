@@ -10,6 +10,9 @@ import java.lang.reflect.Method
 
 @Throws(ClassNotFoundException::class)
 internal fun getClassInstance(classLoader: ClassLoader, className: String): Class<*> {
+    if (className.endsWith("[]")) {
+        return getClassInstance(classLoader, className.substring(0, className.length - 2)).arrayType()
+    }
     return classLoader.loadClass(className)
 }
 
