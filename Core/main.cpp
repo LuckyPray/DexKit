@@ -516,7 +516,6 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
                                             0,
                                             0,
                                             RetentionPolicyType::Any,
-                                            0,
                                             CreateAnnotationElementsMatcher(
                                                     fbb,
                                                     fbb.CreateVector(std::vector<flatbuffers::Offset<AnnotationElementMatcher>>{
@@ -1024,8 +1023,21 @@ int DexKitFindMethodUsingNumbers(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+class Test {
+public:
+    explicit Test() = default;
+};
+
+Test test() {
+    return struct {
+        int a;
+        int b;
+    }(1, 2);
+}
 
 int main() {
+    auto pair = test();
+    return 0;
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
     auto dexkit = dexkit::DexKit("../apks/demo.apk");

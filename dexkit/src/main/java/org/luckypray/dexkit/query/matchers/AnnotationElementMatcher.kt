@@ -41,7 +41,7 @@ class AnnotationElementMatcher : BaseQuery() {
         this.valueMatcher = matcher
     }
 
-    fun valueNumber(value: Number) = also {
+    fun numberValue(value: Number) = also {
         value(AnnotationEncodeValueMatcher().apply {
             when (value) {
                 is Byte -> byteValue(value)
@@ -54,36 +54,36 @@ class AnnotationElementMatcher : BaseQuery() {
         })
     }
 
-    fun valueByte(value: Byte) = also {
+    fun byteValue(value: Byte) = also {
         value(AnnotationEncodeValueMatcher().apply { byteValue(value) })
     }
 
-    fun valueShort(value: Short) = also {
+    fun shortValue(value: Short) = also {
         value(AnnotationEncodeValueMatcher().apply { shortValue(value) })
     }
 
-    fun valueInt(value: Int) = also {
+    fun intValue(value: Int) = also {
         value(AnnotationEncodeValueMatcher().apply { intValue(value) })
     }
 
-    fun valueLong(value: Long) = also {
+    fun longValue(value: Long) = also {
         value(AnnotationEncodeValueMatcher().apply { longValue(value) })
     }
 
-    fun valueFloat(value: Float) = also {
+    fun floatValue(value: Float) = also {
         value(AnnotationEncodeValueMatcher().apply { floatValue(value) })
     }
 
-    fun valueDouble(value: Double) = also {
+    fun doubleValue(value: Double) = also {
         value(AnnotationEncodeValueMatcher().apply { doubleValue(value) })
     }
 
-    fun valueString(value: StringMatcher) = also {
+    fun stringValue(value: StringMatcher) = also {
         value(AnnotationEncodeValueMatcher().apply { stringValue(value) })
     }
 
     @JvmOverloads
-    fun valueString(
+    fun stringValue(
         value: String,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
@@ -91,12 +91,12 @@ class AnnotationElementMatcher : BaseQuery() {
         value(AnnotationEncodeValueMatcher().apply { stringValue(value, matchType, ignoreCase) })
     }
 
-    fun valueClass(value: ClassMatcher) = also {
+    fun classValue(value: ClassMatcher) = also {
         value(AnnotationEncodeValueMatcher().apply { classValue(value) })
     }
 
     @JvmOverloads
-    fun valueClass(
+    fun classValue(
         className: String,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
@@ -106,19 +106,19 @@ class AnnotationElementMatcher : BaseQuery() {
         })
     }
 
-    fun valueEnum(value: FieldMatcher) = also {
+    fun enumValue(value: FieldMatcher) = also {
         value(AnnotationEncodeValueMatcher().apply { enumValue(value) })
     }
 
-    fun valueArray(value: AnnotationEncodeValuesMatcher) = also {
+    fun arrayValue(value: AnnotationEncodeArrayMatcher) = also {
         value(AnnotationEncodeValueMatcher().apply { arrayValue(value) })
     }
 
-    fun valueAnnotation(value: AnnotationMatcher) = also {
+    fun annotationValue(value: AnnotationMatcher) = also {
         value(AnnotationEncodeValueMatcher().apply { annotationValue(value) })
     }
 
-    fun valueBool(value: Boolean) = also {
+    fun boolValue(value: Boolean) = also {
         value(AnnotationEncodeValueMatcher().apply { boolValue(value) })
     }
 
@@ -130,23 +130,23 @@ class AnnotationElementMatcher : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun valueClass(init: ClassMatcher.() -> Unit) = also {
-        valueClass(ClassMatcher().apply(init))
+    inline fun classValue(init: ClassMatcher.() -> Unit) = also {
+        classValue(ClassMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly
-    inline fun valueEnum(init: FieldMatcher.() -> Unit) = also {
-        valueEnum(FieldMatcher().apply(init))
+    inline fun enumValue(init: FieldMatcher.() -> Unit) = also {
+        enumValue(FieldMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly
-    inline fun valueArray(init: AnnotationEncodeValuesMatcher.() -> Unit) = also {
-        valueArray(AnnotationEncodeValuesMatcher().apply(init))
+    inline fun arrayValue(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
+        arrayValue(AnnotationEncodeArrayMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly
-    inline fun valueAnnotation(init: AnnotationMatcher.() -> Unit) = also {
-        valueAnnotation(AnnotationMatcher().apply(init))
+    inline fun annotationValue(init: AnnotationMatcher.() -> Unit) = also {
+        annotationValue(AnnotationMatcher().apply(init))
     }
 
     // endregion

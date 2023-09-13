@@ -11,7 +11,7 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
-class AnnotationEncodeValuesMatcher : BaseQuery() {
+class AnnotationEncodeArrayMatcher : BaseQuery() {
     var encodeValuesMatcher: MutableList<AnnotationEncodeValueMatcher>? = null
         private set
     @set:JvmSynthetic
@@ -126,7 +126,7 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
         add(AnnotationEncodeValueMatcher().apply { enumValue(value) })
     }
 
-    fun addArray(value: AnnotationEncodeValuesMatcher) = also {
+    fun addArray(value: AnnotationEncodeArrayMatcher) = also {
         add(AnnotationEncodeValueMatcher().apply { arrayValue(value) })
     }
 
@@ -156,8 +156,8 @@ class AnnotationEncodeValuesMatcher : BaseQuery() {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun addArray(init: AnnotationEncodeValuesMatcher.() -> Unit) = also {
-        addArray(AnnotationEncodeValuesMatcher().apply(init))
+    inline fun addArray(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
+        addArray(AnnotationEncodeArrayMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly

@@ -6,7 +6,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.base.IQuery
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.matchers.AnnotationEncodeValuesMatcher
+import org.luckypray.dexkit.query.matchers.AnnotationEncodeArrayMatcher
 import org.luckypray.dexkit.query.matchers.AnnotationMatcher
 import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.query.matchers.EncodeValueBoolean
@@ -94,7 +94,7 @@ class AnnotationEncodeValueMatcher : IQuery {
         this.type = AnnotationEncodeValueType.EnumValue
     }
 
-    fun arrayValue(value: AnnotationEncodeValuesMatcher) = also {
+    fun arrayValue(value: AnnotationEncodeArrayMatcher) = also {
         this.value = value
         this.type = AnnotationEncodeValueType.ArrayValue
     }
@@ -122,8 +122,8 @@ class AnnotationEncodeValueMatcher : IQuery {
     }
 
     @kotlin.internal.InlineOnly
-    inline fun arrayValue(init: AnnotationEncodeValuesMatcher.() -> Unit) = also {
-        arrayValue(AnnotationEncodeValuesMatcher().apply(init))
+    inline fun arrayValue(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
+        arrayValue(AnnotationEncodeArrayMatcher().apply(init))
     }
 
     @kotlin.internal.InlineOnly
@@ -206,7 +206,7 @@ class AnnotationEncodeValueMatcher : IQuery {
         }
 
         @JvmStatic
-        fun createArray(value: AnnotationEncodeValuesMatcher): AnnotationEncodeValueMatcher {
+        fun createArray(value: AnnotationEncodeArrayMatcher): AnnotationEncodeValueMatcher {
             val type = AnnotationEncodeValueType.ArrayValue
             return AnnotationEncodeValueMatcher(value, type)
         }
