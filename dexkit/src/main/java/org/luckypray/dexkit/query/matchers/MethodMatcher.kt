@@ -11,6 +11,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.query.enums.UsingType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
@@ -306,6 +307,15 @@ class MethodMatcher : BaseQuery() {
     fun addUsingField(usingField: UsingFieldMatcher) = also {
         usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
         usingFieldsMatcher!!.add(usingField)
+    }
+
+    @JvmOverloads
+    fun addUsingField(usingField: FieldMatcher, usingType: UsingType = UsingType.Any) = also {
+        usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
+        usingFieldsMatcher!!.add(UsingFieldMatcher().apply {
+            matcher(usingField)
+            usingType(usingType)
+        })
     }
 
     fun usingNumbers(usingNumbers: NumberEncodeValueMatcherList) = also {
