@@ -84,7 +84,7 @@ fun doSearch(path: String) {
                         type = "org.luckypray.dexkit.demo.annotations.Router"
                         addElement {
                             name = "path"
-                            valueString("/play")
+                            stringValue("/play")
                         }
                     }
                 }
