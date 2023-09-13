@@ -10,6 +10,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.query.wrap.DexField
 
 class FieldMatcher : BaseQuery() {
     var nameMatcher: StringMatcher? = null
@@ -27,6 +28,14 @@ class FieldMatcher : BaseQuery() {
     var putMethodsMatcher: MethodsMatcher? = null
         private set
 
+    var descriptor: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            descriptor(value)
+        }
     var name: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
@@ -59,6 +68,13 @@ class FieldMatcher : BaseQuery() {
         set(value) {
             type(value)
         }
+
+    fun descriptor(descriptor: String) = also {
+        val dexField = DexField(descriptor)
+        name(dexField.name)
+        declaredClass(dexField.declaredClass)
+        type(dexField.type)
+    }
 
     fun name(name: StringMatcher) = also {
         this.nameMatcher = name

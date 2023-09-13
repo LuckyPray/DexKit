@@ -11,6 +11,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.query.wrap.DexClass
 
 class ClassMatcher : BaseQuery() {
     var sourceMatcher: StringMatcher? = null
@@ -32,6 +33,14 @@ class ClassMatcher : BaseQuery() {
     var usingStringsMatcher: MutableList<StringMatcher>? = null
         private set
 
+    var descriptor: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            descriptor(value)
+        }
     var source: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
@@ -70,6 +79,11 @@ class ClassMatcher : BaseQuery() {
         set(value) {
             usingStrings(value)
         }
+
+    fun descriptor(descriptor: String) = also {
+        val dexClass = DexClass(descriptor)
+        className(dexClass.className)
+    }
 
     fun source(matcher: StringMatcher) = also {
         this.sourceMatcher = matcher

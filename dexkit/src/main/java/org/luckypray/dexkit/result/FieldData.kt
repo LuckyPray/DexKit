@@ -4,8 +4,8 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerFieldMeta
+import org.luckypray.dexkit.query.wrap.DexField
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.util.getClassInstance
 import org.luckypray.dexkit.util.getFieldInstance
 import java.lang.reflect.Field
@@ -33,27 +33,19 @@ class FieldData private constructor(
         )
     }
 
-    val classSign : String by lazy {
-        dexDescriptor.substringBefore("->")
+    private val dexField by lazy {
+        DexField(dexDescriptor)
     }
 
-    val typeSign : String by lazy {
-        dexDescriptor.substringAfter(":")
-    }
+    val typeSign get() = dexDescriptor.substringAfter(":")
 
-    val className: String by lazy {
-        DexSignUtil.getSimpleName(classSign)
-    }
+    val className get() = dexField.declaredClass
 
-    val fieldName : String by lazy {
-        dexDescriptor.substringAfter("->").substringBefore(":")
-    }
+    val fieldName get() = dexField.name
 
     val name get() = fieldName
 
-    val typeName : String by lazy {
-        DexSignUtil.getSimpleName(typeSign)
-    }
+    val typeName get() = dexField.type
 
     fun getClass(): ClassData? {
         return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()

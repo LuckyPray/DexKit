@@ -5,8 +5,8 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
+import org.luckypray.dexkit.query.wrap.DexMethod
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.util.OpCodeUtil
 import org.luckypray.dexkit.util.getClassInstance
 import org.luckypray.dexkit.util.getMethodInstance
@@ -43,37 +43,21 @@ class MethodData private constructor(
         )
     }
 
-    val classSign: String by lazy {
-        dexDescriptor.substringBefore("->")
+    val dexMethod by lazy {
+        DexMethod(dexDescriptor)
     }
 
-    val paramSign: String by lazy {
-        dexDescriptor.substringAfter("(").substringBefore(")")
-    }
+    val methodSign get() = dexDescriptor.substring(dexDescriptor.indexOf("("))
 
-    val returnTypeSign: String by lazy {
-        dexDescriptor.substringAfter(")")
-    }
+    val className get() = dexMethod.declaredClass
 
-    val methodSign get() = "($paramSign)$returnTypeSign"
-
-    val className: String by lazy {
-        DexSignUtil.getSimpleName(classSign)
-    }
-
-    val methodName: String by lazy {
-        dexDescriptor.substringAfter("->").substringBefore("(")
-    }
+    val methodName get() = dexMethod.name
 
     val name get() = methodName
 
-    val paramTypeNames: List<String> by lazy {
-        DexSignUtil.getParamTypeNames(paramSign)
-    }
+    val paramTypeNames get() = dexMethod.paramTypes
 
-    val returnTypeName: String by lazy {
-        DexSignUtil.getSimpleName(returnTypeSign)
-    }
+    val returnTypeName get() = dexMethod.returnType
 
     val isConstructor: Boolean by lazy {
         methodName == "<init>"

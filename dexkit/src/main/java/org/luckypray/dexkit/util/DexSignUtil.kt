@@ -8,6 +8,18 @@ import java.lang.reflect.Method
 
 object DexSignUtil {
 
+    private val primitiveMap: Map<String, String> = mutableMapOf(
+        "boolean" to "Z",
+        "byte" to "B",
+        "char" to "C",
+        "short" to "S",
+        "int" to "I",
+        "float" to "F",
+        "long" to "J",
+        "double" to "D",
+        "void" to "V"
+    )
+
     @JvmStatic
     private fun primitiveTypeName(typeSign: String): String {
         return when (typeSign) {
@@ -24,6 +36,19 @@ object DexSignUtil {
         }
     }
 
+    /**
+     * Convert descriptor to class name.
+     * ----------------
+     * 转换描述符为类名。
+     *
+     *    getSimpleName("Ljava/lang/String;") -> "java.lang.String"
+     *    getSimpleName("[Ljava/lang/String;") -> "java.lang.String[]"
+     *    getSimpleName("[[Ljava/lang/String;") -> "java.lang.String[][]"
+     *    getSimpleName("[I") -> "int[]"
+     *
+     * @param sign type sign / 类型签名
+     * @return simple name / 类名
+     */
     @JvmStatic
     fun getSimpleName(sign: String): String {
         val arrDimensions = sign.filter { it == '[' }.length
@@ -36,30 +61,86 @@ object DexSignUtil {
         return type + "[]".repeat(arrDimensions)
     }
 
+    /**
+     * Convert class to simple name.
+     * ----------------
+     * 转换类为类名。
+     *
+     *     getSimpleName(String.class) -> "java.lang.String"
+     *     getSimpleName(int.class) -> "int"
+     *     getSimpleName(int[].class) -> "int[]"
+     *     getSimpleName(int[][].class) -> "int[][]"
+     *
+     * @param clazz class / 类
+     * @return simple name / 类名
+     */
     @JvmStatic
-    fun getParamTypeNames(paramsSign: String): List<String> {
+    fun getSimpleName(clazz: Class<*>): String {
+        if (clazz.isPrimitive) {
+            return when (clazz) {
+                Boolean::class.javaPrimitiveType -> "boolean"
+                Byte::class.javaPrimitiveType -> "byte"
+                Char::class.javaPrimitiveType -> "char"
+                Short::class.javaPrimitiveType -> "short"
+                Int::class.javaPrimitiveType -> "int"
+                Float::class.javaPrimitiveType -> "float"
+                Long::class.javaPrimitiveType -> "long"
+                Double::class.javaPrimitiveType -> "double"
+                Void.TYPE -> "void"
+                else -> throw IllegalStateException("Unknown primitive type: $clazz")
+            }
+        }
+        return if (clazz.isArray) getSimpleName(clazz.componentType!!) + "[]"
+        else clazz.name
+    }
+
+    /**
+     * Get parameter type names from parameter sign.
+     * ----------------
+     * 从参数签名获取参数类型名。
+     *
+     *    getParamTypeNames("Ljava/lang/String;I[I") -> ["java.lang.String", "int", "int[]"]
+     *
+     * @param paramSigns parameter sign / 参数签名
+     * @return parameter type names / 参数类型名
+     */
+    @JvmStatic
+    fun getParamTypeNames(paramSigns: String): List<String> {
         val params = mutableListOf<String>()
         var left = 0
         var right = 0
-        while (right < paramsSign.length) {
-            val c = paramsSign[right]
+        while (right < paramSigns.length) {
+            val c = paramSigns[right]
             if (c == '[') {
                 right++
                 continue
             } else if (c == 'L') {
-                val end = paramsSign.indexOf(';', right)
+                val end = paramSigns.indexOf(';', right)
                 right = end
             }
-            val sign = paramsSign.substring(left, right + 1)
+            val sign = paramSigns.substring(left, right + 1)
             params.add(getSimpleName(sign))
             left = ++right
         }
         if (left != right) {
-            throw IllegalStateException("Unknown signString: $paramsSign")
+            throw IllegalStateException("Unknown signString: $paramSigns")
         }
         return params
     }
 
+    /**
+     * Convert type to type sign.
+     * ----------------
+     * 转换类型为类型签名。
+     *
+     *     getTypeSign(boolean.class) -> "Z"
+     *     getTypeSign(int.class) -> "I"
+     *     getTypeSign(String.class) -> "Ljava/lang/String;"
+     *     getTypeSign(String[].class) -> "[Ljava/lang/String;"
+     *
+     * @param type type / 类型
+     * @return type sign / 类型签名
+     */
     @JvmStatic
     fun getTypeSign(type: Class<*>): String {
         if (type.isPrimitive) {
@@ -80,6 +161,36 @@ object DexSignUtil {
         else "L" + type.name.replace('.', '/') + ";"
     }
 
+    /**
+     * Convert type name to type sign.
+     * ----------------
+     * 转换类型名为类型签名。
+     *
+     *     getTypeSign("int") -> "I"
+     *     getTypeSign("java.lang.String") -> "Ljava/lang/String;"
+     *     getTypeSign("java.lang.String[]") -> "[Ljava/lang/String;"
+     *
+     * @param typeName type name / 类型名
+     * @return type sign / 类型签名
+     */
+    @JvmStatic
+    fun getTypeSign(typeName: String): String {
+        if (typeName.endsWith("[]")) {
+            return "[" + getTypeSign(typeName.substring(0, typeName.length - 2))
+        }
+        return primitiveMap[typeName] ?: ("L" + typeName.replace('.', '/') + ";")
+    }
+
+    /**
+     * Get method sign.
+     * ----------------
+     * 获取方法签名。
+     *
+     *     getMethodSign(String.class.getMethod("length")) -> "()I"
+     *
+     * @param method method / 方法
+     * @return method sign / 方法签名
+     */
     @JvmStatic
     fun getMethodSign(method: Method): String {
         return buildString {
@@ -90,6 +201,16 @@ object DexSignUtil {
         }
     }
 
+    /**
+     * Get constructor sign.
+     * ----------------
+     * 获取构造方法签名。
+     *
+     *    getConstructorSign(String.class.getConstructor()) -> "()V"
+     *
+     * @param constructor constructor / 构造方法
+     * @return constructor sign / 构造方法签名
+     */
     @JvmStatic
     fun getConstructorSign(constructor: Constructor<*>): String {
         return buildString {
@@ -99,11 +220,46 @@ object DexSignUtil {
         }
     }
 
+    /**
+     * Convert class to class descriptor.
+     * ----------------
+     * 转换类为类描述符。
+     *
+     *     getDexDescriptor(String.class) -> "Ljava/lang/String;"
+     *
+     * @param clazz class / 类
+     * @return class descriptor / 类描述符
+     */
     @JvmStatic
     fun getDexDescriptor(clazz: Class<*>): String {
-        return "L${clazz.name.replace('.', '/')};"
+        return getTypeSign(clazz)
     }
 
+    /**
+     * Convert class to class descriptor.
+     * ----------------
+     * 转换方法为方法描述符。
+     *
+     *     getClassDescriptor(String.class) -> "Ljava/lang/String;"
+     *
+     * @param clazz class / 类
+     * @return class descriptor / 类描述符
+     */
+    @JvmStatic
+    fun getClassDescriptor(clazz: Class<*>): String {
+        return getDexDescriptor(clazz)
+    }
+
+    /**
+     * Convert method to method descriptor.
+     * ----------------
+     * 转换方法为方法描述符。
+     *
+     *    getDexDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
+     *
+     * @param method method / 方法
+     * @return method descriptor / 方法描述符
+     */
     @JvmStatic
     fun getDexDescriptor(method: Method): String {
         return buildString {
@@ -114,6 +270,31 @@ object DexSignUtil {
         }
     }
 
+    /**
+     * Convert method to method descriptor.
+     * ----------------
+     * 转换构造方法为方法描述符。
+     *
+     *     getMethodDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
+     *
+     * @param method method / 方法
+     * @return method descriptor / 方法描述符
+     */
+    @JvmStatic
+    fun getMethodDescriptor(method: Method): String {
+        return getDexDescriptor(method)
+    }
+
+    /**
+     * Convert constructor to method descriptor.
+     * ----------------
+     * 转换构造方法为方法描述符。
+     *
+     *     getDexDescriptor(String.class.getConstructor()) -> "Ljava/lang/String;-><init>()V"
+     *
+     * @param constructor constructor / 构造方法
+     * @return constructor descriptor / 构造方法描述符
+     */
     @JvmStatic
     fun getDexDescriptor(constructor: Constructor<*>): String {
         return buildString {
@@ -124,6 +305,31 @@ object DexSignUtil {
         }
     }
 
+    /**
+     * Convert constructor to method descriptor.
+     * ----------------
+     * 转换构造方法为方法描述符。
+     *
+     *     getMethodDescriptor(String.class.getConstructor()) -> "Ljava/lang/String;-><init>()V"
+     *
+     * @param constructor constructor / 构造方法
+     * @return constructor descriptor / 构造方法描述符
+     */
+    @JvmStatic
+    fun getMethodDescriptor(constructor: Constructor<*>): String {
+        return getDexDescriptor(constructor)
+    }
+
+    /**
+     * Convert field to field descriptor.
+     * ----------------
+     * 转换字段为字段描述符。
+     *
+     *    getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
+     *
+     * @param field field / 字段
+     * @return field descriptor / 字段描述符
+     */
     @JvmStatic
     fun getDexDescriptor(field: Field): String {
         return buildString {
@@ -133,5 +339,20 @@ object DexSignUtil {
             append(":")
             append(getTypeSign(field.type))
         }
+    }
+
+    /**
+     * Convert field to field descriptor.
+     * ----------------
+     * 转换字段为字段描述符。
+     *
+     *    getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
+     *
+     * @param field field / 字段
+     * @return field descriptor / 字段描述符
+     */
+    @JvmStatic
+    fun getFieldDescriptor(field: Field): String {
+        return getDexDescriptor(field)
     }
 }

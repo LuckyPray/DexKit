@@ -14,6 +14,9 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
+import org.luckypray.dexkit.query.wrap.DexClass
+import org.luckypray.dexkit.query.wrap.DexField
+import org.luckypray.dexkit.query.wrap.DexMethod
 import org.luckypray.dexkit.result.AnnotationData
 import org.luckypray.dexkit.util.DexSignUtil
 import java.io.Closeable
@@ -131,6 +134,7 @@ class DexKitBridge : Closeable {
     }
 
     fun getClassData(dexDescriptor: String): ClassData? {
+        DexClass(dexDescriptor)
         return nativeGetClassData(safeToken, dexDescriptor)?.let {
             ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
         }
@@ -145,6 +149,7 @@ class DexKitBridge : Closeable {
     }
 
     fun getMethodData(dexDescriptor: String): MethodData? {
+        DexMethod(dexDescriptor)
         return nativeGetMethodData(safeToken, dexDescriptor)?.let {
             MethodData.from(this, InnerMethodMeta.getRootAsMethodMeta(ByteBuffer.wrap(it)))
         }
@@ -155,6 +160,7 @@ class DexKitBridge : Closeable {
     }
 
     fun getFieldData(dexDescriptor: String): FieldData? {
+        DexField(dexDescriptor)
         return nativeGetFieldData(safeToken, dexDescriptor)?.let {
             FieldData.from(this, InnerFieldMeta.getRootAsFieldMeta(ByteBuffer.wrap(it)))
         }

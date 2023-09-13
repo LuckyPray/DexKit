@@ -17,6 +17,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.query.wrap.DexMethod
 
 class MethodMatcher : BaseQuery() {
     var nameMatcher: StringMatcher? = null
@@ -44,6 +45,14 @@ class MethodMatcher : BaseQuery() {
     var callMethodsMatcher: MethodsMatcher? = null
         private set
 
+    var descriptor: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            descriptor(value)
+        }
     var name: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
@@ -121,6 +130,14 @@ class MethodMatcher : BaseQuery() {
         set(value) {
             usingStrings(value)
         }
+
+    fun descriptor(descriptor: String) = also {
+        val dexMethod = DexMethod(descriptor)
+        name(dexMethod.name)
+        declaredClass(dexMethod.declaredClass)
+        returnType(dexMethod.returnType)
+        paramTypes(dexMethod.paramTypes)
+    }
 
     fun name(name: StringMatcher) = also {
         this.nameMatcher = name
