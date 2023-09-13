@@ -86,7 +86,7 @@ public class JavaReadMeTest {
                         .addElement(
                             AnnotationElementMatcher.create()
                                 .name("path")
-                                .value(createString("/play"))
+                                .stringValue("/play")
                         )
                     )
                 )
@@ -151,7 +151,7 @@ public class JavaReadMeTest {
                         .addElement(
                             AnnotationElementMatcher.create()
                                 .name("path")
-                                .value(createString("/play"))
+                                .stringValue("/play")
                         )
                     )
                 )

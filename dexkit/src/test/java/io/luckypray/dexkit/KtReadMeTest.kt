@@ -75,9 +75,7 @@ class KtReadMeTest {
                         type = "org.luckypray.dexkit.demo.annotations.Router"
                         addElement {
                             name = "path"
-                            value {
-                                stringValue("/play")
-                            }
+                            stringValue("/play")
                         }
                     }
                 }
@@ -141,9 +139,7 @@ class KtReadMeTest {
                         type = "org.luckypray.dexkit.demo.annotations.Router"
                         addElement {
                             name = "path"
-                            value {
-                                stringValue("/play")
-                            }
+                            stringValue("/play")
                         }
                     }
                 }
