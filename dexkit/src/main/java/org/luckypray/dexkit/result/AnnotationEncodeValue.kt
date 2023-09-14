@@ -20,13 +20,13 @@ import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.util.DexSignUtil
 
-class AnnotationEncodeValue(
+class AnnotationEncodeValue private constructor(
     val value: Any,
     val type: AnnotationEncodeValueType
 ) {
 
-    companion object {
-        internal fun from(bridge: DexKitBridge, encodeValueMeta: InnerAnnotationEncodeValueMeta): AnnotationEncodeValue {
+    internal companion object `-Companion` {
+        fun from(bridge: DexKitBridge, encodeValueMeta: InnerAnnotationEncodeValueMeta): AnnotationEncodeValue {
             val type = AnnotationEncodeValueType.from(encodeValueMeta.valueType)
             val value: Any = when (type) {
                 AnnotationEncodeValueType.ByteValue -> (encodeValueMeta.value(InnerEncodeValueByte()) as InnerEncodeValueByte).value
@@ -43,6 +43,10 @@ class AnnotationEncodeValue(
                 AnnotationEncodeValueType.AnnotationValue -> AnnotationData.from(bridge, encodeValueMeta.value(InnerAnnotationMeta()) as InnerAnnotationMeta)
                 AnnotationEncodeValueType.BoolValue -> (encodeValueMeta.value(InnerEncodeValueBoolean()) as InnerEncodeValueBoolean).value
             }
+            return AnnotationEncodeValue(value, type)
+        }
+
+        fun from(value: Any, type: AnnotationEncodeValueType): AnnotationEncodeValue {
             return AnnotationEncodeValue(value, type)
         }
     }

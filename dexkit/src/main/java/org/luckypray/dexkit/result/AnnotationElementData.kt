@@ -7,19 +7,23 @@ import org.luckypray.dexkit.InnerAnnotationElementMeta
 import org.luckypray.dexkit.InnerAnnotationEncodeValueMeta
 import org.luckypray.dexkit.result.base.BaseData
 
-class AnnotationElementData(
+class AnnotationElementData private constructor(
     bridge: DexKitBridge,
     val name: String,
     val value: AnnotationEncodeValue
 ) : BaseData(bridge) {
 
-    companion object {
-        internal fun from(
+    internal companion object `-Companion` {
+        fun from(
             bridge: DexKitBridge,
             element: InnerAnnotationElementMeta
         ): AnnotationElementData {
             val value = element.value(InnerAnnotationEncodeValueMeta()) as InnerAnnotationEncodeValueMeta
-            return AnnotationElementData(bridge, element.name!!, AnnotationEncodeValue.from(bridge, value))
+            return AnnotationElementData(
+                bridge,
+                element.name!!,
+                AnnotationEncodeValue.from(bridge, value)
+            )
         }
     }
 

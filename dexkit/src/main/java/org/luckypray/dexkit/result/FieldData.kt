@@ -21,8 +21,8 @@ class FieldData private constructor(
     val typeId: Int
 ): BaseData(bridge) {
 
-    companion object {
-        internal fun from(bridge: DexKitBridge, fieldMeta: InnerFieldMeta) = FieldData(
+    internal companion object `-Companion` {
+        fun from(bridge: DexKitBridge, fieldMeta: InnerFieldMeta) = FieldData(
             bridge,
             fieldMeta.id.toInt(),
             fieldMeta.dexId.toInt(),
@@ -37,46 +37,122 @@ class FieldData private constructor(
         DexField(dexDescriptor)
     }
 
+    /**
+     * field type sign
+     * ----------------
+     * 字段类型签名
+     */
     val typeSign get() = dexDescriptor.substringAfter(":")
 
+    /**
+     * field declaring class name
+     * ----------------
+     * 定义字段的类名
+     */
     val className get() = dexField.className
 
+    /**
+     * field name
+     * ----------------
+     * 字段名
+     */
     val fieldName get() = dexField.name
 
+    /**
+     * @see fieldName
+     */
     val name get() = dexField.name
 
+    /**
+     * field type name
+     * ----------------
+     * 字段类型名
+     */
     val typeName get() = dexField.typeName
 
-    fun getClass(): ClassData? {
-        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
+    /**
+     * get declared class' [ClassData]
+     * ----------------
+     * 获取定义字段的类的 [ClassData]
+     */
+    fun getClass(): ClassData {
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).first()
     }
 
-    fun getType(): ClassData? {
-        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, typeId))).firstOrNull()
+    /**
+     * get field type's [ClassData]
+     * ----------------
+     * 获取字段类型的 [ClassData]
+     */
+    fun getType(): ClassData {
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, typeId))).first()
     }
 
+    /**
+     * Get declared annotations (not include dalvik system annotations)
+     * ----------------
+     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     */
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getFieldAnnotations(getEncodeId(dexId, id))
     }
 
+    /**
+     * Using smali `iput-*`、`sput-*` instructions to read this field's methods
+     * ----------------
+     * 使用 smali `iget-*`、`sget-*` 指令读取字段的方法
+     */
     fun getReadMethods(): List<MethodData> {
         return bridge.readFieldMethods(getEncodeId(dexId, id))
     }
 
+    /**
+     * Using smali `iput-*`、`sput-*` instructions to write this field's methods
+     * ----------------
+     * 使用 smali `iput-*`、`sput-*` 指令写入字段的方法
+     */
     fun getWriteMethods(): List<MethodData> {
         return bridge.writeFieldMethods(getEncodeId(dexId, id))
     }
 
+    /**
+     * Load declared class from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 加载定义字段的类
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
     @Throws(ClassNotFoundException::class)
-    fun getTypeInstance(classLoader: ClassLoader): Class<*> {
+    fun getClassInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, className)
     }
 
+    /**
+     * Load field's type from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 加载字段类型
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
+    @Throws(ClassNotFoundException::class)
+    fun getTypeInstance(classLoader: ClassLoader): Class<*> {
+        return getClassInstance(classLoader, typeName)
+    }
+
+    /**
+     * Get field's [Field] from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 获取字段对应的 [Field]
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Field]
+     */
     @Throws(NoSuchFieldException::class)
     fun getFieldInstance(classLoader: ClassLoader): Field {
         return getFieldInstance(classLoader, this)
     }
-
 
     override fun toString(): String {
         return buildString {

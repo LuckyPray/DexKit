@@ -26,8 +26,8 @@ class MethodData private constructor(
     val parameterTypeIds: List<Int>
 ) : BaseData(bridge) {
 
-    companion object {
-        internal fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta) = MethodData(
+    internal companion object `-Companion` {
+        fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta) = MethodData(
             bridge,
             methodMeta.id.toInt(),
             methodMeta.dexId.toInt(),
@@ -47,81 +47,206 @@ class MethodData private constructor(
         DexMethod(dexDescriptor)
     }
 
+    /**
+     * method sign
+     * ----------------
+     * 方法签名
+     */
     val methodSign get() = dexDescriptor.substring(dexDescriptor.indexOf("("))
 
+    /**
+     * method declaring class name
+     * ----------------
+     * 定义方法的类名
+     */
     val className get() = dexMethod.className
 
+    /**
+     * method name
+     * ----------------
+     * 方法名
+     */
     val methodName get() = dexMethod.name
 
+    /**
+     * @see methodName
+     */
     val name get() = dexMethod.name
 
+    /**
+     * method parameter type names
+     * ----------------
+     * 方法参数类型名
+     */
     val paramTypeNames get() = dexMethod.paramTypeNames
 
+    /**
+     * method return type name
+     * ----------------
+     * 方法返回类型名
+     */
     val returnTypeName get() = dexMethod.returnTypeName
 
+    /**
+     * Whether the method is a constructor method
+     * ----------------
+     * 该方法是否为构造方法
+     */
     val isConstructor get() = methodName == "<init>"
 
+    /**
+     * Whether the method is a normal method
+     * ----------------
+     * 该方法是否为普通方法
+     */
     val isMethod get() = methodName != "<clinit>" && !isConstructor
 
+    /**
+     * Get declared class' [ClassData]
+     * ----------------
+     * 获取定义方法的类的 [ClassData]
+     */
     fun getClass(): ClassData? {
         return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
     }
 
+    /**
+     * Get return type's [ClassData]
+     * ----------------
+     * 获取返回类型的 [ClassData]
+     */
     fun getReturnType(): ClassData? {
         return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, returnTypeId))).firstOrNull()
     }
 
+    /**
+     * Get parameter types' [ClassDataList]
+     * ----------------
+     * 获取参数类型的 [ClassDataList]
+     */
     fun getParameterTypes(): ClassDataList {
         return bridge.getTypeByIds(parameterTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    /**
+     * Get parameter types count
+     * ----------------
+     * 获取参数类型的数量
+     */
     fun getParameterNames(): List<String?>? {
         return bridge.getParameterNames(getEncodeId(dexId, id))
     }
 
+    /**
+     * Get declared annotations (not include dalvik system annotations)
+     * ----------------
+     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     */
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getMethodAnnotations(getEncodeId(dexId, id))
     }
 
-    fun getParameterAnnotations(): List<List<AnnotationData>> {
+    /**
+     * Get parameter's annotations (not include dalvik system annotations)
+     * ----------------
+     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     */
+    fun getParamAnnotations(): List<List<AnnotationData>> {
         return bridge.getParameterAnnotations(getEncodeId(dexId, id))
     }
 
+    /**
+     * Get opcodes (range: 0-255)
+     * ----------------
+     * 获取操作码列表 (范围：0-255)
+     */
     fun getOpCodes(): List<Int> {
         return bridge.getMethodOpCodes(getEncodeId(dexId, id))
     }
 
+    /**
+     * Get opcode's smali instruction
+     * ----------------
+     * 获取操作码对应的 smali 指令
+     */
     fun getOpNames(): List<String> {
         return getOpCodes().map { OpCodeUtil.getOpFormat(it) }
     }
 
+    /**
+     * Get method callers
+     * ----------------
+     * 获取调用该方法的方法列表
+     */
     fun getMethodCallers(): List<MethodData> {
         return bridge.getCallMethods(getEncodeId(dexId, id))
     }
 
+    /**
+     * Get method invoke methods
+     * ----------------
+     * 获取该方法调用的方法列表
+     */
     fun getInvokeMethods(): List<MethodData> {
         return bridge.getInvokeMethods(getEncodeId(dexId, id))
     }
 
+    /**
+     * Get method using strings
+     * ----------------
+     * 获取该方法使用的字符串列表
+     */
     fun getUsingStrings(): List<String> {
         return bridge.getMethodUsingStrings(getEncodeId(dexId, id))
     }
 
+    /**
+     * Load declared class from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 加载定义方法的类
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, className)
     }
 
+    /**
+     * Load return type from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 加载返回类型
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
     @Throws(ClassNotFoundException::class)
     fun getReturnTypeInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, returnTypeName)
     }
 
+    /**
+     * Load constructor from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 加载构造方法
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Constructor]
+     */
     @Throws(NoSuchMethodException::class)
     fun getConstructorInstance(classLoader: ClassLoader): Constructor<*> {
         return getConstructorInstance(classLoader, this)
     }
 
+    /**
+     * Load method from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 加载方法
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Method]
+     */
     @Throws(NoSuchMethodException::class)
     fun getMethodInstance(classLoader: ClassLoader): Method {
         return getMethodInstance(classLoader, this)

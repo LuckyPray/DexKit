@@ -8,7 +8,7 @@ import org.luckypray.dexkit.query.enums.AnnotationVisibilityType
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexSignUtil
 
-class AnnotationData(
+class AnnotationData private constructor(
     bridge: DexKitBridge,
     val dexId: Int,
     val typeId: Int,
@@ -17,25 +17,22 @@ class AnnotationData(
     val elements: List<AnnotationElementData>
 ) : BaseData(bridge) {
 
-    companion object {
-        internal fun from(
+    internal companion object `-Companion` {
+        fun from(
             bridge: DexKitBridge,
             annotationMeta: InnerAnnotationMeta
-        ): AnnotationData {
-            val elements = mutableListOf<AnnotationElementData>().apply {
+        ) = AnnotationData(
+            bridge,
+            annotationMeta.dexId.toInt(),
+            annotationMeta.typeId.toInt(),
+            annotationMeta.typeDescriptor!!,
+            AnnotationVisibilityType.from(annotationMeta.visibility),
+            mutableListOf<AnnotationElementData>().apply {
                 for (i in 0 until annotationMeta.elementsLength) {
                     add(AnnotationElementData.from(bridge, annotationMeta.elements(i)!!))
                 }
             }
-            return AnnotationData(
-                bridge,
-                annotationMeta.dexId.toInt(),
-                annotationMeta.typeId.toInt(),
-                annotationMeta.typeDescriptor!!,
-                AnnotationVisibilityType.from(annotationMeta.visibility),
-                elements
-            )
-        }
+        )
     }
 
     val typeName: String by lazy {

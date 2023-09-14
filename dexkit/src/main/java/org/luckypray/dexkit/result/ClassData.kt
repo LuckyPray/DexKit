@@ -26,8 +26,8 @@ class ClassData private constructor(
     val fieldIds: List<Int>,
 ): BaseData(bridge) {
 
-    companion object {
-        internal fun from(bridge: DexKitBridge, classMeta: InnerClassMeta) = ClassData(
+    internal companion object `-Companion` {
+        fun from(bridge: DexKitBridge, classMeta: InnerClassMeta) = ClassData(
             bridge,
             classMeta.id.toInt(),
             classMeta.dexId.toInt(),
@@ -57,53 +57,127 @@ class ClassData private constructor(
         DexType(dexDescriptor)
     }
 
+    /**
+     * Full class name
+     * ----------------
+     * 完整类名
+     *
+     *     e.g. java.lang.String
+     */
     val className get() = dexType.typeName
 
+    /**
+     * @see className
+     */
     val name get() = dexType.typeName
 
+    /**
+     * Get super's [ClassData], if super class not defined in dex, return null
+     * ----------------
+     * 获取父类的 [ClassData]，如果父类未在 dex 中定义，返回 null
+     */
     fun getSuperClass(): ClassData? {
         superClassId ?: return null
         return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, superClassId))).firstOrNull()
     }
 
+    /**
+     * Get implemented interfaces
+     * ----------------
+     * 获取实现接口列表
+     */
     fun getInterfaces(): ClassDataList {
         return bridge.getTypeByIds(interfaceIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    /**
+     * Get implemented interfaces count
+     * ----------------
+     * 获取实现接口的数量
+     */
     fun getInterfaceCount(): Int {
         return interfaceIds.size
     }
 
+    /**
+     * Get declared methods (include static block: `<clinit>`, and constructor: `<init>`)
+     * ----------------
+     * 获取定义的方法列表（包含 静态代码块: `<clinit>`，以及构造函数: `<init>`）
+     */
     fun getMethods(): MethodDataList {
         return bridge.getMethodByIds(methodIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    /**
+     * Get declared methods count
+     * ----------------
+     * 获取定义的方法数量
+     */
     fun getMethodCount(): Int {
         return methodIds.size
     }
 
+    /**
+     * Get declared fields
+     * ----------------
+     * 获取定义的字段列表
+     */
     fun getFields(): FieldDataList {
         return bridge.getFieldByIds(fieldIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
+    /**
+     * Get declared fields count
+     * ----------------
+     * 获取定义的字段数量
+     */
     fun getFieldCount(): Int {
         return fieldIds.size
     }
 
+    /**
+     * Get declared annotations (not include dalvik system annotations)
+     * ----------------
+     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     */
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getClassAnnotations(getEncodeId(dexId, id))
     }
 
+    /**
+     * Load this class from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 中加载此类
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
     @Throws(ClassNotFoundException::class)
     fun getInstance(classLoader: ClassLoader): Class<*> {
         return getClassInstance(classLoader, className)
     }
 
+    /**
+     * Load super class from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 中加载父类
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
     @Throws(ClassNotFoundException::class)
     fun getSuperClassInstance(classLoader: ClassLoader): Class<*>? {
         return getSuperClass()?.getInstance(classLoader)
     }
 
+    /**
+     * Load implemented interfaces from [ClassLoader]
+     * ----------------
+     * 从 [ClassLoader] 中加载实现的接口
+     *
+     * @param classLoader class loader / 类加载器
+     * @return [Class]
+     */
     @Throws(ClassNotFoundException::class)
     fun getInterfaceInstances(classLoader: ClassLoader): List<Class<*>> {
         return getInterfaces().map { getClassInstance(classLoader, it.className) }

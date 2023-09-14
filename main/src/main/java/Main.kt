@@ -1,5 +1,4 @@
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
 import java.lang.reflect.Modifier
 import java.util.Locale

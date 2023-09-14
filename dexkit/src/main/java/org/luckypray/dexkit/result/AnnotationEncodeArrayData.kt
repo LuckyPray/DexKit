@@ -19,13 +19,13 @@ import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.result.base.BaseData
 
-class AnnotationEncodeArrayData(
+class AnnotationEncodeArrayData private constructor(
     bridge: DexKitBridge,
     val values: List<AnnotationEncodeValue>
 ) : BaseData(bridge) {
 
-    companion object {
-        internal fun from(
+    internal companion object `-Companion` {
+        fun from(
             bridge: DexKitBridge,
             annotationEncodeArray: InnerAnnotationEncodeArray
         ): AnnotationEncodeArrayData {
@@ -53,11 +53,11 @@ class AnnotationEncodeArrayData(
                         }
                         AnnotationEncodeValueType.TypeValue -> ClassData.from(bridge, encodeValue.value(InnerClassMeta()) as InnerClassMeta)
                         AnnotationEncodeValueType.EnumValue -> FieldData.from(bridge, encodeValue.value(InnerFieldMeta()) as InnerFieldMeta)
-                        AnnotationEncodeValueType.ArrayValue -> AnnotationEncodeArrayData.from(bridge, encodeValue.value(InnerAnnotationEncodeArray()) as InnerAnnotationEncodeArray)
+                        AnnotationEncodeValueType.ArrayValue -> from(bridge, encodeValue.value(InnerAnnotationEncodeArray()) as InnerAnnotationEncodeArray)
                         AnnotationEncodeValueType.AnnotationValue -> AnnotationData.from(bridge, encodeValue.value(InnerAnnotationMeta()) as InnerAnnotationMeta)
                         AnnotationEncodeValueType.BoolValue -> (encodeValue.value(InnerEncodeValueBoolean()) as InnerEncodeValueBoolean).value
                     }
-                    add(AnnotationEncodeValue(value, type))
+                    add(AnnotationEncodeValue.from(value, type))
                 }
             }
             return AnnotationEncodeArrayData(bridge, values)
