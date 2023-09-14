@@ -72,8 +72,8 @@ class FieldMatcher : BaseQuery() {
     fun descriptor(descriptor: String) = also {
         val dexField = DexField(descriptor)
         name(dexField.name)
-        declaredClass(dexField.declaredClass)
-        type(dexField.type)
+        declaredClass(dexField.className)
+        type(dexField.typeName)
     }
 
     fun name(name: StringMatcher) = also {

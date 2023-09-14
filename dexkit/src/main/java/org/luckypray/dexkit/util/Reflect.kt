@@ -7,13 +7,23 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-
 @Throws(ClassNotFoundException::class)
-internal fun getClassInstance(classLoader: ClassLoader, className: String): Class<*> {
-    if (className.endsWith("[]")) {
-        return getClassInstance(classLoader, className.substring(0, className.length - 2)).arrayType()
+internal fun getClassInstance(classLoader: ClassLoader, typeName: String): Class<*> {
+    if (typeName.endsWith("[]")) {
+        return getClassInstance(classLoader, typeName.substring(0, typeName.length - 2)).arrayType()
     }
-    return classLoader.loadClass(className)
+    return when (typeName) {
+        "boolean" -> Int::class.javaPrimitiveType!!
+        "byte" -> Byte::class.javaPrimitiveType!!
+        "char" -> Char::class.javaPrimitiveType!!
+        "short" -> Short::class.javaPrimitiveType!!
+        "int" -> Int::class.javaPrimitiveType!!
+        "long" -> Long::class.javaPrimitiveType!!
+        "float" -> Float::class.javaPrimitiveType!!
+        "double" -> Double::class.javaPrimitiveType!!
+        "void" -> Void.TYPE
+        else -> classLoader.loadClass(typeName)
+    }
 }
 
 @Throws(NoSuchFieldException::class)

@@ -20,20 +20,22 @@ object DexSignUtil {
         "void" to "V"
     )
 
+    private val primitiveTypeNameMap: Map<String, String> = mutableMapOf(
+        "Z" to "boolean",
+        "B" to "byte",
+        "C" to "char",
+        "S" to "short",
+        "I" to "int",
+        "F" to "float",
+        "J" to "long",
+        "D" to "double",
+        "V" to "void"
+    )
+
     @JvmStatic
     private fun primitiveTypeName(typeSign: String): String {
-        return when (typeSign) {
-            "Z" -> "boolean"
-            "B" -> "byte"
-            "C" -> "char"
-            "S" -> "short"
-            "I" -> "int"
-            "F" -> "float"
-            "J" -> "long"
-            "D" -> "double"
-            "V" -> "void"
-            else -> throw IllegalArgumentException("Unknown primitive typeSign: $typeSign")
-        }
+        return primitiveTypeNameMap[typeSign]
+            ?: throw IllegalArgumentException("Unknown primitive typeSign: $typeSign")
     }
 
     /**
@@ -46,19 +48,21 @@ object DexSignUtil {
      *    getSimpleName("[[Ljava/lang/String;") -> "java.lang.String[][]"
      *    getSimpleName("[I") -> "int[]"
      *
-     * @param sign type sign / 类型签名
+     * @param typeSign type sign / 类型签名
      * @return simple name / 类名
      */
     @JvmStatic
-    fun getSimpleName(sign: String): String {
-        val arrDimensions = sign.filter { it == '[' }.length
-        var type = sign.substring(arrDimensions)
-        type = if (type.length == 1) {
-            primitiveTypeName(type)
-        } else {
-            type.substring(1, type.length - 1).replace('/', '.')
+    fun getSimpleName(typeSign: String): String {
+        if (typeSign[0] == '[') {
+            return getSimpleName(typeSign.substring(1)) + "[]"
         }
-        return type + "[]".repeat(arrDimensions)
+        if (typeSign.length == 1) {
+            return primitiveTypeName(typeSign)
+        }
+        if (typeSign[0] != 'L' || typeSign[typeSign.length - 1] != ';') {
+            throw IllegalStateException("Unknown class sign: $typeSign")
+        }
+        return typeSign.substring(1, typeSign.length - 1).replace('/', '.')
     }
 
     /**
@@ -76,6 +80,9 @@ object DexSignUtil {
      */
     @JvmStatic
     fun getSimpleName(clazz: Class<*>): String {
+        if (clazz.isArray) {
+            return getSimpleName(clazz.componentType!!) + "[]"
+        }
         if (clazz.isPrimitive) {
             return when (clazz) {
                 Boolean::class.javaPrimitiveType -> "boolean"
@@ -90,8 +97,7 @@ object DexSignUtil {
                 else -> throw IllegalStateException("Unknown primitive type: $clazz")
             }
         }
-        return if (clazz.isArray) getSimpleName(clazz.componentType!!) + "[]"
-        else clazz.name
+        return clazz.name
     }
 
     /**

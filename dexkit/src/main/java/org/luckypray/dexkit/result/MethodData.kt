@@ -43,40 +43,36 @@ class MethodData private constructor(
         )
     }
 
-    val dexMethod by lazy {
+    private val dexMethod by lazy {
         DexMethod(dexDescriptor)
     }
 
     val methodSign get() = dexDescriptor.substring(dexDescriptor.indexOf("("))
 
-    val className get() = dexMethod.declaredClass
+    val className get() = dexMethod.className
 
     val methodName get() = dexMethod.name
 
-    val name get() = methodName
+    val name get() = dexMethod.name
 
-    val paramTypeNames get() = dexMethod.paramTypes
+    val paramTypeNames get() = dexMethod.paramTypeNames
 
-    val returnTypeName get() = dexMethod.returnType
+    val returnTypeName get() = dexMethod.returnTypeName
 
-    val isConstructor: Boolean by lazy {
-        methodName == "<init>"
-    }
+    val isConstructor get() = methodName == "<init>"
 
-    val isMethod: Boolean by lazy {
-        methodName != "<clinit>" && !isConstructor
-    }
+    val isMethod get() = methodName != "<clinit>" && !isConstructor
 
     fun getClass(): ClassData? {
-        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
     }
 
     fun getReturnType(): ClassData? {
-        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, returnTypeId))).firstOrNull()
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, returnTypeId))).firstOrNull()
     }
 
     fun getParameterTypes(): ClassDataList {
-        return bridge.getClassByIds(parameterTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
+        return bridge.getTypeByIds(parameterTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
     fun getParameterNames(): List<String?>? {
@@ -140,7 +136,7 @@ class MethodData private constructor(
             append(" ")
             append(className)
             append(".")
-            append(methodName)
+            append(name)
             append(paramTypeNames.joinToString(", "))
             append(")")
         }

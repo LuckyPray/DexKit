@@ -8,9 +8,9 @@ import java.lang.reflect.Field
 
 class DexField {
 
-    val declaredClass: String
+    val className: String
     val name: String
-    val type: String
+    val typeName: String
 
     /**
      * Convert field descriptor to [DexField].
@@ -25,9 +25,9 @@ class DexField {
         if (idx1 == -1 || idx2 == -1) {
             throw IllegalAccessError("not field descriptor: $fieldDescriptor")
         }
-        declaredClass = getSimpleName(fieldDescriptor.substring(0, idx1))
+        className = getSimpleName(fieldDescriptor.substring(0, idx1))
         name = fieldDescriptor.substring(idx1 + 2, idx2)
-        type = getSimpleName(fieldDescriptor.substring(idx2 + 1))
+        typeName = getSimpleName(fieldDescriptor.substring(idx2 + 1))
     }
 
     /**
@@ -38,18 +38,18 @@ class DexField {
      * @param field field / 字段
      */
     constructor(field: Field) {
-        declaredClass = getSimpleName(field.declaringClass)
+        className = getSimpleName(field.declaringClass)
         name = field.name
-        type = getSimpleName(field.type)
+        typeName = getSimpleName(field.type)
     }
 
     override fun toString(): String {
         return buildString {
-            append(getTypeSign(declaredClass))
+            append(getTypeSign(className))
             append("->")
             append(name)
             append(":")
-            append(getTypeSign(type))
+            append(getTypeSign(typeName))
         }
     }
 }

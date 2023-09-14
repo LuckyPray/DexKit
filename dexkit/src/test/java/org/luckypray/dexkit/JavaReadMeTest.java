@@ -1,10 +1,8 @@
-package io.luckypray.dexkit;
+package org.luckypray.dexkit;
 
-import static org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher.createString;
-import static io.luckypray.dexkit.util.LibLoader.loadLibrary;
+import static org.luckypray.dexkit.LibLoader.loadLibrary;
 
 import org.junit.Test;
-import org.luckypray.dexkit.DexKitBridge;
 import org.luckypray.dexkit.query.FindClass;
 import org.luckypray.dexkit.query.matchers.AnnotationElementMatcher;
 import org.luckypray.dexkit.query.matchers.AnnotationMatcher;

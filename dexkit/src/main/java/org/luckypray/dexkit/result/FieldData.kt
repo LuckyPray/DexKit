@@ -39,20 +39,20 @@ class FieldData private constructor(
 
     val typeSign get() = dexDescriptor.substringAfter(":")
 
-    val className get() = dexField.declaredClass
+    val className get() = dexField.className
 
     val fieldName get() = dexField.name
 
-    val name get() = fieldName
+    val name get() = dexField.name
 
-    val typeName get() = dexField.type
+    val typeName get() = dexField.typeName
 
     fun getClass(): ClassData? {
-        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
     }
 
     fun getType(): ClassData? {
-        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, typeId))).firstOrNull()
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, typeId))).firstOrNull()
     }
 
     fun getAnnotations(): List<AnnotationData> {
@@ -87,7 +87,7 @@ class FieldData private constructor(
             append(" ")
             append(className)
             append(".")
-            append(fieldName)
+            append(name)
         }
     }
 

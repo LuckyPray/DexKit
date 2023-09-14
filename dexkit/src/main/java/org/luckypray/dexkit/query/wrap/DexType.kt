@@ -5,36 +5,33 @@ package org.luckypray.dexkit.query.wrap
 import org.luckypray.dexkit.util.DexSignUtil.getSimpleName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 
-class DexClass {
+class DexType {
 
-    val className: String
+    val typeName: String
 
     /**
-     * Convert class descriptor to [DexClass].
+     * Convert class descriptor to [DexType].
      * ----------------
-     * 转换类描述符为 [DexClass]。
+     * 转换类描述符为 [DexType]。
      *
      * @param classDescriptor class descriptor / 类描述符
      */
     constructor(classDescriptor: String) {
-        if (classDescriptor[0] != 'L' && classDescriptor.last() != ';') {
-            throw IllegalAccessError("not class descriptor: $classDescriptor")
-        }
-        className = getSimpleName(classDescriptor)
+        typeName = getSimpleName(classDescriptor)
     }
 
     /**
-     * Convert class to [DexClass].
+     * Convert class to [DexType].
      * ----------------
-     * 转换类为 [DexClass]。
+     * 转换类为 [DexType]。
      *
      * @param clazz class / 类
      */
     constructor(clazz: Class<*>) {
-        className = clazz.name
+        typeName = clazz.typeName
     }
 
     override fun toString(): String {
-        return getTypeSign(className)
+        return getTypeSign(typeName)
     }
 }

@@ -11,7 +11,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
-import org.luckypray.dexkit.query.wrap.DexClass
+import org.luckypray.dexkit.query.wrap.DexType
 
 class ClassMatcher : BaseQuery() {
     var sourceMatcher: StringMatcher? = null
@@ -81,8 +81,8 @@ class ClassMatcher : BaseQuery() {
         }
 
     fun descriptor(descriptor: String) = also {
-        val dexClass = DexClass(descriptor)
-        className(dexClass.className)
+        val dexType = DexType(descriptor)
+        className(dexType.typeName)
     }
 
     fun source(matcher: StringMatcher) = also {

@@ -10,10 +10,10 @@ import java.lang.reflect.Method
 
 class DexMethod {
 
-    val declaredClass: String
+    val className: String
     val name: String
-    val paramTypes: List<String>
-    val returnType: String
+    val paramTypeNames: List<String>
+    val returnTypeName: String
 
     /**
      * Convert method descriptor to [DexMethod].
@@ -29,10 +29,10 @@ class DexMethod {
         if (idx1 == -1 || idx2 == -1 || idx3 == -1) {
             throw IllegalAccessError("not method descriptor: $methodDescriptor")
         }
-        declaredClass = getSimpleName(methodDescriptor.substring(0, idx1))
+        className = getSimpleName(methodDescriptor.substring(0, idx1))
         name = methodDescriptor.substring(idx1 + 2, idx2)
-        paramTypes = getParamTypeNames(methodDescriptor.substring(idx2 + 1, idx3))
-        returnType = getSimpleName(methodDescriptor.substring(idx3 + 1))
+        paramTypeNames = getParamTypeNames(methodDescriptor.substring(idx2 + 1, idx3))
+        returnTypeName = getSimpleName(methodDescriptor.substring(idx3 + 1))
     }
 
     /**
@@ -43,10 +43,10 @@ class DexMethod {
      * @param method method / 方法
      */
     constructor(method: Method) {
-        declaredClass = getSimpleName(method.declaringClass)
+        className = getSimpleName(method.declaringClass)
         name = method.name
-        paramTypes = method.parameterTypes.map { getSimpleName(it) }
-        returnType = getSimpleName(method.returnType)
+        paramTypeNames = method.parameterTypes.map { getSimpleName(it) }
+        returnTypeName = getSimpleName(method.returnType)
     }
 
     /**
@@ -57,21 +57,21 @@ class DexMethod {
      * @param constructor constructor / 构造方法
      */
     constructor(constructor: Constructor<*>) {
-        declaredClass = constructor.declaringClass.name
+        className = constructor.declaringClass.name
         name = "<init>"
-        paramTypes = constructor.parameterTypes.map { getTypeSign(it) }
-        returnType = "void"
+        paramTypeNames = constructor.parameterTypes.map { getTypeSign(it) }
+        returnTypeName = "void"
     }
 
     override fun toString(): String {
         return buildString {
-            append(getTypeSign(declaredClass))
+            append(getTypeSign(className))
             append("->")
             append(name)
             append("(")
-            append(paramTypes.joinToString("") { getTypeSign(it) })
+            append(paramTypeNames.joinToString("") { getTypeSign(it) })
             append(")")
-            append(getTypeSign(returnType))
+            append(getTypeSign(returnTypeName))
         }
     }
 }

@@ -14,7 +14,7 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
-import org.luckypray.dexkit.query.wrap.DexClass
+import org.luckypray.dexkit.query.wrap.DexType
 import org.luckypray.dexkit.query.wrap.DexField
 import org.luckypray.dexkit.query.wrap.DexMethod
 import org.luckypray.dexkit.result.AnnotationData
@@ -134,7 +134,7 @@ class DexKitBridge : Closeable {
     }
 
     fun getClassData(dexDescriptor: String): ClassData? {
-        DexClass(dexDescriptor)
+        DexType(dexDescriptor)
         return nativeGetClassData(safeToken, dexDescriptor)?.let {
             ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
         }
@@ -282,7 +282,7 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
-    internal inline fun getClassByIds(encodeIdArray: LongArray): ClassDataList {
+    internal inline fun getTypeByIds(encodeIdArray: LongArray): ClassDataList {
         val res = nativeGetClassByIds(safeToken, encodeIdArray)
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()

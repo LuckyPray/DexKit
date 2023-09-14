@@ -7,8 +7,8 @@ import org.luckypray.dexkit.InnerClassMeta
 import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.query.FieldDataList
 import org.luckypray.dexkit.query.MethodDataList
+import org.luckypray.dexkit.query.wrap.DexType
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.util.getClassInstance
 import java.lang.reflect.Modifier
 import kotlin.jvm.Throws
@@ -53,23 +53,21 @@ class ClassData private constructor(
         )
     }
 
-    val className: String by lazy {
-        DexSignUtil.getSimpleName(dexDescriptor)
+    private val dexType by lazy {
+        DexType(dexDescriptor)
     }
 
-    val name get() = className
+    val className get() = dexType.typeName
 
-    val classSimpleName : String by lazy {
-        className.substringAfterLast(".")
-    }
+    val name get() = dexType.typeName
 
     fun getSuperClass(): ClassData? {
         superClassId ?: return null
-        return bridge.getClassByIds(longArrayOf(getEncodeId(dexId, superClassId))).firstOrNull()
+        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, superClassId))).firstOrNull()
     }
 
     fun getInterfaces(): ClassDataList {
-        return bridge.getClassByIds(interfaceIds.map { getEncodeId(dexId, it) }.toLongArray())
+        return bridge.getTypeByIds(interfaceIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
     fun getInterfaceCount(): Int {

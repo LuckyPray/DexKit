@@ -134,9 +134,9 @@ class MethodMatcher : BaseQuery() {
     fun descriptor(descriptor: String) = also {
         val dexMethod = DexMethod(descriptor)
         name(dexMethod.name)
-        declaredClass(dexMethod.declaredClass)
-        returnType(dexMethod.returnType)
-        paramTypes(dexMethod.paramTypes)
+        declaredClass(dexMethod.className)
+        returnType(dexMethod.returnTypeName)
+        paramTypes(dexMethod.paramTypeNames)
     }
 
     fun name(name: StringMatcher) = also {

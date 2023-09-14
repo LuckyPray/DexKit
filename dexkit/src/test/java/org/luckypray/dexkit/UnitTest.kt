@@ -1,8 +1,6 @@
-package io.luckypray.dexkit
+package org.luckypray.dexkit
 
-import io.luckypray.dexkit.util.loadLibrary
 import org.junit.Test
-import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
 
