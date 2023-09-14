@@ -565,10 +565,12 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
     match_type_map = std::get<1>(*ptr);
     real_keywords = std::get<2>(*ptr);
 
+    auto using_empty_string_count = 0;
     std::set<std::string_view> search_set;
     for (auto method_idx: this->class_method_ids[type_idx]) {
         auto &using_strings = this->method_using_string_ids[method_idx];
         for (auto idx: using_strings) {
+            if (idx == this->empty_string_id) ++using_empty_string_count;
             auto str = this->strings[idx];
             auto hits = acTrie->ParseText(str);
             for (auto &hit: hits) {
@@ -585,6 +587,12 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
                     search_set.insert(hit.value);
                 }
             }
+        }
+    }
+    if (match_type_map->contains("")) {
+        DEXKIT_CHECK((*match_type_map)[""] == schema::StringMatchType::Equal);
+        if (using_empty_string_count) {
+            search_set.insert("");
         }
     }
     if (search_set.size() < real_keywords->size()) {
@@ -923,9 +931,11 @@ bool DexItem::IsMethodUsingStringsMatched(uint32_t method_idx, const schema::Met
     match_type_map = std::get<1>(*ptr);
     real_keywords = std::get<2>(*ptr);
 
+    auto using_empty_string_count = 0;
     std::set<std::string_view> search_set;
     auto &using_strings = this->method_using_string_ids[method_idx];
     for (auto idx: using_strings) {
+        if (idx == this->empty_string_id) ++using_empty_string_count;
         auto str = this->strings[idx];
         auto hits = acTrie->ParseText(str);
         for (auto &hit: hits) {
@@ -941,6 +951,12 @@ bool DexItem::IsMethodUsingStringsMatched(uint32_t method_idx, const schema::Met
             if (match) {
                 search_set.insert(hit.value);
             }
+        }
+    }
+    if (match_type_map->contains("")) {
+        DEXKIT_CHECK((*match_type_map)[""] == schema::StringMatchType::Equal);
+        if (using_empty_string_count) {
+            search_set.insert("");
         }
     }
     if (search_set.size() < real_keywords->size()) {

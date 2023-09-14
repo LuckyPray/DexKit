@@ -30,6 +30,9 @@ int DexItem::InitCache() {
         ReadULeb128(&str_ptr);
         *strings_it++ = reinterpret_cast<const char *>(str_ptr);
     }
+    if (strings[0].empty()) {
+        empty_string_id = 0;
+    }
 
     type_names.resize(reader.TypeIds().size());
     type_name_array_count.resize(reader.TypeIds().size());

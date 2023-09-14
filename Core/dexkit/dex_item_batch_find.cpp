@@ -22,9 +22,11 @@ DexItem::BatchFindClassUsingStrings(
             if (query->search_packages() && !(hit >> 1)) continue;
         }
 
+        auto using_empty_string_count = 0;
         std::set<std::string_view> search_set;
         for (auto method_idx: class_method_ids[type_idx]) {
             for (auto string_idx: method_using_string_ids[method_idx]) {
+                if (string_idx == this->empty_string_id) ++using_empty_string_count;
                 auto str = this->strings[string_idx];
                 auto hits = acTrie.ParseText(str);
                 for (auto &hit: hits) {
@@ -41,6 +43,12 @@ DexItem::BatchFindClassUsingStrings(
                         search_set.emplace(hit.value);
                     }
                 }
+            }
+        }
+        if (match_type_map.contains("")) {
+            DEXKIT_CHECK(match_type_map[""] == schema::StringMatchType::Equal);
+            if (using_empty_string_count) {
+                search_set.emplace("");
             }
         }
         if (search_set.empty()) continue;
@@ -97,8 +105,10 @@ DexItem::BatchFindMethodUsingStrings(
             auto code = this->method_codes[method_idx];
             if (code == nullptr) continue;
 
+            auto using_empty_string_count = 0;
             std::set<std::string_view> search_set;
             for (auto string_idx: method_using_string_ids[method_idx]) {
+                if (string_idx == this->empty_string_id) ++using_empty_string_count;
                 auto str = this->strings[string_idx];
                 auto hits = acTrie.ParseText(str);
                 for (auto &hit: hits) {
@@ -114,6 +124,12 @@ DexItem::BatchFindMethodUsingStrings(
                     if (match) {
                         search_set.emplace(hit.value);
                     }
+                }
+            }
+            if (match_type_map.contains("")) {
+                DEXKIT_CHECK(match_type_map[""] == schema::StringMatchType::Equal);
+                if (using_empty_string_count) {
+                    search_set.emplace("");
                 }
             }
             if (search_set.empty()) continue;
