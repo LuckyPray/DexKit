@@ -3,6 +3,7 @@ package org.luckypray.dexkit.util
 
 import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
+import java.lang.reflect.Array
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -10,7 +11,8 @@ import java.lang.reflect.Method
 @Throws(ClassNotFoundException::class)
 internal fun getClassInstance(classLoader: ClassLoader, typeName: String): Class<*> {
     if (typeName.endsWith("[]")) {
-        return getClassInstance(classLoader, typeName.substring(0, typeName.length - 2)).arrayType()
+        val clazz = getClassInstance(classLoader, typeName.substring(0, typeName.length - 2))
+        return Array.newInstance(clazz, 0)::class.java
     }
     return when (typeName) {
         "boolean" -> Int::class.javaPrimitiveType!!
