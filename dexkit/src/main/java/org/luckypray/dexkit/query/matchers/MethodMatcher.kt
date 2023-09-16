@@ -349,16 +349,16 @@ class MethodMatcher : BaseQuery() {
      *
      *     returnType("int[]")
      *
-     * @param returnTypeName method return type / 方法返回值类型
+     * @param typeName method return type / 方法返回值类型
      * @return [MethodMatcher]
      */
     @JvmOverloads
     fun returnType(
-        returnTypeName: String,
+        typeName: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.returnTypeMatcher = ClassMatcher().className(returnTypeName, matchType, ignoreCase)
+        this.returnTypeMatcher = ClassMatcher().className(typeName, matchType, ignoreCase)
     }
 
     /**
