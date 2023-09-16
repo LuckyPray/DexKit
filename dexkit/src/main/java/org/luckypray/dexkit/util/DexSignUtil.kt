@@ -43,10 +43,10 @@ object DexSignUtil {
      * ----------------
      * 转换描述符为类名。
      *
-     *    getSimpleName("Ljava/lang/String;") -> "java.lang.String"
-     *    getSimpleName("[Ljava/lang/String;") -> "java.lang.String[]"
-     *    getSimpleName("[[Ljava/lang/String;") -> "java.lang.String[][]"
-     *    getSimpleName("[I") -> "int[]"
+     *     getSimpleName("Ljava/lang/String;") -> "java.lang.String"
+     *     getSimpleName("[Ljava/lang/String;") -> "java.lang.String[]"
+     *     getSimpleName("[[Ljava/lang/String;") -> "java.lang.String[][]"
+     *     getSimpleName("[I") -> "int[]"
      *
      * @param typeSign type sign / 类型签名
      * @return simple name / 类名
@@ -105,7 +105,7 @@ object DexSignUtil {
      * ----------------
      * 从参数签名获取参数类型名。
      *
-     *    getParamTypeNames("Ljava/lang/String;I[I") -> ["java.lang.String", "int", "int[]"]
+     *     getParamTypeNames("Ljava/lang/String;I[I") -> ["java.lang.String", "int", "int[]"]
      *
      * @param paramSigns parameter sign / 参数签名
      * @return parameter type names / 参数类型名
@@ -212,7 +212,7 @@ object DexSignUtil {
      * ----------------
      * 获取构造方法签名。
      *
-     *    getConstructorSign(String.class.getConstructor()) -> "()V"
+     *     getConstructorSign(String.class.getConstructor()) -> "()V"
      *
      * @param constructor constructor / 构造方法
      * @return constructor sign / 构造方法签名
@@ -261,7 +261,7 @@ object DexSignUtil {
      * ----------------
      * 转换方法为方法描述符。
      *
-     *    getDexDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
+     *     getDexDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
      *
      * @param method method / 方法
      * @return method descriptor / 方法描述符
@@ -331,7 +331,7 @@ object DexSignUtil {
      * ----------------
      * 转换字段为字段描述符。
      *
-     *    getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
+     *     getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
      *
      * @param field field / 字段
      * @return field descriptor / 字段描述符
@@ -352,7 +352,7 @@ object DexSignUtil {
      * ----------------
      * 转换字段为字段描述符。
      *
-     *    getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
+     *     getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
      *
      * @param field field / 字段
      * @return field descriptor / 字段描述符

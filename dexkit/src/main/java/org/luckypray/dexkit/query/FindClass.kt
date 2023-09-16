@@ -149,7 +149,7 @@ class FindClass : BaseQuery() {
     // region DSL
 
     /**
-     * @see [matcher]
+     * @see matcher
      */
     @kotlin.internal.InlineOnly
     inline fun matcher(init: ClassMatcher.() -> Unit) = also {

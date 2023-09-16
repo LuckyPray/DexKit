@@ -11,12 +11,35 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.result.ClassData
 
 class BatchFindClassUsingStrings : BaseQuery() {
+    /**
+     * Search classes in the specified packages.
+     * ----------------
+     * 在指定的包中搜索类。
+     */
     @set:JvmSynthetic
     var searchPackages: List<String>? = null
+
+    /**
+     * Exclude classes in the specified packages.
+     * ----------------
+     * 排除指定包中的类。
+     */
     @set:JvmSynthetic
     var excludePackages: List<String>? = null
+
+    /**
+     * Ignore case with [searchPackages] and [excludePackages].
+     * ----------------
+     * 忽略 [searchPackages] 和 [excludePackages] 的大小写。
+     */
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
+
+    /**
+     * Searches the specified [ClassData] list for classes matching the criteria.
+     * ----------------
+     * 在指定的 [ClassData] 列表中搜索匹配符合条件的类。
+     */
     @set:JvmSynthetic
     var searchClasses: List<ClassData>? = null
     var searchGroups: MutableList<StringMatchersGroup>? = null

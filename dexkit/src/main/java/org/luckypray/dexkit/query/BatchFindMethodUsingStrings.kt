@@ -12,14 +12,43 @@ import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 
 class BatchFindMethodUsingStrings : BaseQuery() {
+    /**
+     * Search methods in the specified packages.
+     * ----------------
+     * 在指定的包中搜索方法。
+     */
     @set:JvmSynthetic
     var searchPackages: List<String>? = null
+
+    /**
+     * Exclude methods in the specified packages.
+     * ----------------
+     * 排除指定包中的方法。
+     */
     @set:JvmSynthetic
     var excludePackages: List<String>? = null
+
+    /**
+     * Ignore case with [searchPackages] and [excludePackages].
+     * ----------------
+     * 忽略 [searchPackages] 和 [excludePackages] 的大小写。
+     */
     @set:JvmSynthetic
     var ignorePackagesCase: Boolean = false
+
+    /**
+     * Searches the specified [ClassData] list for methods matching the criteria.
+     * ----------------
+     * 在指定的 [ClassData] 列表中搜索匹配符合条件的类。
+     */
     @set:JvmSynthetic
     var searchClasses: List<ClassData>? = null
+
+    /**
+     * Searches the specified [MethodData] list for methods matching the criteria.
+     * ----------------
+     * 在指定的 [MethodData] 列表中搜索匹配符合条件的方法。
+     */
     @set:JvmSynthetic
     var searchMethods: List<MethodData>? = null
     var searchGroups: MutableList<StringMatchersGroup>? = null
