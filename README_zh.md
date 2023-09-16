@@ -82,7 +82,7 @@ public class PlayActivity extends AppCompatActivity {
     public void d(View view) {
         Handler handler;
         int i;
-        Log.d(TAG, "onClick: rollButton");
+        Log.d("PlayActivity", "onClick: rollButton");
         float nextFloat = new Random().nextFloat();
         if (nextFloat < 0.01d) {
             handler = this.b;
@@ -106,14 +106,14 @@ public class PlayActivity extends AppCompatActivity {
         }
         String a = h.a("You rolled a ", i);
         this.a.setText(a);
-        Log.d(TAG, "rollDice: " + a);
+        Log.d("PlayActivity", "rollDice: " + a);
     }
 
     protected void onCreate(Bundle bundle) {
         super/*androidx.fragment.app.FragmentActivity*/.onCreate(bundle);
         setContentView(0x7f0b001d);
-        Log.d(TAG, "onCreate");
-        HandlerThread handlerThread = new HandlerThread(TAG);
+        Log.d("PlayActivity", "onCreate");
+        HandlerThread handlerThread = new HandlerThread("PlayActivity");
         handlerThread.start();
         this.b = new PlayActivity$1(this, handlerThread.getLooper());
         this.a = (TextView) findViewById(0x7f080134);
