@@ -13,10 +13,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.wrap.DexType
 
-class ClassMatcher : BaseQuery() {
-    /**
-     *
-     */
+class ClassMatcher : BaseQuery {
     var sourceMatcher: StringMatcher? = null
         private set
     var classNameMatcher: StringMatcher? = null
@@ -35,6 +32,12 @@ class ClassMatcher : BaseQuery() {
         private set
     var usingStringsMatcher: MutableList<StringMatcher>? = null
         private set
+
+    constructor()
+
+    constructor(descriptor: String) {
+        descriptor(descriptor)
+    }
 
     /**
      * The class descriptor, specifies a unique class.
@@ -877,6 +880,12 @@ class ClassMatcher : BaseQuery() {
     companion object {
         @JvmStatic
         fun create() = ClassMatcher()
+
+        /**
+         * @see ClassMatcher.descriptor
+         */
+        @JvmStatic
+        fun create(descriptor: String) = ClassMatcher(descriptor)
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {

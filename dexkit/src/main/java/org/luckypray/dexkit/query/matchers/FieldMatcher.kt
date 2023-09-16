@@ -12,7 +12,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.wrap.DexField
 
-class FieldMatcher : BaseQuery() {
+class FieldMatcher : BaseQuery {
     var nameMatcher: StringMatcher? = null
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null
@@ -27,6 +27,12 @@ class FieldMatcher : BaseQuery() {
         private set
     var putMethodsMatcher: MethodsMatcher? = null
         private set
+
+    constructor()
+
+    constructor(descriptor: String) {
+        descriptor(descriptor)
+    }
 
     /**
      * The field descriptor.
@@ -484,6 +490,12 @@ class FieldMatcher : BaseQuery() {
     companion object {
         @JvmStatic
         fun create() = FieldMatcher()
+
+        /**
+         * @see FieldMatcher.descriptor
+         */
+        @JvmStatic
+        fun create(descriptor: String) = FieldMatcher(descriptor)
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {

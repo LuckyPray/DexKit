@@ -19,7 +19,7 @@ import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.wrap.DexMethod
 
-class MethodMatcher : BaseQuery() {
+class MethodMatcher : BaseQuery {
     var nameMatcher: StringMatcher? = null
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null
@@ -44,6 +44,11 @@ class MethodMatcher : BaseQuery() {
         private set
     var callMethodsMatcher: MethodsMatcher? = null
         private set
+
+    constructor()
+    constructor(descriptor: String) {
+        descriptor(descriptor)
+    }
 
     /**
      * The method descriptor.
@@ -1004,6 +1009,12 @@ class MethodMatcher : BaseQuery() {
     companion object {
         @JvmStatic
         fun create() = MethodMatcher()
+
+        /**
+         * @see MethodMatcher.descriptor
+         */
+        @JvmStatic
+        fun create(descriptor: String) = MethodMatcher(descriptor)
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
