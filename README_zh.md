@@ -193,7 +193,7 @@ public class MainHook implements IXposedHookLoadPackage {
                         .addElement(
                             AnnotationElementMatcher.create()
                                 .name("path")
-                                .value(createString("/play"))
+                                .stringValue("/play")
                         )
                     )
                 )
@@ -282,9 +282,7 @@ class MainHook : IXposedHookLoadPackage {
                         type = "org.luckypray.dexkit.demo.annotations.Router"
                         addElement {
                             name = "path"
-                            value {
-                                stringValue("/play")
-                            }
+                            stringValue("/play")
                         }
                     }
                 }
