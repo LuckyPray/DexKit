@@ -390,6 +390,7 @@ class MethodMatcher : BaseQuery {
      */
     fun paramTypes(paramTypes: List<String?>) = also {
         this.paramsMatcher = ParametersMatcher().apply {
+            params(listOf())
             paramTypes.forEach {
                 val paramMatcher = it?.let { ParameterMatcher().type(it) }
                 add(paramMatcher)
