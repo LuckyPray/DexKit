@@ -789,7 +789,7 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsMethodUsingStringsMatched(method_idx, matcher)) {
         return false;
     }
-    if (!IsAnnotationsMatched(this->method_annotations[method_idx], matcher->annotations())) {
+    if (!IsMethodAnnotationMatched(method_idx, matcher->annotations())) {
         return false;
     }
     auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
@@ -799,9 +799,6 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsParametersMatched(method_idx, matcher->parameters())) {
         return false;
     }
-    if (!IsUsingNumbersMatched(method_idx, matcher)) {
-        return false;
-    }
     if (!IsUsingFieldsMatched(method_idx, matcher)) {
         return false;
     }
@@ -809,6 +806,9 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
         return false;
     }
     if (!IsCallMethodsMatched(method_idx, matcher->method_callers())) {
+        return false;
+    }
+    if (!IsUsingNumbersMatched(method_idx, matcher)) {
         return false;
     }
     return true;
@@ -831,14 +831,15 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
         if (type_list_size != matcher->parameters()->size()) {
             return false;
         }
-        auto &parameter_annotations = this->method_parameter_annotations[method_idx];
         for (size_t i = 0; i < type_list_size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
             if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->parameter_type())) {
                 return false;
             }
-            if (!IsAnnotationsMatched(parameter_annotations[i], parameter_matcher->annotations())) {
-                return false;
+            if (parameter_matcher->annotations()) {
+                if (!IsAnnotationsMatched(this->method_parameter_annotations[method_idx][i], parameter_matcher->annotations())) {
+                    return false;
+                }
             }
         }
     }
@@ -972,6 +973,16 @@ bool DexItem::IsMethodUsingStringsMatched(uint32_t method_idx, const schema::Met
     return true;
 }
 
+bool DexItem::IsMethodAnnotationMatched(uint32_t method_idx, const schema::AnnotationsMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (!IsAnnotationsMatched(this->method_annotations[method_idx], matcher)) {
+        return false;
+    }
+    return true;
+}
+
 bool DexItem::IsUsingFieldsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher) {
     if (matcher->using_fields() == nullptr) {
         return true;
@@ -1004,7 +1015,7 @@ bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMat
     if (matcher->using_numbers() == nullptr) {
         return true;
     }
-    auto &using_numbers = this->method_using_number[method_idx];
+    auto using_numbers = this->GetUsingNumberFromCode(method_idx);
     if (matcher->using_numbers()->size() > using_numbers.size()) {
         return false;
     }
@@ -1215,13 +1226,23 @@ bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *mat
     if (!IsClassMatched(field_def.type_idx, matcher->type_class())) {
         return false;
     }
-    if (!IsAnnotationsMatched(this->field_annotations[field_idx], matcher->annotations())) {
+    if (!IsFieldAnnotationMatched(field_idx, matcher->annotations())) {
         return false;
     }
     if (!IsFieldGetMethodsMatched(field_idx, matcher->get_methods())) {
         return false;
     }
     if (!IsFieldPutMethodsMatched(field_idx, matcher->put_methods())) {
+        return false;
+    }
+    return true;
+}
+
+bool DexItem::IsFieldAnnotationMatched(uint32_t field_idx, const schema::AnnotationsMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (!IsAnnotationsMatched(this->field_annotations[field_idx], matcher)) {
         return false;
     }
     return true;

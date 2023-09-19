@@ -116,7 +116,6 @@ int FlatBufferTest() {
     return 0;
 }
 
-
 int DexKitBatchFindClassTest(dexkit::DexKit &dexkit) {
     printf("-----------DexKitBatchFindClassTest Start-----------\n");
     flatbuffers::FlatBufferBuilder fbb;
@@ -1023,28 +1022,187 @@ int DexKitFindMethodUsingNumbers(dexkit::DexKit &dexkit) {
     return 0;
 }
 
-class Test {
-public:
-    explicit Test() = default;
-};
+int DexKitFindDyClassTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindDyClassTest Start-----------\n");
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindClass(
+            fbb, 0, 0, false, 0, false,
+            CreateClassMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    CreateFieldsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<FieldMatcher>>{
+                                    CreateFieldMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    )
+                            })
+                    ),
+                    CreateMethodsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
+                                    CreateMethodMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("getMOriginView"),
+                                                    StringMatchType::Equal,
+                                                    false
+                                            ),
+                                            0,
+                                            0,
+                                            CreateClassMatcher(
+                                                    fbb,
+                                                    0,
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("android.view.View"),
+                                                            StringMatchType::Equal,
+                                                            false
+                                                    )
+                                            )
+                                    ),
+                                    CreateMethodMatcher(
+                                            fbb,
+                                            CreateStringMatcher(
+                                                    fbb,
+                                                    fbb.CreateString("handleMsg"),
+                                                    StringMatchType::Equal,
+                                                    false
+                                            ),
+                                            0,
+                                            0,
+                                            0,
+                                            CreateParametersMatcher(
+                                                    fbb,
+                                                    fbb.CreateVector(std::vector<flatbuffers::Offset<ParameterMatcher>>{
+                                                            CreateParameterMatcher(
+                                                                    fbb,
+                                                                    0,
+                                                                    CreateClassMatcher(
+                                                                            fbb,
+                                                                            0,
+                                                                            CreateStringMatcher(
+                                                                                    fbb,
+                                                                                    fbb.CreateString("android.os.Message"),
+                                                                                    StringMatchType::Equal
+                                                                            )
+                                                                    )
+                                                            )
+                                                    })
+                                            )
+                                    )
+                            })
+                    )
+            )
+    );
+    fbb.Finish(find);
 
-Test test() {
-    return struct {
-        int a;
-        int b;
-    }(1, 2);
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindClass>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindClass(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<ClassMetaArrayHolder>(buffer);
+    if (result->classes()) {
+        printf("result->classes()->size() = %d\n", result->classes()->size());
+        for (int i = 0; i < result->classes()->size(); ++i) {
+            auto item = result->classes()->Get(i);
+            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+        }
+    }
+    return 0;
+}
+
+int DexKitFindDyClassUsingStrings(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindDyClassUsingStrings Start-----------\n");
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindClass(
+            fbb, 0, 0, false, 0, false,
+            CreateClassMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("a1128.b7947"),
+                                    StringMatchType::Contains,
+                                    false
+                            ),
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("com/ss/android/ugc/aweme/detail/ui/DetailPageFragment"),
+                                    StringMatchType::Contains,
+                                    false
+                            ),
+                            CreateStringMatcher(
+                                    fbb,
+                                    fbb.CreateString("DetailActOtherNitaView"),
+                                    StringMatchType::Contains,
+                                    false
+                            ),
+                    })
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindClass>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindClass(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<ClassMetaArrayHolder>(buffer);
+    if (result->classes()) {
+        printf("result->classes()->size() = %d\n", result->classes()->size());
+        for (int i = 0; i < result->classes()->size(); ++i) {
+            auto item = result->classes()->Get(i);
+            printf("dex: %02d, idx: %d, class: %s, fields_size: %d\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data(), item->fields()->size());
+        }
+    }
+    return 0;
 }
 
 int main() {
-    auto pair = test();
-    return 0;
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/demo.apk");
+    auto dexkit = dexkit::DexKit("../apks/dy_27.0.0.apk");
 //    dexkit.SetThreadNum(32);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
-    std::cout << "unzip and init full cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
+    std::cout << "unzip and init base cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
 //    SharedPtrVoidCast(dexkit);
@@ -1064,7 +1222,9 @@ int main() {
 //    DexKitPackageTest(dexkit);
 //    DexKitFindParameterTypeArray(dexkit);
 //    DexKitFindFieldTest(dexkit);
-    DexKitFindMethodUsingNumbers(dexkit);
+//    DexKitFindMethodUsingNumbers(dexkit);
+//    DexKitFindDyClassTest(dexkit);
+    DexKitFindDyClassUsingStrings(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

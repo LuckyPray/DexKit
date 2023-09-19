@@ -11,7 +11,7 @@ DexItem::DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit) :
         dexkit(dexkit),
         reader(_image->addr(), _image->len()),
         dex_id(id) {
-    InitCache();
+    InitBaseCache();
 }
 
 DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap, DexKit *dexkit) :
@@ -19,10 +19,10 @@ DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap, DexKit *dexkit) :
         dexkit(dexkit),
         reader(_image->addr(), _image->len()),
         dex_id(id) {
-    InitCache();
+    InitBaseCache();
 }
 
-int DexItem::InitCache() {
+void DexItem::InitBaseCache() {
     strings.resize(reader.StringIds().size());
     auto strings_it = strings.begin();
     for (auto &str: reader.StringIds()) {
@@ -116,7 +116,7 @@ int DexItem::InitCache() {
         ++field_idx;
     }
 
-    type_def_flag.resize(reader.TypeIds().size(), false);
+    type_def_flag.resize(reader.TypeIds().size());
     type_def_idx.resize(reader.TypeIds().size());
     class_source_files.resize(reader.TypeIds().size());
     class_access_flags.resize(reader.TypeIds().size());
@@ -124,17 +124,9 @@ int DexItem::InitCache() {
     class_method_ids.resize(reader.TypeIds().size());
     method_descriptors.resize(reader.MethodIds().size());
     method_access_flags.resize(reader.MethodIds().size());
-    method_codes.resize(reader.MethodIds().size(), nullptr);
-    method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
-    method_caller_ids.resize(reader.MethodIds().size());
-    method_invoking_ids.resize(reader.MethodIds().size());
-    method_using_number.resize(reader.MethodIds().size());
-    method_using_string_ids.resize(reader.MethodIds().size());
-    method_using_field_ids.resize(reader.MethodIds().size());
+    method_codes.resize(reader.MethodIds().size());
     field_descriptors.resize(reader.FieldIds().size());
     field_access_flags.resize(reader.FieldIds().size());
-    field_get_method_ids.resize(reader.FieldIds().size());
-    field_put_method_ids.resize(reader.FieldIds().size());
 
     method_cross_info.resize(reader.MethodIds().size());
     field_cross_info.resize(reader.FieldIds().size());
@@ -199,185 +191,209 @@ int DexItem::InitCache() {
             }
             methods.emplace_back(class_method_idx);
         }
-
-        for (auto method_id: methods) {
-            auto code = method_codes[method_id];
-            if (code == nullptr) {
-                continue;
-            }
-            auto &method_invoking = method_invoking_ids[method_id];
-            auto &method_using_numbers = method_using_number[method_id];
-            auto &method_using_strings = method_using_string_ids[method_id];
-            auto &method_using_fields = method_using_field_ids[method_id];
-            auto &op_seq = method_opcode_seq[method_id];
-            op_seq = std::vector<uint8_t>();
-            auto p = code->insns;
-            auto end_p = p + code->insns_size;
-            while (p < end_p) {
-                auto op = (uint8_t) *p;
-                op_seq->emplace_back(op);
-                auto ptr = p;
-                auto width = GetBytecodeWidth(ptr++);
-                auto op_format = ins_formats[op];
-                // using string
-                if (op == 0x1a) { // const-string
-                    auto index = ReadShort(ptr);
-                    method_using_strings.emplace_back(index);
-                } else if (op == 0x1b) { // const-string-jumbo
-                    auto index = ReadInt(ptr);
-                    method_using_strings.emplace_back(index);
-                } else switch (op_format) {
-                    // using field
-                    case dex::k22c: // iinstanceop
-                    case dex::k21c: // sstaticop
-                    {
-                        if (op < 0x52 || op > 0x6d) {
-                            break;
-                        }
-                        // iget, iget-wide, iget-object, iget-boolean, iget-byte, iget-char, iget-short
-                        // sget, sget-wide, sget-object, sget-boolean, sget-byte, sget-char, sget-short
-                        auto is_getter = ((op >= 0x52 && op <= 0x58) ||
-                                          (op >= 0x60 && op <= 0x66));
-                        // iput, iput-wide, iput-object, iput-boolean, iput-byte, iput-char, iput-short
-                        // sput, sput-wide, sput-object, sput-boolean, sput-byte, sput-char, sput-short
-                        auto is_setter = ((op >= 0x59 && op <= 0x5f) ||
-                                          (op >= 0x67 && op <= 0x6d));
-                        auto index = ReadShort(ptr);
-                        if (is_getter) {
-                            field_get_method_ids[index].emplace_back(dex_id, method_id);
-                        } else {
-                            field_put_method_ids[index].emplace_back(dex_id, method_id);
-                        }
-                        method_using_fields.emplace_back(index, is_getter);
-                        break;
-                    }
-                    // invoke method
-                    case dex::k35c: // invoke-kind
-                    case dex::k3rc: // invoke-kind/range
-                    {
-                        auto index = ReadShort(ptr);
-                        method_caller_ids[index].emplace_back(dex_id, method_id);
-                        method_invoking.emplace_back(index);
-                        break;
-                    }
-                    // using number
-                    case dex::k11n: { // const/4
-                        uint8_t value = *(ptr - 1) >> 12;
-                        if (value & 0x8) {
-                            value |= 0xf0;
-                        }
-                        method_using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) value}});
-                        break;
-                    }
-                    case dex::k21s: { // const/16, const-wide/16
-                        uint16_t value = *ptr;
-                        if (value & 0x8000) {
-                            value |= 0xffff0000;
-                        }
-                        method_using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) value}});
-                        break;
-                    }
-                    case dex::k21h: { // const/high16, const-wide/high16
-                        if (op == 0x15) {
-                            method_using_numbers.emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) (*ptr << 16)}}});
-                        } else { // 0x19
-                            method_using_numbers.emplace_back(EncodeNumber{.type = DOUBLE, .value = {.L64 = {.long_value = (int64_t) (((uint64_t) *ptr) << 48)}}});
-                        }
-                        break;
-                    }
-                    case dex::k31i: { // const, const-wide/32
-                        if (op == 0x14) {
-                            method_using_numbers.emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
-                        } else { // 0x17
-                            method_using_numbers.emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
-                        }
-                        break;
-                    }
-                    case dex::k51l: // const-wide
-                        method_using_numbers.emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadLong(ptr)}}});
-                        break;
-                    case dex::k22s: // binop/lit16
-                        method_using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) *ptr}});
-                        break;
-                    case dex::k22b: // binop/lit8
-                        method_using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) (*ptr >> 8)}});
-                        break;
-                    default: break;
-                }
-                p += width;
-            }
+    }
+    {
+        static std::mutex put_declare_class_mutex;
+        std::lock_guard<std::mutex> lock(put_declare_class_mutex);
+        for (auto &class_def: reader.ClassDefs()) {
+            dexkit->PutDeclaredClass(type_names[class_def.class_idx], dex_id, class_def.class_idx);
         }
     }
-
-    auto method_idx = 0;
-    for (auto &method_def: reader.MethodIds()) {
-        auto def_idx = method_idx++;
-        if (type_def_flag[method_def.class_idx]) {
-            continue;
-        }
-        class_method_ids[method_def.class_idx].emplace_back(def_idx);
-    }
-
-    class_annotations.resize(reader.TypeIds().size());
-    field_annotations.resize(reader.FieldIds().size());
-    method_annotations.resize(reader.MethodIds().size());
-    method_parameter_annotations.resize(reader.MethodIds().size());
-    for (auto &class_def: reader.ClassDefs()) {
-        if (class_def.annotations_off == 0) {
-            continue;
-        }
-        auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
-        if (annotations->class_annotation) {
-            auto &class_annotation = class_annotations[class_def.class_idx];
-            for (auto &annotation: annotations->class_annotation->annotations) {
-                if (annotation->visibility == 2) {
-                    continue;
-                }
-                class_annotation.emplace_back(annotation);
-            }
-        }
-        for (auto value: annotations->field_annotations) {
-            auto &field_annotation = field_annotations[value->field_decl->orig_index];
-            for (auto &annotation: value->annotations->annotations) {
-                if (annotation->visibility == 2) {
-                    continue;
-                }
-                field_annotation.emplace_back(annotation);
-            }
-        }
-        for (auto value: annotations->method_annotations) {
-            auto &method_annotation = method_annotations[value->method_decl->orig_index];
-            for (auto &annotation: value->annotations->annotations) {
-                if (annotation->visibility == 2) {
-                    continue;
-                }
-                method_annotation.emplace_back(annotation);
-            }
-        }
-        for (auto value: annotations->param_annotations) {
-            auto &method_parameter_annotation = method_parameter_annotations[value->method_decl->orig_index];
-            for (auto &annotation: value->annotations->annotations) {
-                std::vector<ir::Annotation *> ann_vec;
-                for (auto &parameter_annotation: annotation->annotations) {
-                    if (parameter_annotation->visibility == 2) {
-                        continue;
-                    }
-                    ann_vec.emplace_back(parameter_annotation);
-                }
-                method_parameter_annotation.emplace_back(ann_vec);
-            }
-        }
-    }
-    for (auto &class_def: reader.ClassDefs()) {
-        dexkit->PutDeclaredClass(type_names[class_def.class_idx], dex_id, class_def.class_idx);
-    }
-    return 0;
 }
 
-void DexItem::PutCrossRef() {
-    if (this->put_cross_flag) {
+bool DexItem::NeedInitCache(uint32_t need_flag) const {
+    return (dex_flag & need_flag) != need_flag;
+}
+
+void DexItem::InitCache(uint32_t init_flags) {
+    if ((dex_flag & init_flags) == init_flags) {
         return;
     }
+    bool need_foreach_method = false;
+    bool need_op_seq = init_flags & kOpSequence && (dex_flag & kOpSequence) == 0;
+    bool need_method_using_string = init_flags & kUsingString && (dex_flag & kUsingString) == 0;
+    bool need_method_using_field = init_flags & kMethodUsingField && (dex_flag & kMethodUsingField) == 0;
+    bool need_method_invoking = init_flags & kMethodInvoking && (dex_flag & kMethodInvoking) == 0;
+    bool need_method_caller = init_flags & kCallerMethod && (dex_flag & kCallerMethod) == 0;
+    bool need_field_rw_method = init_flags & kRwFieldMethod && (dex_flag & kRwFieldMethod) == 0;
+    bool need_annotation = init_flags & kAnnotation && (dex_flag & kAnnotation) == 0;
+    bool need_method_using_number = init_flags & kUsingNumber && (dex_flag & kUsingNumber) == 0;
+
+    if (need_op_seq) {
+        method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
+        need_foreach_method = true;
+    }
+    if (need_method_invoking) {
+        method_invoking_ids.resize(reader.MethodIds().size());
+        need_foreach_method = true;
+    }
+    if (need_method_caller) {
+        method_caller_ids.resize(reader.MethodIds().size());
+        need_foreach_method = true;
+    }
+    if (need_method_using_string) {
+        method_using_string_ids.resize(reader.MethodIds().size());
+        need_foreach_method = true;
+    }
+    if (need_method_using_field) {
+        method_using_field_ids.resize(reader.MethodIds().size());
+        need_foreach_method = true;
+    }
+    if (need_field_rw_method) {
+        field_get_method_ids.resize(reader.FieldIds().size());
+        field_put_method_ids.resize(reader.FieldIds().size());
+        need_foreach_method = true;
+    }
+
+    if (need_foreach_method) {
+        for (auto &class_def: reader.ClassDefs()) {
+            for (auto method_id: class_method_ids[class_def.class_idx]) {
+                auto code = method_codes[method_id];
+                if (code == nullptr) {
+                    continue;
+                }
+
+                std::optional<std::vector<uint8_t>> *op_seq_ptr = nullptr;
+                std::vector<uint32_t> *method_using_string_ptr = nullptr;
+                std::vector<std::pair<uint32_t, bool>> *method_using_field_ptr = nullptr;
+                std::vector<uint32_t> *method_invoking_ptr = nullptr;
+
+                if (need_op_seq) {
+                    op_seq_ptr = &method_opcode_seq[method_id];
+                    *op_seq_ptr = std::vector<uint8_t>();
+                }
+                if (need_method_using_string) {
+                    method_using_string_ptr = &method_using_string_ids[method_id];
+                }
+                if (need_method_using_field) {
+                    method_using_field_ptr = &method_using_field_ids[method_id];
+                }
+                if (need_method_invoking) {
+                    method_invoking_ptr = &method_invoking_ids[method_id];
+                }
+
+                auto p = code->insns;
+                auto end_p = p + code->insns_size;
+                while (p < end_p) {
+                    auto op = (uint8_t) *p;
+                    if (need_op_seq) {
+                        op_seq_ptr->emplace(op);
+                    }
+                    auto ptr = p;
+                    auto width = GetBytecodeWidth(ptr++);
+                    auto op_format = ins_formats[op];
+
+                    if (need_method_using_string) {
+                        if (op == 0x1a) { // const-string
+                            auto index = ReadShort(ptr);
+                            method_using_string_ptr->emplace_back(index);
+                        } else if (op == 0x1b) { // const-string-jumbo
+                            auto index = ReadInt(ptr);
+                            method_using_string_ptr->emplace_back(index);
+                        }
+                    }
+
+                    if (need_method_using_field) {
+                        if (op >= 0x52 && op <= 0x6d) {
+                            // iget, iget-wide, iget-object, iget-boolean, iget-byte, iget-char, iget-short
+                            // sget, sget-wide, sget-object, sget-boolean, sget-byte, sget-char, sget-short
+                            auto is_getter = ((op >= 0x52 && op <= 0x58) ||
+                                              (op >= 0x60 && op <= 0x66));
+                            // iput, iput-wide, iput-object, iput-boolean, iput-byte, iput-char, iput-short
+                            // sput, sput-wide, sput-object, sput-boolean, sput-byte, sput-char, sput-short
+                            auto is_setter = ((op >= 0x59 && op <= 0x5f) ||
+                                              (op >= 0x67 && op <= 0x6d));
+                            auto index = ReadShort(ptr);
+                            if (is_getter) {
+                                field_get_method_ids[index].emplace_back(dex_id, method_id);
+                            } else {
+                                field_put_method_ids[index].emplace_back(dex_id, method_id);
+                            }
+                            method_using_field_ptr->emplace_back(index, is_getter);
+                        }
+                    }
+
+                    if (need_method_invoking) {
+                        if (op_format == dex::k35c // invoke-kind
+                            || op_format == dex::k3rc) { // invoke-kind/range
+                            auto index = ReadShort(ptr);
+                            method_invoking_ptr->emplace_back(index);
+                        }
+                    }
+                    p += width;
+                }
+            }
+        }
+    }
+
+    if (need_annotation) {
+        class_annotations.resize(reader.TypeIds().size());
+        field_annotations.resize(reader.FieldIds().size());
+        method_annotations.resize(reader.MethodIds().size());
+        method_parameter_annotations.resize(reader.MethodIds().size());
+        for (auto &class_def: reader.ClassDefs()) {
+            if (class_def.annotations_off == 0) {
+                continue;
+            }
+            auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
+            if (annotations->class_annotation) {
+                auto &class_annotation = class_annotations[class_def.class_idx];
+                for (auto &annotation: annotations->class_annotation->annotations) {
+                    if (annotation->visibility == 2) {
+                        continue;
+                    }
+                    class_annotation.emplace_back(annotation);
+                }
+            }
+            for (auto value: annotations->field_annotations) {
+                auto &field_annotation = field_annotations[value->field_decl->orig_index];
+                for (auto &annotation: value->annotations->annotations) {
+                    if (annotation->visibility == 2) {
+                        continue;
+                    }
+                    field_annotation.emplace_back(annotation);
+                }
+            }
+            for (auto value: annotations->method_annotations) {
+                auto &method_annotation = method_annotations[value->method_decl->orig_index];
+                for (auto &annotation: value->annotations->annotations) {
+                    if (annotation->visibility == 2) {
+                        continue;
+                    }
+                    method_annotation.emplace_back(annotation);
+                }
+            }
+            for (auto value: annotations->param_annotations) {
+                auto &method_parameter_annotation = method_parameter_annotations[value->method_decl->orig_index];
+                for (auto &annotation: value->annotations->annotations) {
+                    std::vector<ir::Annotation *> ann_vec;
+                    for (auto &parameter_annotation: annotation->annotations) {
+                        if (parameter_annotation->visibility == 2) {
+                            continue;
+                        }
+                        ann_vec.emplace_back(parameter_annotation);
+                    }
+                    method_parameter_annotation.emplace_back(ann_vec);
+                }
+            }
+        }
+    }
+    dex_flag |= init_flags;
+}
+
+bool DexItem::NeedPutCrossRef(uint32_t need_cross_flag) const {
+    DEXKIT_CHECK(((dex_cross_flag | kCallerMethod | kRwFieldMethod) ^ (kCallerMethod | kRwFieldMethod)) == 0);
+    return (dex_cross_flag & need_cross_flag) != need_cross_flag;
+}
+
+void DexItem::PutCrossRef(uint32_t put_cross_flag) {
+    DEXKIT_CHECK(((put_cross_flag | kCallerMethod | kRwFieldMethod) ^ (kCallerMethod | kRwFieldMethod)) == 0);
+    if ((dex_cross_flag & put_cross_flag) == put_cross_flag) {
+        return;
+    }
+    bool need_caller_cross = put_cross_flag & kCallerMethod && (dex_cross_flag & kCallerMethod) == 0;
+    bool need_rw_field_cross = put_cross_flag & kRwFieldMethod && (dex_cross_flag & kRwFieldMethod) == 0;
+
     for (int type_idx = 0; type_idx < type_names.size(); ++type_idx) {
         if (!this->type_def_flag[type_idx] && type_names[type_idx][0] != '[') {
             auto declared_pair = dexkit->GetClassDeclaredPair(type_names[type_idx]);
@@ -396,44 +412,50 @@ void DexItem::PutCrossRef() {
             }
             auto &mutex = origin_dex->GetTypeDefMutex(origin_type_idx);
             std::lock_guard lock(mutex);
-            // declared dex
-            auto &origin_method_ids = origin_dex->class_method_ids[origin_type_idx];
-            auto &origin_field_ids = origin_dex->class_field_ids[origin_type_idx];
 
-            for (int ori_i = 0, cur_i = 0; ori_i < origin_method_ids.size() && cur_i < method_ids.size(); ++ori_i) {
-                auto origin_method_idx = origin_method_ids[ori_i];
-                auto curr_method_idx = method_ids[cur_i];
-                auto origin_method_descriptor = origin_dex->GetMethodDescriptor(origin_method_idx);
-                auto curr_method_descriptor = this->GetMethodDescriptor(curr_method_idx);
-                if (curr_method_descriptor != origin_method_descriptor) {
-                    continue;
+            if (need_caller_cross) {
+                auto &origin_method_ids = origin_dex->class_method_ids[origin_type_idx];
+                for (int ori_i = 0, cur_i = 0; ori_i < origin_method_ids.size() && cur_i < method_ids.size(); ++ori_i) {
+                    auto origin_method_idx = origin_method_ids[ori_i];
+                    auto curr_method_idx = method_ids[cur_i];
+                    auto origin_method_descriptor = origin_dex->GetMethodDescriptor(origin_method_idx);
+                    auto curr_method_descriptor = this->GetMethodDescriptor(curr_method_idx);
+                    if (curr_method_descriptor != origin_method_descriptor) {
+                        continue;
+                    }
+                    method_cross_info[curr_method_idx] = {origin_dex->dex_id, origin_method_idx};
+                    auto &origin_caller_id = origin_dex->method_caller_ids[origin_method_idx];
+                    auto &curr_caller_id = this->method_caller_ids[curr_method_idx];
+                    origin_caller_id.insert(origin_caller_id.end(), curr_caller_id.begin(), curr_caller_id.end());
+                    ++cur_i;
                 }
-                method_cross_info[curr_method_idx] = {origin_dex->dex_id, origin_method_idx};
-                auto &origin_caller_id = origin_dex->method_caller_ids[origin_method_idx];
-                auto &curr_caller_id = this->method_caller_ids[curr_method_idx];
-                origin_caller_id.insert(origin_caller_id.end(), curr_caller_id.begin(), curr_caller_id.end());
-                ++cur_i;
             }
-            for (int ori_i = 0, cur_i = 0; ori_i < origin_field_ids.size() && cur_i < field_ids.size(); ++ori_i) {
-                auto origin_field_idx = origin_field_ids[ori_i];
-                auto curr_field_idx = field_ids[cur_i];
-                auto origin_field_descriptor = origin_dex->GetFieldDescriptor(origin_field_idx);
-                auto curr_field_descriptor = this->GetFieldDescriptor(curr_field_idx);
-                if (origin_field_descriptor != curr_field_descriptor) {
-                    continue;
+
+            if (need_rw_field_cross) {
+                auto &origin_field_ids = origin_dex->class_field_ids[origin_type_idx];
+                for (int ori_i = 0, cur_i = 0; ori_i < origin_field_ids.size() && cur_i < field_ids.size(); ++ori_i) {
+                    auto origin_field_idx = origin_field_ids[ori_i];
+                    auto curr_field_idx = field_ids[cur_i];
+                    auto origin_field_descriptor = origin_dex->GetFieldDescriptor(origin_field_idx);
+                    auto curr_field_descriptor = this->GetFieldDescriptor(curr_field_idx);
+                    if (origin_field_descriptor != curr_field_descriptor) {
+                        continue;
+                    }
+                    field_cross_info[curr_field_idx] = {origin_dex->dex_id, origin_field_idx};
+                    auto &origin_get_method_id = origin_dex->field_get_method_ids[origin_field_idx];
+                    auto &curr_get_method_id = this->field_get_method_ids[curr_field_idx];
+                    origin_get_method_id.insert(origin_get_method_id.end(), curr_get_method_id.begin(),
+                                                curr_get_method_id.end());
+                    auto &origin_put_method_id = origin_dex->field_put_method_ids[origin_field_idx];
+                    auto &curr_put_method_id = this->field_put_method_ids[curr_field_idx];
+                    origin_put_method_id.insert(origin_put_method_id.end(), curr_put_method_id.begin(),
+                                                curr_put_method_id.end());
+                    ++cur_i;
                 }
-                field_cross_info[curr_field_idx] = {origin_dex->dex_id, origin_field_idx};
-                auto &origin_get_method_id = origin_dex->field_get_method_ids[origin_field_idx];
-                auto &curr_get_method_id = this->field_get_method_ids[curr_field_idx];
-                origin_get_method_id.insert(origin_get_method_id.end(), curr_get_method_id.begin(), curr_get_method_id.end());
-                auto &origin_put_method_id = origin_dex->field_put_method_ids[origin_field_idx];
-                auto &curr_put_method_id = this->field_put_method_ids[curr_field_idx];
-                origin_put_method_id.insert(origin_put_method_id.end(), curr_put_method_id.begin(), curr_put_method_id.end());
-                ++cur_i;
             }
         }
     }
-    this->put_cross_flag = true;
+    dex_cross_flag |= put_cross_flag;
 }
 
 std::mutex &DexItem::GetTypeDefMutex(uint32_t type_idx) {
@@ -608,6 +630,19 @@ AnnotationEncodeArrayBean DexItem::GetAnnotationEncodeArrayBean(ir::EncodedArray
 
 std::vector<AnnotationBean>
 DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
+    if (this->class_annotations.empty()) {
+        auto class_def = reader.ClassDefs()[this->type_def_idx[class_idx]];
+        auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        auto annotationSet = annotationsDirectory->class_annotation
+                             ? annotationsDirectory->class_annotation->annotations
+                             : std::vector<ir::Annotation *>();
+        std::vector<AnnotationBean> beans;
+        for (auto annotation: annotationSet) {
+            AnnotationBean bean = GetAnnotationBean(annotation);
+            beans.emplace_back(std::move(bean));
+        }
+        return beans;
+    }
     auto annotationSet = this->class_annotations[class_idx];
     std::vector<AnnotationBean> beans;
     for (auto annotation: annotationSet) {
@@ -618,8 +653,29 @@ DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
 }
 
 std::vector<AnnotationBean>
-DexItem::GetMethodAnnotationBeans(uint32_t class_idx) {
-    auto annotationSet = this->method_annotations[class_idx];
+DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
+    if (this->method_annotations.empty()) {
+        auto method_def = reader.MethodIds()[method_idx];
+        auto class_def = reader.ClassDefs()[method_def.class_idx];
+        auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        for (auto ann_ptr: annotationsDirectory->method_annotations) {
+            auto method_decl = ann_ptr->method_decl;
+            if (method_decl->orig_index != method_idx) {
+                continue;
+            }
+            auto annotationSet = ann_ptr->annotations
+                                 ? ann_ptr->annotations->annotations
+                                 : std::vector<ir::Annotation *>();
+            std::vector<AnnotationBean> beans;
+            for (auto annotation: annotationSet) {
+                AnnotationBean bean = GetAnnotationBean(annotation);
+                beans.emplace_back(std::move(bean));
+            }
+            return beans;
+        }
+        return {};
+    }
+    auto annotationSet = this->method_annotations[method_idx];
     std::vector<AnnotationBean> beans;
     for (auto annotation: annotationSet) {
         AnnotationBean bean = GetAnnotationBean(annotation);
@@ -629,8 +685,29 @@ DexItem::GetMethodAnnotationBeans(uint32_t class_idx) {
 }
 
 std::vector<AnnotationBean>
-DexItem::GetFieldAnnotationBeans(uint32_t class_idx) {
-    auto annotationSet = this->field_annotations[class_idx];
+DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
+    if (field_annotations.empty()) {
+        auto field_def = reader.FieldIds()[field_idx];
+        auto class_def = reader.ClassDefs()[field_def.class_idx];
+        auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        for (auto ann_ptr: annotationsDirectory->field_annotations) {
+            auto field_decl = ann_ptr->field_decl;
+            if (field_decl->orig_index != field_idx) {
+                continue;
+            }
+            auto annotationSet = ann_ptr->annotations
+                                 ? ann_ptr->annotations->annotations
+                                 : std::vector<ir::Annotation *>();
+            std::vector<AnnotationBean> beans;
+            for (auto annotation: annotationSet) {
+                AnnotationBean bean = GetAnnotationBean(annotation);
+                beans.emplace_back(std::move(bean));
+            }
+            return beans;
+        }
+        return {};
+    }
+    auto annotationSet = this->field_annotations[field_idx];
     std::vector<AnnotationBean> beans;
     for (auto annotation: annotationSet) {
         AnnotationBean bean = GetAnnotationBean(annotation);
@@ -678,6 +755,9 @@ DexItem::GetParameterNames(uint32_t method_idx) {
 
 std::vector<uint8_t>
 DexItem::GetMethodOpCodes(uint32_t method_idx) {
+    if (method_opcode_seq.empty()) {
+        return GetOpSeqFromCode(method_idx);
+    }
     auto &op_seq = method_opcode_seq[method_idx];
     return op_seq.has_value() ? op_seq.value() : std::vector<uint8_t>();
 }
@@ -706,10 +786,17 @@ std::vector<MethodBean> DexItem::GetInvokeMethods(uint32_t method_idx) {
 }
 
 std::vector<std::string_view> DexItem::GetUsingStrings(uint32_t method_idx) {
-    auto &method_using_strings = this->method_using_string_ids[method_idx];
     std::vector<std::string_view> using_strings;
-    for (auto string_id: method_using_strings) {
-        using_strings.emplace_back(this->strings[string_id]);
+    if (method_using_string_ids.empty()) {
+        auto method_using_strings = GetUsingStringsFromCode(method_idx);
+        for (auto string_id: method_using_strings) {
+            using_strings.emplace_back(this->strings[string_id]);
+        }
+    } else {
+        auto &method_using_strings = method_using_string_ids[method_idx];
+        for (auto string_id: method_using_strings) {
+            using_strings.emplace_back(this->strings[string_id]);
+        }
     }
     return using_strings;
 }
@@ -783,6 +870,109 @@ std::string_view DexItem::GetFieldDescriptor(uint32_t field_idx) {
 
     field_desc = descriptor;
     return field_desc.value();
+}
+
+std::vector<uint8_t> DexItem::GetOpSeqFromCode(uint32_t method_idx) {
+    auto code = method_codes[method_idx];
+    if (code == nullptr) {
+        return {};
+    }
+    std::vector<uint8_t> op_seq;
+    auto p = code->insns;
+    auto end_p = p + code->insns_size;
+    while (p < end_p) {
+        op_seq.emplace_back((uint8_t) *p);
+        p += GetBytecodeWidth(p);
+    }
+    return op_seq;
+}
+
+std::vector<uint32_t> DexItem::GetUsingStringsFromCode(uint32_t method_idx) {
+    auto code = method_codes[method_idx];
+    if (code == nullptr) {
+        return {};
+    }
+    std::vector<uint32_t> using_strings;
+    auto p = code->insns;
+    auto end_p = p + code->insns_size;
+    while (p < end_p) {
+        auto op = (uint8_t) *p;
+        auto ptr = p;
+        auto width = GetBytecodeWidth(ptr++);
+        if (op == 0x1a) { // const-string
+            auto index = ReadShort(ptr);
+            using_strings.emplace_back(index);
+        } else if (op == 0x1b) { // const-string-jumbo
+            auto index = ReadInt(ptr);
+            using_strings.emplace_back(index);
+        }
+        p += width;
+    }
+    return using_strings;
+}
+
+std::vector<EncodeNumber> DexItem::GetUsingNumberFromCode(uint32_t method_idx) {
+    auto code = method_codes[method_idx];
+    if (code == nullptr) {
+        return {};
+    }
+    std::vector<EncodeNumber> using_numbers;
+    auto p = code->insns;
+    auto end_p = p + code->insns_size;
+    while (p < end_p) {
+        auto op = (uint8_t) *p;
+        auto ptr = p;
+        auto width = GetBytecodeWidth(ptr++);
+        auto op_format = ins_formats[op];
+        switch (op_format) {
+            // using number
+            case dex::k11n: { // const/4
+                uint8_t value = *(ptr - 1) >> 12;
+                if (value & 0x8) {
+                    value |= 0xf0;
+                }
+                using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) value}});
+                break;
+            }
+            case dex::k21s: { // const/16, const-wide/16
+                uint16_t value = *ptr;
+                if (value & 0x8000) {
+                    value |= 0xffff0000;
+                }
+                using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) value}});
+                break;
+            }
+            case dex::k21h: { // const/high16, const-wide/high16
+                if (op == 0x15) {
+                    using_numbers.emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) (*ptr << 16)}}});
+                } else { // 0x19
+                    using_numbers.emplace_back(EncodeNumber{.type = DOUBLE, .value = {.L64 = {.long_value = (int64_t) (((uint64_t) *ptr) << 48)}}});
+                }
+                break;
+            }
+            case dex::k31i: { // const, const-wide/32
+                if (op == 0x14) {
+                    using_numbers.emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
+                } else { // 0x17
+                    using_numbers.emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
+                }
+                break;
+            }
+            case dex::k51l: // const-wide
+                using_numbers.emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadLong(ptr)}}});
+                break;
+            case dex::k22s: // binop/lit16
+                using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) *ptr}});
+                break;
+            case dex::k22b: // binop/lit8
+                using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) (*ptr >> 8)}});
+                break;
+            default:
+                break;
+        }
+        p += width;
+    }
+    return using_numbers;
 }
 
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {

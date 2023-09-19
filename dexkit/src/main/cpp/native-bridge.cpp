@@ -161,7 +161,6 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             dexkit->AddImage(std::move(images));
         }
     }
-    dexkit->BuildCrossRef();
     return (jlong) dexkit;
 }
 #endif
@@ -187,7 +186,6 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
         env->ReleaseByteArrayElements(dex_byte, dex_byte_ptr, 0);
     }
     dexkit->AddImage(std::move(images));
-    dexkit->BuildCrossRef();
     return (jlong) dexkit;
 }
 
@@ -202,7 +200,6 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass claz
     LOGI("apkPath -> %s", cStr);
     std::string filePathStr(cStr);
     auto dexkit = new dexkit::DexKit(filePathStr);
-    dexkit->BuildCrossRef();
     env->ReleaseStringUTFChars(apk_path, cStr);
     return (jlong) dexkit;
 }

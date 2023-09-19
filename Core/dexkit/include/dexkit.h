@@ -10,6 +10,7 @@
 #include "error.h"
 #include "dex_item.h"
 #include "package_trie.h"
+#include "analyze.h"
 
 #define BATCH_SIZE 5000
 
@@ -30,7 +31,6 @@ public:
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
     Error ExportDexFile(std::string_view path);
-    void BuildCrossRef();
     [[nodiscard]] int GetDexNum() const;
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
@@ -39,9 +39,9 @@ public:
     std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *query);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *query);
 
-    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetClassData(const std::string_view descriptor);
-    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetMethodData(const std::string_view descriptor);
-    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetFieldData(const std::string_view descriptor);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetClassData(std::string_view descriptor);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetMethodData(std::string_view descriptor);
+    std::unique_ptr<flatbuffers::FlatBufferBuilder> GetFieldData(std::string_view descriptor);
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetClassByIds(const std::vector<int64_t> &encode_ids);
     std::unique_ptr<flatbuffers::FlatBufferBuilder> GetMethodByIds(const std::vector<int64_t> &encode_ids);
@@ -66,13 +66,13 @@ private:
     std::mutex _mutex;
     std::shared_mutex _put_class_mutex;
     std::atomic<uint32_t> dex_cnt = 0;
-    bool cross_ref_build = false;
     uint32_t _thread_num = std::thread::hardware_concurrency();
     std::vector<std::unique_ptr<DexItem>> dex_items;
     phmap::flat_hash_map<std::string_view, std::pair<uint16_t /*dex_id*/, uint32_t /*type_idx*/>> class_declare_dex_map;
 
-    static void
-    BuildPackagesMatchTrie(
+    void InitDexCache(uint32_t init_flags);
+
+    static void BuildPackagesMatchTrie(
             const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,
             const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *exclude_packages,
             bool ignore_package_case,
@@ -85,20 +85,6 @@ private:
             std::vector<std::pair<std::string_view, bool>> &keywords,
             phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
     );
-
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::ClassMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::InterfacesMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationsMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationElementsMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationElementMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::AnnotationEncodeArrayMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::FieldsMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::FieldMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::MethodsMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::MethodMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::ParametersMatcher *matcher, int depth);
-    std::vector<std::string_view> ExtractUseTypeNames(const schema::ParameterMatcher *matcher, int depth);
 };
 
 } // namespace dexkit

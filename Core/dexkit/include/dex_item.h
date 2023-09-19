@@ -19,6 +19,7 @@
 #include "file_helper.h"
 #include "package_trie.h"
 #include "dexkit.h"
+#include "analyze.h"
 
 namespace dexkit {
 
@@ -155,15 +156,22 @@ public:
     std::vector<MethodBean> FieldPutMethods(uint32_t field_idx);
 
     bool CheckAllTypeNamesDeclared(std::vector<std::string_view> &types);
-    void PutCrossRef();
+    [[nodiscard]] bool NeedPutCrossRef(uint32_t need_cross_flag) const;
+    void PutCrossRef(uint32_t put_cross_flag);
+    [[nodiscard]] bool NeedInitCache(uint32_t need_flag) const;
+    void InitCache(uint32_t init_flags);
 
 private:
 
-    int InitCache();
+    void InitBaseCache();
     inline std::mutex &GetTypeDefMutex(uint32_t type_idx);
 
     std::string_view GetMethodDescriptor(uint32_t method_idx);
     std::string_view GetFieldDescriptor(uint32_t field_idx);
+
+    std::vector<uint8_t> GetOpSeqFromCode(uint32_t method_idx);
+    std::vector<uint32_t> GetUsingStringsFromCode(uint32_t method_idx);
+    std::vector<EncodeNumber> GetUsingNumberFromCode(uint32_t method_idx);
 
     static bool IsStringMatched(std::string_view str, const schema::StringMatcher *matcher);
     static bool IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher);
@@ -195,6 +203,7 @@ private:
     bool IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher);
     bool IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher *matcher);
     bool IsMethodUsingStringsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
+    bool IsMethodAnnotationMatched(uint32_t method_idx, const schema::AnnotationsMatcher *matcher);
     bool IsUsingFieldsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
     bool IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
     bool IsInvokingMethodsMatched(uint32_t method_idx, const schema::MethodsMatcher *matcher);
@@ -202,6 +211,7 @@ private:
 
     bool IsUsingFieldMatched(std::pair<uint32_t, bool> field, const schema::UsingFieldMatcher *matcher);
     bool IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *matcher);
+    bool IsFieldAnnotationMatched(uint32_t field_idx, const schema::AnnotationsMatcher *matcher);
     bool IsFieldGetMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
     bool IsFieldPutMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
 
@@ -210,8 +220,7 @@ private:
     std::unique_ptr<MemMap> _image;
     dex::Reader reader;
 
-    bool put_cross_flag = false;
-
+    uint32_t dex_cross_flag = 0;
     uint32_t dex_flag = 0;
     uint32_t dex_id;
 

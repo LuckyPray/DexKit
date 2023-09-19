@@ -24,9 +24,6 @@ void DexKit::SetThreadNum(int num) {
 }
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
-    if (cross_ref_build) {
-        return Error::ADD_DEX_AFTER_CROSS_BUILD;
-    }
     std::lock_guard lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size, this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
@@ -34,9 +31,6 @@ Error DexKit::AddDex(uint8_t *data, size_t size) {
 }
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
-    if (cross_ref_build) {
-        return Error::ADD_DEX_AFTER_CROSS_BUILD;
-    }
     std::lock_guard lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, std::move(dex_image), this));
     std::sort(dex_items.begin(), dex_items.end(), comp);
@@ -44,9 +38,6 @@ Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
 }
 
 Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
-    if (cross_ref_build) {
-        return Error::ADD_DEX_AFTER_CROSS_BUILD;
-    }
     std::lock_guard lock(_mutex);
     auto old_size = dex_items.size();
     auto new_size = old_size + dex_images.size();
@@ -66,9 +57,6 @@ Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
 }
 
 Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
-    if (cross_ref_build) {
-        return Error::ADD_DEX_AFTER_CROSS_BUILD;
-    }
     auto map = MemMap(apk_path);
     if (!map.ok()) {
         return Error::FILE_NOT_FOUND;
@@ -105,19 +93,6 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
     return Error::SUCCESS;
 }
 
-void DexKit::BuildCrossRef() {
-    if (cross_ref_build) {
-        return;
-    }
-    ThreadPool pool(std::min((int) _thread_num * 2, (int) dex_items.size()));
-    for (auto &dex_item: dex_items) {
-        pool.enqueue([&dex_item]() {
-            dex_item->PutCrossRef();
-        });
-    }
-    cross_ref_build = true;
-}
-
 Error DexKit::ExportDexFile(std::string_view path) {
     for (auto &dex_item: dex_items) {
         auto image = dex_item->GetImage();
@@ -143,14 +118,14 @@ int DexKit::GetDexNum() const {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FindClass(const schema::FindClass *query) {
-    BuildCrossRef();
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     if (query->in_classes()) {
         for (auto encode_idx: *query->in_classes()) {
             dex_class_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
-    auto resolve_types = ExtractUseTypeNames(query->matcher(), 1);
+    auto analyze_ret = Analyze(query->matcher(), 1);
+    InitDexCache(analyze_ret.need_flags);
 
     trie::PackageTrie packageTrie;
     // build package match trie
@@ -178,7 +153,7 @@ DexKit::FindClass(const schema::FindClass *query) {
         std::vector<std::future<std::vector<ClassBean>>> futures;
         for (auto &dex_item: dex_items) {
             auto &class_set = dex_class_map[dex_item->GetDexId()];
-            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+            if (dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
                 auto res = dex_item->FindClass(query, class_set, packageTrie, pool, BATCH_SIZE / 2, find_fist_flag);
                 for (auto &f: res) {
                     futures.emplace_back(std::move(f));
@@ -211,7 +186,6 @@ DexKit::FindClass(const schema::FindClass *query) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FindMethod(const schema::FindMethod *query) {
-    BuildCrossRef();
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     std::map<uint32_t, std::set<uint32_t>> dex_method_map;
     if (query->in_classes()) {
@@ -224,7 +198,8 @@ DexKit::FindMethod(const schema::FindMethod *query) {
             dex_method_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
-    auto resolve_types = ExtractUseTypeNames(query->matcher(), 1);
+    auto analyze_ret = Analyze(query->matcher(), 1);
+    InitDexCache(analyze_ret.need_flags);
 
     trie::PackageTrie packageTrie;
     // build package match trie
@@ -256,7 +231,7 @@ DexKit::FindMethod(const schema::FindMethod *query) {
         for (auto &dex_item: dex_items) {
             auto &class_set = dex_class_map[dex_item->GetDexId()];
             auto &method_set = dex_method_map[dex_item->GetDexId()];
-            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+            if (dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
                 auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
                 for (auto &f: res) {
                     futures.emplace_back(std::move(f));
@@ -294,7 +269,6 @@ DexKit::FindMethod(const schema::FindMethod *query) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FindField(const schema::FindField *query) {
-    BuildCrossRef();
     std::map<uint32_t, std::set<uint32_t>> dex_class_map;
     std::map<uint32_t, std::set<uint32_t>> dex_field_map;
     if (query->in_classes()) {
@@ -307,7 +281,8 @@ DexKit::FindField(const schema::FindField *query) {
             dex_field_map[encode_idx >> 32].insert(encode_idx & UINT32_MAX);
         }
     }
-    auto resolve_types = ExtractUseTypeNames(query->matcher(), 1);
+    auto analyze_ret = Analyze(query->matcher(), 1);
+    InitDexCache(analyze_ret.need_flags);
 
     trie::PackageTrie packageTrie;
     // build package match trie
@@ -339,7 +314,7 @@ DexKit::FindField(const schema::FindField *query) {
         for (auto &dex_item: dex_items) {
             auto &class_set = dex_class_map[dex_item->GetDexId()];
             auto &field_set = dex_field_map[dex_item->GetDexId()];
-            if (dex_item->CheckAllTypeNamesDeclared(resolve_types)) {
+            if (dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
                 auto res = dex_item->FindField(query, class_set, field_set, packageTrie, pool, BATCH_SIZE, find_fist_flag);
                 for (auto &f: res) {
                     futures.emplace_back(std::move(f));
@@ -403,6 +378,8 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
             find_result_map[matchers->Get(j)->union_key()->string_view()] = {};
         }
     }
+
+    InitDexCache(kUsingString);
 
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<BatchFindClassItemBean>>> futures;
@@ -476,6 +453,8 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
             find_result_map[matchers->Get(j)->union_key()->string_view()] = {};
         }
     }
+
+    InitDexCache(kUsingString);
 
     ThreadPool pool(_thread_num);
     std::vector<std::future<std::vector<BatchFindMethodItemBean>>> futures;
@@ -720,6 +699,8 @@ DexKit::GetMethodOpCodes(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::GetCallMethods(int64_t encode_method_id) {
+    InitDexCache(kCallerMethod);
+
     auto dex_id = encode_method_id >> 32;
     auto method_id = encode_method_id & UINT32_MAX;
     auto result = dex_items[dex_id]->GetCallMethods(method_id);
@@ -738,6 +719,8 @@ DexKit::GetCallMethods(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::GetInvokeMethods(int64_t encode_method_id) {
+    InitDexCache(kMethodInvoking);
+
     auto dex_id = encode_method_id >> 32;
     auto method_id = encode_method_id & UINT32_MAX;
     auto result = dex_items[dex_id]->GetInvokeMethods(method_id);
@@ -763,6 +746,8 @@ DexKit::GetUsingStrings(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FieldGetMethods(int64_t encode_field_id) {
+    InitDexCache(kRwFieldMethod);
+
     auto dex_id = encode_field_id >> 32;
     auto field_id = encode_field_id & UINT32_MAX;
     auto result = dex_items[dex_id]->FieldGetMethods(field_id);
@@ -781,6 +766,8 @@ DexKit::FieldGetMethods(int64_t encode_field_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FieldPutMethods(int64_t encode_field_id) {
+    InitDexCache(kRwFieldMethod);
+
     auto dex_id = encode_field_id >> 32;
     auto field_id = encode_field_id & UINT32_MAX;
     auto result = dex_items[dex_id]->FieldPutMethods(field_id);
@@ -815,8 +802,41 @@ void DexKit::PutDeclaredClass(std::string_view class_name, uint16_t dex_id, uint
     this->class_declare_dex_map[class_name] = {dex_id, type_idx};
 }
 
-void
-DexKit::BuildPackagesMatchTrie(
+void DexKit::InitDexCache(uint32_t init_flags) {
+    static std::mutex init_mutex;
+    std::lock_guard lock(init_mutex);
+
+    bool need_init = false;
+    bool need_put_cross_ref = false;
+    uint32_t cross_ref_flags = init_flags & (kCallerMethod | kRwFieldMethod);
+    for (auto &dex_item: dex_items) {
+        if (dex_item->NeedInitCache(init_flags)) {
+            need_init = true;
+        }
+        if (dex_item->NeedPutCrossRef(cross_ref_flags)) {
+            need_put_cross_ref = true;
+        }
+    }
+
+    if (need_init) {
+        ThreadPool pool(std::min((int) _thread_num, (int) dex_items.size()));
+        for (auto &dex_item: dex_items) {
+            pool.enqueue([&init_flags, &dex_item]() {
+                dex_item->InitCache(init_flags);
+            });
+        }
+    }
+    if (need_put_cross_ref) {
+        ThreadPool pool(std::min((int) _thread_num, (int) dex_items.size()));
+        for (auto &dex_item: dex_items) {
+            pool.enqueue([&cross_ref_flags, &dex_item]() {
+                dex_item->PutCrossRef(cross_ref_flags);
+            });
+        }
+    }
+}
+
+void DexKit::BuildPackagesMatchTrie(
         const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,
         const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *exclude_packages,
         const bool ignore_packages_case,
