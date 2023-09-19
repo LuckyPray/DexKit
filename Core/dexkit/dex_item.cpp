@@ -304,11 +304,6 @@ void DexItem::InitCache(uint32_t init_flags) {
                             auto is_setter = ((op >= 0x59 && op <= 0x5f) ||
                                               (op >= 0x67 && op <= 0x6d));
                             auto index = ReadShort(ptr);
-                            if (is_getter) {
-                                field_get_method_ids[index].emplace_back(dex_id, method_id);
-                            } else {
-                                field_put_method_ids[index].emplace_back(dex_id, method_id);
-                            }
                             method_using_field_ptr->emplace_back(index, is_getter);
                         }
                     }
@@ -321,6 +316,23 @@ void DexItem::InitCache(uint32_t init_flags) {
                         }
                     }
                     p += width;
+                }
+            }
+        }
+    }
+
+    if (need_field_rw_method) {
+        for (auto &class_def: reader.ClassDefs()) {
+            for (auto method_id: class_method_ids[class_def.class_idx]) {
+                auto &method_using_field = method_using_field_ids[method_id];
+                for (auto &field_using: method_using_field) {
+                    auto field_id = field_using.first;
+                    auto is_getter = field_using.second;
+                    if (is_getter) {
+                        field_get_method_ids[field_id].emplace_back(dex_id, method_id);
+                    } else {
+                        field_put_method_ids[field_id].emplace_back(dex_id, method_id);
+                    }
                 }
             }
         }
