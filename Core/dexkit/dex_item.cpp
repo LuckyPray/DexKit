@@ -321,11 +321,20 @@ void DexItem::InitCache(uint32_t init_flags) {
         }
     }
 
+    if (need_method_caller) {
+        for (auto &class_def: reader.ClassDefs()) {
+            for (auto method_id: class_method_ids[class_def.class_idx]) {
+                for (auto invoke_id: method_invoking_ids[method_id]) {
+                    method_caller_ids[invoke_id].emplace_back(dex_id, method_id);
+                }
+            }
+        }
+    }
+
     if (need_field_rw_method) {
         for (auto &class_def: reader.ClassDefs()) {
             for (auto method_id: class_method_ids[class_def.class_idx]) {
-                auto &method_using_field = method_using_field_ids[method_id];
-                for (auto &field_using: method_using_field) {
+                for (auto &field_using: method_using_field_ids[method_id]) {
                     auto field_id = field_using.first;
                     auto is_getter = field_using.second;
                     if (is_getter) {
