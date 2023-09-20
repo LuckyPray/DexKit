@@ -1,4 +1,4 @@
--keepclasseswithmembers,includedescriptorclasses class io.luckypray.dexkit.** {
+-keepclasseswithmembers,includedescriptorclasses class org.luckypray.dexkit.** {
     native <methods>;
     long token;
 }
