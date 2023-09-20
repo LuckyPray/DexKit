@@ -699,7 +699,7 @@ DexKit::GetMethodOpCodes(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::GetCallMethods(int64_t encode_method_id) {
-    InitDexCache(kCallerMethod);
+    InitDexCache(kCallerMethod | kMethodInvoking);
 
     auto dex_id = encode_method_id >> 32;
     auto method_id = encode_method_id & UINT32_MAX;
@@ -719,8 +719,6 @@ DexKit::GetCallMethods(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::GetInvokeMethods(int64_t encode_method_id) {
-    InitDexCache(kMethodInvoking);
-
     auto dex_id = encode_method_id >> 32;
     auto method_id = encode_method_id & UINT32_MAX;
     auto result = dex_items[dex_id]->GetInvokeMethods(method_id);
@@ -746,7 +744,7 @@ DexKit::GetUsingStrings(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FieldGetMethods(int64_t encode_field_id) {
-    InitDexCache(kRwFieldMethod);
+    InitDexCache(kRwFieldMethod | kMethodUsingField);
 
     auto dex_id = encode_field_id >> 32;
     auto field_id = encode_field_id & UINT32_MAX;
@@ -766,7 +764,7 @@ DexKit::FieldGetMethods(int64_t encode_field_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::FieldPutMethods(int64_t encode_field_id) {
-    InitDexCache(kRwFieldMethod);
+    InitDexCache(kRwFieldMethod | kMethodUsingField);
 
     auto dex_id = encode_field_id >> 32;
     auto field_id = encode_field_id & UINT32_MAX;

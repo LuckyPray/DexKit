@@ -810,10 +810,17 @@ std::vector<MethodBean> DexItem::GetCallMethods(uint32_t method_idx) {
 }
 
 std::vector<MethodBean> DexItem::GetInvokeMethods(uint32_t method_idx) {
-    auto &method_invoking = this->method_invoking_ids[method_idx];
     std::vector<MethodBean> beans;
-    for (auto invoking_id: method_invoking) {
-        beans.emplace_back(GetMethodBean(invoking_id));
+    if (method_invoking_ids.empty()) {
+        auto method_invoking = GetInvokeMethodsFromCode(method_idx);
+        for (auto invoking_id: method_invoking) {
+            beans.emplace_back(GetMethodBean(invoking_id));
+        }
+    } else {
+        auto &method_invoking = this->method_invoking_ids[method_idx];
+        for (auto invoking_id: method_invoking) {
+            beans.emplace_back(GetMethodBean(invoking_id));
+        }
     }
     return beans;
 }
@@ -917,7 +924,7 @@ std::vector<uint8_t> DexItem::GetOpSeqFromCode(uint32_t method_idx) {
         op_seq.emplace_back((uint8_t) *p);
         p += GetBytecodeWidth(p);
     }
-    return op_seq;
+    return std::move(op_seq);
 }
 
 std::vector<uint32_t> DexItem::GetUsingStringsFromCode(uint32_t method_idx) {
@@ -941,7 +948,30 @@ std::vector<uint32_t> DexItem::GetUsingStringsFromCode(uint32_t method_idx) {
         }
         p += width;
     }
-    return using_strings;
+    return std::move(using_strings);
+}
+
+std::vector<uint32_t> DexItem::GetInvokeMethodsFromCode(uint32_t method_idx) {
+    auto code = method_codes[method_idx];
+    if (code == nullptr) {
+        return {};
+    }
+    std::vector<uint32_t> invoke_methods;
+    auto p = code->insns;
+    auto end_p = p + code->insns_size;
+    while (p < end_p) {
+        auto op = (uint8_t) *p;
+        auto ptr = p;
+        auto width = GetBytecodeWidth(ptr++);
+        auto op_format = ins_formats[op];
+        if (op_format == dex::k35c // invoke-kind
+            || op_format == dex::k3rc) { // invoke-kind/range
+            auto index = ReadShort(ptr);
+            invoke_methods.emplace_back(index);
+        }
+        p += width;
+    }
+    return std::move(invoke_methods);
 }
 
 std::vector<EncodeNumber> DexItem::GetUsingNumberFromCode(uint32_t method_idx) {
@@ -1005,7 +1035,7 @@ std::vector<EncodeNumber> DexItem::GetUsingNumberFromCode(uint32_t method_idx) {
         }
         p += width;
     }
-    return using_numbers;
+    return std::move(using_numbers);
 }
 
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {
