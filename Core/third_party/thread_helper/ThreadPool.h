@@ -52,9 +52,7 @@ private:
     std::vector<std::thread> workers;
     // the task queue
     std::queue<std::function<void()> > tasks;
-    std::mutex init_lock;
-    std::mutex wait_lock;
-    std::condition_variable init_condition;
+    std::mutex thread_ids_mutex;
     std::atomic<int> ready_tasks = 0;
     // synchronization
     std::mutex queue_mutex;
@@ -71,26 +69,20 @@ inline ThreadPool::ThreadPool(size_t threads)
         workers.emplace_back(
                 [this, threads] {
                     {
-                        std::unique_lock lock(this->init_lock);
+                        std::unique_lock lock(this->thread_ids_mutex);
                         this->_thread_ids.push_back(std::this_thread::get_id());
                     }
                     ThreadVariable::InitThreadVariableMap();
                     this->ready_tasks++;
-                    if (this->ready_tasks == threads) {
-                        this->init_condition.notify_all();
-                    }
-                    {
-                        std::unique_lock lock(init_lock);
-                        this->init_condition.wait(lock,
-                                                [this, threads] { return this->ready_tasks == threads; });
+                    while (this->ready_tasks != threads) {
+                        std::this_thread::yield();
                     }
                     for (;;) {
                         std::function<void()> task;
 
                         {
                             std::unique_lock lock(this->queue_mutex);
-                            this->condition.wait(lock,
-                                                 [this] { return this->stop || !this->tasks.empty(); });
+                            this->condition.wait(lock, [this] { return this->stop || !this->tasks.empty(); });
                             if (this->stop && this->tasks.empty())
                                 return;
                             task = std::move(this->tasks.front());
