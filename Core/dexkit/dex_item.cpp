@@ -652,13 +652,17 @@ AnnotationEncodeArrayBean DexItem::GetAnnotationEncodeArrayBean(ir::EncodedArray
 std::vector<AnnotationBean>
 DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
     if (this->class_annotations.empty()) {
-        auto class_def = reader.ClassDefs()[this->type_def_idx[class_idx]];
+        auto class_def = reader.ClassDefs()[type_def_idx[class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        if (!annotationsDirectory) return {};
         auto annotationSet = annotationsDirectory->class_annotation
                              ? annotationsDirectory->class_annotation->annotations
                              : std::vector<ir::Annotation *>();
         std::vector<AnnotationBean> beans;
         for (auto annotation: annotationSet) {
+            if (annotation->visibility == 2) {
+                continue;
+            }
             AnnotationBean bean = GetAnnotationBean(annotation);
             beans.emplace_back(std::move(bean));
         }
@@ -677,8 +681,9 @@ std::vector<AnnotationBean>
 DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
     if (this->method_annotations.empty()) {
         auto method_def = reader.MethodIds()[method_idx];
-        auto class_def = reader.ClassDefs()[method_def.class_idx];
+        auto class_def = reader.ClassDefs()[type_def_idx[method_def.class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        if (!annotationsDirectory) return {};
         for (auto ann_ptr: annotationsDirectory->method_annotations) {
             auto method_decl = ann_ptr->method_decl;
             if (method_decl->orig_index != method_idx) {
@@ -689,6 +694,9 @@ DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
                                  : std::vector<ir::Annotation *>();
             std::vector<AnnotationBean> beans;
             for (auto annotation: annotationSet) {
+                if (annotation->visibility == 2) {
+                    continue;
+                }
                 AnnotationBean bean = GetAnnotationBean(annotation);
                 beans.emplace_back(std::move(bean));
             }
@@ -709,8 +717,9 @@ std::vector<AnnotationBean>
 DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
     if (field_annotations.empty()) {
         auto field_def = reader.FieldIds()[field_idx];
-        auto class_def = reader.ClassDefs()[field_def.class_idx];
+        auto class_def = reader.ClassDefs()[type_def_idx[field_def.class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        if (!annotationsDirectory) return {};
         for (auto ann_ptr: annotationsDirectory->field_annotations) {
             auto field_decl = ann_ptr->field_decl;
             if (field_decl->orig_index != field_idx) {
@@ -721,6 +730,9 @@ DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
                                  : std::vector<ir::Annotation *>();
             std::vector<AnnotationBean> beans;
             for (auto annotation: annotationSet) {
+                if (annotation->visibility == 2) {
+                    continue;
+                }
                 AnnotationBean bean = GetAnnotationBean(annotation);
                 beans.emplace_back(std::move(bean));
             }
