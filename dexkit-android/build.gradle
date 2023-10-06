@@ -113,7 +113,7 @@ dependencies {
 
 tasks.register("androidSourcesJar", Jar) {
     archiveClassifier.set('sources')
-    from "${projectDir}/src/main/java"
+    from "${project(':dexkit').projectDir}/src/main/java"
 }
 
 // Because the components are created only during the afterEvaluate phase, you must
