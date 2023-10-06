@@ -421,12 +421,6 @@ void DexItem::PutCrossRef(uint32_t put_cross_flag) {
             auto origin_dex = declared_pair.first;
             auto origin_type_idx = declared_pair.second;
 
-            std::vector<uint32_t> method_ids;
-            std::vector<uint32_t> field_ids;
-            // current dex
-            std::swap(method_ids, this->class_method_ids[type_idx]);
-            std::swap(field_ids, this->class_field_ids[type_idx]);
-
             // no declared in any dex
             if (origin_dex == nullptr) {
                 continue;
@@ -435,6 +429,9 @@ void DexItem::PutCrossRef(uint32_t put_cross_flag) {
             std::lock_guard lock(mutex);
 
             if (need_caller_cross) {
+                std::vector<uint32_t> method_ids;
+                std::swap(method_ids, this->class_method_ids[type_idx]);
+
                 auto &origin_method_ids = origin_dex->class_method_ids[origin_type_idx];
                 for (int ori_i = 0, cur_i = 0; ori_i < origin_method_ids.size() && cur_i < method_ids.size(); ++ori_i) {
                     auto origin_method_idx = origin_method_ids[ori_i];
@@ -453,6 +450,9 @@ void DexItem::PutCrossRef(uint32_t put_cross_flag) {
             }
 
             if (need_rw_field_cross) {
+                std::vector<uint32_t> field_ids;
+                std::swap(field_ids, this->class_field_ids[type_idx]);
+
                 auto &origin_field_ids = origin_dex->class_field_ids[origin_type_idx];
                 for (int ori_i = 0, cur_i = 0; ori_i < origin_field_ids.size() && cur_i < field_ids.size(); ++ori_i) {
                     auto origin_field_idx = origin_field_ids[ori_i];
