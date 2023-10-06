@@ -228,10 +228,13 @@ struct [[gnu::packed]] ZipLocalFile {
         return 0;
     }
 
+    [[nodiscard]] inline uint32_t getEntrySize() const {
+        return sizeof(ZipFileRecord) + record->file_name_length + record->extra_length + real_compress_size +
+               getDataDescriptorSize();
+    }
+
     [[nodiscard]] ZipLocalFile *next() const {
-        return from(reinterpret_cast<uint8_t *>(record) + sizeof(ZipFileRecord) +
-                    record->file_name_length + record->extra_length +
-                    real_compress_size + getDataDescriptorSize());
+        return from(reinterpret_cast<uint8_t *>(record) + getEntrySize());
     }
 
     [[nodiscard]] MemMap uncompress() const {
