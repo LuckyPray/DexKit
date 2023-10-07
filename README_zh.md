@@ -334,6 +334,10 @@ class MainHook : IXposedHookLoadPackage {
 - [ThreadPool](https://github.com/progschj/ThreadPool)
 - [parallel-hashmap](https://github.com/greg7mdp/parallel-hashmap)
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=luckypray/dexkit&type=Date)](https://star-history.com/#luckypray/dexkit&Date)
+
 ## 许可证
 
 [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html) © LuckyPray
