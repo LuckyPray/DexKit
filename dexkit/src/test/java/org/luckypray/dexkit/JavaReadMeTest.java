@@ -93,7 +93,7 @@ public class JavaReadMeTest {
             )
         ).forEach(classData -> {
             // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            System.out.println(classData.getClassName());
+            System.out.println(classData.getName());
             // Get the corresponding class instance
 //            Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
         });
@@ -158,7 +158,7 @@ public class JavaReadMeTest {
             )
         ).forEach(classData -> {
             // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-            System.out.println(classData.getClassName());
+            System.out.println(classData.getName());
             // 获取对应的类实例
 //            Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
         });

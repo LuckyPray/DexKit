@@ -11,6 +11,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexClass
 
 class ClassMatcher : BaseQuery {
@@ -34,6 +35,10 @@ class ClassMatcher : BaseQuery {
         private set
 
     constructor()
+
+    constructor(clazz: Class<*>) {
+        className(DexSignUtil.getClassDescriptor(clazz))
+    }
 
     constructor(descriptor: String) {
         descriptor(descriptor)
@@ -205,6 +210,18 @@ class ClassMatcher : BaseQuery {
         this.classNameMatcher = matcher
     }
 
+    /**
+     * Class name string matcher.
+     * ----------------
+     * 类名字符串匹配器。
+     *
+     *     className("org.luckypray.dexkit.demo.MainActivity", StringMatchType.Equals, false)
+     *
+     * @param className class name / 类名
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [ClassMatcher]
+     */
     @JvmOverloads
     fun className(
         className: String,
@@ -389,7 +406,7 @@ class ClassMatcher : BaseQuery {
      * @param max max interface count / 最大接口数量
      * @return [ClassMatcher]
      */
-    fun interfaceCount(min: Int, max: Int) = also {
+    fun interfaceCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.interfacesMatcher = this.interfacesMatcher ?: InterfacesMatcher()
         this.interfacesMatcher!!.count(min, max)
     }
@@ -483,7 +500,7 @@ class ClassMatcher : BaseQuery {
      * @param max max annotation count / 最大注解数量
      * @return [ClassMatcher]
      */
-    fun annotationCount(min: Int, max: Int) = also {
+    fun annotationCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
         this.annotationsMatcher!!.count(min, max)
     }
@@ -613,7 +630,7 @@ class ClassMatcher : BaseQuery {
      * @param max max field count / 最大字段数量
      * @return [ClassMatcher]
      */
-    fun fieldCount(min: Int, max: Int) = also {
+    fun fieldCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
         this.fieldsMatcher!!.count(min, max)
     }
@@ -701,7 +718,7 @@ class ClassMatcher : BaseQuery {
      * @param max max method count / 最大方法数量
      * @return [ClassMatcher]
      */
-    fun methodCount(min: Int, max: Int) = also {
+    fun methodCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.methodsMatcher = this.methodsMatcher ?: MethodsMatcher()
         this.methodsMatcher!!.count(min, max)
     }
@@ -880,6 +897,9 @@ class ClassMatcher : BaseQuery {
     companion object {
         @JvmStatic
         fun create() = ClassMatcher()
+
+        @JvmStatic
+        fun create(clazz: Class<*>) = ClassMatcher(clazz)
 
         /**
          * @see ClassMatcher.descriptor

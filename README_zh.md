@@ -211,7 +211,7 @@ public class MainHook implements IXposedHookLoadPackage {
             )
         ).forEach(classData -> {
             // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-            System.out.println(classData.getClassName());
+            System.out.println(classData.getName());
             // 获取对应的类实例
             Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
         });
@@ -309,7 +309,7 @@ class MainHook : IXposedHookLoadPackage {
             }
         }.forEach {
             // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-            println(it.className)
+            println(it.name)
             // 获取对应的类实例
             val clazz = it.getInstance(loadPackageParam.classLoader)
         }

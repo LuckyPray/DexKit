@@ -185,7 +185,7 @@ class DexKitBridge : Closeable {
      * @return [ClassData]
      */
     fun getClassData(clazz: Class<*>): ClassData? {
-        return getClassData(DexSignUtil.getDexDescriptor(clazz))
+        return getClassData(DexSignUtil.getDescriptor(clazz))
     }
 
     /**
@@ -251,7 +251,7 @@ class DexKitBridge : Closeable {
      * @return [FieldData]
      */
     fun getFieldData(field: Field): FieldData? {
-        return getFieldData(DexSignUtil.getDexDescriptor(field))
+        return getFieldData(DexSignUtil.getDescriptor(field))
     }
 
     /**

@@ -64,11 +64,6 @@ class ClassData private constructor(
      *
      *     e.g. java.lang.String
      */
-    val className get() = dexClass.typeName
-
-    /**
-     * @see className
-     */
     val name get() = dexClass.typeName
 
     /**
@@ -178,7 +173,7 @@ class ClassData private constructor(
      */
     @Throws(ClassNotFoundException::class)
     fun getInterfaceInstances(classLoader: ClassLoader): List<Class<*>> {
-        return getInterfaces().map { InstanceUtil.getClassInstance(classLoader, it.className) }
+        return getInterfaces().map { InstanceUtil.getClassInstance(classLoader, it.name) }
     }
 
     /**
@@ -197,14 +192,14 @@ class ClassData private constructor(
             if (modifiers > 0) {
                 append("${Modifier.toString(modifiers)} ")
             }
-            append("class $className")
+            append("class $name")
             getSuperClass()?.let {
                 append(" extends ")
-                append(it.className)
+                append(it.name)
             }
             if (getInterfaces().size > 0) {
                 append(" implements ")
-                append(getInterfaces().joinToString(", ") { it.className })
+                append(getInterfaces().joinToString(", ") { it.name })
             }
         }
     }

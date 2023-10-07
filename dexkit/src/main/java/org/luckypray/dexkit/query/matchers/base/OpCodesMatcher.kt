@@ -24,14 +24,6 @@ class OpCodesMatcher : BaseQuery {
         set(value) {
             size(value)
         }
-    var range: kotlin.ranges.IntRange
-        @JvmSynthetic
-        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
-        get() = throw NotImplementedError()
-        @JvmSynthetic
-        set(value) {
-            range(value)
-        }
 
     constructor()
 
@@ -71,20 +63,28 @@ class OpCodesMatcher : BaseQuery {
         this.matchType = matchType
     }
 
-    fun range(range: IntRange?) = also {
+    fun size(size: Int) = also {
+        this.rangeMatcher = IntRange(size)
+    }
+
+    fun size(range: IntRange?) = also {
         this.rangeMatcher = range
     }
 
-    fun range(range: kotlin.ranges.IntRange) = also {
+    fun size(range: kotlin.ranges.IntRange) = also {
         this.rangeMatcher = IntRange(range)
     }
 
-    fun range(min: Int, max: Int) = also {
+    fun size(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.rangeMatcher = IntRange(min, max)
     }
 
-    fun size(size: Int) = also {
-        this.rangeMatcher = IntRange(size)
+    fun sizeMin(min: Int) = also {
+        this.rangeMatcher = IntRange(min, Int.MAX_VALUE)
+    }
+
+    fun sizeMax(max: Int) = also {
+        this.rangeMatcher = IntRange(0, max)
     }
 
     companion object {

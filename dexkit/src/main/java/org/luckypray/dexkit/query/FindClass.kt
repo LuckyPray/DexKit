@@ -60,7 +60,7 @@ class FindClass : BaseQuery() {
      *     searchPackages("java.lang", "java.util")
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindClass]
      */
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -74,7 +74,7 @@ class FindClass : BaseQuery() {
      *     searchPackages(listOf("java.lang", "java.util"))
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindClass]
      */
     fun searchPackages(searchPackages: List<String>) = also {
         this.searchPackages = searchPackages
@@ -88,7 +88,7 @@ class FindClass : BaseQuery() {
      *     excludePackages("java.lang", "java.util")
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindClass]
      */
     fun excludePackages(vararg excludePackages: String) = also {
         this.excludePackages = excludePackages.toList()
@@ -102,7 +102,7 @@ class FindClass : BaseQuery() {
      *     excludePackages(listOf("java.lang", "java.util"))
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindClass]
      */
     fun excludePackages(excludePackages: List<String>) = also {
         this.excludePackages = excludePackages
@@ -114,7 +114,7 @@ class FindClass : BaseQuery() {
      * 忽略 [searchPackages] 和 [excludePackages] 的大小写。
      *
      * @param ignorePackagesCase ignore case / 忽略大小写
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindClass]
      */
     fun ignorePackagesCase(ignorePackagesCase: Boolean) = also {
         this.ignorePackagesCase = ignorePackagesCase
@@ -126,7 +126,7 @@ class FindClass : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索指定类。
      *
      * @param classes search classes / 类列表
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindClass]
      */
     fun searchInClass(classes: List<ClassData>) = also {
         this.searchClasses = classes

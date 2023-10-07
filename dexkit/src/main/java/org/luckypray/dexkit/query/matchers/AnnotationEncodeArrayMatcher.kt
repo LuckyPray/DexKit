@@ -48,8 +48,16 @@ class AnnotationEncodeArrayMatcher : BaseQuery() {
         rangeMatcher = IntRange(range)
     }
 
-    fun count(min: Int, max: Int) = also {
+    fun count(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.rangeMatcher = IntRange(min, max)
+    }
+
+    fun countMin(min: Int) = also {
+        this.rangeMatcher = IntRange(min, Int.MAX_VALUE)
+    }
+    
+    fun countMax(max: Int) = also {
+        this.rangeMatcher = IntRange(0, max)
     }
 
     fun add(matcher: AnnotationEncodeValueMatcher) = also {

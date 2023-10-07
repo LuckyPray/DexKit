@@ -55,7 +55,7 @@ class StringMatchersGroup : BaseQuery {
      *     usingStrings(StringMatcherList().add(StringMatcher("string")))
      *
      * @param usingStrings using string list matcher / 使用字符串列表匹配器
-     * @return [ClassMatcher]
+     * @return [StringMatchersGroup]
      */
     fun usingStrings(usingStrings: StringMatcherList) = also {
         this.stringMatchers = usingStrings
@@ -71,7 +71,7 @@ class StringMatchersGroup : BaseQuery {
      * @param usingStrings using string list / 使用字符串列表
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [ClassMatcher]
+     * @return [StringMatchersGroup]
      */
     @JvmOverloads
     fun usingStrings(
@@ -92,7 +92,7 @@ class StringMatchersGroup : BaseQuery {
      *     usingStrings("TAG", "Activity")
      *
      * @param usingStrings using string list / 使用字符串列表
-     * @return [ClassMatcher]
+     * @return [StringMatchersGroup]
      */
     fun usingStrings(vararg usingStrings: String) = also {
         this.stringMatchers = usingStrings.map { StringMatcher(it) }.toMutableList()
@@ -106,7 +106,7 @@ class StringMatchersGroup : BaseQuery {
      *     add(StringMatcher("string"))
      *
      * @param matcher string matcher / 字符串匹配器
-     * @return [ClassMatcher]
+     * @return [StringMatchersGroup]
      */
     fun add(matcher: StringMatcher) = also {
         stringMatchers.add(matcher)
@@ -120,7 +120,7 @@ class StringMatchersGroup : BaseQuery {
      *     add("string")
      *
      * @param usingString using string / 使用字符串
-     * @return [ClassMatcher]
+     * @return [StringMatchersGroup]
      */
     @JvmOverloads
     fun add(

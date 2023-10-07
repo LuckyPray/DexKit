@@ -53,6 +53,18 @@ class AnnotationMatcher : BaseQuery() {
     }
 
     /**
+     * Annotation type class matcher.
+     * ----------------
+     * 注解类型类匹配器。
+     *
+     * @param clazz type class / 类型类
+     * @return [AnnotationMatcher]
+     */
+    fun type(clazz: Class<*>) = also {
+        this.typeMatcher = ClassMatcher().className(clazz.name)
+    }
+
+    /**
      * Annotation type class name matcher.
      * ----------------
      * 注解类型类名匹配器
@@ -241,7 +253,7 @@ class AnnotationMatcher : BaseQuery() {
      * @param max max element count / 最大元素数量
      * @return [AnnotationMatcher]
      */
-    fun elementCount(min: Int, max: Int) = also {
+    fun elementCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         elementsMatcher = elementsMatcher ?: AnnotationElementsMatcher()
         (elementsMatcher as AnnotationElementsMatcher).count(min, max)
     }

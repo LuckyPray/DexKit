@@ -8,16 +8,16 @@ import org.luckypray.dexkit.query.base.BaseQuery
 
 class IntRange : BaseQuery {
     @set:JvmSynthetic
-    var min: Int
+    var min: Int = 0
     @set:JvmSynthetic
-    var max: Int
+    var max: Int = Int.MAX_VALUE
 
     constructor(value: Int) {
         min = value
         max = value
     }
 
-    constructor(min: Int, max: Int) {
+    constructor(min: Int = 0, max: Int = Int.MAX_VALUE) {
         this.min = min
         this.max = max
     }
@@ -29,7 +29,7 @@ class IntRange : BaseQuery {
 
     companion object {
         fun create(value: Int) = IntRange(value)
-        fun create(min: Int, max: Int) = IntRange(min, max)
+        fun create(min: Int = 0, max: Int = Int.MAX_VALUE) = IntRange(min, max)
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {

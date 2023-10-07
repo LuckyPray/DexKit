@@ -217,7 +217,7 @@ public class MainHook implements IXposedHookLoadPackage {
             )
         ).forEach(classData -> {
             // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            System.out.println(classData.getClassName());
+            System.out.println(classData.getName());
             // Get the corresponding class instance
             Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
         });
@@ -316,7 +316,7 @@ class MainHook : IXposedHookLoadPackage {
             }
         }.forEach {
             // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            println(it.className)
+            println(it.name)
             // Get the corresponding class instance
             val clazz = it.getInstance(loadPackageParam.classLoader)
         }

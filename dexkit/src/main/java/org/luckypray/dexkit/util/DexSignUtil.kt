@@ -231,13 +231,13 @@ object DexSignUtil {
      * ----------------
      * 转换类为类描述符。
      *
-     *     getDexDescriptor(String.class) -> "Ljava/lang/String;"
+     *     getDescriptor(String.class) -> "Ljava/lang/String;"
      *
      * @param clazz class / 类
      * @return class descriptor / 类描述符
      */
     @JvmStatic
-    fun getDexDescriptor(clazz: Class<*>): String {
+    fun getDescriptor(clazz: Class<*>): String {
         return getTypeSign(clazz)
     }
 
@@ -253,7 +253,7 @@ object DexSignUtil {
      */
     @JvmStatic
     fun getClassDescriptor(clazz: Class<*>): String {
-        return getDexDescriptor(clazz)
+        return getDescriptor(clazz)
     }
 
     /**
@@ -261,13 +261,13 @@ object DexSignUtil {
      * ----------------
      * 转换方法为方法描述符。
      *
-     *     getDexDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
+     *     getDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
      *
      * @param method method / 方法
      * @return method descriptor / 方法描述符
      */
     @JvmStatic
-    fun getDexDescriptor(method: Method): String {
+    fun getDescriptor(method: Method): String {
         return buildString {
             append(getTypeSign(method.declaringClass))
             append("->")
@@ -288,7 +288,7 @@ object DexSignUtil {
      */
     @JvmStatic
     fun getMethodDescriptor(method: Method): String {
-        return getDexDescriptor(method)
+        return getDescriptor(method)
     }
 
     /**
@@ -296,13 +296,13 @@ object DexSignUtil {
      * ----------------
      * 转换构造方法为方法描述符。
      *
-     *     getDexDescriptor(String.class.getConstructor()) -> "Ljava/lang/String;-><init>()V"
+     *     getDescriptor(String.class.getConstructor()) -> "Ljava/lang/String;-><init>()V"
      *
      * @param constructor constructor / 构造方法
      * @return constructor descriptor / 构造方法描述符
      */
     @JvmStatic
-    fun getDexDescriptor(constructor: Constructor<*>): String {
+    fun getDescriptor(constructor: Constructor<*>): String {
         return buildString {
             append(getTypeSign(constructor.declaringClass))
             append("->")
@@ -323,7 +323,7 @@ object DexSignUtil {
      */
     @JvmStatic
     fun getMethodDescriptor(constructor: Constructor<*>): String {
-        return getDexDescriptor(constructor)
+        return getDescriptor(constructor)
     }
 
     /**
@@ -331,13 +331,13 @@ object DexSignUtil {
      * ----------------
      * 转换字段为字段描述符。
      *
-     *     getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
+     *     getDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
      *
      * @param field field / 字段
      * @return field descriptor / 字段描述符
      */
     @JvmStatic
-    fun getDexDescriptor(field: Field): String {
+    fun getDescriptor(field: Field): String {
         return buildString {
             append(getTypeSign(field.declaringClass))
             append("->")
@@ -352,13 +352,13 @@ object DexSignUtil {
      * ----------------
      * 转换字段为字段描述符。
      *
-     *     getDexDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
+     *     getFieldDescriptor(String.class.getField("CASE_INSENSITIVE_ORDER")) -> "Ljava/lang/String;->CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;"
      *
      * @param field field / 字段
      * @return field descriptor / 字段描述符
      */
     @JvmStatic
     fun getFieldDescriptor(field: Field): String {
-        return getDexDescriptor(field)
+        return getDescriptor(field)
     }
 }

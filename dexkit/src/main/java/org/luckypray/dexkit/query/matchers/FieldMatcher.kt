@@ -10,7 +10,9 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexField
+import java.lang.reflect.Field
 
 class FieldMatcher : BaseQuery {
     var nameMatcher: StringMatcher? = null
@@ -29,6 +31,10 @@ class FieldMatcher : BaseQuery {
         private set
 
     constructor()
+
+    constructor(field: Field) {
+        descriptor(DexSignUtil.getFieldDescriptor(field))
+    }
 
     constructor(descriptor: String) {
         descriptor(descriptor)
@@ -213,6 +219,20 @@ class FieldMatcher : BaseQuery {
     }
 
     /**
+     * The field declared class matcher.
+     * ----------------
+     * 字段声明类匹配器。
+     *
+     *     declaredClass(MainActivity::class.java)
+     *
+     * @param clazz declared class / 声明类
+     * @return [FieldMatcher]
+     */
+    fun declaredClass(clazz: Class<*>) = also {
+        this.classMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
+    }
+
+    /**
      * The field declared class name matcher.
      * ----------------
      * 字段声明类的名称匹配器。
@@ -245,6 +265,18 @@ class FieldMatcher : BaseQuery {
      */
     fun type(type: ClassMatcher) = also {
         this.typeMatcher = type
+    }
+
+    /**
+     * The field type class matcher.
+     * ----------------
+     * 字段类型类匹配器。
+     *
+     * @param clazz type class / 类型类
+     * @return [FieldMatcher]
+     */
+    fun type(clazz: Class<*>) = also {
+        this.typeMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
     }
 
     /**
@@ -305,7 +337,7 @@ class FieldMatcher : BaseQuery {
      * 字段注解数量，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
      *
      * @param count annotation count / 注解数量
-     * @return [ClassMatcher]
+     * @return [FieldMatcher]
      */
     fun annotationCount(count: Int) = also {
         this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
@@ -321,7 +353,7 @@ class FieldMatcher : BaseQuery {
      *     annotationCount(IntRange(1, 2))
      *
      * @param range annotation count range / 注解数量范围
-     * @return [ClassMatcher]
+     * @return [FieldMatcher]
      */
     fun annotationCount(range: IntRange) = also {
         this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
@@ -337,7 +369,7 @@ class FieldMatcher : BaseQuery {
      *     annotationCount(1..2)
      *
      * @param range annotation count range / 注解数量范围
-     * @return [ClassMatcher]
+     * @return [FieldMatcher]
      */
     fun annotationCount(range: kotlin.ranges.IntRange) = also {
         this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
@@ -354,9 +386,9 @@ class FieldMatcher : BaseQuery {
      *
      * @param min min annotation count / 最小注解数量
      * @param max max annotation count / 最大注解数量
-     * @return [ClassMatcher]
+     * @return [FieldMatcher]
      */
-    fun annotationCount(min: Int, max: Int) = also {
+    fun annotationCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
         this.annotationsMatcher!!.count(min, max)
     }
@@ -520,6 +552,9 @@ class FieldMatcher : BaseQuery {
     companion object {
         @JvmStatic
         fun create() = FieldMatcher()
+
+        @JvmStatic
+        fun create(field: Field) = FieldMatcher(field)
 
         /**
          * @see FieldMatcher.descriptor

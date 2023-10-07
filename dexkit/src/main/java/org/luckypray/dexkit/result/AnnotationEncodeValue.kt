@@ -18,7 +18,6 @@ import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
-import org.luckypray.dexkit.util.DexSignUtil
 
 class AnnotationEncodeValue private constructor(
     val value: Any,
@@ -55,7 +54,7 @@ class AnnotationEncodeValue private constructor(
         return buildString {
             when (type) {
                 AnnotationEncodeValueType.TypeValue -> {
-                    append((value as ClassData).className)
+                    append((value as ClassData).name)
                 }
                 AnnotationEncodeValueType.EnumValue -> {
                     val fieldData = value as FieldData

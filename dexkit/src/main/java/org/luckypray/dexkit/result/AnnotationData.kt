@@ -7,6 +7,7 @@ import org.luckypray.dexkit.InnerAnnotationMeta
 import org.luckypray.dexkit.query.enums.AnnotationVisibilityType
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.DexSignUtil
+import org.luckypray.dexkit.wrap.DexClass
 
 class AnnotationData private constructor(
     bridge: DexKitBridge,
@@ -35,13 +36,11 @@ class AnnotationData private constructor(
         )
     }
 
-    val typeName: String by lazy {
-        DexSignUtil.getSimpleName(typeDescriptor)
+    private val dexClass by lazy {
+        DexClass(typeDescriptor)
     }
 
-    val className get() = typeName
-
-    val name get() = typeName
+    val typeName get() = dexClass.typeName
 
     override fun toString(): String {
         return buildString {

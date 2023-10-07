@@ -30,7 +30,7 @@ class UnitTest {
             searchPackages("org.luckypray.dexkit.demo")
             excludePackages("org.luckypray.dexkit.demo.annotations")
         }.forEach {
-            println(it.className)
+            println(it.name)
         }
     }
 
@@ -58,11 +58,11 @@ class UnitTest {
                 }
             }
         }
-        println(res.map { it.className })
+        println(res.map { it.name })
         assert(res.size == 2)
         res.forEach {
-            assert(it.className.startsWith("org.luckypray.dexkit.demo"))
-            assert(it.className.endsWith("Activity"))
+            assert(it.name.startsWith("org.luckypray.dexkit.demo"))
+            assert(it.name.endsWith("Activity"))
             val annotation = it.getAnnotations()
             assert(annotation.size == 1)
             assert(annotation.first().className == "org.luckypray.dexkit.demo.annotations.Router")
@@ -87,8 +87,8 @@ class UnitTest {
         println(res)
         assert(res.size == 1)
         val mainActivity = res.first()
-        assert(mainActivity.className == "org.luckypray.dexkit.demo.MainActivity")
-        assert(mainActivity.getSuperClass()!!.className == "androidx.appcompat.app.AppCompatActivity")
+        assert(mainActivity.name == "org.luckypray.dexkit.demo.MainActivity")
+        assert(mainActivity.getSuperClass()!!.name == "androidx.appcompat.app.AppCompatActivity")
         assert(mainActivity.getInterfaces().size == 1)
     }
 
@@ -109,7 +109,7 @@ class UnitTest {
         val playActivity = res.first()
         val fields = playActivity.getFields()
         assert(fields.size == 3)
-        assert(playActivity.className == "org.luckypray.dexkit.demo.PlayActivity")
+        assert(playActivity.name == "org.luckypray.dexkit.demo.PlayActivity")
     }
 
     @Test
@@ -121,7 +121,7 @@ class UnitTest {
         }
         println(res)
         assert(res.size == 1)
-        assert(res.first().className == "org.luckypray.dexkit.demo.PlayActivity")
+        assert(res.first().name == "org.luckypray.dexkit.demo.PlayActivity")
     }
 
     @Test
@@ -133,7 +133,7 @@ class UnitTest {
         }
         println(res)
         assert(res.size == 1)
-        assert(res.first().className == "org.luckypray.dexkit.demo.PlayActivity")
+        assert(res.first().name == "org.luckypray.dexkit.demo.PlayActivity")
     }
 
     @Test
@@ -145,7 +145,7 @@ class UnitTest {
         }
         println(res)
         assert(res.size == 2)
-        res.map { it.className }.forEach {
+        res.map { it.name }.forEach {
             assert(it.startsWith("org.luckypray.dexkit.demo"))
             assert(it.endsWith("Activity"))
         }
@@ -165,7 +165,7 @@ class UnitTest {
         }
         println(res)
         assert(res.size == 1)
-        assert(res.first().className == "org.luckypray.dexkit.demo.MainActivity")
+        assert(res.first().name == "org.luckypray.dexkit.demo.MainActivity")
     }
 
     @Test
@@ -182,7 +182,7 @@ class UnitTest {
         }
         println(res)
         assert(res.size == 1)
-        assert(res.first().className == "org.luckypray.dexkit.demo.MainActivity")
+        assert(res.first().name == "org.luckypray.dexkit.demo.MainActivity")
     }
 
     @Test
@@ -222,7 +222,7 @@ class UnitTest {
     fun testGetClassData() {
         val res = bridge.getClassData("Lorg/luckypray/dexkit/demo/MainActivity;")
         assert(res != null)
-        assert(res!!.className == "org.luckypray.dexkit.demo.MainActivity")
+        assert(res!!.name == "org.luckypray.dexkit.demo.MainActivity")
         res.getMethods().forEach {
             println(it.descriptor)
         }

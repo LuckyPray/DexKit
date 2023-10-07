@@ -68,7 +68,7 @@ class FindMethod : BaseQuery() {
      *     searchPackages("java.lang", "java.util")
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -82,7 +82,7 @@ class FindMethod : BaseQuery() {
      *     searchPackages(listOf("java.lang", "java.util"))
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun searchPackages(searchPackages: List<String>) = also {
         this.searchPackages = searchPackages
@@ -96,7 +96,7 @@ class FindMethod : BaseQuery() {
      *     excludePackages("java.lang", "java.util")
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun excludePackages(vararg excludePackages: String) = also {
         this.excludePackages = excludePackages.toList()
@@ -110,7 +110,7 @@ class FindMethod : BaseQuery() {
      *     excludePackages(listOf("java.lang", "java.util"))
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun excludePackages(excludePackages: List<String>) = also {
         this.excludePackages = excludePackages
@@ -122,7 +122,7 @@ class FindMethod : BaseQuery() {
      * 忽略 [searchPackages] 和 [excludePackages] 的大小写。
      *
      * @param ignorePackagesCase ignore case / 忽略大小写
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun ignorePackagesCase(ignorePackagesCase: Boolean) = also {
         this.ignorePackagesCase = ignorePackagesCase
@@ -134,7 +134,7 @@ class FindMethod : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索指定类。
      *
      * @param classes search classes / 类列表
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun searchInClass(classes: List<ClassData>) = also {
         this.searchClasses = classes
@@ -146,7 +146,7 @@ class FindMethod : BaseQuery() {
      * 在指定的 [MethodData] 列表中搜索指定方法。
      *
      * @param methods search methods / 方法列表
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindMethod]
      */
     fun searchInMethod(methods: List<MethodData>) = also {
         this.searchMethods = methods

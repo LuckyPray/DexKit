@@ -62,7 +62,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      *     searchPackages("java.lang", "java.util")
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -76,7 +76,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      *     searchPackages(listOf("java.lang", "java.util"))
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun searchPackages(searchPackages: List<String>) = also {
         this.searchPackages = searchPackages
@@ -90,7 +90,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      *     excludePackages("java.lang", "java.util")
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun excludePackages(vararg excludePackages: String) = also {
         this.excludePackages = excludePackages.toList()
@@ -104,7 +104,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      *     excludePackages(listOf("java.lang", "java.util"))
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun excludePackages(excludePackages: List<String>) = also {
         this.excludePackages = excludePackages
@@ -116,7 +116,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 忽略 [searchPackages] 和 [excludePackages] 的大小写。
      *
      * @param ignorePackagesCase ignore case / 忽略大小写
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun ignorePackagesCase(ignorePackagesCase: Boolean) = also {
         this.ignorePackagesCase = ignorePackagesCase
@@ -128,7 +128,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索指定类。
      *
      * @param classes search classes / 搜索类
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun searchInClasses(classes: List<ClassData>) = also {
         this.searchClasses = classes
@@ -140,7 +140,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 在指定的 [MethodData] 列表中搜索指定方法。
      *
      * @param methods search methods / 搜索方法
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun searchInMethods(methods: List<MethodData>) = also {
         this.searchMethods = methods
@@ -172,7 +172,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param keywordsMap keywords group map / 关键字分组映射
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     @JvmOverloads
     fun matchers(
@@ -191,7 +191,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 添加一个字符串匹配器分组。
      *
      * @param matcher string matchers group / 字符串匹配器分组
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     fun addSearchGroup(matcher: StringMatchersGroup) = also {
         searchGroups = searchGroups ?: mutableListOf()
@@ -207,7 +207,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param usingStrings using strings / 使用的字符串
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [BatchFindClassUsingStrings]
+     * @return [BatchFindMethodUsingStrings]
      */
     @JvmOverloads
     fun addSearchGroup(

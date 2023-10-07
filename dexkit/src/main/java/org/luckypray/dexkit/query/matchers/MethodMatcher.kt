@@ -17,7 +17,10 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
+import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexMethod
+import java.lang.reflect.Constructor
+import java.lang.reflect.Method
 
 class MethodMatcher : BaseQuery {
     var nameMatcher: StringMatcher? = null
@@ -46,6 +49,15 @@ class MethodMatcher : BaseQuery {
         private set
 
     constructor()
+
+    constructor(method: Method) {
+        descriptor(DexSignUtil.getDescriptor(method))
+    }
+
+    constructor(constructor: Constructor<*>) {
+        descriptor(DexSignUtil.getDescriptor(constructor))
+    }
+
     constructor(descriptor: String) {
         descriptor(descriptor)
     }
@@ -318,6 +330,20 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
+     * The method declared class.
+     * ----------------
+     * 方法声明类。
+     *
+     *     declaredClass(String::class.java)
+     *
+     * @param clazz method declared class / 方法声明类
+     * @return [MethodMatcher]
+     */
+    fun declaredClass(clazz: Class<*>) = also {
+        this.classMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
+    }
+
+    /**
      * The method declared class fully qualified name.
      * ----------------
      * 方法声明类全限定名。
@@ -342,9 +368,26 @@ class MethodMatcher : BaseQuery {
      * 方法返回值类型匹配器。
      *
      *     returnType(ClassMatcher().descriptor("[I"))
+     *
+     * @param type method return type matcher / 方法返回值类型匹配器
+     * @return [MethodMatcher]
      */
     fun returnType(type: ClassMatcher) = also {
         this.returnTypeMatcher = type
+    }
+
+    /**
+     * The method return type.
+     * ----------------
+     * 方法返回值类型。
+     *
+     *     returnType(int::class.java)
+     *
+     * @param clazz method return type / 方法返回值类型
+     * @return [MethodMatcher]
+     */
+    fun returnType(clazz: Class<*>) = also {
+        this.returnTypeMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
     }
 
     /**
@@ -387,6 +430,9 @@ class MethodMatcher : BaseQuery {
      * 方法参数类型全限定名。如果设置为 null 则表示匹配任意参数类型。列表隐含了参数数量。
      *
      *     paramTypes(listOf(null, "java.lang.String"))
+     *
+     * @param paramTypes method parameter types / 方法参数类型
+     * @return [MethodMatcher]
      */
     fun paramTypes(paramTypes: List<String?>) = also {
         this.paramsMatcher = ParametersMatcher().apply {
@@ -489,7 +535,7 @@ class MethodMatcher : BaseQuery {
      * @param max method parameter count max / 方法参数数量最大值
      * @return [MethodMatcher]
      */
-    fun paramCount(min: Int, max: Int) = also {
+    fun paramCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.paramsMatcher ?: let { this.paramsMatcher = ParametersMatcher() }
         this.paramsMatcher!!.count(min, max)
     }
@@ -502,7 +548,7 @@ class MethodMatcher : BaseQuery {
      *     annotations(AnnotationsMatcher().count(1))
      *
      * @param annotations annotations matcher / 注解匹配器
-     * @return [FieldMatcher]
+     * @return [MethodMatcher]
      */
     fun annotations(annotations: AnnotationsMatcher) = also {
         this.annotationsMatcher = annotations
@@ -517,7 +563,7 @@ class MethodMatcher : BaseQuery {
      *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
      * @param annotation annotation matcher / 注解匹配器
-     * @return [FieldMatcher]
+     * @return [MethodMatcher]
      */
     fun addAnnotation(annotation: AnnotationMatcher) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
@@ -531,7 +577,7 @@ class MethodMatcher : BaseQuery {
      * 方法注解数量，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
      *
      * @param count annotation count / 注解数量
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun annotationCount(count: Int) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
@@ -547,7 +593,7 @@ class MethodMatcher : BaseQuery {
      *     annotationCount(IntRange(1, 2))
      *
      * @param range annotation count range / 注解数量范围
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun annotationCount(range: IntRange) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
@@ -563,7 +609,7 @@ class MethodMatcher : BaseQuery {
      *     annotationCount(1..2)
      *
      * @param range annotation count range / 注解数量范围
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun annotationCount(range: kotlin.ranges.IntRange) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
@@ -580,9 +626,9 @@ class MethodMatcher : BaseQuery {
      *
      * @param min min annotation count / 最小注解数量
      * @param max max annotation count / 最大注解数量
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
-    fun annotationCount(min: Int, max: Int) = also {
+    fun annotationCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()
         this.annotationsMatcher!!.count(min, max)
     }
@@ -651,7 +697,7 @@ class MethodMatcher : BaseQuery {
      *     usingStrings(StringMatcherList().add(StringMatcher("string")))
      *
      * @param usingStrings using string list matcher / 使用字符串列表匹配器
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun usingStrings(usingStrings: StringMatcherList) = also {
         this.usingStringsMatcher = usingStrings
@@ -667,7 +713,7 @@ class MethodMatcher : BaseQuery {
      * @param usingStrings using string list / 使用字符串列表
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     @JvmOverloads
     fun usingStrings(
@@ -688,7 +734,7 @@ class MethodMatcher : BaseQuery {
      *     usingStrings("TAG", "Activity")
      *
      * @param usingStrings using string list / 使用字符串列表
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun usingStrings(vararg usingStrings: String) = also {
         this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }.toMutableList()
@@ -702,7 +748,7 @@ class MethodMatcher : BaseQuery {
      *     addUsingString(StringMatcher("string", StringMatchType.Equals, false))
      *
      * @param usingString using string matcher / 使用字符串匹配器
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun addUsingString(usingString: StringMatcher) = also {
         usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
@@ -719,7 +765,7 @@ class MethodMatcher : BaseQuery {
      * @param usingString using string / 使用字符串
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     @JvmOverloads
     fun addUsingString(
@@ -739,7 +785,7 @@ class MethodMatcher : BaseQuery {
      *     usingFields(UsingFieldMatcherList().add(UsingFieldMatcher().matcher(FieldMatcher().name("TAG"))))
      *
      * @param usingFields using fields matcher / 使用字段列表匹配器
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun usingFields(usingFields: List<UsingFieldMatcher>) = also {
         this.usingFieldsMatcher = usingFields.toMutableList()
@@ -754,7 +800,7 @@ class MethodMatcher : BaseQuery {
      *
      * @param usingField using field matcher / 使用字段匹配器
      * @param usingType using type / 使用类型
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun addUsingField(usingField: UsingFieldMatcher) = also {
         usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
@@ -770,7 +816,7 @@ class MethodMatcher : BaseQuery {
      *
      * @param usingField using field matcher / 使用字段匹配器
      * @param usingType using type / 使用类型
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     @JvmOverloads
     fun addUsingField(usingField: FieldMatcher, usingType: UsingType = UsingType.Any) = also {
@@ -790,7 +836,7 @@ class MethodMatcher : BaseQuery {
      *
      * @param fieldDescriptor field descriptor / 字段描述符
      * @param usingType using type / 使用类型
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     @JvmOverloads
     fun addUsingField(fieldDescriptor: String, usingType: UsingType = UsingType.Any) = also {
@@ -809,7 +855,7 @@ class MethodMatcher : BaseQuery {
      *     usingNumbers(NumberEncodeValueMatcherList().add(NumberEncodeValueMatcher().value(114514)))
      *
      * @param usingNumbers using numbers matcher / 使用数字列表匹配器
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun usingNumbers(usingNumbers: NumberEncodeValueMatcherList) = also {
         this.usingNumbersMatcher = usingNumbers
@@ -824,7 +870,7 @@ class MethodMatcher : BaseQuery {
      *     usingNumbers(listOf(0.01, -1, 0.987, 0, 114514))
      *
      * @param usingNumbers using numbers / 使用数字列表
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun usingNumbers(usingNumbers: List<Number>) = also {
         this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }.toMutableList()
@@ -839,7 +885,7 @@ class MethodMatcher : BaseQuery {
      *     usingNumbers(0.01, -1, 0.987, 0, 114514)
      *
      * @param usingNumbers using numbers / 使用数字列表
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun usingNumbers(vararg usingNumbers: Number) = also {
         this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }.toMutableList()
@@ -854,7 +900,7 @@ class MethodMatcher : BaseQuery {
      *     addUsingNumber(0.01)
      *
      * @param usingNumber using number / 使用的数字
-     * @return [ClassMatcher]
+     * @return [MethodMatcher]
      */
     fun addUsingNumber(usingNumber: Number) = also {
         usingNumbersMatcher = usingNumbersMatcher ?: mutableListOf()
@@ -1060,6 +1106,12 @@ class MethodMatcher : BaseQuery {
     companion object {
         @JvmStatic
         fun create() = MethodMatcher()
+
+        @JvmStatic
+        fun create(method: Method) = MethodMatcher(method)
+
+        @JvmStatic
+        fun create(constructor: Constructor<*>) = MethodMatcher(constructor)
 
         /**
          * @see MethodMatcher.descriptor

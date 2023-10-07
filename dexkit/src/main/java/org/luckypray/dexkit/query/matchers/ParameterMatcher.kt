@@ -6,6 +6,7 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerParameterMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.util.DexSignUtil
 
 class ParameterMatcher : BaseQuery() {
     var annotationsMatcher: AnnotationsMatcher? = null
@@ -43,6 +44,20 @@ class ParameterMatcher : BaseQuery() {
     }
 
     /**
+     * Parameter type class matcher.
+     * ----------------
+     * 参数类型类匹配器。
+     *
+     *     type(String::class.java)
+     *
+     * @param clazz type class / 类型类
+     * @return [ParameterMatcher]
+     */
+    fun type(clazz: Class<*>) = also {
+        this.typeMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
+    }
+
+    /**
      * Parameter type class name matcher.
      * ----------------
      * 参数类型类名匹配器
@@ -52,7 +67,7 @@ class ParameterMatcher : BaseQuery() {
      * @param typeName type class name / 类型类名
      * @param matchType match type / 匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [FieldMatcher]
+     * @return [ParameterMatcher]
      */
     @JvmOverloads
     fun type(
@@ -71,7 +86,7 @@ class ParameterMatcher : BaseQuery() {
      *     annotations(AnnotationsMatcher().count(1))
      *
      * @param annotations annotations matcher / 注解匹配器
-     * @return [FieldMatcher]
+     * @return [ParameterMatcher]
      */
     fun annotations(annotations: AnnotationsMatcher) = also {
         this.annotationsMatcher = annotations
@@ -86,7 +101,7 @@ class ParameterMatcher : BaseQuery() {
      *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
      * @param annotation annotation matcher / 注解匹配器
-     * @return [FieldMatcher]
+     * @return [ParameterMatcher]
      */
     fun addAnnotation(annotation: AnnotationMatcher) = also {
         annotationsMatcher = annotationsMatcher ?: AnnotationsMatcher()
@@ -100,7 +115,7 @@ class ParameterMatcher : BaseQuery() {
      * 参数注解数量，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
      *
      * @param count annotation count / 注解数量
-     * @return [ClassMatcher]
+     * @return [ParameterMatcher]
      */
     fun annotationCount(count: Int) = also {
         this.annotationsMatcher = this.annotationsMatcher ?: AnnotationsMatcher()

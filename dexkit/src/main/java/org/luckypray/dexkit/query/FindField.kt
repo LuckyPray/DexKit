@@ -69,7 +69,7 @@ class FindField : BaseQuery() {
      *     searchPackages("java.lang", "java.util")
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun searchPackages(vararg searchPackages: String) = also {
         this.searchPackages = searchPackages.toList()
@@ -83,7 +83,7 @@ class FindField : BaseQuery() {
      *     searchPackages(listOf("java.lang", "java.util"))
      *
      * @param searchPackages search packages / 搜索包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun searchPackages(searchPackages: List<String>) = also {
         this.searchPackages = searchPackages
@@ -97,7 +97,7 @@ class FindField : BaseQuery() {
      *     excludePackages("java.lang", "java.util")
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun excludePackages(vararg excludePackages: String) = also {
         this.excludePackages = excludePackages.toList()
@@ -111,7 +111,7 @@ class FindField : BaseQuery() {
      *     excludePackages(listOf("java.lang", "java.util"))
      *
      * @param excludePackages exclude packages / 排除包
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun excludePackages(excludePackages: List<String>) = also {
         this.excludePackages = excludePackages
@@ -123,7 +123,7 @@ class FindField : BaseQuery() {
      * 忽略 [searchPackages] 和 [excludePackages] 的大小写。
      *
      * @param ignorePackagesCase ignore case / 忽略大小写
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun ignorePackagesCase(ignorePackagesCase: Boolean) = also {
         this.ignorePackagesCase = ignorePackagesCase
@@ -135,7 +135,7 @@ class FindField : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索指定类。
      *
      * @param classes search classes / 类列表
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun searchInClass(classes: List<ClassData>) = also {
         this.searchClasses = classes
@@ -147,7 +147,7 @@ class FindField : BaseQuery() {
      * 在指定的 [FieldData] 列表中搜索指定类。
      *
      * @param fields search fields / 字段列表
-     * @return [BatchFindClassUsingStrings]
+     * @return [FindField]
      */
     fun searchInField(fields: List<FieldData>) = also {
         this.searchFields = fields

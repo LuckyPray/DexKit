@@ -82,7 +82,7 @@ class KtReadMeTest {
             }
         }.forEach {
             // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            println(it.className)
+            println(it.name)
             // Get the corresponding class instance
 //            val clazz = it.getInstance(loadPackageParam.classLoader)
         }
@@ -146,7 +146,7 @@ class KtReadMeTest {
             }
         }.forEach {
             // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-            println(it.className)
+            println(it.name)
             // 获取对应的类实例
 //            val clazz = it.getInstance(loadPackageParam.classLoader)
         }
