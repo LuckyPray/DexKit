@@ -19,7 +19,7 @@ class ClassData private constructor(
     val dexId: Int,
     val sourceFile: String,
     val modifiers: Int,
-    val dexDescriptor: String,
+    val descriptor: String,
     val superClassId: Int?,
     val interfaceIds: List<Int>,
     val methodIds: List<Int>,
@@ -54,7 +54,7 @@ class ClassData private constructor(
     }
 
     private val dexClass by lazy {
-        DexClass(dexDescriptor)
+        DexClass(descriptor)
     }
 
     /**
@@ -211,10 +211,10 @@ class ClassData private constructor(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return other is ClassData && dexDescriptor == other.dexDescriptor
+        return other is ClassData && descriptor == other.descriptor
     }
 
     override fun hashCode(): Int {
-        return dexDescriptor.hashCode()
+        return descriptor.hashCode()
     }
 }

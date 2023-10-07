@@ -41,7 +41,7 @@ class UnitTest {
                 declaredClass("org.luckypray.dexkit.demo.PlayActivity")
             }
         }.forEach {
-            println("${it.dexId} ${it.id} ${it.dexDescriptor}")
+            println("${it.dexId} ${it.id} ${it.descriptor}")
             val paramNames = it.getParameterNames()
             println("paramNames: ${paramNames?.joinToString(",")}")
         }
@@ -224,7 +224,7 @@ class UnitTest {
         assert(res != null)
         assert(res!!.className == "org.luckypray.dexkit.demo.MainActivity")
         res.getMethods().forEach {
-            println(it.dexDescriptor)
+            println(it.descriptor)
         }
     }
 

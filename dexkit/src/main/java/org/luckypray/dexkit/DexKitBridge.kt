@@ -328,7 +328,7 @@ class DexKitBridge : Closeable {
             for (j in 0 until items.classesLength) {
                 batchFindMeta.add(ClassData.from(this@DexKitBridge, items.classes(j)!!))
             }
-            batchFindMeta.sortBy { it.dexDescriptor }
+            batchFindMeta.sortBy { it.descriptor }
             map[key] = batchFindMeta
         }
         return map
@@ -349,7 +349,7 @@ class DexKitBridge : Closeable {
             for (j in 0 until items.methodsLength) {
                 batchFindMeta.add(MethodData.from(this@DexKitBridge, items.methods(j)!!))
             }
-            batchFindMeta.sortBy { it.dexDescriptor }
+            batchFindMeta.sortBy { it.descriptor }
             map[key] = batchFindMeta
         }
         return map
@@ -366,7 +366,7 @@ class DexKitBridge : Closeable {
         for (i in 0 until holder.classesLength) {
             list.add(ClassData.from(this@DexKitBridge, holder.classes(i)!!))
         }
-        list.sortBy { it.dexDescriptor }
+        list.sortBy { it.descriptor }
         return list
     }
 
@@ -381,7 +381,7 @@ class DexKitBridge : Closeable {
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
-        list.sortBy { it.dexDescriptor }
+        list.sortBy { it.descriptor }
         return list
     }
 
@@ -396,7 +396,7 @@ class DexKitBridge : Closeable {
         for (i in 0 until holder.fieldsLength) {
             list.add(FieldData.from(this@DexKitBridge, holder.fields(i)!!))
         }
-        list.sortBy { it.dexDescriptor }
+        list.sortBy { it.descriptor }
         return list
     }
 

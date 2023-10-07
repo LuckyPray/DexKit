@@ -19,7 +19,7 @@ class MethodData private constructor(
     val dexId: Int,
     val classId: Int,
     val modifiers: Int,
-    val dexDescriptor: String,
+    val descriptor: String,
     val returnTypeId: Int,
     val parameterTypeIds: List<Int>
 ) : BaseData(bridge) {
@@ -42,7 +42,7 @@ class MethodData private constructor(
     }
 
     private val dexMethod by lazy {
-        DexMethod(dexDescriptor)
+        DexMethod(descriptor)
     }
 
     /**
@@ -275,10 +275,10 @@ class MethodData private constructor(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return other is MethodData && other.dexDescriptor == dexDescriptor
+        return other is MethodData && other.descriptor == descriptor
     }
 
     override fun hashCode(): Int {
-        return dexDescriptor.hashCode()
+        return descriptor.hashCode()
     }
 }
