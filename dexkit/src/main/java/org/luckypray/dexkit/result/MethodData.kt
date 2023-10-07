@@ -267,6 +267,7 @@ class MethodData private constructor(
             append(className)
             append(".")
             append(name)
+            append("(")
             append(paramTypeNames.joinToString(", "))
             append(")")
         }
