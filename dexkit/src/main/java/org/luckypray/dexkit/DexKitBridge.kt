@@ -14,9 +14,9 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
-import org.luckypray.dexkit.query.wrap.DexType
-import org.luckypray.dexkit.query.wrap.DexField
-import org.luckypray.dexkit.query.wrap.DexMethod
+import org.luckypray.dexkit.wrap.DexClass
+import org.luckypray.dexkit.wrap.DexField
+import org.luckypray.dexkit.wrap.DexMethod
 import org.luckypray.dexkit.result.AnnotationData
 import org.luckypray.dexkit.util.DexSignUtil
 import java.io.Closeable
@@ -39,10 +39,10 @@ class DexKitBridge : Closeable {
 
     /**
      * DexKit is valid only when token is not 0
+     * ----------------
+     * DexKit 仅在 token 不为 0 时有效
      */
-    val isValid
-        get() = token != 0L
-
+    val isValid get() = token != 0L
 
     private constructor(apkPath: String) {
         token = nativeInitDexKit(apkPath)
@@ -55,8 +55,11 @@ class DexKitBridge : Closeable {
     private constructor(classLoader: ClassLoader, useMemoryDexFile: Boolean) {
         token = nativeInitDexKitByClassLoader(classLoader, useMemoryDexFile)
     }
+
     /**
      * release native resource
+     * ----------------
+     * 释放 native 资源
      */
     @Synchronized
     override fun close() {
@@ -72,6 +75,8 @@ class DexKitBridge : Closeable {
 
     /**
      * set DexKit work thread number
+     * ----------------
+     * 设置 DexKit 工作线程数
      *
      * @param [num] work thread number
      */
@@ -81,8 +86,8 @@ class DexKitBridge : Closeable {
 
     /**
      * Get all parsed dex counts.
-     *
-     * @return The number of dex parsed by DexKit
+     * ----------------
+     * 获取所有已解析的 dex 数量。
      */
     fun getDexNum(): Int {
         return nativeGetDexNum(safeToken)
@@ -90,6 +95,8 @@ class DexKitBridge : Closeable {
 
     /**
      * write all dex file to [outPath]
+     * ----------------
+     * 将所有 dex 文件写入 [outPath]
      *
      * @param [outPath] dex file output path
      *
@@ -99,55 +106,135 @@ class DexKitBridge : Closeable {
         nativeExportDexFile(safeToken, outPath)
     }
 
+    /**
+     * Batch search of classes using strings.
+     * ----------------
+     * 批量使用字符串搜索类。
+     *
+     * @param [batchFind] query object / 查询对象
+     * @return [Map]<[String], [ClassDataList]>
+     */
     fun batchFindClassUsingStrings(batchFind: BatchFindClassUsingStrings): Map<String, ClassDataList> {
         val fbb = FlatBufferBuilder()
         batchFind.build(fbb)
         return this.batchFindClassUsingStrings(fbb)
     }
 
+    /**
+     * Batch search of methods using strings.
+     * ----------------
+     * 批量使用字符串搜索方法。
+     *
+     * @param [batchFind] query object / 查询对象
+     * @return [Map]<[String], [MethodDataList]>
+     */
     fun batchFindMethodUsingStrings(batchFind: BatchFindMethodUsingStrings): Map<String, MethodDataList> {
         val fbb = FlatBufferBuilder()
         batchFind.build(fbb)
         return this.batchFindMethodUsingStrings(fbb)
     }
 
+    /**
+     * Multi-condition class search.
+     * ----------------
+     * 多条件类搜索。
+     *
+     * @param [findClass] query object / 查询对象
+     * @return [ClassDataList]
+     */
     fun findClass(findClass: FindClass): ClassDataList {
         val fbb = FlatBufferBuilder()
         findClass.build(fbb)
         return this.findClass(fbb)
     }
 
+    /**
+     * Multi-condition method search.
+     * ----------------
+     * 多条件方法搜索。
+     *
+     * @param [findMethod] query object / 查询对象
+     * @return [MethodDataList]
+     */
     fun findMethod(findMethod: FindMethod): MethodDataList {
         val fbb = FlatBufferBuilder()
         findMethod.build(fbb)
         return this.findMethod(fbb)
     }
 
-    fun findField(fieldMatcher: FindField): FieldDataList {
+    /**
+     * Multi-condition field search.
+     * ----------------
+     * 多条件字段搜索。
+     *
+     * @param [findField] query object / 查询对象
+     * @return [FieldDataList]
+     */
+    fun findField(findField: FindField): FieldDataList {
         val fbb = FlatBufferBuilder()
-        fieldMatcher.build(fbb)
+        findField.build(fbb)
         return this.findField(fbb)
     }
 
+    /**
+     * Convert [Class] to [ClassData] (if exists).
+     * ----------------
+     * 转换 [Class] 为 [ClassData] （如果存在）。
+     *
+     * @param [clazz] class / 类
+     * @return [ClassData]
+     */
     fun getClassData(clazz: Class<*>): ClassData? {
         return getClassData(DexSignUtil.getDexDescriptor(clazz))
     }
 
+    /**
+     * Convert class descriptor to [ClassData] (if exists).
+     * ----------------
+     * 转换类描述符为 [ClassData] （如果存在）。
+     *
+     * @param [dexDescriptor] class descriptor / 类描述符
+     * @return [ClassData]
+     */
     fun getClassData(dexDescriptor: String): ClassData? {
-        DexType(dexDescriptor)
+        DexClass(dexDescriptor)
         return nativeGetClassData(safeToken, dexDescriptor)?.let {
             ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
         }
     }
 
+    /**
+     * Convert [Method] to [MethodData] (if exists).
+     * ----------------
+     * 转换 [Method] 为 [MethodData] （如果存在）。
+     *
+     * @param [method] method / 方法
+     * @return [MethodData]
+     */
     fun getMethodData(method: Method): MethodData? {
         return getMethodData(DexSignUtil.getMethodSign(method))
     }
 
+    /**
+     * Convert [Constructor] to [MethodData] (if exists).
+     * ----------------
+     * 转换 [Constructor] 为 [MethodData] （如果存在）。
+     *
+     * @param [constructor] constructor / 构造方法
+     * @return [MethodData]
+     */
     fun getMethodData(constructor: Constructor<*>): MethodData? {
         return getMethodData(DexSignUtil.getConstructorSign(constructor))
     }
 
+    /**
+     * Convert method descriptor to [MethodData] (if exists).
+     * ----------------
+     * 转换方法描述符为 [MethodData] （如果存在）。
+     *
+     * @param [dexDescriptor] method descriptor / 方法描述符
+     * @return [MethodData]
+     */
     fun getMethodData(dexDescriptor: String): MethodData? {
         DexMethod(dexDescriptor)
         return nativeGetMethodData(safeToken, dexDescriptor)?.let {
@@ -155,10 +242,26 @@ class DexKitBridge : Closeable {
         }
     }
 
+    /**
+     * Convert [Field] to [FieldData] (if exists).
+     * ----------------
+     * 转换 [Field] 为 [FieldData] （如果存在）。
+     *
+     * @param [field] field / 字段
+     * @return [FieldData]
+     */
     fun getFieldData(field: Field): FieldData? {
         return getFieldData(DexSignUtil.getDexDescriptor(field))
     }
 
+    /**
+     * Convert field descriptor to [FieldData] (if exists).
+     * ----------------
+     * 转换字段描述符为 [FieldData] （如果存在）。
+     *
+     * @param [dexDescriptor] field descriptor / 字段描述符
+     * @return [FieldData]
+     */
     fun getFieldData(dexDescriptor: String): FieldData? {
         DexField(dexDescriptor)
         return nativeGetFieldData(safeToken, dexDescriptor)?.let {
@@ -168,25 +271,41 @@ class DexKitBridge : Closeable {
 
     // region DSL
 
+    /**
+     * @see [batchFindClassUsingStrings]
+     */
     @kotlin.internal.InlineOnly
     inline fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, ClassDataList> {
         return batchFindClassUsingStrings(BatchFindClassUsingStrings().apply(init))
     }
 
+    /**
+     * @see [batchFindMethodUsingStrings]
+     */
     @kotlin.internal.InlineOnly
     inline fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, MethodDataList> {
         return batchFindMethodUsingStrings(BatchFindMethodUsingStrings().apply(init))
     }
 
+    /**
+     * @see [findClass]
+     */
     @kotlin.internal.InlineOnly
     inline fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
+    /**
+     * @see [findMethod]
+     */
     @kotlin.internal.InlineOnly
     inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
+
+    /**
+     * @see [findField]
+     */
     @kotlin.internal.InlineOnly
     inline fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
@@ -429,6 +548,14 @@ class DexKitBridge : Closeable {
             return if (helper.isValid) helper else null
         }
 
+        /**
+         * create DexKitBridge by dex bytes array
+         * ----------------
+         * 通过 dex 字节数组创建 DexKitBridge
+         *
+         * @param dexBytesArray dex bytes array / dex 字节数组
+         * @return [DexKitBridge]
+         */
         @JvmStatic
         fun create(dexBytesArray: Array<ByteArray>): DexKitBridge? {
             val helper = DexKitBridge(dexBytesArray)
@@ -436,12 +563,15 @@ class DexKitBridge : Closeable {
         }
 
         /**
+         * create DexKitBridge by class loader, if [useMemoryDexFile] is true,
+         * will try to use cookie to load memory dex file. if there are OatDex
+         * that cannot be parsed, it will fall back to use  to load dex file.
+         * ----------------
+         * 通过类加载器创建 DexKitBridge，如果 [useMemoryDexFile] 为 true，将尝试使用 cookie
+         * 加载内存 dex 文件，如果存在不能解析的 OatDex 则会回退使用 apkPath 加载 dex 文件。
          *
-         * @param loader class loader
-         * @param useMemoryDexFile
-         * if true, will try to use cookie to load memory dex file. else will use dex file path.
-         * if cookies file contains CompactDex, will use apkPath to load dex.
-         * if contains OatDex, Some functions may not work properly.
+         * @param loader class loader / 类加载器
+         * @param useMemoryDexFile whether to use memory dex file / 是否使用内存 dex 文件
          */
         @JvmStatic
         fun create(loader: ClassLoader, useMemoryDexFile: Boolean): DexKitBridge? {

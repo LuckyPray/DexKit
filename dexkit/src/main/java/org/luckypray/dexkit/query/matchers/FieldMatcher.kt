@@ -10,7 +10,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
-import org.luckypray.dexkit.query.wrap.DexField
+import org.luckypray.dexkit.wrap.DexField
 
 class FieldMatcher : BaseQuery {
     var nameMatcher: StringMatcher? = null

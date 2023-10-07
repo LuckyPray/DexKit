@@ -7,9 +7,9 @@ import org.luckypray.dexkit.InnerClassMeta
 import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.query.FieldDataList
 import org.luckypray.dexkit.query.MethodDataList
-import org.luckypray.dexkit.query.wrap.DexType
+import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.getClassInstance
+import org.luckypray.dexkit.util.InstanceUtil
 import java.lang.reflect.Modifier
 import kotlin.jvm.Throws
 
@@ -53,8 +53,8 @@ class ClassData private constructor(
         )
     }
 
-    private val dexType by lazy {
-        DexType(dexDescriptor)
+    private val dexClass by lazy {
+        DexClass(dexDescriptor)
     }
 
     /**
@@ -64,12 +64,12 @@ class ClassData private constructor(
      *
      *     e.g. java.lang.String
      */
-    val className get() = dexType.typeName
+    val className get() = dexClass.typeName
 
     /**
      * @see className
      */
-    val name get() = dexType.typeName
+    val name get() = dexClass.typeName
 
     /**
      * Get super's [ClassData], if super class not defined in dex, return null
@@ -153,9 +153,7 @@ class ClassData private constructor(
      * @return [Class]
      */
     @Throws(ClassNotFoundException::class)
-    fun getInstance(classLoader: ClassLoader): Class<*> {
-        return getClassInstance(classLoader, className)
-    }
+    fun getInstance(classLoader: ClassLoader) = dexClass.getInstance(classLoader)
 
     /**
      * Load super class from [ClassLoader]
@@ -180,7 +178,18 @@ class ClassData private constructor(
      */
     @Throws(ClassNotFoundException::class)
     fun getInterfaceInstances(classLoader: ClassLoader): List<Class<*>> {
-        return getInterfaces().map { getClassInstance(classLoader, it.className) }
+        return getInterfaces().map { InstanceUtil.getClassInstance(classLoader, it.className) }
+    }
+
+    /**
+     * Convert to [DexClass]
+     * ----------------
+     * 转换为 [DexClass]
+     *
+     * @return [DexClass]
+     */
+    fun toDexType(): DexClass {
+        return dexClass
     }
 
     override fun toString(): String {

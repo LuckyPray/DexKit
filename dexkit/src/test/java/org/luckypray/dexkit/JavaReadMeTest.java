@@ -77,7 +77,7 @@ public class JavaReadMeTest {
                     // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                     .count(1, 10)
                 )
-                // AnnotationsMatcher for matching interfaces within the class
+                // AnnotationsMatcher for matching annotations within the class
                 .annotations(AnnotationsMatcher.create()
                     .add(AnnotationMatcher.create()
                         .type("org.luckypray.dexkit.demo.annotations.Router")

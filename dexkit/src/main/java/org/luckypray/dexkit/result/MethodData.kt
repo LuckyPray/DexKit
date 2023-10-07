@@ -5,12 +5,10 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
-import org.luckypray.dexkit.query.wrap.DexMethod
+import org.luckypray.dexkit.wrap.DexMethod
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.OpCodeUtil
-import org.luckypray.dexkit.util.getClassInstance
-import org.luckypray.dexkit.util.getMethodInstance
-import org.luckypray.dexkit.util.getConstructorInstance
+import org.luckypray.dexkit.util.InstanceUtil
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -52,7 +50,7 @@ class MethodData private constructor(
      * ----------------
      * 方法签名
      */
-    val methodSign get() = dexDescriptor.substring(dexDescriptor.indexOf("("))
+    val methodSign get() = dexMethod.methodSign
 
     /**
      * method declaring class name
@@ -92,14 +90,14 @@ class MethodData private constructor(
      * ----------------
      * 该方法是否为构造方法
      */
-    val isConstructor get() = methodName == "<init>"
+    val isConstructor get() = dexMethod.isConstructor
 
     /**
      * Whether the method is a normal method
      * ----------------
      * 该方法是否为普通方法
      */
-    val isMethod get() = methodName != "<clinit>" && !isConstructor
+    val isMethod get() = dexMethod.isMethod
 
     /**
      * Get declared class' [ClassData]
@@ -210,7 +208,7 @@ class MethodData private constructor(
      */
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader): Class<*> {
-        return getClassInstance(classLoader, className)
+        return InstanceUtil.getClassInstance(classLoader, className)
     }
 
     /**
@@ -223,7 +221,7 @@ class MethodData private constructor(
      */
     @Throws(ClassNotFoundException::class)
     fun getReturnTypeInstance(classLoader: ClassLoader): Class<*> {
-        return getClassInstance(classLoader, returnTypeName)
+        return InstanceUtil.getClassInstance(classLoader, returnTypeName)
     }
 
     /**
@@ -235,9 +233,7 @@ class MethodData private constructor(
      * @return [Constructor]
      */
     @Throws(NoSuchMethodException::class)
-    fun getConstructorInstance(classLoader: ClassLoader): Constructor<*> {
-        return getConstructorInstance(classLoader, this)
-    }
+    fun getConstructorInstance(classLoader: ClassLoader) = dexMethod.getConstructorInstance(classLoader)
 
     /**
      * Load method from [ClassLoader]
@@ -248,8 +244,17 @@ class MethodData private constructor(
      * @return [Method]
      */
     @Throws(NoSuchMethodException::class)
-    fun getMethodInstance(classLoader: ClassLoader): Method {
-        return getMethodInstance(classLoader, this)
+    fun getMethodInstance(classLoader: ClassLoader) = dexMethod.getMethodInstance(classLoader)
+
+    /**
+     * Convert to [DexMethod]
+     * ----------------
+     * 转换为 [DexMethod]
+     *
+     * @return [DexMethod]
+     */
+    fun toDexMethod(): DexMethod {
+        return dexMethod
     }
 
     override fun toString(): String {

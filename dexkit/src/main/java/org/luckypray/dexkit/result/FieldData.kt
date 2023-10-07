@@ -4,10 +4,9 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerFieldMeta
-import org.luckypray.dexkit.query.wrap.DexField
+import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.getClassInstance
-import org.luckypray.dexkit.util.getFieldInstance
+import org.luckypray.dexkit.util.InstanceUtil
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
@@ -42,7 +41,7 @@ class FieldData private constructor(
      * ----------------
      * 字段类型签名
      */
-    val typeSign get() = dexDescriptor.substringAfter(":")
+    val typeSign get() = dexField.typeSign
 
     /**
      * field declaring class name
@@ -125,7 +124,7 @@ class FieldData private constructor(
      */
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader): Class<*> {
-        return getClassInstance(classLoader, className)
+        return InstanceUtil.getClassInstance(classLoader, className)
     }
 
     /**
@@ -138,7 +137,7 @@ class FieldData private constructor(
      */
     @Throws(ClassNotFoundException::class)
     fun getTypeInstance(classLoader: ClassLoader): Class<*> {
-        return getClassInstance(classLoader, typeName)
+        return InstanceUtil.getClassInstance(classLoader, typeName)
     }
 
     /**
@@ -150,8 +149,17 @@ class FieldData private constructor(
      * @return [Field]
      */
     @Throws(NoSuchFieldException::class)
-    fun getFieldInstance(classLoader: ClassLoader): Field {
-        return getFieldInstance(classLoader, this)
+    fun getFieldInstance(classLoader: ClassLoader) = dexField.getFieldInstance(classLoader)
+
+    /**
+     * Convert to [DexField]
+     * ----------------
+     * 转换为 [DexField]
+     *
+     * @return [DexField]
+     */
+    fun toDexField(): DexField {
+        return dexField
     }
 
     override fun toString(): String {

@@ -2,14 +2,14 @@ package org.luckypray.dexkit.util
 
 import org.junit.Test
 
-class ReflectKtTest {
+class InstanceUtilTest {
 
     companion object {
-        val classLoader = ReflectKtTest::class.java.classLoader
+        val classLoader = InstanceUtilTest::class.java.classLoader
 
         @JvmStatic
         fun getType(typeName: String): Class<*> {
-            return getClassInstance(classLoader, typeName)
+            return InstanceUtil.getClassInstance(classLoader, typeName)
         }
     }
 

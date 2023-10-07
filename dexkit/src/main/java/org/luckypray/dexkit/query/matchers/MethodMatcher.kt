@@ -17,7 +17,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
-import org.luckypray.dexkit.query.wrap.DexMethod
+import org.luckypray.dexkit.wrap.DexMethod
 
 class MethodMatcher : BaseQuery {
     var nameMatcher: StringMatcher? = null

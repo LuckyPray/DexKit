@@ -34,67 +34,78 @@ fun main() {
 }
 
 fun doSearch(path: String) {
+    val createTime = System.currentTimeMillis()
+    var releaseTime = 0L
     DexKitBridge.create(path)?.use { bridge ->
+        println("create use time: ${System.currentTimeMillis() - createTime}ms")
         val startTime = System.currentTimeMillis()
-        bridge.findClass {
-            // Search within the specified package name range
-            searchPackages = listOf("org.luckypray.dexkit.demo")
-            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
-            // ClassMatcher for class matching
-            matcher {
-                className = "org.luckypray.dexkit.demo.PlayActivity"
-                // FieldsMatcher for matching properties within the class
-                fields {
-                    // Add a matcher for properties
-                    add {
-                        modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
-                        type = "java.lang.String"
-                        name = "TAG"
-                    }
-                    addForType("android.widget.TextView")
-                    addForType("android.os.Handler")
-                    // Specify the number of properties in the class
-                    count = 3
-                }
-                // MethodsMatcher for matching methods within the class
-                methods {
-                    // Add a matcher for methods
-                    add {
-                        modifiers = Modifier.PROTECTED
-                        name = "onCreate"
-                        returnType = "void"
-                        paramTypes = listOf("android.os.Bundle")
-                        usingStrings = listOf("onCreate")
-                    }
-                    add {
-                        paramTypes = listOf("android.view.View")
-                        usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
-                    }
-                    add {
-                        modifiers = Modifier.PUBLIC
-                        paramTypes = listOf("boolean")
-                    }
-                    // Specify the number of methods in the class, a minimum of 4, and a maximum of 10
-                    count(1..10)
-                }
-                // AnnotationsMatcher for matching interfaces within the class
-                annotations {
-                    add {
-                        type = "org.luckypray.dexkit.demo.annotations.Router"
-                        addElement {
-                            name = "path"
-                            stringValue("/play")
-                        }
-                    }
-                }
-                // Strings used by all methods in the class
-                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
-            }
-        }.forEach {
-            // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            println(it.className)
-            // Get the corresponding class instance
-        }
+        search(bridge)
         println("find use time: ${System.currentTimeMillis() - startTime}ms")
+        releaseTime = System.currentTimeMillis()
+    }
+    println("release use time: ${System.currentTimeMillis() - releaseTime}ms")
+}
+
+fun search(bridge: DexKitBridge) {
+    bridge.findClass {
+        // Search within the specified package name range
+        searchPackages = listOf("org.luckypray.dexkit.demo")
+        // Exclude the specified package name range
+        excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
+        // ClassMatcher for class matching
+        matcher {
+            className = "org.luckypray.dexkit.demo.PlayActivity"
+            // FieldsMatcher for matching properties within the class
+            fields {
+                // Add a matcher for properties
+                add {
+                    modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
+                    type = "java.lang.String"
+                    name = "TAG"
+                }
+                addForType("android.widget.TextView")
+                addForType("android.os.Handler")
+                // Specify the number of properties in the class
+                count = 3
+            }
+            // MethodsMatcher for matching methods within the class
+            methods {
+                // Add a matcher for methods
+                add {
+                    modifiers = Modifier.PROTECTED
+                    name = "onCreate"
+                    returnType = "void"
+                    paramTypes = listOf("android.os.Bundle")
+                    usingStrings = listOf("onCreate")
+                }
+                add {
+                    paramTypes = listOf("android.view.View")
+                    usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
+                }
+                add {
+                    modifiers = Modifier.PUBLIC
+                    paramTypes = listOf("boolean")
+                }
+                // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
+                count(1..10)
+            }
+            // AnnotationsMatcher for matching annotations within the class
+            annotations {
+                add {
+                    type = "org.luckypray.dexkit.demo.annotations.Router"
+                    addElement {
+                        name = "path"
+                        stringValue("/play")
+                    }
+                }
+            }
+            // Strings used by all methods in the class
+            usingStrings = listOf("PlayActivity", "onClick", "onCreate")
+        }
+    }.forEach {
+        // Print the found class: org.luckypray.dexkit.demo.PlayActivity
+        println(it.className)
     }
 }
+
+
