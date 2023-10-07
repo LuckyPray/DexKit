@@ -391,6 +391,21 @@ class FieldMatcher : BaseQuery {
     }
 
     /**
+     * Read this field value's methods matcher.
+     * ----------------
+     * 读取该字段值的方法匹配器。
+     *
+     *     getMethods("Landroid/widget/TextView;->getText()Ljava/lang/CharSequence;")
+     *
+     * @param methodDescriptor method descriptor / 方法描述符
+     * @return [FieldMatcher]
+     */
+    fun addGetMethod(methodDescriptor: String) = also {
+        this.getMethodsMatcher = getMethodsMatcher ?: MethodsMatcher()
+        this.getMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
+    }
+
+    /**
      * Write this field value's methods matcher.
      * ----------------
      * 写入该字段值的方法匹配器。
@@ -417,6 +432,21 @@ class FieldMatcher : BaseQuery {
     fun addPutMethod(putMethod: MethodMatcher) = also {
         this.putMethodsMatcher = putMethodsMatcher ?: MethodsMatcher()
         this.putMethodsMatcher!!.add(putMethod)
+    }
+
+    /**
+     * Write this field value's methods matcher.
+     * ----------------
+     * 写入该字段值的方法匹配器。
+     *
+     *     putMethods("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V")
+     *
+     * @param methodDescriptor method descriptor / 方法描述符
+     * @return [FieldMatcher]
+     */
+    fun addPutMethod(methodDescriptor: String) = also {
+        this.putMethodsMatcher = putMethodsMatcher ?: MethodsMatcher()
+        this.putMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
     }
 
     // region DSL

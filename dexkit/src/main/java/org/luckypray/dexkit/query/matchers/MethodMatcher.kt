@@ -782,6 +782,26 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
+     * Using fields matcher.
+     * ----------------
+     * 使用字段匹配器。
+     *
+     *     usingFields("Ljava/lang/String;->count:I", UsingType.Any)
+     *
+     * @param fieldDescriptor field descriptor / 字段描述符
+     * @param usingType using type / 使用类型
+     * @return [ClassMatcher]
+     */
+    @JvmOverloads
+    fun addUsingField(fieldDescriptor: String, usingType: UsingType = UsingType.Any) = also {
+        usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
+        usingFieldsMatcher!!.add(UsingFieldMatcher().apply {
+            matcher(FieldMatcher(fieldDescriptor))
+            usingType(usingType)
+        })
+    }
+
+    /**
      * Using numbers matcher.
      * ----------------
      * 使用数字列表匹配器。
@@ -871,6 +891,21 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
+     * Add method invoke method matcher.
+     * ----------------
+     * 添加方法调用方法的匹配器。
+     *
+     *     addInvoke("Ljava/lang/String;->length()I")
+     *
+     * @param methodDescriptor invoke method descriptor / 方法调用方法的描述符
+     * @return [MethodMatcher]
+     */
+    fun addInvoke(methodDescriptor: String) = also {
+        invokeMethodsMatcher = invokeMethodsMatcher ?: MethodsMatcher()
+        invokeMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
+    }
+
+    /**
      * This method caller methods matcher.
      * ----------------
      * 该方法调用方法的匹配器。
@@ -897,6 +932,21 @@ class MethodMatcher : BaseQuery {
     fun addCall(callMethod: MethodMatcher) = also {
         callMethodsMatcher = callMethodsMatcher ?: MethodsMatcher()
         callMethodsMatcher!!.add(callMethod)
+    }
+
+    /**
+     * Add method caller method matcher.
+     * ----------------
+     * 添加方法调用方法的匹配器。
+     *
+     *     addCall("Ljava/lang/String;->length()I")
+     *
+     * @param methodDescriptor call method descriptor / 方法调用方法的描述符
+     * @return [MethodMatcher]
+     */
+    fun addCall(methodDescriptor: String) = also {
+        callMethodsMatcher = callMethodsMatcher ?: MethodsMatcher()
+        callMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
     }
 
     // region DSL
