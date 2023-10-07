@@ -143,6 +143,15 @@ public class MainHook implements IXposedHookLoadPackage {
         System.loadLibrary("dexkit");
         //
         // !!! 切记使用完成后调用 bridge.close() 释放内存 !!!
+        //
+        // 或者使用 try-with-resources 语法
+        //
+        // Example:
+        //     try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+        //         // bridge.findClass(...)
+        //         // bridge.findMethod(...)
+        //         // bridge.findField(...)
+        //     }
         // 
         DexKitBridge bridge = DexKitBridge.create(apkPath);
         bridge.findClass(FindClass.create()
@@ -232,6 +241,15 @@ class MainHook : IXposedHookLoadPackage {
         System.loadLibrary("dexkit")
         //
         // !!! 切记使用完成后调用 bridge.close() 释放内存 !!!
+        //
+        // 或者使用 Kotlin 的扩展函数 `Closeable.use {}` 自动释放内存
+        //
+        // Example:
+        //     DexKitBridge.create(apkPath).use { bridge ->
+        //         // bridge.findClass { ... }
+        //         // bridge.findMethod { ... }
+        //         // bridge.findField { ... }
+        //     }
         // 
         val bridge = DexKitBridge.create(apkPath)
             ?: throw NullPointerException("DexKitBridge.create() failed")

@@ -149,6 +149,15 @@ public class MainHook implements IXposedHookLoadPackage {
         System.loadLibrary("dexkit");
         //
         // !!! Remember to call bridge.close() after use to release the memory !!!
+        //
+        // or use try-with-resources
+        //
+        // Example:
+        //     try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+        //         // bridge.findClass(...);
+        //         // bridge.findMethod(...);
+        //         // bridge.findField(...);
+        //     }
         // 
         DexKitBridge bridge = DexKitBridge.create(apkPath);
         bridge.findClass(FindClass.create()
@@ -192,7 +201,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                     .count(1, 10)
                 )
-                // AnnotationsMatcher for matching interfaces within the class
+                // AnnotationsMatcher for matching annotations within the class
                 .annotations(AnnotationsMatcher.create()
                     .add(AnnotationMatcher.create()
                         .type("org.luckypray.dexkit.demo.annotations.Router")
@@ -238,7 +247,16 @@ class MainHook : IXposedHookLoadPackage {
         System.loadLibrary("dexkit")
         //
         // !!! Remember to call bridge.close() after use to release the memory !!!
-        // 
+        //
+        // or use Kotlin extension function `Closeable.use { ... }` to automatically release memory
+        //
+        // Example:
+        //     DexKitBridge.create(demoApk.absolutePath).use { bridge ->
+        //         // bridge.findClass { ... }
+        //         // bridge.findMethod { ... }
+        //         // bridge.findField { ... }
+        //     }
+        //
         val bridge = DexKitBridge.create(apkPath) 
             ?: throw NullPointerException("DexKitBridge.create() failed")
         bridge.findClass {
@@ -283,7 +301,7 @@ class MainHook : IXposedHookLoadPackage {
                     // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                     count(1..10)
                 }
-                // AnnotationsMatcher for matching interfaces within the class
+                // AnnotationsMatcher for matching annotations within the class
                 annotations {
                     add {
                         type = "org.luckypray.dexkit.demo.annotations.Router"
