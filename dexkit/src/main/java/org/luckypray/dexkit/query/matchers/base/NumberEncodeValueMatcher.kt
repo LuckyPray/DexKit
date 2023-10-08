@@ -20,13 +20,6 @@ class NumberEncodeValueMatcher {
     var type: NumberEncodeValueType? = null
         private set
 
-    /**
-     * Create empty [NumberEncodeValueMatcher].
-     * ----------------
-     * 创建空的 [NumberEncodeValueMatcher]。
-     * 
-     * @return [NumberEncodeValueMatcher]
-     */
     constructor()
 
     /**

@@ -18,6 +18,12 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
         private set
     var targetElementTypesMatcher: TargetElementTypesMatcher? = null
         private set
+
+    /**
+     * Annotation RetentionPolicy.
+     * ----------------
+     * 注解保留策略。
+     */
     @set:JvmSynthetic
     var policy: RetentionPolicyType? = null
     var elementsMatcher: AnnotationElementsMatcher? = null

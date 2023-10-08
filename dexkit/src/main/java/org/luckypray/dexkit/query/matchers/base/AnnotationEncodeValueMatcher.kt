@@ -25,18 +25,30 @@ class AnnotationEncodeValueMatcher : IQuery {
     var type: AnnotationEncodeValueType? = null
         private set
 
-    /**
-     * Create empty [AnnotationEncodeValueMatcher].
-     * ----------------
-     * 创建空的 [AnnotationEncodeValueMatcher]。
-     *
-     * @return [AnnotationEncodeValueMatcher]
-     */
     constructor()
 
     private constructor(value: IAnnotationEncodeValue, type: AnnotationEncodeValueType) {
         this.value = value
         this.type = type
+    }
+
+    /**
+     * Create numberValue matcher.
+     * ----------------
+     * 创建 numberValue 匹配器。
+     *
+     * @param number number / 数字
+     * @return [AnnotationEncodeValueMatcher]
+     */
+    fun numberValue(number: Number) = also {
+        when (number) {
+            is Byte -> byteValue(number)
+            is Short -> shortValue(number)
+            is Int -> intValue(number)
+            is Long -> longValue(number)
+            is Float -> floatValue(number)
+            is Double -> doubleValue(number)
+        }
     }
 
     /**
@@ -267,6 +279,19 @@ class AnnotationEncodeValueMatcher : IQuery {
     // endregion
 
     companion object {
+        /**
+         * Create a new [AnnotationEncodeValueMatcher] from the specified number.
+         * ----------------
+         * 根据指定的数字创建一个新的 [AnnotationEncodeValueMatcher]。
+         *
+         * @param number number / 数字
+         * @return [AnnotationEncodeValueMatcher]
+         */
+        @JvmStatic
+        fun create(number: Number): AnnotationEncodeValueMatcher {
+            return AnnotationEncodeValueMatcher().numberValue(number)
+        }
+
         /**
          * Create a new [AnnotationEncodeValueMatcher] from the specified [Byte].
          * ----------------

@@ -2,9 +2,23 @@ package org.luckypray.dexkit.query.enums
 
 import org.luckypray.dexkit.InnerAnnotationVisibilityType
 
+/**
+ * https://source.android.com/docs/core/runtime/dex-format?hl=zh-cn#visibility
+ */
 enum class AnnotationVisibilityType {
+    /**
+     * VISIBILITY_BUILD
+     */
     Build,
+
+    /**
+     * VISIBILITY_RUNTIME
+     */
     Runtime,
+
+    /**
+     * VISIBILITY_SYSTEM
+     */
     System,
     ;
 

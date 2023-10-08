@@ -12,11 +12,22 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 class FieldsMatcher : BaseQuery() {
     var fieldsMatcher: MutableList<FieldMatcher>? = null
         private set
+
+    /**
+     * Match type. Default is [MatchType.Contains].
+     * ----------------
+     * 匹配类型。默认为 [MatchType.Contains]。
+     */
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
     var rangeMatcher: IntRange? = null
         private set
 
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     */
     var count: Int
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
@@ -26,47 +37,138 @@ class FieldsMatcher : BaseQuery() {
             count(value)
         }
 
+    /**
+     * Need to match fields.
+     * ----------------
+     * 要匹配的字段列表
+     *
+     * @param fields fields / 字段列表
+     * @return [FieldsMatcher]
+     */
     fun fields(fields: Collection<FieldMatcher>) = also {
         this.fieldsMatcher = fields.toMutableList()
     }
 
+    /**
+     * Match type.
+     * ----------------
+     * 匹配类型。
+     *
+     * @param matchType match type / 匹配类型
+     * @return [FieldsMatcher]
+     */
     fun matchType(matchType: MatchType) = also {
         this.matchType = matchType
     }
 
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     *
+     * @param count field count / 字段数量
+     * @return [FieldsMatcher]
+     */
     fun count(count: Int) = also {
         this.rangeMatcher = IntRange(count)
     }
 
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     *
+     * @param range field count range / 字段数量范围
+     * @return [FieldsMatcher]
+     */
     fun count(range: IntRange) = also {
         this.rangeMatcher = range
     }
 
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     *
+     * @param range field count range / 字段数量范围
+     * @return [FieldsMatcher]
+     */
     fun count(range: kotlin.ranges.IntRange) = also {
         rangeMatcher = IntRange(range)
     }
 
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     *
+     * @param min min field count / 最小字段数量
+     * @param max max field count / 最大字段数量
+     * @return [FieldsMatcher]
+     */
     fun count(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.rangeMatcher = IntRange(min, max)
     }
 
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     *
+     * @param min min field count / 最小字段数量
+     * @return [FieldsMatcher]
+     */
     fun countMin(min: Int) = also {
         this.rangeMatcher = IntRange(min, Int.MAX_VALUE)
     }
-    
+
+    /**
+     * Field count to match.
+     * ----------------
+     * 要匹配的字段数量。
+     *
+     * @param max max field count / 最大字段数量
+     * @return [FieldsMatcher]
+     */
     fun countMax(max: Int) = also {
         this.rangeMatcher = IntRange(0, max)
     }
 
+    /**
+     * Add field to match.
+     * ----------------
+     * 添加要匹配的字段。
+     *
+     * @param matcher field matcher / 字段匹配器
+     * @return [FieldsMatcher]
+     */
     fun add(matcher: FieldMatcher) = also {
         fieldsMatcher = fieldsMatcher ?: mutableListOf()
         fieldsMatcher!!.add(matcher)
     }
 
+    /**
+     * Add field to match.
+     * ----------------
+     * 添加要匹配的字段。
+     *
+     * @param name field name / 字段名
+     * @return [FieldsMatcher]
+     */
     fun addForName(name: String) = also {
         add(FieldMatcher().apply { name(name) })
     }
 
+    /**
+     * Add field to match.
+     * ----------------
+     * 添加要匹配的字段。
+     *
+     * @param typeName field type name / 字段类型名
+     * @param matchType match type / 匹配类型
+     * @param ignoreCase ignore case / 是否忽略大小写
+     * @return [FieldsMatcher]
+     */
     @JvmOverloads
     fun addForType(
         typeName: String,
@@ -78,6 +180,9 @@ class FieldsMatcher : BaseQuery() {
 
     // region DSL
 
+    /**
+     * @see add
+     */
     @kotlin.internal.InlineOnly
     inline fun add(init: FieldMatcher.() -> Unit) = also {
         add(FieldMatcher().apply(init))
