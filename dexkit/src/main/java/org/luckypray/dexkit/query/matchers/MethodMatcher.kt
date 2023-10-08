@@ -1137,7 +1137,7 @@ class MethodMatcher : BaseQuery {
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             usingNumbersMatcher?.map { it.type!!.value }?.toUByteArray()
                 ?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it) } ?: 0,
-            usingNumbersMatcher?.map { it.value!!.build(fbb) }?.toIntArray()
+            usingNumbersMatcher?.map { (it.value as BaseQuery).build(fbb) }?.toIntArray()
                 ?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it) } ?: 0,
             invokeMethodsMatcher?.build(fbb) ?: 0,
             callMethodsMatcher?.build(fbb) ?: 0

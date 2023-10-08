@@ -91,7 +91,7 @@ class KtReadMeTest {
     @Test
     fun readmeZhTest() {
         bridge.findClass {
-            // 从指定的包名范围内进行查找
+            // 根据指定的包名范围内进行查找
             searchPackages = listOf("org.luckypray.dexkit.demo")
             // 排除指定的包名范围
             excludePackages = listOf("org.luckypray.dexkit.demo.annotations")

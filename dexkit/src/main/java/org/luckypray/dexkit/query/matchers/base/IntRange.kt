@@ -7,8 +7,10 @@ import org.luckypray.dexkit.InnerIntRange
 import org.luckypray.dexkit.query.base.BaseQuery
 
 class IntRange : BaseQuery {
+
     @set:JvmSynthetic
     var min: Int = 0
+
     @set:JvmSynthetic
     var max: Int = Int.MAX_VALUE
 

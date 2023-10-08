@@ -9,13 +9,33 @@ import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.TargetElementType
 
 class TargetElementTypesMatcher  : BaseQuery {
+    /**
+     * Target annotation declared element type list.
+     * Corresponding to [java.lang.annotation.ElementType]
+     * ----------------
+     * 目标注解声明的元素类型列表。对应 [java.lang.annotation.ElementType]
+     */
     @set:JvmSynthetic
     var types: Collection<TargetElementType>? = null
+
+    /**
+     * Match type. Default is [MatchType.Contains].
+     * ----------------
+     * 匹配类型。默认为 [MatchType.Contains]。
+     */
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
 
     constructor()
 
+    /**
+     * Create a new [TargetElementTypesMatcher].
+     * ----------------
+     * 创建一个新的 [TargetElementTypesMatcher]。
+     *
+     * @param types target annotation declared element type list / 目标注解声明的元素类型列表
+     * @param matchType match type / 匹配类型
+     */
     @JvmOverloads
     constructor(
         types: Collection<TargetElementType>,
@@ -25,19 +45,52 @@ class TargetElementTypesMatcher  : BaseQuery {
         this.matchType = matchType
     }
 
+    /**
+     * Set the target annotation declared element type list.
+     * Corresponding to [java.lang.annotation.ElementType]
+     * ----------------
+     * 设置目标注解声明的元素类型列表。对应 [java.lang.annotation.ElementType]
+     *
+     * @param types target annotation declared element type list / 目标注解声明的元素类型列表
+     */
     fun types(types: Collection<TargetElementType>) = also {
         this.types = types
     }
 
+    /**
+     * Set the target annotation declared element type list.
+     * Corresponding to [java.lang.annotation.ElementType]
+     * ----------------
+     * 设置目标注解声明的元素类型列表。对应 [java.lang.annotation.ElementType]
+     *
+     * @param types target annotation declared element type list / 目标注解声明的元素类型列表
+     * @return [TargetElementTypesMatcher]
+     */
     fun types(vararg types: TargetElementType) = also {
         this.types = types.toList()
     }
 
+    /**
+     * Set the match type.
+     * ----------------
+     * 设置匹配类型。
+     *
+     * @param matchType match type / 匹配类型
+     * @return [TargetElementTypesMatcher]
+     */
     fun matchType(matchType: MatchType) = also {
         this.matchType = matchType
     }
 
     companion object {
+        /**
+         * Create a new [TargetElementTypesMatcher].
+         * ----------------
+         * 创建一个新的 [TargetElementTypesMatcher]。
+         *
+         * @param types target annotation declared element type list / 目标注解声明的元素类型列表
+         * @param matchType match type / 匹配类型
+         */
         @JvmStatic
         fun create(
             types: Collection<TargetElementType>,

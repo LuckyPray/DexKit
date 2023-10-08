@@ -13,10 +13,12 @@ import org.luckypray.dexkit.InnerEncodeValueLong
 import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
+import org.luckypray.dexkit.query.base.INumberEncodeValue
 
 abstract class EncodeValue : BaseQuery()
 
-class EncodeValueByte(val value: Byte) : EncodeValue() {
+class EncodeValueByte(val value: Byte) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueByte.createEncodeValueByte(fbb, value)
         fbb.finish(root)
@@ -24,7 +26,7 @@ class EncodeValueByte(val value: Byte) : EncodeValue() {
     }
 }
 
-class EncodeValueShort(val value: Short) : EncodeValue() {
+class EncodeValueShort(val value: Short) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueShort.createEncodeValueShort(fbb, value)
         fbb.finish(root)
@@ -32,7 +34,7 @@ class EncodeValueShort(val value: Short) : EncodeValue() {
     }
 }
 
-class EncodeValueChar(val value: Char) : EncodeValue() {
+class EncodeValueChar(val value: Char) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueChar.createEncodeValueChar(fbb, value.code.toShort())
         fbb.finish(root)
@@ -40,7 +42,7 @@ class EncodeValueChar(val value: Char) : EncodeValue() {
     }
 }
 
-class EncodeValueInt(val value: Int) : EncodeValue() {
+class EncodeValueInt(val value: Int) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueInt.createEncodeValueInt(fbb, value)
         fbb.finish(root)
@@ -48,7 +50,7 @@ class EncodeValueInt(val value: Int) : EncodeValue() {
     }
 }
 
-class EncodeValueLong(val value: Long) : EncodeValue() {
+class EncodeValueLong(val value: Long) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueLong.createEncodeValueLong(fbb, value)
         fbb.finish(root)
@@ -56,7 +58,7 @@ class EncodeValueLong(val value: Long) : EncodeValue() {
     }
 }
 
-class EncodeValueFloat(val value: Float) : EncodeValue() {
+class EncodeValueFloat(val value: Float) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueFloat.createEncodeValueFloat(fbb, value)
         fbb.finish(root)
@@ -64,7 +66,7 @@ class EncodeValueFloat(val value: Float) : EncodeValue() {
     }
 }
 
-class EncodeValueDouble(val value: Double) : EncodeValue() {
+class EncodeValueDouble(val value: Double) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueDouble.createEncodeValueDouble(fbb, value)
         fbb.finish(root)
@@ -80,7 +82,7 @@ class EncodeValueString(val value: String) : EncodeValue() {
     }
 }
 
-class EncodeValueBoolean(val value: Boolean) : EncodeValue() {
+class EncodeValueBoolean(val value: Boolean) : EncodeValue(), IAnnotationEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueBoolean.createEncodeValueBoolean(fbb, value)
         fbb.finish(root)

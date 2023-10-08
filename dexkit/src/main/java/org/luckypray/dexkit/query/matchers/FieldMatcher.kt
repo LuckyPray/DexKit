@@ -5,6 +5,7 @@ package org.luckypray.dexkit.query.matchers
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFieldMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
@@ -14,7 +15,7 @@ import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexField
 import java.lang.reflect.Field
 
-class FieldMatcher : BaseQuery {
+class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     var nameMatcher: StringMatcher? = null
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null

@@ -5,6 +5,7 @@ package org.luckypray.dexkit.query.matchers
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.RetentionPolicyType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -12,7 +13,7 @@ import org.luckypray.dexkit.query.enums.TargetElementType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.TargetElementTypesMatcher
 
-class AnnotationMatcher : BaseQuery() {
+class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
     var typeMatcher: ClassMatcher? = null
         private set
     var targetElementTypesMatcher: TargetElementTypesMatcher? = null

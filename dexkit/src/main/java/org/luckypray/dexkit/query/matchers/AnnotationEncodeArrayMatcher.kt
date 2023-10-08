@@ -5,13 +5,14 @@ package org.luckypray.dexkit.query.matchers
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationEncodeArrayMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
-class AnnotationEncodeArrayMatcher : BaseQuery() {
+class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     var encodeValuesMatcher: MutableList<AnnotationEncodeValueMatcher>? = null
         private set
     @set:JvmSynthetic
@@ -186,7 +187,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery() {
             fbb,
             encodeValuesMatcher?.map { it.type!!.value }?.toUByteArray()
                 ?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it) } ?: 0,
-            encodeValuesMatcher?.map { it.value!!.build(fbb) }?.toIntArray()
+            encodeValuesMatcher?.map { (it.value as BaseQuery).build(fbb) }?.toIntArray()
                 ?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0

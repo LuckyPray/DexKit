@@ -9,13 +9,24 @@ import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.util.OpCodeUtil
 
 class OpCodesMatcher : BaseQuery {
+    /**
+     * OpCodes to match.
+     */
     @set:JvmSynthetic
     var opCodes: Collection<Int>? = null
+
+    /**
+     * Match type. Default is [OpCodeMatchType.Contains].
+     */
     @set:JvmSynthetic
     var matchType: OpCodeMatchType = OpCodeMatchType.Contains
+
     var rangeMatcher: IntRange? = null
         private set
 
+    /**
+     * OpCodes size to match.
+     */
     var size: Int
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
@@ -27,6 +38,16 @@ class OpCodesMatcher : BaseQuery {
 
     constructor()
 
+    /**
+     * Create a new [OpCodesMatcher].
+     * ----------------
+     * 创建一个新的 [OpCodesMatcher]。
+     *
+     * @param opCodes opCodes / 操作码
+     * @param matchType match type / 匹配类型
+     * @param opCodeSize opCode size / 操作码长度
+     * @return [OpCodesMatcher]
+     */
     @JvmOverloads
     constructor(
         opCodes: Collection<Int>,
@@ -38,6 +59,16 @@ class OpCodesMatcher : BaseQuery {
         this.rangeMatcher = opCodeSize
     }
 
+    /**
+     * Create a new [OpCodesMatcher].
+     * ----------------
+     * 创建一个新的 [OpCodesMatcher]。
+     *
+     * @param opCodes opCodes / 操作码
+     * @param matchType match type / 匹配类型
+     * @param opCodeSize opCode size / 操作码长度
+     * @return [OpCodesMatcher]
+     */
     @JvmOverloads
     constructor(
         opCodes: IntArray,
@@ -49,49 +80,147 @@ class OpCodesMatcher : BaseQuery {
         this.rangeMatcher = opCodeSize
     }
 
+    /**
+     * Set the opCodes to be matched.
+     * ----------------
+     * 设置待匹配的操作码。
+     *
+     * @param opCodes opCodes / 操作码
+     * @return [OpCodesMatcher]
+     */
     fun opCodes(opCodes: Collection<Int>) = also {
         this.opCodes = opCodes
     }
+
+    /**
+     * Set the opCodes to be matched.
+     * ----------------
+     * 设置待匹配的操作码。
+     *
+     * @param opCodes opCodes / 操作码
+     * @return [OpCodesMatcher]
+     */
     fun opCodes(opCodes: Array<Int>) = also {
         this.opCodes = opCodes.toList()
     }
+
+    /**
+     * Set the smali instruction sequence to be matched.
+     * ----------------
+     * 设置待匹配的 smali 指令序列。
+     *
+     * @param opNames smali instruction sequence / smali 指令序列
+     * @return [OpCodesMatcher]
+     */
     fun opNames(opNames: Collection<String>) = also {
         this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
     }
 
+    /**
+     * Set the smali instruction sequence to be matched.
+     * ----------------
+     * 设置待匹配的 smali 指令序列。
+     *
+     * @param opNames smali instruction sequence / smali 指令序列
+     * @return [OpCodesMatcher]
+     */
     fun opNames(opNames: Array<String>) = also {
         this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
     }
 
+    /**
+     * Set the match type.
+     * ----------------
+     * 设置匹配类型。
+     *
+     * @param matchType match type / 匹配类型
+     * @return [OpCodesMatcher]
+     */
     fun matchType(matchType: OpCodeMatchType) = also {
         this.matchType = matchType
     }
 
+    /**
+     * Set the opCodes size to be matched.
+     * ----------------
+     * 设置待匹配的操作码长度。
+     *
+     * @param size opCodes size / 操作码长度
+     * @return [OpCodesMatcher]
+     */
     fun size(size: Int) = also {
         this.rangeMatcher = IntRange(size)
     }
 
-    fun size(range: IntRange?) = also {
+    /**
+     * Set the opCodes size range to be matched.
+     * ----------------
+     * 设置待匹配的操作码长度范围。
+     *
+     * @param range opCodes size range / 操作码长度范围
+     * @return [OpCodesMatcher]
+     */
+    fun size(range: IntRange) = also {
         this.rangeMatcher = range
     }
 
+    /**
+     * Set the opCodes size range to be matched.
+     * ----------------
+     * 设置待匹配的操作码长度范围。
+     *
+     * @param range opCodes size range / 操作码长度范围
+     * @return [OpCodesMatcher]
+     */
     fun size(range: kotlin.ranges.IntRange) = also {
         this.rangeMatcher = IntRange(range)
     }
 
+    /**
+     * Set the opCodes size range to be matched.
+     * ----------------
+     * 设置待匹配的操作码长度范围。
+     *
+     * @param min min opCodes size / 最小操作码长度
+     * @param max max opCodes size / 最大操作码长度
+     * @return [OpCodesMatcher]
+     */
     fun size(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.rangeMatcher = IntRange(min, max)
     }
 
+    /**
+     * Set the opCodes size min to be matched.
+     * ----------------
+     * 设置待匹配的操作码长度最小值。
+     *
+     * @param min min opCodes size / 最小操作码长度
+     * @return [OpCodesMatcher]
+     */
     fun sizeMin(min: Int) = also {
         this.rangeMatcher = IntRange(min, Int.MAX_VALUE)
     }
 
+    /**
+     * Set the opCodes size max to be matched.
+     * ----------------
+     * 设置待匹配的操作码长度最大值。
+     */
     fun sizeMax(max: Int) = also {
         this.rangeMatcher = IntRange(0, max)
     }
 
     companion object {
+        /**
+         * Create a new [OpCodesMatcher].
+         * ----------------
+         * 创建一个新的 [OpCodesMatcher]。
+         *
+         * @param opCodes opCodes / 操作码
+         * @param matchType match type / 匹配类型
+         * @param opCodeSize opCode size / 操作码长度
+         * @return [OpCodesMatcher]
+         */
         @JvmStatic
         fun create(
             opCodes: Collection<Int>,
@@ -101,6 +230,16 @@ class OpCodesMatcher : BaseQuery {
             return OpCodesMatcher(opCodes, matchType, opCodeSize)
         }
 
+        /**
+         * Create a new [OpCodesMatcher].
+         * ----------------
+         * 创建一个新的 [OpCodesMatcher]。
+         *
+         * @param opCodes opCodes / 操作码
+         * @param matchType match type / 匹配类型
+         * @param opCodeSize opCode size / 操作码长度
+         * @return [OpCodesMatcher]
+         */
         @JvmStatic
         fun create(
             opCodes: IntArray,
@@ -110,11 +249,29 @@ class OpCodesMatcher : BaseQuery {
             return OpCodesMatcher(opCodes, matchType, opCodeSize)
         }
 
+        /**
+         * Create a new [OpCodesMatcher].
+         * ----------------
+         * 创建一个新的 [OpCodesMatcher]。
+         *
+         * @param opCodes opCodes / 操作码
+         * @return [OpCodesMatcher]
+         */
         @JvmStatic
         fun create(vararg opCodes: Int): OpCodesMatcher {
             return OpCodesMatcher(opCodes.toList())
         }
 
+        /**
+         * Create a new [OpCodesMatcher].
+         * ----------------
+         * 创建一个新的 [OpCodesMatcher]。
+         *
+         * @param opNames smali instruction sequence / smali 指令序列
+         * @param matchType match type / 匹配类型
+         * @param opCodeSize opCode size / 操作码长度
+         * @return [OpCodesMatcher]
+         */
         @JvmStatic
         fun createForOpNames(
             opNames: Collection<String>,
@@ -124,6 +281,16 @@ class OpCodesMatcher : BaseQuery {
             return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) }, matchType, opCodeSize)
         }
 
+        /**
+         * Create a new [OpCodesMatcher].
+         * ----------------
+         * 创建一个新的 [OpCodesMatcher]。
+         *
+         * @param opNames smali instruction sequence / smali 指令序列
+         * @param matchType match type / 匹配类型
+         * @param opCodeSize opCode size / 操作码长度
+         * @return [OpCodesMatcher]
+         */
         @JvmStatic
         fun createForOpNames(
             opNames: Array<String>,
@@ -133,6 +300,14 @@ class OpCodesMatcher : BaseQuery {
             return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) }, matchType, opCodeSize)
         }
 
+        /**
+         * Create a new [OpCodesMatcher].
+         * ----------------
+         * 创建一个新的 [OpCodesMatcher]。
+         *
+         * @param opNames smali instruction sequence / smali 指令序列
+         * @return [OpCodesMatcher]
+         */
         @JvmStatic
         fun createForOpNames(vararg opNames: String): OpCodesMatcher {
             return OpCodesMatcher(opNames.map { OpCodeUtil.getOpCode(it) })

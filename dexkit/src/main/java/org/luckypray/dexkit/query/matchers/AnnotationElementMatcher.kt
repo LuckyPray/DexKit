@@ -161,7 +161,7 @@ class AnnotationElementMatcher : BaseQuery() {
             fbb,
             nameMatcher?.build(fbb) ?: 0,
             valueMatcher?.type?.value ?: 0U,
-            valueMatcher?.value?.build(fbb) ?: 0
+            (valueMatcher?.value as BaseQuery?)?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root

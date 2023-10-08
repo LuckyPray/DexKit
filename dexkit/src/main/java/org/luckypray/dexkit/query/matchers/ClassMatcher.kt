@@ -6,6 +6,7 @@ import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerClassMatcher
 import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.AccessFlagsMatcher
@@ -14,7 +15,7 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexClass
 
-class ClassMatcher : BaseQuery {
+class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
     var sourceMatcher: StringMatcher? = null
         private set
     var classNameMatcher: StringMatcher? = null
@@ -909,7 +910,7 @@ class ClassMatcher : BaseQuery {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        if (classNameMatcher?.getValue()?.isEmpty() == true) {
+        if (classNameMatcher?.value?.isEmpty() == true) {
             throw IllegalStateException("className not be empty")
         }
         val root = InnerClassMatcher.createClassMatcher(
