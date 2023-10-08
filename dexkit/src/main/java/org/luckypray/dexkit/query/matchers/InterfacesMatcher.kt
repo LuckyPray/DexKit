@@ -26,7 +26,7 @@ class InterfacesMatcher : BaseQuery() {
             count(value)
         }
 
-    fun interfaces(interfaces: List<ClassMatcher>) = also {
+    fun interfaces(interfaces: Collection<ClassMatcher>) = also {
         this.interfacesMatcher = interfaces.toMutableList()
     }
 

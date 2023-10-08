@@ -26,7 +26,7 @@ class FieldsMatcher : BaseQuery() {
             count(value)
         }
 
-    fun fields(fields: List<FieldMatcher>) = also {
+    fun fields(fields: Collection<FieldMatcher>) = also {
         this.fieldsMatcher = fields.toMutableList()
     }
 

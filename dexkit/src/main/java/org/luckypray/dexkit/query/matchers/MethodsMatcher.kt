@@ -25,7 +25,7 @@ class MethodsMatcher : BaseQuery() {
             count(value)
         }
 
-    fun methods(methods: List<MethodMatcher>) = also {
+    fun methods(methods: Collection<MethodMatcher>) = also {
         this.methodsMatcher = methods.toMutableList()
     }
 

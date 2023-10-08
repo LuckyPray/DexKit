@@ -15,7 +15,7 @@ class FindClass : BaseQuery() {
      * 在指定的包中搜索类。
      */
     @set:JvmSynthetic
-    var searchPackages: List<String>? = null
+    var searchPackages: Collection<String>? = null
 
     /**
      * Exclude classes in the specified packages.
@@ -23,7 +23,7 @@ class FindClass : BaseQuery() {
      * 排除指定包中的类。
      */
     @set:JvmSynthetic
-    var excludePackages: List<String>? = null
+    var excludePackages: Collection<String>? = null
 
     /**
      * Ignore case with [searchPackages] and [excludePackages].
@@ -39,7 +39,7 @@ class FindClass : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索匹配符合条件的类。
      */
     @set:JvmSynthetic
-    var searchClasses: List<ClassData>? = null
+    var searchClasses: Collection<ClassData>? = null
 
     /**
      * Terminates the search after finding the first matching class.
@@ -76,7 +76,7 @@ class FindClass : BaseQuery() {
      * @param searchPackages search packages / 搜索包
      * @return [FindClass]
      */
-    fun searchPackages(searchPackages: List<String>) = also {
+    fun searchPackages(searchPackages: Collection<String>) = also {
         this.searchPackages = searchPackages
     }
 
@@ -104,7 +104,7 @@ class FindClass : BaseQuery() {
      * @param excludePackages exclude packages / 排除包
      * @return [FindClass]
      */
-    fun excludePackages(excludePackages: List<String>) = also {
+    fun excludePackages(excludePackages: Collection<String>) = also {
         this.excludePackages = excludePackages
     }
 
@@ -128,7 +128,7 @@ class FindClass : BaseQuery() {
      * @param classes search classes / 类列表
      * @return [FindClass]
      */
-    fun searchInClass(classes: List<ClassData>) = also {
+    fun searchInClass(classes: Collection<ClassData>) = also {
         this.searchClasses = classes
     }
 

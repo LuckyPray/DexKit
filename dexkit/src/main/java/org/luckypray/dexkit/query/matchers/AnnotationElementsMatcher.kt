@@ -26,7 +26,7 @@ class AnnotationElementsMatcher : BaseQuery() {
             count(value)
         }
 
-    fun elements(elements: List<AnnotationElementMatcher>) = also {
+    fun elements(elements: Collection<AnnotationElementMatcher>) = also {
         this.elementsMatcher = elements.toMutableList()
     }
 

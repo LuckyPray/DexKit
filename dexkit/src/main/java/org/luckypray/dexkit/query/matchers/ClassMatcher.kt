@@ -141,7 +141,7 @@ class ClassMatcher : BaseQuery {
      * 使用字符串列表。默认匹配关系为包含，如需为每个字符串设置匹配关系，
      * 请使用 [usingStrings] 或者 [addUsingString] 重载函数。
      */
-    var usingStrings: List<String>
+    var usingStrings: Collection<String>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -751,7 +751,7 @@ class ClassMatcher : BaseQuery {
      */
     @JvmOverloads
     fun usingStrings(
-        usingStrings: List<String>,
+        usingStrings: Collection<String>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {

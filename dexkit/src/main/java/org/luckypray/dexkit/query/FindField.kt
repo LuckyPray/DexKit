@@ -16,7 +16,7 @@ class FindField : BaseQuery() {
      * 在指定的包中搜索字段。
      */
     @set:JvmSynthetic
-    var searchPackages: List<String>? = null
+    var searchPackages: Collection<String>? = null
 
     /**
      * Exclude field in the specified packages.
@@ -24,7 +24,7 @@ class FindField : BaseQuery() {
      * 排除指定包中的字段。
      */
     @set:JvmSynthetic
-    var excludePackages: List<String>? = null
+    var excludePackages: Collection<String>? = null
 
     /**
      * Ignore case with [searchPackages] and [excludePackages].
@@ -40,7 +40,7 @@ class FindField : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索匹配符合条件的字段。
      */
     @set:JvmSynthetic
-    var searchClasses: List<ClassData>? = null
+    var searchClasses: Collection<ClassData>? = null
 
     /**
      * Searches the specified [FieldData] list for fields matching the criteria.
@@ -48,7 +48,7 @@ class FindField : BaseQuery() {
      * 在指定的 [FieldData] 列表中搜索匹配符合条件的字段。
      */
     @set:JvmSynthetic
-    var searchFields: List<FieldData>? = null
+    var searchFields: Collection<FieldData>? = null
 
     /**
      * Terminates the search after finding the first matching field.
@@ -85,7 +85,7 @@ class FindField : BaseQuery() {
      * @param searchPackages search packages / 搜索包
      * @return [FindField]
      */
-    fun searchPackages(searchPackages: List<String>) = also {
+    fun searchPackages(searchPackages: Collection<String>) = also {
         this.searchPackages = searchPackages
     }
 
@@ -113,7 +113,7 @@ class FindField : BaseQuery() {
      * @param excludePackages exclude packages / 排除包
      * @return [FindField]
      */
-    fun excludePackages(excludePackages: List<String>) = also {
+    fun excludePackages(excludePackages: Collection<String>) = also {
         this.excludePackages = excludePackages
     }
 
@@ -137,7 +137,7 @@ class FindField : BaseQuery() {
      * @param classes search classes / 类列表
      * @return [FindField]
      */
-    fun searchInClass(classes: List<ClassData>) = also {
+    fun searchInClass(classes: Collection<ClassData>) = also {
         this.searchClasses = classes
     }
 
@@ -149,7 +149,7 @@ class FindField : BaseQuery() {
      * @param fields search fields / 字段列表
      * @return [FindField]
      */
-    fun searchInField(fields: List<FieldData>) = also {
+    fun searchInField(fields: Collection<FieldData>) = also {
         this.searchFields = fields
     }
 

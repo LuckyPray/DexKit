@@ -10,7 +10,7 @@ import org.luckypray.dexkit.query.enums.TargetElementType
 
 class TargetElementTypesMatcher  : BaseQuery {
     @set:JvmSynthetic
-    var types: List<TargetElementType>? = null
+    var types: Collection<TargetElementType>? = null
     @set:JvmSynthetic
     var matchType: MatchType = MatchType.Contains
 
@@ -18,14 +18,14 @@ class TargetElementTypesMatcher  : BaseQuery {
 
     @JvmOverloads
     constructor(
-        types: List<TargetElementType>,
+        types: Collection<TargetElementType>,
         matchType: MatchType = MatchType.Contains
     ) {
         this.types = types
         this.matchType = matchType
     }
 
-    fun types(types: List<TargetElementType>) = also {
+    fun types(types: Collection<TargetElementType>) = also {
         this.types = types
     }
 
@@ -40,7 +40,7 @@ class TargetElementTypesMatcher  : BaseQuery {
     companion object {
         @JvmStatic
         fun create(
-            types: List<TargetElementType>,
+            types: Collection<TargetElementType>,
             matchType: MatchType = MatchType.Contains
         ) = TargetElementTypesMatcher(types, matchType)
     }

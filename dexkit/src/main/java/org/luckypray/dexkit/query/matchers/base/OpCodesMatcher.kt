@@ -10,7 +10,7 @@ import org.luckypray.dexkit.util.OpCodeUtil
 
 class OpCodesMatcher : BaseQuery {
     @set:JvmSynthetic
-    var opCodes: List<Int>? = null
+    var opCodes: Collection<Int>? = null
     @set:JvmSynthetic
     var matchType: OpCodeMatchType = OpCodeMatchType.Contains
     var rangeMatcher: IntRange? = null
@@ -29,7 +29,7 @@ class OpCodesMatcher : BaseQuery {
 
     @JvmOverloads
     constructor(
-        opCodes: List<Int>,
+        opCodes: Collection<Int>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) {
@@ -49,9 +49,13 @@ class OpCodesMatcher : BaseQuery {
         this.rangeMatcher = opCodeSize
     }
 
-    fun opCodes(opCodes: List<Int>) = also { this.opCodes = opCodes }
-    fun opCodes(opCodes: Array<Int>) = also { this.opCodes = opCodes.toList() }
-    fun opNames(opNames: List<String>) = also {
+    fun opCodes(opCodes: Collection<Int>) = also {
+        this.opCodes = opCodes
+    }
+    fun opCodes(opCodes: Array<Int>) = also {
+        this.opCodes = opCodes.toList()
+    }
+    fun opNames(opNames: Collection<String>) = also {
         this.opCodes = opNames.map { OpCodeUtil.getOpCode(it) }
     }
 
@@ -90,7 +94,7 @@ class OpCodesMatcher : BaseQuery {
     companion object {
         @JvmStatic
         fun create(
-            opCodes: List<Int>,
+            opCodes: Collection<Int>,
             matchType: OpCodeMatchType = OpCodeMatchType.Contains,
             opCodeSize: IntRange? = null
         ): OpCodesMatcher {
@@ -113,7 +117,7 @@ class OpCodesMatcher : BaseQuery {
 
         @JvmStatic
         fun createForOpNames(
-            opNames: List<String>,
+            opNames: Collection<String>,
             matchType: OpCodeMatchType = OpCodeMatchType.Contains,
             opCodeSize: IntRange? = null
         ): OpCodesMatcher {

@@ -28,7 +28,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery() {
             count(value)
         }
 
-    fun matchers(matchers: List<AnnotationEncodeValueMatcher>) = also {
+    fun matchers(matchers: Collection<AnnotationEncodeValueMatcher>) = also {
         this.encodeValuesMatcher = matchers.toMutableList()
     }
 

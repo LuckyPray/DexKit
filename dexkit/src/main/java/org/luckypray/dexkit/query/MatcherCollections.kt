@@ -120,7 +120,7 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
 
     fun add(
         groupName: String,
-        usingStrings: List<String>,
+        usingStrings: Collection<String>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {

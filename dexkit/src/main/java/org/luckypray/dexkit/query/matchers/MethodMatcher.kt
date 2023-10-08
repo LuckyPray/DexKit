@@ -151,7 +151,7 @@ class MethodMatcher : BaseQuery {
      *
      *     paramTypes = listOf(null, "java.lang.String")
      */
-    var paramTypes: List<String?>
+    var paramTypes: Collection<String?>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -181,7 +181,7 @@ class MethodMatcher : BaseQuery {
      *
      *     opCodes = listOf(0x12, 0x13, 0x14)
      */
-    var opCodes: List<Int>
+    var opCodes: Collection<Int>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -196,7 +196,7 @@ class MethodMatcher : BaseQuery {
      *
      *     opNames = listOf("const-string", "const-string/jumbo")
      */
-    var opNames: List<String>
+    var opNames: Collection<String>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -212,7 +212,7 @@ class MethodMatcher : BaseQuery {
      *
      *     usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
      */
-    var usingNumbers: List<Number>
+    var usingNumbers: Collection<Number>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -227,7 +227,7 @@ class MethodMatcher : BaseQuery {
      * 使用字符串列表。默认匹配关系为包含，如需为每个字符串设置匹配关系，
      * 请使用 [usingStrings] 或者 [addUsingString] 重载函数。
      */
-    var usingStrings: List<String>
+    var usingStrings: Collection<String>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -434,7 +434,7 @@ class MethodMatcher : BaseQuery {
      * @param paramTypes method parameter types / 方法参数类型
      * @return [MethodMatcher]
      */
-    fun paramTypes(paramTypes: List<String?>) = also {
+    fun paramTypes(paramTypes: Collection<String?>) = also {
         this.paramsMatcher = ParametersMatcher().apply {
             params(listOf())
             paramTypes.forEach {
@@ -661,7 +661,7 @@ class MethodMatcher : BaseQuery {
      */
     @JvmOverloads
     fun opCodes(
-        opCodes: List<Int>,
+        opCodes: Collection<Int>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) = also {
@@ -682,7 +682,7 @@ class MethodMatcher : BaseQuery {
      */
     @JvmOverloads
     fun opNames(
-        opNames: List<String>,
+        opNames: Collection<String>,
         matchType: OpCodeMatchType = OpCodeMatchType.Contains,
         opCodeSize: IntRange? = null
     ) = also {
@@ -717,7 +717,7 @@ class MethodMatcher : BaseQuery {
      */
     @JvmOverloads
     fun usingStrings(
-        usingStrings: List<String>,
+        usingStrings: Collection<String>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
@@ -787,7 +787,7 @@ class MethodMatcher : BaseQuery {
      * @param usingFields using fields matcher / 使用字段列表匹配器
      * @return [MethodMatcher]
      */
-    fun usingFields(usingFields: List<UsingFieldMatcher>) = also {
+    fun usingFields(usingFields: Collection<UsingFieldMatcher>) = also {
         this.usingFieldsMatcher = usingFields.toMutableList()
     }
 
@@ -872,7 +872,7 @@ class MethodMatcher : BaseQuery {
      * @param usingNumbers using numbers / 使用数字列表
      * @return [MethodMatcher]
      */
-    fun usingNumbers(usingNumbers: List<Number>) = also {
+    fun usingNumbers(usingNumbers: Collection<Number>) = also {
         this.usingNumbersMatcher = usingNumbers.map { NumberEncodeValueMatcher().value(it) }.toMutableList()
     }
 

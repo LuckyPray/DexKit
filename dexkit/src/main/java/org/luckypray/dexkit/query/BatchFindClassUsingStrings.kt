@@ -17,7 +17,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * 在指定的包中搜索类。
      */
     @set:JvmSynthetic
-    var searchPackages: List<String>? = null
+    var searchPackages: Collection<String>? = null
 
     /**
      * Exclude classes in the specified packages.
@@ -25,7 +25,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * 排除指定包中的类。
      */
     @set:JvmSynthetic
-    var excludePackages: List<String>? = null
+    var excludePackages: Collection<String>? = null
 
     /**
      * Ignore case with [searchPackages] and [excludePackages].
@@ -41,7 +41,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索匹配符合条件的类。
      */
     @set:JvmSynthetic
-    var searchClasses: List<ClassData>? = null
+    var searchClasses: Collection<ClassData>? = null
     var searchGroups: MutableList<StringMatchersGroup>? = null
         private set
 
@@ -69,7 +69,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * @param searchPackages search packages / 搜索包
      * @return [BatchFindClassUsingStrings]
      */
-    fun searchPackages(searchPackages: List<String>) = also {
+    fun searchPackages(searchPackages: Collection<String>) = also {
         this.searchPackages = searchPackages
     }
 
@@ -97,7 +97,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * @param excludePackages exclude packages / 排除包
      * @return [BatchFindClassUsingStrings]
      */
-    fun excludePackages(excludePackages: List<String>) = also {
+    fun excludePackages(excludePackages: Collection<String>) = also {
         this.excludePackages = excludePackages
     }
 
@@ -121,7 +121,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * @param classes search classes / 类列表
      * @return [BatchFindClassUsingStrings]
      */
-    fun searchIn(classes: List<ClassData>) = also {
+    fun searchIn(classes: Collection<ClassData>) = also {
         this.searchClasses = classes
     }
 
@@ -133,7 +133,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * @param matchers string matchers group / 字符串匹配器分组
      * @return [BatchFindClassUsingStrings]
      */
-    fun matchers(matchers: List<StringMatchersGroup>) = also {
+    fun matchers(matchers: Collection<StringMatchersGroup>) = also {
         this.searchGroups = matchers.toMutableList()
     }
 
@@ -191,7 +191,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
     @JvmOverloads
     fun addSearchGroup(
         groupName: String,
-        usingStrings: List<String>,
+        usingStrings: Collection<String>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {

@@ -22,7 +22,7 @@ class ParametersMatcher : BaseQuery() {
             count(value)
         }
 
-    fun params(parameters: List<ParameterMatcher?>) = also {
+    fun params(parameters: Collection<ParameterMatcher?>) = also {
         this.parametersMatcher = parameters.toMutableList()
     }
 

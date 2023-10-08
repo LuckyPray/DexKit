@@ -119,7 +119,7 @@ class AnnotationMatcher : BaseQuery() {
      * @return [AnnotationMatcher]
      */
     fun targetElementTypes(
-        targetElementTypes: List<TargetElementType>,
+        targetElementTypes: Collection<TargetElementType>,
         matchType: MatchType = MatchType.Contains
     ) = also {
         this.targetElementTypesMatcher = TargetElementTypesMatcher().apply {

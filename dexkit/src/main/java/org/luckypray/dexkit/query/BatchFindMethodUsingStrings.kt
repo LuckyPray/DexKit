@@ -18,7 +18,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 在指定的包中搜索方法。
      */
     @set:JvmSynthetic
-    var searchPackages: List<String>? = null
+    var searchPackages: Collection<String>? = null
 
     /**
      * Exclude methods in the specified packages.
@@ -26,7 +26,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 排除指定包中的方法。
      */
     @set:JvmSynthetic
-    var excludePackages: List<String>? = null
+    var excludePackages: Collection<String>? = null
 
     /**
      * Ignore case with [searchPackages] and [excludePackages].
@@ -42,7 +42,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 在指定的 [ClassData] 列表中搜索匹配符合条件的类。
      */
     @set:JvmSynthetic
-    var searchClasses: List<ClassData>? = null
+    var searchClasses: Collection<ClassData>? = null
 
     /**
      * Searches the specified [MethodData] list for methods matching the criteria.
@@ -50,7 +50,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * 在指定的 [MethodData] 列表中搜索匹配符合条件的方法。
      */
     @set:JvmSynthetic
-    var searchMethods: List<MethodData>? = null
+    var searchMethods: Collection<MethodData>? = null
     var searchGroups: MutableList<StringMatchersGroup>? = null
         private set
 
@@ -78,7 +78,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param searchPackages search packages / 搜索包
      * @return [BatchFindMethodUsingStrings]
      */
-    fun searchPackages(searchPackages: List<String>) = also {
+    fun searchPackages(searchPackages: Collection<String>) = also {
         this.searchPackages = searchPackages
     }
 
@@ -106,7 +106,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param excludePackages exclude packages / 排除包
      * @return [BatchFindMethodUsingStrings]
      */
-    fun excludePackages(excludePackages: List<String>) = also {
+    fun excludePackages(excludePackages: Collection<String>) = also {
         this.excludePackages = excludePackages
     }
 
@@ -130,7 +130,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param classes search classes / 搜索类
      * @return [BatchFindMethodUsingStrings]
      */
-    fun searchInClasses(classes: List<ClassData>) = also {
+    fun searchInClasses(classes: Collection<ClassData>) = also {
         this.searchClasses = classes
     }
 
@@ -142,7 +142,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param methods search methods / 搜索方法
      * @return [BatchFindMethodUsingStrings]
      */
-    fun searchInMethods(methods: List<MethodData>) = also {
+    fun searchInMethods(methods: Collection<MethodData>) = also {
         this.searchMethods = methods
     }
 
@@ -154,7 +154,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
      * @param matchers string matchers group / 字符串匹配器分组
      * @return [BatchFindMethodUsingStrings]
      */
-    fun matchers(matchers: List<StringMatchersGroup>) = also {
+    fun matchers(matchers: Collection<StringMatchersGroup>) = also {
         this.searchGroups = matchers.toMutableList()
     }
 
@@ -212,7 +212,7 @@ class BatchFindMethodUsingStrings : BaseQuery() {
     @JvmOverloads
     fun addSearchGroup(
         groupName: String,
-        usingStrings: List<String>,
+        usingStrings: Collection<String>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {

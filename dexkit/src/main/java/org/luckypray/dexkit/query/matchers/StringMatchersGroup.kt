@@ -17,7 +17,7 @@ class StringMatchersGroup : BaseQuery {
         private set
 
     constructor()
-    constructor(groupName: String, stringMatchers: List<StringMatcher>) {
+    constructor(groupName: String, stringMatchers: Collection<StringMatcher>) {
         this.groupName = groupName
         this.stringMatchers = stringMatchers.toMutableList()
     }
@@ -29,7 +29,7 @@ class StringMatchersGroup : BaseQuery {
      * 使用字符串列表。默认匹配关系为包含，如需为每个字符串设置匹配关系，
      * 请使用 [usingStrings] 或者 [add] 重载函数。
      */
-    var usingStrings: List<String>
+    var usingStrings: Collection<String>
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
@@ -75,7 +75,7 @@ class StringMatchersGroup : BaseQuery {
      */
     @JvmOverloads
     fun usingStrings(
-        usingStrings: List<String>,
+        usingStrings: Collection<String>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
