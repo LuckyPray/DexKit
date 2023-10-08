@@ -448,7 +448,7 @@ bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matc
 }
 
 bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *matcher) {
-    if (matcher == nullptr) {
+    if (matcher == nullptr || matcher->value()->size() == 0) {
         return true;
     }
     auto type_array_count = this->type_name_array_count[type_idx];

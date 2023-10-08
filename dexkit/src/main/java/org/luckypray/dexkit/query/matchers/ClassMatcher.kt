@@ -910,9 +910,6 @@ class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
     }
     
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        if (classNameMatcher?.value?.isEmpty() == true) {
-            throw IllegalStateException("className not be empty")
-        }
         val root = InnerClassMatcher.createClassMatcher(
             fbb,
             sourceMatcher?.build(fbb) ?: 0,
