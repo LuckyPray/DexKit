@@ -104,7 +104,7 @@ fun search(bridge: DexKitBridge) {
         }
     }.forEach {
         // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-        println(it.className)
+        println(it.name)
     }
 }
 
