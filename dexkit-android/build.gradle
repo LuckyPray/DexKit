@@ -1,15 +1,14 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id "com.android.library"
-    id "maven-publish"
+    id "com.vanniktech.maven.publish" version "0.25.3"
     id "org.jetbrains.kotlin.android"
     id "org.jetbrains.dokka"
     id "signing"
 }
 
-def signingPropFile = new File(projectDir, "signing.properties")
-def performSigning = signingPropFile.exists()
 def KDockRepoName = "LuckyPray/DexKit-Doc"
 
 def libVersion = "2.0.0-rc4"
@@ -77,7 +76,11 @@ android {
         }
 
         debug {
-            jniDebuggable true
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCMAKE_CXX_FLAGS_DEBUG=-Og", "-DCMAKE_C_FLAGS_DEBUG=-Og"
+                }
+            }
         }
 
     }
@@ -111,74 +114,33 @@ dependencies {
     implementation "dev.rikka.ndk.thirdparty:cxx:1.2.0"
 }
 
-tasks.register("androidSourcesJar", Jar) {
-    archiveClassifier.set('sources')
-    from "${project(':dexkit').projectDir}/src/main/java"
-}
-
-// Because the components are created only during the afterEvaluate phase, you must
-// configure your publications using the afterEvaluate() lifecycle method.
-afterEvaluate {
-    publishing {
-        publications {
-            // Creates a Maven publication called "release".
-            release(MavenPublication) {
-                // Applies the component for the release build variant.
-                from components.release
-                artifact androidSourcesJar
-
-                // You can then customize attributes of the publication as shown below.
-                groupId = "org.luckypray"
-                artifactId = "dexkit"
-                description = "A high-performance dex parsing library implemented in C++"
-                version = libVersion
-
-                pom {
-                    name = 'dexkit'
-                    description = 'A high-performance runtime parsing library for dex implemented in C++.'
-                    url = 'https://github.com/LuckyPray/DexKit'
-                    licenses {
-                        license {
-                            name = 'LGPL-3.0 license'
-                            url = 'https://www.gnu.org/licenses/lgpl-3.0.html'
-                        }
-                    }
-                    developers {
-                        developer {
-                            name.set("luckypray")
-                            url.set("https://luckypray.org/DexKit")
-                        }
-                    }
-                    scm {
-                        connection = 'scm:git:git://github.com/LuckyPray/DexKit.git'
-                        developerConnection = 'scm:git:ssh://github.com/LuckyPray/DexKit.git'
-                        url = 'https://github.com/LuckyPray/DexKit.git'
-                    }
-                }
+mavenPublishing {
+    coordinates("org.luckypray", "dexkit", libVersion)
+    pom {
+        name = 'dexkit'
+        description = 'A high-performance runtime parsing library for dex implemented in C++.'
+        url = 'https://github.com/LuckyPray/DexKit'
+        licenses {
+            license {
+                name = 'LGPL-3.0 license'
+                url = 'https://www.gnu.org/licenses/lgpl-3.0.html'
+                distribution = 'https://www.gnu.org/licenses/lgpl-3.0.html'
             }
         }
-        if (performSigning) {
-            repositories {
-                maven {
-                    url 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
-                    credentials {
-                        def properties = new Properties()
-                        def bufferedReader = new BufferedReader(new FileReader(signingPropFile))
-                        properties.load(bufferedReader)
-
-                        username = properties.getProperty("username")
-                        password = properties.getProperty("password")
-                    }
-                }
+        developers {
+            developer {
+                name.set("luckypray")
+                url.set("https://luckypray.org/DexKit")
             }
         }
-    }
-
-    signing {
-        if (performSigning) {
-            sign publishing.publications.release
+        scm {
+            connection = 'scm:git:git://github.com/LuckyPray/DexKit.git'
+            developerConnection = 'scm:git:ssh://github.com/LuckyPray/DexKit.git'
+            url = 'https://github.com/LuckyPray/DexKit.git'
         }
     }
+    publishToMavenCentral(SonatypeHost.S01)
+    signAllPublications()
 }
 
 dokkaHtml.configure {
@@ -191,30 +153,30 @@ dokkaHtml.configure {
     }
 }
 
-//tasks.register("updateKDoc") {
-//    doLast {
-//        def dokkaHtmlDir = new File(buildDir, "dokka/html")
-//        if (dokkaHtmlDir.exists()) {
-//            println(dokkaHtmlDir.absolutePath)
-//            exec {
-//                workingDir dokkaHtmlDir.absolutePath
-//                def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
-//                def userName = System.getenv("GITHUB_ACTOR")
-//                def userEmail = "${userName}@users.noreply.github.com"
-//                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-//                    commandLine = ['cmd', '/c']
-//                } else {
-//                    commandLine = ['sh', '-c']
-//                }
-//                def gitCommand = "git init -b master " +
-//                        "&& git config user.name ${userName} " +
-//                        "&& git config user.email ${userEmail} " +
-//                        '&& git add . ' +
-//                        '&& git commit -m "Auto deploy KDoc" ' +
-//                        "&& git push -f ${deployRepo} master:main"
-//                commandLine += [gitCommand]
-//                println(gitCommand)
-//            }
-//        }
-//    }
-//}
+tasks.register("updateKDoc") {
+    doLast {
+        def dokkaHtmlDir = new File(buildDir, "dokka/html")
+        if (dokkaHtmlDir.exists()) {
+            println(dokkaHtmlDir.absolutePath)
+            exec {
+                workingDir dokkaHtmlDir.absolutePath
+                def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
+                def userName = System.getenv("GITHUB_ACTOR")
+                def userEmail = "${userName}@users.noreply.github.com"
+                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+                    commandLine = ['cmd', '/c']
+                } else {
+                    commandLine = ['sh', '-c']
+                }
+                def gitCommand = "git init -b master " +
+                        "&& git config user.name ${userName} " +
+                        "&& git config user.email ${userEmail} " +
+                        '&& git add . ' +
+                        '&& git commit -m "Auto deploy KDoc" ' +
+                        "&& git push -f ${deployRepo} master:main"
+                commandLine += [gitCommand]
+                println(gitCommand)
+            }
+        }
+    }
+}
