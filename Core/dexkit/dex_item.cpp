@@ -309,8 +309,8 @@ void DexItem::InitCache(uint32_t init_flags) {
                     }
 
                     if (need_method_invoking) {
-                        if (op_format == dex::k35c // invoke-kind
-                            || op_format == dex::k3rc) { // invoke-kind/range
+                        if ((op >= 0x6e && op <= 0x72) // invoke-kind
+                            || (op >= 0x74 && op <= 0x78)) { // invoke-kind/range
                             auto index = ReadShort(ptr);
                             method_invoking_ptr->emplace_back(index);
                         }
@@ -360,9 +360,6 @@ void DexItem::InitCache(uint32_t init_flags) {
             if (annotations->class_annotation) {
                 auto &class_annotation = class_annotations[class_def.class_idx];
                 for (auto &annotation: annotations->class_annotation->annotations) {
-//                    if (annotation->visibility == 2) {
-//                        continue;
-//                    }
                     class_annotation.emplace_back(annotation);
                 }
             }
