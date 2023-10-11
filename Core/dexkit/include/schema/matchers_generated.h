@@ -88,13 +88,15 @@ enum class AnnotationEncodeValueMatcher : uint8_t {
   EncodeValueDouble = 7,
   StringMatcher = 8,
   ClassMatcher = 9,
-  FieldMatcher = 10,
-  AnnotationEncodeArrayMatcher = 11,
-  AnnotationMatcher = 12,
-  EncodeValueBoolean = 13
+  MethodMatcher = 10,
+  FieldMatcher = 11,
+  AnnotationEncodeArrayMatcher = 12,
+  AnnotationMatcher = 13,
+  EncodeValueNull = 14,
+  EncodeValueBoolean = 15
 };
 
-inline const AnnotationEncodeValueMatcher (&EnumValuesAnnotationEncodeValueMatcher())[14] {
+inline const AnnotationEncodeValueMatcher (&EnumValuesAnnotationEncodeValueMatcher())[16] {
   static const AnnotationEncodeValueMatcher values[] = {
     AnnotationEncodeValueMatcher::NONE,
     AnnotationEncodeValueMatcher::EncodeValueByte,
@@ -106,16 +108,18 @@ inline const AnnotationEncodeValueMatcher (&EnumValuesAnnotationEncodeValueMatch
     AnnotationEncodeValueMatcher::EncodeValueDouble,
     AnnotationEncodeValueMatcher::StringMatcher,
     AnnotationEncodeValueMatcher::ClassMatcher,
+    AnnotationEncodeValueMatcher::MethodMatcher,
     AnnotationEncodeValueMatcher::FieldMatcher,
     AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher,
     AnnotationEncodeValueMatcher::AnnotationMatcher,
+    AnnotationEncodeValueMatcher::EncodeValueNull,
     AnnotationEncodeValueMatcher::EncodeValueBoolean
   };
   return values;
 }
 
 inline const char * const *EnumNamesAnnotationEncodeValueMatcher() {
-  static const char * const names[15] = {
+  static const char * const names[17] = {
     "NONE",
     "EncodeValueByte",
     "EncodeValueShort",
@@ -126,9 +130,11 @@ inline const char * const *EnumNamesAnnotationEncodeValueMatcher() {
     "EncodeValueDouble",
     "StringMatcher",
     "ClassMatcher",
+    "MethodMatcher",
     "FieldMatcher",
     "AnnotationEncodeArrayMatcher",
     "AnnotationMatcher",
+    "EncodeValueNull",
     "EncodeValueBoolean",
     nullptr
   };
@@ -181,6 +187,10 @@ template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::ClassMatche
   static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::ClassMatcher;
 };
 
+template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::MethodMatcher> {
+  static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::MethodMatcher;
+};
+
 template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::FieldMatcher> {
   static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::FieldMatcher;
 };
@@ -191,6 +201,10 @@ template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::AnnotationE
 
 template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::AnnotationMatcher> {
   static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::AnnotationMatcher;
+};
+
+template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::EncodeValueNull> {
+  static const AnnotationEncodeValueMatcher enum_value = AnnotationEncodeValueMatcher::EncodeValueNull;
 };
 
 template<> struct AnnotationEncodeValueMatcherTraits<dexkit::schema::EncodeValueBoolean> {
@@ -623,6 +637,9 @@ struct AnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   const dexkit::schema::ClassMatcher *value_as_ClassMatcher() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::ClassMatcher ? static_cast<const dexkit::schema::ClassMatcher *>(value()) : nullptr;
   }
+  const dexkit::schema::MethodMatcher *value_as_MethodMatcher() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::MethodMatcher ? static_cast<const dexkit::schema::MethodMatcher *>(value()) : nullptr;
+  }
   const dexkit::schema::FieldMatcher *value_as_FieldMatcher() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::FieldMatcher ? static_cast<const dexkit::schema::FieldMatcher *>(value()) : nullptr;
   }
@@ -631,6 +648,9 @@ struct AnnotationElementMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   }
   const dexkit::schema::AnnotationMatcher *value_as_AnnotationMatcher() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::AnnotationMatcher ? static_cast<const dexkit::schema::AnnotationMatcher *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueNull *value_as_EncodeValueNull() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::EncodeValueNull ? static_cast<const dexkit::schema::EncodeValueNull *>(value()) : nullptr;
   }
   const dexkit::schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
     return value_type() == dexkit::schema::AnnotationEncodeValueMatcher::EncodeValueBoolean ? static_cast<const dexkit::schema::EncodeValueBoolean *>(value()) : nullptr;
@@ -682,6 +702,10 @@ template<> inline const dexkit::schema::ClassMatcher *AnnotationElementMatcher::
   return value_as_ClassMatcher();
 }
 
+template<> inline const dexkit::schema::MethodMatcher *AnnotationElementMatcher::value_as<dexkit::schema::MethodMatcher>() const {
+  return value_as_MethodMatcher();
+}
+
 template<> inline const dexkit::schema::FieldMatcher *AnnotationElementMatcher::value_as<dexkit::schema::FieldMatcher>() const {
   return value_as_FieldMatcher();
 }
@@ -692,6 +716,10 @@ template<> inline const dexkit::schema::AnnotationEncodeArrayMatcher *Annotation
 
 template<> inline const dexkit::schema::AnnotationMatcher *AnnotationElementMatcher::value_as<dexkit::schema::AnnotationMatcher>() const {
   return value_as_AnnotationMatcher();
+}
+
+template<> inline const dexkit::schema::EncodeValueNull *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueNull>() const {
+  return value_as_EncodeValueNull();
 }
 
 template<> inline const dexkit::schema::EncodeValueBoolean *AnnotationElementMatcher::value_as<dexkit::schema::EncodeValueBoolean>() const {
@@ -2112,6 +2140,10 @@ inline bool VerifyAnnotationEncodeValueMatcher(::flatbuffers::Verifier &verifier
       auto ptr = reinterpret_cast<const dexkit::schema::ClassMatcher *>(obj);
       return verifier.VerifyTable(ptr);
     }
+    case AnnotationEncodeValueMatcher::MethodMatcher: {
+      auto ptr = reinterpret_cast<const dexkit::schema::MethodMatcher *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
     case AnnotationEncodeValueMatcher::FieldMatcher: {
       auto ptr = reinterpret_cast<const dexkit::schema::FieldMatcher *>(obj);
       return verifier.VerifyTable(ptr);
@@ -2122,6 +2154,10 @@ inline bool VerifyAnnotationEncodeValueMatcher(::flatbuffers::Verifier &verifier
     }
     case AnnotationEncodeValueMatcher::AnnotationMatcher: {
       auto ptr = reinterpret_cast<const dexkit::schema::AnnotationMatcher *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case AnnotationEncodeValueMatcher::EncodeValueNull: {
+      auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueNull *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case AnnotationEncodeValueMatcher::EncodeValueBoolean: {

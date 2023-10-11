@@ -297,12 +297,10 @@ void DexItem::InitCache(uint32_t init_flags) {
                         if (op >= 0x52 && op <= 0x6d) {
                             // iget, iget-wide, iget-object, iget-boolean, iget-byte, iget-char, iget-short
                             // sget, sget-wide, sget-object, sget-boolean, sget-byte, sget-char, sget-short
-                            auto is_getter = ((op >= 0x52 && op <= 0x58) ||
-                                              (op >= 0x60 && op <= 0x66));
+                            auto is_getter = ((op >= 0x52 && op <= 0x58) || (op >= 0x60 && op <= 0x66));
                             // iput, iput-wide, iput-object, iput-boolean, iput-byte, iput-char, iput-short
                             // sput, sput-wide, sput-object, sput-boolean, sput-byte, sput-char, sput-short
-                            auto is_setter = ((op >= 0x59 && op <= 0x5f) ||
-                                              (op >= 0x67 && op <= 0x6d));
+                            auto is_setter = ((op >= 0x59 && op <= 0x5f) || (op >= 0x67 && op <= 0x6d));
                             auto index = ReadShort(ptr);
                             method_using_field_ptr->emplace_back(index, is_getter);
                         }

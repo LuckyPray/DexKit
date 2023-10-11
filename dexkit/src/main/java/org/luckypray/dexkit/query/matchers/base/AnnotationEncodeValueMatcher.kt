@@ -485,6 +485,22 @@ class AnnotationEncodeValueMatcher : IQuery {
         }
 
         /**
+         * Create a new [AnnotationEncodeValueMatcher] from the specified [MethodMatcher].
+         * Note: only dalvik.system type annotations contain this element.
+         * ----------------
+         * 根据指定的 [MethodMatcher] 创建一个新的 [AnnotationEncodeValueMatcher]。
+         * 注意：只有 dalvik.system 类型的注解才包含这个元素。
+         *
+         * @param value method matcher / 方法匹配器
+         * @return [AnnotationEncodeValueMatcher]
+         */
+        @JvmStatic
+        fun createMethod(value: MethodMatcher): AnnotationEncodeValueMatcher {
+            val type = AnnotationEncodeValueType.MethodValue
+            return AnnotationEncodeValueMatcher(value, type)
+        }
+
+        /**
          * Create a new [AnnotationEncodeValueMatcher] from the specified enumValue.
          * The value of enum is a Field, so here use FieldMatcher.
          * ----------------
@@ -526,6 +542,21 @@ class AnnotationEncodeValueMatcher : IQuery {
         fun createAnnotation(value: AnnotationMatcher): AnnotationEncodeValueMatcher {
             val type = AnnotationEncodeValueType.AnnotationValue
             return AnnotationEncodeValueMatcher(value, type)
+        }
+
+        /**
+         * Create a new [AnnotationEncodeValueMatcher] from the specified nullValue.
+         * Note: only dalvik.system type annotations contain this element.
+         * ----------------
+         * 根据指定的 nullValue 创建一个新的 [AnnotationEncodeValueMatcher]。
+         * 注意：只有 dalvik.system 类型的注解才包含这个元素。
+         *
+         * @return [AnnotationEncodeValueMatcher]
+         */
+        @JvmStatic
+        fun createNull(): AnnotationEncodeValueMatcher {
+            val type = AnnotationEncodeValueType.NullValue
+            return AnnotationEncodeValueMatcher(EncodeValueNull(), type)
         }
 
         /**

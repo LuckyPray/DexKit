@@ -30,10 +30,12 @@ union AnnotationEncodeValueMatcher {
     EncodeValueDouble,
     StringMatcher,
     ClassMatcher,
+    MethodMatcher,
     // enum
     FieldMatcher,
     AnnotationEncodeArrayMatcher,
     AnnotationMatcher,
+    EncodeValueNull,
     EncodeValueBoolean,
 }
 

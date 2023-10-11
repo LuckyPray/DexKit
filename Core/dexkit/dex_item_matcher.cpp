@@ -263,9 +263,11 @@ static uint8_t AnnotationEncodeValueTypeCvt(schema::AnnotationEncodeValueMatcher
         case schema::AnnotationEncodeValueMatcher::EncodeValueDouble: return dex::kEncodedDouble;
         case schema::AnnotationEncodeValueMatcher::StringMatcher: return dex::kEncodedString;
         case schema::AnnotationEncodeValueMatcher::ClassMatcher: return dex::kEncodedType;
+        case schema::AnnotationEncodeValueMatcher::MethodMatcher: return dex::kEncodedMethod;
         case schema::AnnotationEncodeValueMatcher::FieldMatcher: return dex::kEncodedEnum;
         case schema::AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher: return dex::kEncodedArray;
         case schema::AnnotationEncodeValueMatcher::AnnotationMatcher: return dex::kEncodedAnnotation;
+        case schema::AnnotationEncodeValueMatcher::EncodeValueNull: return dex::kEncodedNull;
         case schema::AnnotationEncodeValueMatcher::EncodeValueBoolean: return dex::kEncodedBoolean;
         default: abort();
     }
@@ -294,9 +296,11 @@ bool DexItem::IsAnnotationEncodeValueMatched(const ir::EncodedValue *encodedValu
         case dex::kEncodedDouble: return encodedValue->u.double_value == NonNullCase<const dexkit::schema::EncodeValueDouble *>(value)->value();
         case dex::kEncodedString: return IsStringMatched(encodedValue->u.string_value->c_str(), NonNullCase<const dexkit::schema::StringMatcher *>(value));
         case dex::kEncodedType: return IsClassMatched(encodedValue->u.type_value->orig_index, NonNullCase<const dexkit::schema::ClassMatcher *>(value));
+        case dex::kEncodedMethod: return IsMethodMatched(encodedValue->u.method_value->orig_index, NonNullCase<const dexkit::schema::MethodMatcher *>(value));
         case dex::kEncodedEnum: return IsFieldMatched(encodedValue->u.enum_value->orig_index, NonNullCase<const dexkit::schema::FieldMatcher *>(value));
         case dex::kEncodedArray: return IsAnnotationEncodeArrayMatcher(encodedValue->u.array_value->values, NonNullCase<const dexkit::schema::AnnotationEncodeArrayMatcher *>(value));
         case dex::kEncodedAnnotation: return IsAnnotationMatched(encodedValue->u.annotation_value, NonNullCase<const dexkit::schema::AnnotationMatcher *>(value));
+        case dex::kEncodedNull: return true;
         case dex::kEncodedBoolean: return encodedValue->u.bool_value == NonNullCase<const dexkit::schema::EncodeValueBoolean *>(value)->value();
         default: abort();
     }
