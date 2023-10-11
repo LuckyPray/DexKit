@@ -14,9 +14,11 @@ internal class `-AnnotationEncodeValueType` private constructor() {
         const val DoubleValue: Byte = 6
         const val StringValue: Byte = 7
         const val TypeValue: Byte = 8
-        const val EnumValue: Byte = 9
-        const val ArrayValue: Byte = 10
-        const val AnnotationValue: Byte = 11
-        const val BoolValue: Byte = 12
+        const val MethodValue: Byte = 9
+        const val EnumValue: Byte = 10
+        const val ArrayValue: Byte = 11
+        const val AnnotationValue: Byte = 12
+        const val NullValue: Byte = 13
+        const val BoolValue: Byte = 14
     }
 }

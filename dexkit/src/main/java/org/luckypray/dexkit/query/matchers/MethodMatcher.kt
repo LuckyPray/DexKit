@@ -8,6 +8,7 @@ import org.luckypray.dexkit.query.NumberEncodeValueMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.UsingFieldMatcherList
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -22,7 +23,7 @@ import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
-class MethodMatcher : BaseQuery {
+class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     var nameMatcher: StringMatcher? = null
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null
@@ -555,10 +556,9 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
-     * Add method annotation matcher. only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Add method annotation matcher.
      * ----------------
-     * 添加方法注解匹配器。仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 添加方法注解匹配器。
      *
      *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
@@ -571,10 +571,9 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
-     * Method annotation count, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Method annotation count.
      * ----------------
-     * 方法注解数量，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 方法注解数量。
      *
      * @param count annotation count / 注解数量
      * @return [MethodMatcher]
@@ -585,10 +584,9 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
-     * Method annotation count range, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Method annotation count range.
      * ----------------
-     * 方法注解数量范围，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 方法注解数量范围。
      *
      *     annotationCount(IntRange(1, 2))
      *
@@ -601,10 +599,9 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
-     * Method annotation count range, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Method annotation count range.
      * ----------------
-     * 方法注解数量范围，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 方法注解数量范围。
      *
      *     annotationCount(1..2)
      *
@@ -617,10 +614,9 @@ class MethodMatcher : BaseQuery {
     }
 
     /**
-     * Method annotation count range, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Method annotation count range.
      * ----------------
-     * 方法注解数量范围，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 方法注解数量范围。
      *
      *     annotationCount(1, 2)
      *

@@ -1,8 +1,8 @@
 package org.luckypray.dexkit.util
 
+import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
-import org.luckypray.dexkit.wrap.DexClass
 import java.lang.reflect.Array
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field

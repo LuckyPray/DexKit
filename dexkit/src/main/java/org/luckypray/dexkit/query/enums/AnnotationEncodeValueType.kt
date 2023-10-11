@@ -12,9 +12,11 @@ enum class AnnotationEncodeValueType(val value: UByte) {
     DoubleValue(InnerAnnotationEncodeValue.EncodeValueDouble),
     StringValue(InnerAnnotationEncodeValue.EncodeValueString),
     TypeValue(InnerAnnotationEncodeValue.ClassMeta),
+    MethodValue(InnerAnnotationEncodeValue.MethodMeta),
     EnumValue(InnerAnnotationEncodeValue.FieldMeta),
     ArrayValue(InnerAnnotationEncodeValue.AnnotationEncodeArray),
     AnnotationValue(InnerAnnotationEncodeValue.AnnotationMeta),
+    NullValue(InnerAnnotationEncodeValue.EncodeValueNull),
     BoolValue(InnerAnnotationEncodeValue.EncodeValueBoolean),
     ;
 
@@ -30,9 +32,11 @@ enum class AnnotationEncodeValueType(val value: UByte) {
                 InnerAnnotationEncodeValue.EncodeValueDouble -> DoubleValue
                 InnerAnnotationEncodeValue.EncodeValueString -> StringValue
                 InnerAnnotationEncodeValue.ClassMeta -> TypeValue
+                InnerAnnotationEncodeValue.MethodMeta -> MethodValue
                 InnerAnnotationEncodeValue.FieldMeta -> EnumValue
                 InnerAnnotationEncodeValue.AnnotationEncodeArray -> ArrayValue
                 InnerAnnotationEncodeValue.AnnotationMeta -> AnnotationValue
+                InnerAnnotationEncodeValue.EncodeValueNull -> NullValue
                 InnerAnnotationEncodeValue.EncodeValueBoolean -> BoolValue
                 else -> throw IllegalArgumentException("Unknown AnnotationEncodeValueType: $value")
             }

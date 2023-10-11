@@ -316,10 +316,9 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Add field annotation matcher. only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Add field annotation matcher.
      * ----------------
-     * 添加字段注解匹配器。仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 添加字段注解匹配器。
      *
      *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
@@ -332,10 +331,9 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Field annotation count, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Field annotation count.
      * ----------------
-     * 字段注解数量，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 字段注解数量。
      *
      * @param count annotation count / 注解数量
      * @return [FieldMatcher]
@@ -346,10 +344,9 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Field annotation count range, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Field annotation count range.
      * ----------------
-     * 字段注解数量范围，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 字段注解数量范围。
      *
      *     annotationCount(IntRange(1, 2))
      *
@@ -362,10 +359,9 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Field annotation count range, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Field annotation count range.
      * ----------------
-     * 字段注解数量范围，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 字段注解数量范围。
      *
      *     annotationCount(1..2)
      *
@@ -378,10 +374,9 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Field annotation count range, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Field annotation count range.
      * ----------------
-     * 字段注解数量范围，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 字段注解数量范围。
      *
      *     annotationCount(1, 2)
      *

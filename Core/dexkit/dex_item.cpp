@@ -360,27 +360,21 @@ void DexItem::InitCache(uint32_t init_flags) {
             if (annotations->class_annotation) {
                 auto &class_annotation = class_annotations[class_def.class_idx];
                 for (auto &annotation: annotations->class_annotation->annotations) {
-                    if (annotation->visibility == 2) {
-                        continue;
-                    }
+//                    if (annotation->visibility == 2) {
+//                        continue;
+//                    }
                     class_annotation.emplace_back(annotation);
                 }
             }
             for (auto value: annotations->field_annotations) {
                 auto &field_annotation = field_annotations[value->field_decl->orig_index];
                 for (auto &annotation: value->annotations->annotations) {
-                    if (annotation->visibility == 2) {
-                        continue;
-                    }
                     field_annotation.emplace_back(annotation);
                 }
             }
             for (auto value: annotations->method_annotations) {
                 auto &method_annotation = method_annotations[value->method_decl->orig_index];
                 for (auto &annotation: value->annotations->annotations) {
-                    if (annotation->visibility == 2) {
-                        continue;
-                    }
                     method_annotation.emplace_back(annotation);
                 }
             }
@@ -388,10 +382,8 @@ void DexItem::InitCache(uint32_t init_flags) {
                 auto &method_parameter_annotation = method_parameter_annotations[value->method_decl->orig_index];
                 for (auto &annotation: value->annotations->annotations) {
                     std::vector<ir::Annotation *> ann_vec;
+                    ann_vec.reserve(annotation->annotations.size());
                     for (auto &parameter_annotation: annotation->annotations) {
-                        if (parameter_annotation->visibility == 2) {
-                            continue;
-                        }
                         ann_vec.emplace_back(parameter_annotation);
                     }
                     method_parameter_annotation.emplace_back(ann_vec);
@@ -607,9 +599,11 @@ AnnotationEncodeValueBean DexItem::GetAnnotationEncodeValueBean(ir::EncodedValue
         case 0x11: bean.type = schema::AnnotationEncodeValueType::DoubleValue; break;
         case 0x17: bean.type = schema::AnnotationEncodeValueType::StringValue; break;
         case 0x18: bean.type = schema::AnnotationEncodeValueType::TypeValue; break;
+        case 0x1a: bean.type = schema::AnnotationEncodeValueType::MethodValue; break;
         case 0x1b: bean.type = schema::AnnotationEncodeValueType::EnumValue; break;
         case 0x1c: bean.type = schema::AnnotationEncodeValueType::ArrayValue; break;
         case 0x1d: bean.type = schema::AnnotationEncodeValueType::AnnotationValue; break;
+        case 0x1e: bean.type = schema::AnnotationEncodeValueType::NullValue; break;
         case 0x1f: bean.type = schema::AnnotationEncodeValueType::BoolValue; break;
         default: break;
     }
@@ -623,9 +617,11 @@ AnnotationEncodeValueBean DexItem::GetAnnotationEncodeValueBean(ir::EncodedValue
         case 0x11: bean.value = encoded_value->u.double_value; break;
         case 0x17: bean.value = encoded_value->u.string_value->c_str(); break;
         case 0x18: bean.value = std::make_unique<ClassBean>(GetClassBean(encoded_value->u.type_value->orig_index)); break;
+        case 0x1a: bean.value = std::make_unique<MethodBean>(GetMethodBean(encoded_value->u.method_value->orig_index)); break;
         case 0x1b: bean.value = std::make_unique<FieldBean>(GetFieldBean(encoded_value->u.enum_value->orig_index)); break;
         case 0x1c: bean.value = std::make_unique<AnnotationEncodeArrayBean>(GetAnnotationEncodeArrayBean(encoded_value->u.array_value)); break;
         case 0x1d: bean.value = std::make_unique<AnnotationBean>(GetAnnotationBean(encoded_value->u.annotation_value)); break;
+        case 0x1e: bean.value = 0; break;
         case 0x1f: bean.value = encoded_value->u.bool_value; break;
         default: break;
     }

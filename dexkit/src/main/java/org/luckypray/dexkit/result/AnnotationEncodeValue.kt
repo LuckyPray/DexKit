@@ -14,9 +14,11 @@ import org.luckypray.dexkit.InnerEncodeValueDouble
 import org.luckypray.dexkit.InnerEncodeValueFloat
 import org.luckypray.dexkit.InnerEncodeValueInt
 import org.luckypray.dexkit.InnerEncodeValueLong
+import org.luckypray.dexkit.InnerEncodeValueNull
 import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.InnerFieldMeta
+import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 
 class AnnotationEncodeValue private constructor(
@@ -37,9 +39,11 @@ class AnnotationEncodeValue private constructor(
                 AnnotationEncodeValueType.DoubleValue -> (encodeValueMeta.value(InnerEncodeValueDouble()) as InnerEncodeValueDouble).value
                 AnnotationEncodeValueType.StringValue -> (encodeValueMeta.value(InnerEncodeValueString()) as InnerEncodeValueString).value!!
                 AnnotationEncodeValueType.TypeValue -> ClassData.from(bridge, encodeValueMeta.value(InnerClassMeta()) as InnerClassMeta)
+                AnnotationEncodeValueType.MethodValue -> MethodData.from(bridge, encodeValueMeta.value(InnerMethodMeta()) as InnerMethodMeta)
                 AnnotationEncodeValueType.EnumValue -> FieldData.from(bridge, encodeValueMeta.value(InnerFieldMeta()) as InnerFieldMeta)
                 AnnotationEncodeValueType.ArrayValue -> AnnotationEncodeArrayData.from(bridge, encodeValueMeta.value(InnerAnnotationEncodeArray()) as InnerAnnotationEncodeArray)
                 AnnotationEncodeValueType.AnnotationValue -> AnnotationData.from(bridge, encodeValueMeta.value(InnerAnnotationMeta()) as InnerAnnotationMeta)
+                AnnotationEncodeValueType.NullValue -> encodeValueMeta.value(InnerEncodeValueNull()) as InnerEncodeValueNull
                 AnnotationEncodeValueType.BoolValue -> (encodeValueMeta.value(InnerEncodeValueBoolean()) as InnerEncodeValueBoolean).value
             }
             return AnnotationEncodeValue(value, type)
@@ -55,6 +59,17 @@ class AnnotationEncodeValue private constructor(
             when (type) {
                 AnnotationEncodeValueType.TypeValue -> {
                     append((value as ClassData).name)
+                }
+                AnnotationEncodeValueType.MethodValue -> {
+                    val methodData = value as MethodData
+                    append(methodData.returnTypeName)
+                    append(" ")
+                    append(methodData.className)
+                    append(".")
+                    append(methodData.methodName)
+                    append("(")
+                    append(methodData.paramTypeNames.joinToString(", "))
+                    append(")")
                 }
                 AnnotationEncodeValueType.EnumValue -> {
                     val fieldData = value as FieldData
@@ -74,6 +89,9 @@ class AnnotationEncodeValue private constructor(
                     append("\"")
                     append(value)
                     append("\"")
+                }
+                AnnotationEncodeValueType.NullValue -> {
+                    append("null")
                 }
                 else -> {
                     append(value)

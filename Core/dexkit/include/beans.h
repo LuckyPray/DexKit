@@ -59,13 +59,14 @@ class AnnotationEncodeArrayBean;
 
 using AnnotationEncodeValue = std::variant<
         int8_t /*byte_value*/,
-        int16_t /*short_value*/,
+        int16_t /*short_value, char_value*/,
         int32_t /*int_value*/,
         int64_t /*long_value*/,
         float /*float_value*/,
         double /*double_value*/,
         std::string_view /*string_value*/,
         std::unique_ptr<ClassBean> /*type_value*/,
+        std::unique_ptr<MethodBean> /*method_value*/,
         std::unique_ptr<FieldBean> /*enum_value*/,
         std::unique_ptr<AnnotationEncodeArrayBean> /*array_value*/,
         std::unique_ptr<AnnotationBean> /*annotation_value*/,

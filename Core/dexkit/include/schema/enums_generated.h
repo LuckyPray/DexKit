@@ -276,13 +276,15 @@ enum class AnnotationEncodeValueType : int8_t {
   DoubleValue = 6,
   StringValue = 7,
   TypeValue = 8,
-  EnumValue = 9,
-  ArrayValue = 10,
-  AnnotationValue = 11,
-  BoolValue = 12
+  MethodValue = 9,
+  EnumValue = 10,
+  ArrayValue = 11,
+  AnnotationValue = 12,
+  NullValue = 13,
+  BoolValue = 14
 };
 
-inline const AnnotationEncodeValueType (&EnumValuesAnnotationEncodeValueType())[13] {
+inline const AnnotationEncodeValueType (&EnumValuesAnnotationEncodeValueType())[15] {
   static const AnnotationEncodeValueType values[] = {
     AnnotationEncodeValueType::ByteValue,
     AnnotationEncodeValueType::ShortValue,
@@ -293,16 +295,18 @@ inline const AnnotationEncodeValueType (&EnumValuesAnnotationEncodeValueType())[
     AnnotationEncodeValueType::DoubleValue,
     AnnotationEncodeValueType::StringValue,
     AnnotationEncodeValueType::TypeValue,
+    AnnotationEncodeValueType::MethodValue,
     AnnotationEncodeValueType::EnumValue,
     AnnotationEncodeValueType::ArrayValue,
     AnnotationEncodeValueType::AnnotationValue,
+    AnnotationEncodeValueType::NullValue,
     AnnotationEncodeValueType::BoolValue
   };
   return values;
 }
 
 inline const char * const *EnumNamesAnnotationEncodeValueType() {
-  static const char * const names[14] = {
+  static const char * const names[16] = {
     "ByteValue",
     "ShortValue",
     "CharValue",
@@ -312,9 +316,11 @@ inline const char * const *EnumNamesAnnotationEncodeValueType() {
     "DoubleValue",
     "StringValue",
     "TypeValue",
+    "MethodValue",
     "EnumValue",
     "ArrayValue",
     "AnnotationValue",
+    "NullValue",
     "BoolValue",
     nullptr
   };

@@ -65,9 +65,11 @@ AnnotationEncodeValueBean::CreateAnnotationEncodeValueMeta(flatbuffers::FlatBuff
         case AnnotationEncodeValueType::DoubleValue: offset = schema::CreateEncodeValueDouble(fbb, get<double>(this->value)).Union(); break;
         case AnnotationEncodeValueType::StringValue: offset = schema::CreateEncodeValueString(fbb, fbb.CreateString(get<std::string_view>(this->value))).Union(); break;
         case AnnotationEncodeValueType::TypeValue: offset = get<std::unique_ptr<ClassBean>>(this->value)->CreateClassMeta(fbb).Union(); break;
+        case AnnotationEncodeValueType::MethodValue: offset = get<std::unique_ptr<MethodBean>>(this->value)->CreateMethodMeta(fbb).Union(); break;
         case AnnotationEncodeValueType::EnumValue: offset = get<std::unique_ptr<FieldBean>>(this->value)->CreateFieldMeta(fbb).Union(); break;
         case AnnotationEncodeValueType::ArrayValue: offset = get<std::unique_ptr<AnnotationEncodeArrayBean>>(this->value)->CreateAnnotationEncodeArray(fbb).Union(); break;
         case AnnotationEncodeValueType::AnnotationValue: offset = get<std::unique_ptr<AnnotationBean>>(this->value)->CreateAnnotationMeta(fbb).Union(); break;
+        case AnnotationEncodeValueType::NullValue: offset = schema::CreateEncodeValueNull(fbb).Union(); break;
         case AnnotationEncodeValueType::BoolValue: offset = schema::CreateEncodeValueBoolean(fbb, get<bool>(this->value)).Union(); break;
     }
     auto annotation_encode_value_meta = schema::CreateAnnotationEncodeValueMeta(

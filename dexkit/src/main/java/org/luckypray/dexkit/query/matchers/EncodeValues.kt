@@ -10,6 +10,7 @@ import org.luckypray.dexkit.InnerEncodeValueDouble
 import org.luckypray.dexkit.InnerEncodeValueFloat
 import org.luckypray.dexkit.InnerEncodeValueInt
 import org.luckypray.dexkit.InnerEncodeValueLong
+import org.luckypray.dexkit.InnerEncodeValueNull
 import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.query.base.BaseQuery
@@ -77,6 +78,14 @@ class EncodeValueDouble(val value: Double) : EncodeValue(), IAnnotationEncodeVal
 class EncodeValueString(val value: String) : EncodeValue() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerEncodeValueString.createEncodeValueString(fbb, fbb.createString(value))
+        fbb.finish(root)
+        return root
+    }
+}
+
+class EncodeValueNull : EncodeValue(), IAnnotationEncodeValue {
+    override fun innerBuild(fbb: FlatBufferBuilder): Int {
+        val root = InnerEncodeValueNull.createEncodeValueNull(fbb, 0)
         fbb.finish(root)
         return root
     }

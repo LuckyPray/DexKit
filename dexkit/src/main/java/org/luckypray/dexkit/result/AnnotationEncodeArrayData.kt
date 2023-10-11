@@ -13,9 +13,11 @@ import org.luckypray.dexkit.InnerEncodeValueDouble
 import org.luckypray.dexkit.InnerEncodeValueFloat
 import org.luckypray.dexkit.InnerEncodeValueInt
 import org.luckypray.dexkit.InnerEncodeValueLong
+import org.luckypray.dexkit.InnerEncodeValueNull
 import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
 import org.luckypray.dexkit.InnerFieldMeta
+import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.result.base.BaseData
 
@@ -52,9 +54,11 @@ class AnnotationEncodeArrayData private constructor(
                             }
                         }
                         AnnotationEncodeValueType.TypeValue -> ClassData.from(bridge, encodeValue.value(InnerClassMeta()) as InnerClassMeta)
+                        AnnotationEncodeValueType.MethodValue -> MethodData.from(bridge, encodeValue.value(InnerMethodMeta()) as InnerMethodMeta)
                         AnnotationEncodeValueType.EnumValue -> FieldData.from(bridge, encodeValue.value(InnerFieldMeta()) as InnerFieldMeta)
                         AnnotationEncodeValueType.ArrayValue -> from(bridge, encodeValue.value(InnerAnnotationEncodeArray()) as InnerAnnotationEncodeArray)
                         AnnotationEncodeValueType.AnnotationValue -> AnnotationData.from(bridge, encodeValue.value(InnerAnnotationMeta()) as InnerAnnotationMeta)
+                        AnnotationEncodeValueType.NullValue -> encodeValue.value(InnerEncodeValueNull()) as InnerEncodeValueNull
                         AnnotationEncodeValueType.BoolValue -> (encodeValue.value(InnerEncodeValueBoolean()) as InnerEncodeValueBoolean).value
                     }
                     add(AnnotationEncodeValue.from(value, type))

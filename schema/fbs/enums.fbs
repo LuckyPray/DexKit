@@ -66,8 +66,10 @@ enum AnnotationEncodeValueType: byte {
     DoubleValue,
     StringValue,
     TypeValue,
+    MethodValue,
     EnumValue,
     ArrayValue,
     AnnotationValue,
+    NullValue,
     BoolValue,
 }

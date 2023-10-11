@@ -58,10 +58,12 @@ union AnnotationEncodeValue {
     EncodeValueDouble,
     EncodeValueString,
     ClassMeta,
+    MethodMeta,
     // enum use it
     FieldMeta,
     AnnotationEncodeArray,
     AnnotationMeta,
+    EncodeValueNull,
     EncodeValueBoolean,
 }
 

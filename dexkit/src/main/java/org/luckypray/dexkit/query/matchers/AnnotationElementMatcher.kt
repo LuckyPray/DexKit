@@ -246,6 +246,20 @@ class AnnotationElementMatcher : BaseQuery() {
     }
 
     /**
+     * Match the annotation element value as the specified [MethodMatcher].
+     * Note: only dalvik.system type annotations contain this element.
+     * ----------------
+     * 匹配元素值为指定 [MethodMatcher] 的注解。
+     * 注意：只有 dalvik.system 类型的注解才包含此元素。
+     *
+     * @param value method matcher / 方法匹配器
+     * @return [AnnotationElementMatcher]
+     */
+    fun methodValue(value: MethodMatcher) = also {
+        value(AnnotationEncodeValueMatcher().apply { methodValue(value) })
+    }
+
+    /**
      * Match the annotation element value as the specified [FieldMatcher].
      * ----------------
      * 匹配元素值为指定 [FieldMatcher] 的注解。
@@ -282,6 +296,19 @@ class AnnotationElementMatcher : BaseQuery() {
     }
 
     /**
+     * Create nullValue matcher.
+     * Note: only dalvik.system type annotations contain this element.
+     * ----------------
+     * 创建 nullValue 匹配器。
+     * 注意：只有 dalvik.system 类型的注解才包含此元素。
+     *
+     * @return [AnnotationEncodeValueMatcher]
+     */
+    fun nullValue() = also {
+        value(AnnotationEncodeValueMatcher().apply { nullValue() })
+    }
+
+    /**
      * Match the annotation element value as the specified [Boolean].
      * ----------------
      * 匹配元素值为指定 [Boolean] 的注解。
@@ -309,6 +336,14 @@ class AnnotationElementMatcher : BaseQuery() {
     @kotlin.internal.InlineOnly
     inline fun classValue(init: ClassMatcher.() -> Unit) = also {
         classValue(ClassMatcher().apply(init))
+    }
+
+    /**
+     * @see methodValue
+     */
+    @kotlin.internal.InlineOnly
+    inline fun methodValue(init: MethodMatcher.() -> Unit) = also {
+        methodValue(MethodMatcher().apply(init))
     }
 
     /**

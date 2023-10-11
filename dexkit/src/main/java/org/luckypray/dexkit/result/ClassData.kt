@@ -7,11 +7,10 @@ import org.luckypray.dexkit.InnerClassMeta
 import org.luckypray.dexkit.query.ClassDataList
 import org.luckypray.dexkit.query.FieldDataList
 import org.luckypray.dexkit.query.MethodDataList
-import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
+import org.luckypray.dexkit.wrap.DexClass
 import java.lang.reflect.Modifier
-import kotlin.jvm.Throws
 
 class ClassData private constructor(
     bridge: DexKitBridge,
@@ -131,9 +130,9 @@ class ClassData private constructor(
     }
 
     /**
-     * Get declared annotations (not include dalvik system annotations)
+     * Get declared annotations.
      * ----------------
-     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     * 获取标注的注解列表。
      */
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getClassAnnotations(getEncodeId(dexId, id))

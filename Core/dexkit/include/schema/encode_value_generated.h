@@ -40,6 +40,9 @@ struct EncodeValueDoubleBuilder;
 struct EncodeValueString;
 struct EncodeValueStringBuilder;
 
+struct EncodeValueNull;
+struct EncodeValueNullBuilder;
+
 struct EncodeValueBoolean;
 struct EncodeValueBooleanBuilder;
 
@@ -428,6 +431,53 @@ inline ::flatbuffers::Offset<EncodeValueString> CreateEncodeValueStringDirect(
       _fbb,
       value__);
 }
+
+struct EncodeValueNull FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef EncodeValueNullBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_VALUE = 4
+  };
+  int8_t value() const {
+    return GetField<int8_t>(VT_VALUE, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int8_t>(verifier, VT_VALUE, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct EncodeValueNullBuilder {
+  typedef EncodeValueNull Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_value(int8_t value) {
+    fbb_.AddElement<int8_t>(EncodeValueNull::VT_VALUE, value, 0);
+  }
+  explicit EncodeValueNullBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<EncodeValueNull> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<EncodeValueNull>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<EncodeValueNull> CreateEncodeValueNull(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int8_t value = 0) {
+  EncodeValueNullBuilder builder_(_fbb);
+  builder_.add_value(value);
+  return builder_.Finish();
+}
+
+struct EncodeValueNull::Traits {
+  using type = EncodeValueNull;
+  static auto constexpr Create = CreateEncodeValueNull;
+};
 
 struct EncodeValueBoolean FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EncodeValueBooleanBuilder Builder;

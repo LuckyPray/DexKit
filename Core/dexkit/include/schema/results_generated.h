@@ -78,13 +78,15 @@ enum class AnnotationEncodeValue : uint8_t {
   EncodeValueDouble = 7,
   EncodeValueString = 8,
   ClassMeta = 9,
-  FieldMeta = 10,
-  AnnotationEncodeArray = 11,
-  AnnotationMeta = 12,
-  EncodeValueBoolean = 13
+  MethodMeta = 10,
+  FieldMeta = 11,
+  AnnotationEncodeArray = 12,
+  AnnotationMeta = 13,
+  EncodeValueNull = 14,
+  EncodeValueBoolean = 15
 };
 
-inline const AnnotationEncodeValue (&EnumValuesAnnotationEncodeValue())[14] {
+inline const AnnotationEncodeValue (&EnumValuesAnnotationEncodeValue())[16] {
   static const AnnotationEncodeValue values[] = {
     AnnotationEncodeValue::NONE,
     AnnotationEncodeValue::EncodeValueByte,
@@ -96,16 +98,18 @@ inline const AnnotationEncodeValue (&EnumValuesAnnotationEncodeValue())[14] {
     AnnotationEncodeValue::EncodeValueDouble,
     AnnotationEncodeValue::EncodeValueString,
     AnnotationEncodeValue::ClassMeta,
+    AnnotationEncodeValue::MethodMeta,
     AnnotationEncodeValue::FieldMeta,
     AnnotationEncodeValue::AnnotationEncodeArray,
     AnnotationEncodeValue::AnnotationMeta,
+    AnnotationEncodeValue::EncodeValueNull,
     AnnotationEncodeValue::EncodeValueBoolean
   };
   return values;
 }
 
 inline const char * const *EnumNamesAnnotationEncodeValue() {
-  static const char * const names[15] = {
+  static const char * const names[17] = {
     "NONE",
     "EncodeValueByte",
     "EncodeValueShort",
@@ -116,9 +120,11 @@ inline const char * const *EnumNamesAnnotationEncodeValue() {
     "EncodeValueDouble",
     "EncodeValueString",
     "ClassMeta",
+    "MethodMeta",
     "FieldMeta",
     "AnnotationEncodeArray",
     "AnnotationMeta",
+    "EncodeValueNull",
     "EncodeValueBoolean",
     nullptr
   };
@@ -171,6 +177,10 @@ template<> struct AnnotationEncodeValueTraits<dexkit::schema::ClassMeta> {
   static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::ClassMeta;
 };
 
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::MethodMeta> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::MethodMeta;
+};
+
 template<> struct AnnotationEncodeValueTraits<dexkit::schema::FieldMeta> {
   static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::FieldMeta;
 };
@@ -181,6 +191,10 @@ template<> struct AnnotationEncodeValueTraits<dexkit::schema::AnnotationEncodeAr
 
 template<> struct AnnotationEncodeValueTraits<dexkit::schema::AnnotationMeta> {
   static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::AnnotationMeta;
+};
+
+template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueNull> {
+  static const AnnotationEncodeValue enum_value = AnnotationEncodeValue::EncodeValueNull;
 };
 
 template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueBoolean> {
@@ -818,6 +832,9 @@ struct AnnotationEncodeValueMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   const dexkit::schema::ClassMeta *value_as_ClassMeta() const {
     return value_type() == dexkit::schema::AnnotationEncodeValue::ClassMeta ? static_cast<const dexkit::schema::ClassMeta *>(value()) : nullptr;
   }
+  const dexkit::schema::MethodMeta *value_as_MethodMeta() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::MethodMeta ? static_cast<const dexkit::schema::MethodMeta *>(value()) : nullptr;
+  }
   const dexkit::schema::FieldMeta *value_as_FieldMeta() const {
     return value_type() == dexkit::schema::AnnotationEncodeValue::FieldMeta ? static_cast<const dexkit::schema::FieldMeta *>(value()) : nullptr;
   }
@@ -826,6 +843,9 @@ struct AnnotationEncodeValueMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   }
   const dexkit::schema::AnnotationMeta *value_as_AnnotationMeta() const {
     return value_type() == dexkit::schema::AnnotationEncodeValue::AnnotationMeta ? static_cast<const dexkit::schema::AnnotationMeta *>(value()) : nullptr;
+  }
+  const dexkit::schema::EncodeValueNull *value_as_EncodeValueNull() const {
+    return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueNull ? static_cast<const dexkit::schema::EncodeValueNull *>(value()) : nullptr;
   }
   const dexkit::schema::EncodeValueBoolean *value_as_EncodeValueBoolean() const {
     return value_type() == dexkit::schema::AnnotationEncodeValue::EncodeValueBoolean ? static_cast<const dexkit::schema::EncodeValueBoolean *>(value()) : nullptr;
@@ -876,6 +896,10 @@ template<> inline const dexkit::schema::ClassMeta *AnnotationEncodeValueMeta::va
   return value_as_ClassMeta();
 }
 
+template<> inline const dexkit::schema::MethodMeta *AnnotationEncodeValueMeta::value_as<dexkit::schema::MethodMeta>() const {
+  return value_as_MethodMeta();
+}
+
 template<> inline const dexkit::schema::FieldMeta *AnnotationEncodeValueMeta::value_as<dexkit::schema::FieldMeta>() const {
   return value_as_FieldMeta();
 }
@@ -886,6 +910,10 @@ template<> inline const dexkit::schema::AnnotationEncodeArray *AnnotationEncodeV
 
 template<> inline const dexkit::schema::AnnotationMeta *AnnotationEncodeValueMeta::value_as<dexkit::schema::AnnotationMeta>() const {
   return value_as_AnnotationMeta();
+}
+
+template<> inline const dexkit::schema::EncodeValueNull *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueNull>() const {
+  return value_as_EncodeValueNull();
 }
 
 template<> inline const dexkit::schema::EncodeValueBoolean *AnnotationEncodeValueMeta::value_as<dexkit::schema::EncodeValueBoolean>() const {
@@ -1586,6 +1614,10 @@ inline bool VerifyAnnotationEncodeValue(::flatbuffers::Verifier &verifier, const
       auto ptr = reinterpret_cast<const dexkit::schema::ClassMeta *>(obj);
       return verifier.VerifyTable(ptr);
     }
+    case AnnotationEncodeValue::MethodMeta: {
+      auto ptr = reinterpret_cast<const dexkit::schema::MethodMeta *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
     case AnnotationEncodeValue::FieldMeta: {
       auto ptr = reinterpret_cast<const dexkit::schema::FieldMeta *>(obj);
       return verifier.VerifyTable(ptr);
@@ -1596,6 +1628,10 @@ inline bool VerifyAnnotationEncodeValue(::flatbuffers::Verifier &verifier, const
     }
     case AnnotationEncodeValue::AnnotationMeta: {
       auto ptr = reinterpret_cast<const dexkit::schema::AnnotationMeta *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case AnnotationEncodeValue::EncodeValueNull: {
+      auto ptr = reinterpret_cast<const dexkit::schema::EncodeValueNull *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case AnnotationEncodeValue::EncodeValueBoolean: {

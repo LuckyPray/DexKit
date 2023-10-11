@@ -6,7 +6,6 @@ import org.luckypray.dexkit.util.DexSignUtil.getSimpleName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.util.InstanceUtil
 import java.io.Serializable
-import kotlin.jvm.Throws
 
 class DexClass: Serializable {
     private companion object {

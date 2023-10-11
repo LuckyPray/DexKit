@@ -2,7 +2,6 @@
 
 package org.luckypray.dexkit.query.matchers.base
 
-import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.base.INumberEncodeValue
 import org.luckypray.dexkit.query.enums.NumberEncodeValueType
 import org.luckypray.dexkit.query.matchers.EncodeValueByte

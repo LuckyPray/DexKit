@@ -5,10 +5,10 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
-import org.luckypray.dexkit.wrap.DexMethod
 import org.luckypray.dexkit.result.base.BaseData
-import org.luckypray.dexkit.util.OpCodeUtil
 import org.luckypray.dexkit.util.InstanceUtil
+import org.luckypray.dexkit.util.OpCodeUtil
+import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -136,18 +136,18 @@ class MethodData private constructor(
     }
 
     /**
-     * Get declared annotations (not include dalvik system annotations)
+     * Get declared annotations.
      * ----------------
-     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     * 获取标注的注解列表。
      */
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getMethodAnnotations(getEncodeId(dexId, id))
     }
 
     /**
-     * Get parameter's annotations (not include dalvik system annotations)
+     * Get parameter's annotations.
      * ----------------
-     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     * 获取标注的注解列表。
      */
     fun getParamAnnotations(): List<List<AnnotationData>> {
         return bridge.getParameterAnnotations(getEncodeId(dexId, id))

@@ -32,6 +32,7 @@ internal typealias InnerEncodeValueDouble = org.luckypray.dexkit.schema.`-Encode
 internal typealias InnerEncodeValueFloat = org.luckypray.dexkit.schema.`-EncodeValueFloat`
 internal typealias InnerEncodeValueInt = org.luckypray.dexkit.schema.`-EncodeValueInt`
 internal typealias InnerEncodeValueLong = org.luckypray.dexkit.schema.`-EncodeValueLong`
+internal typealias InnerEncodeValueNull = org.luckypray.dexkit.schema.`-EncodeValueNull`
 internal typealias InnerEncodeValueShort = org.luckypray.dexkit.schema.`-EncodeValueShort`
 internal typealias InnerEncodeValueString = org.luckypray.dexkit.schema.`-EncodeValueString`
 internal typealias InnerFieldMatcher = org.luckypray.dexkit.schema.`-FieldMatcher`

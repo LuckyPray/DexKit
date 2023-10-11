@@ -93,10 +93,9 @@ class ParameterMatcher : BaseQuery() {
     }
 
     /**
-     * Add param annotation matcher. only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Add param annotation matcher.
      * ----------------
-     * 添加参数注解匹配器。仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 添加参数注解匹配器。
      *
      *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
@@ -109,10 +108,9 @@ class ParameterMatcher : BaseQuery() {
     }
 
     /**
-     * Param annotation count, only contains non-system annotations.
-     * That is, annotations that are not declared as `.annotation system` in smali.
+     * Param annotation count.
      * ----------------
-     * 参数注解数量，仅包含非系统注解。即 smali 中非 `.annotation system` 声明的注解。
+     * 参数注解数量。
      *
      * @param count annotation count / 注解数量
      * @return [ParameterMatcher]

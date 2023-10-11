@@ -16,8 +16,10 @@ import org.luckypray.dexkit.query.matchers.EncodeValueDouble
 import org.luckypray.dexkit.query.matchers.EncodeValueFloat
 import org.luckypray.dexkit.query.matchers.EncodeValueInt
 import org.luckypray.dexkit.query.matchers.EncodeValueLong
+import org.luckypray.dexkit.query.matchers.EncodeValueNull
 import org.luckypray.dexkit.query.matchers.EncodeValueShort
 import org.luckypray.dexkit.query.matchers.FieldMatcher
+import org.luckypray.dexkit.query.matchers.MethodMatcher
 
 class AnnotationEncodeValueMatcher : IQuery {
     var value: IAnnotationEncodeValue? = null
@@ -191,6 +193,21 @@ class AnnotationEncodeValueMatcher : IQuery {
     }
 
     /**
+     * Create methodValue matcher.
+     * Note: only dalvik.system type annotations contain this element.
+     * ----------------
+     * 创建 methodValue 匹配器。
+     * 注意：只有 dalvik.system 类型的注解才包含这个元素。
+     *
+     * @param value method matcher / 方法匹配器
+     * @return [AnnotationEncodeValueMatcher]
+     */
+    fun methodValue(value: MethodMatcher) = also {
+        this.value = value
+        this.type = AnnotationEncodeValueType.MethodValue
+    }
+
+    /**
      * Create enumValue matcher. The value of enum is a Field, so here use FieldMatcher.
      * ----------------
      * 创建 enumValue 匹配器。enum 的值是一个 Field，所以这里使用 FieldMatcher。
@@ -230,6 +247,20 @@ class AnnotationEncodeValueMatcher : IQuery {
     }
 
     /**
+     * Create nullValue matcher.
+     * Note: only dalvik.system type annotations contain this element.
+     * ----------------
+     * 创建 nullValue 匹配器。
+     * 注意：只有 dalvik.system 类型的注解才包含这个元素。
+     *
+     * @return [AnnotationEncodeValueMatcher]
+     */
+    fun nullValue() = also {
+        this.value = EncodeValueNull()
+        this.type = AnnotationEncodeValueType.NullValue
+    }
+
+    /**
      * Create boolValue matcher.
      * ----------------
      * 创建 boolValue 匹配器。
@@ -250,6 +281,14 @@ class AnnotationEncodeValueMatcher : IQuery {
     @kotlin.internal.InlineOnly
     inline fun classValue(init: ClassMatcher.() -> Unit) = also {
         classValue(ClassMatcher().apply(init))
+    }
+
+    /**
+     * @see methodValue
+     */
+    @kotlin.internal.InlineOnly
+    inline fun methodValue(init: MethodMatcher.() -> Unit) = also {
+        methodValue(MethodMatcher().apply(init))
     }
 
     /**

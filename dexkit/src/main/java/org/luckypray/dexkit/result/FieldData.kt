@@ -4,9 +4,9 @@ package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerFieldMeta
-import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
+import org.luckypray.dexkit.wrap.DexField
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
@@ -88,9 +88,9 @@ class FieldData private constructor(
     }
 
     /**
-     * Get declared annotations (not include dalvik system annotations)
+     * Get declared annotations.
      * ----------------
-     * 获取标注的注解列表（不包含 dalvik 系统注解）
+     * 获取标注的注解列表。
      */
     fun getAnnotations(): List<AnnotationData> {
         return bridge.getFieldAnnotations(getEncodeId(dexId, id))

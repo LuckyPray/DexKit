@@ -32,6 +32,10 @@ table EncodeValueString {
     value: string;
 }
 
+table EncodeValueNull {
+    value: byte; // must be 0
+}
+
 table EncodeValueBoolean {
     value: bool;
 }

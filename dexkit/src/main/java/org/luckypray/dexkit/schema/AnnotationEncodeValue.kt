@@ -15,9 +15,11 @@ internal class `-AnnotationEncodeValue` private constructor() {
         const val EncodeValueDouble: UByte = 7u
         const val EncodeValueString: UByte = 8u
         const val ClassMeta: UByte = 9u
-        const val FieldMeta: UByte = 10u
-        const val AnnotationEncodeArray: UByte = 11u
-        const val AnnotationMeta: UByte = 12u
-        const val EncodeValueBoolean: UByte = 13u
+        const val MethodMeta: UByte = 10u
+        const val FieldMeta: UByte = 11u
+        const val AnnotationEncodeArray: UByte = 12u
+        const val AnnotationMeta: UByte = 13u
+        const val EncodeValueNull: UByte = 14u
+        const val EncodeValueBoolean: UByte = 15u
     }
 }

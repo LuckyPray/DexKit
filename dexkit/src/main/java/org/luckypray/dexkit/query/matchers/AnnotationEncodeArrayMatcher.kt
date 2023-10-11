@@ -313,6 +313,20 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     }
 
     /**
+     * Add a method matcher to the array to be matched.
+     * Note: only dalvik.system type annotations contain this element.
+     * ----------------
+     * 向待匹配数组中添加一个已知的方法匹配器。
+     * 注意：只有 dalvik.system 类型的注解才包含此元素。
+     *
+     * @param value method matcher / 方法匹配器
+     * @return [AnnotationEncodeArrayMatcher]
+     */
+    fun addMethod(value: MethodMatcher) = also {
+        add(AnnotationEncodeValueMatcher().apply { methodValue(value) })
+    }
+
+    /**
      * Add a enum matcher to the array to be matched.
      * ----------------
      * 向待匹配数组中添加一个已知的枚举匹配器。
@@ -349,6 +363,19 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     }
 
     /**
+     * Add a EncodeNull to the array to be matched.
+     * Note: only dalvik.system type annotations contain this element.
+     * ----------------
+     * 向待匹配数组中添加一个 EncodeNull。
+     * 注意：只有 dalvik.system 类型的注解才包含此元素。
+     *
+     * @return [AnnotationEncodeArrayMatcher]
+     */
+    fun addNull() = also {
+        add(AnnotationEncodeValueMatcher().apply { nullValue() })
+    }
+
+    /**
      * Add a boolean to the array to be matched.
      * ----------------
      * 向待匹配数组中添加一个已知的布尔值。
@@ -376,6 +403,14 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     @kotlin.internal.InlineOnly
     inline fun addClass(init: ClassMatcher.() -> Unit) = also {
         addClass(ClassMatcher().apply(init))
+    }
+
+    /**
+     * @see addMethod
+     */
+    @kotlin.internal.InlineOnly
+    inline fun addMethod(init: MethodMatcher.() -> Unit) = also {
+        addMethod(MethodMatcher().apply(init))
     }
 
     /**
