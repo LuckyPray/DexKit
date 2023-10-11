@@ -10,18 +10,11 @@
 
 namespace dexkit {
 
-// must init before use
-const uint32_t kString = 0x0001;
-const uint32_t kClass = 0x0002;
-const uint32_t kField = 0x0004;
-const uint32_t kMethod = 0x0008;
-
-const uint32_t kInterface = 0x0010;
-const uint32_t kClassField = 0x0020;
-const uint32_t kClassMethod = 0x0040;
-
 // optional init
-const uint32_t kAnnotation = 0x0080;
+const uint32_t kClassAnnotation = 0x0010;
+const uint32_t kFieldAnnotation = 0x0020;
+const uint32_t kMethodAnnotation = 0x0040;
+const uint32_t kParamAnnotation = 0x0080;
 
 // code
 const uint32_t kUsingString = 0x0100;

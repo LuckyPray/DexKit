@@ -154,14 +154,20 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (matcher == nullptr) {
         return true;
     }
+    if (annotation == nullptr) {
+        return false;
+    }
     if (!IsClassMatched(annotation->type->orig_index, matcher->type())) {
         return false;
     }
-    auto type_annotations = this->class_annotations[annotation->type->orig_index];
+    auto m_class_annotations = this->class_annotations[annotation->type->orig_index];
     if (matcher->target_element_types() || (uint8_t) matcher->policy()) {
+        if (m_class_annotations == nullptr) {
+            return false;
+        }
         ir::Annotation *retention_annotation = nullptr;
         ir::Annotation *target_annotation = nullptr;
-        for (auto ann: type_annotations) {
+        for (auto ann: m_class_annotations->annotations) {
             if (ann->type->orig_index == this->annotation_retention_class_id) {
                 retention_annotation = ann;
             } else if (ann->type->orig_index == this->annotation_target_class_id) {
@@ -208,11 +214,11 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     return true;
 }
 
-bool DexItem::IsAnnotationsMatched(const std::vector<ir::Annotation *> &annotationSet, const schema::AnnotationsMatcher *matcher) {
+bool DexItem::IsAnnotationsMatched(const ir::AnnotationSet *annotationSet, const schema::AnnotationsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
-    auto annotation_set_size = annotationSet.size();
+    auto annotation_set_size = annotationSet == nullptr ? 0 : annotationSet->annotations.size();
     if (matcher->annotation_count()) {
         if (annotation_set_size < matcher->annotation_count()->min()
         || annotation_set_size > matcher->annotation_count()->max()) {
@@ -238,13 +244,13 @@ bool DexItem::IsAnnotationsMatched(const std::vector<ir::Annotation *> &annotati
         if (annotation_matches.size() > annotation_set_size) {
             return false;
         }
-        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotationSet, annotation_matches, IsAnnotationMatched);
+        Hungarian<ir::Annotation *, const schema::AnnotationMatcher *> hungarian(annotationSet->annotations, annotation_matches, IsAnnotationMatched);
         auto count = hungarian.solve();
         if (count != annotation_matches.size()) {
             return false;
         }
         if (matcher->match_type() == schema::MatchType::Equal) {
-            if (count != annotationSet.size()) {
+            if (count != annotation_set_size) {
                 return false;
             }
         }

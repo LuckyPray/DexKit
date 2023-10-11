@@ -216,7 +216,11 @@ void DexItem::InitCache(uint32_t init_flags) {
     bool need_method_invoking = init_flags & kMethodInvoking && (dex_flag & kMethodInvoking) == 0;
     bool need_method_caller = init_flags & kCallerMethod && (dex_flag & kCallerMethod) == 0;
     bool need_field_rw_method = init_flags & kRwFieldMethod && (dex_flag & kRwFieldMethod) == 0;
-    bool need_annotation = init_flags & kAnnotation && (dex_flag & kAnnotation) == 0;
+    bool need_class_annotation = init_flags & kClassAnnotation && (dex_flag & kClassAnnotation) == 0;
+    bool need_field_annotation = init_flags & kFieldAnnotation && (dex_flag & kFieldAnnotation) == 0;
+    bool need_method_annotation = init_flags & kMethodAnnotation && (dex_flag & kMethodAnnotation) == 0;
+    bool need_param_annotation = init_flags & kParamAnnotation && (dex_flag & kParamAnnotation) == 0;
+    bool need_annotation = need_class_annotation || need_field_annotation || need_method_annotation || need_param_annotation;
     bool need_method_using_number = init_flags & kUsingNumber && (dex_flag & kUsingNumber) == 0;
 
     if (need_op_seq) {
@@ -346,42 +350,55 @@ void DexItem::InitCache(uint32_t init_flags) {
     }
 
     if (need_annotation) {
-        class_annotations.resize(reader.TypeIds().size());
-        field_annotations.resize(reader.FieldIds().size());
-        method_annotations.resize(reader.MethodIds().size());
-        method_parameter_annotations.resize(reader.MethodIds().size());
+        if (need_class_annotation) {
+            class_annotations.resize(reader.TypeIds().size());
+        }
+        if (need_field_annotation) {
+            field_annotations.resize(reader.FieldIds().size());
+        }
+        if (need_method_annotation) {
+            method_annotations.resize(reader.MethodIds().size());
+        }
+        if (need_param_annotation) {
+            method_parameter_annotations.resize(reader.MethodIds().size());
+        }
+
         for (auto &class_def: reader.ClassDefs()) {
             if (class_def.annotations_off == 0) {
                 continue;
             }
-            auto annotations = reader.ExtractAnnotations(class_def.annotations_off);
-            if (annotations->class_annotation) {
-                auto &class_annotation = class_annotations[class_def.class_idx];
-                for (auto &annotation: annotations->class_annotation->annotations) {
-                    class_annotation.emplace_back(annotation);
-                }
+            auto dex_annotations = reader.dataPtr<dex::AnnotationsDirectoryItem>(class_def.annotations_off);
+            if (need_class_annotation) {
+                class_annotations[class_def.class_idx] = reader.ExtractAnnotationSet(dex_annotations->class_annotations_off);
             }
-            for (auto value: annotations->field_annotations) {
-                auto &field_annotation = field_annotations[value->field_decl->orig_index];
-                for (auto &annotation: value->annotations->annotations) {
-                    field_annotation.emplace_back(annotation);
+            auto *ptr = reinterpret_cast<const dex::u1 *>(dex_annotations + 1);
+            if (need_field_annotation) {
+                for (dex::u4 i = 0; i < dex_annotations->fields_size; ++i) {
+                    auto dex_field_annotation = reinterpret_cast<const dex::FieldAnnotationsItem *>(ptr);
+                    field_annotations[dex_field_annotation->field_idx] = reader.ExtractAnnotationSet(dex_field_annotation->annotations_off);
+                    ptr += sizeof(dex::FieldAnnotationsItem);
                 }
+            } else {
+                ptr += dex_annotations->fields_size * sizeof(dex::FieldAnnotationsItem);
             }
-            for (auto value: annotations->method_annotations) {
-                auto &method_annotation = method_annotations[value->method_decl->orig_index];
-                for (auto &annotation: value->annotations->annotations) {
-                    method_annotation.emplace_back(annotation);
+            if (need_method_annotation) {
+                for (dex::u4 i = 0; i < dex_annotations->methods_size; ++i) {
+                    auto dex_method_annotation = reinterpret_cast<const dex::MethodAnnotationsItem *>(ptr);
+                    method_annotations[dex_method_annotation->method_idx] = reader.ExtractAnnotationSet(dex_method_annotation->annotations_off);
+                    ptr += sizeof(dex::MethodAnnotationsItem);
                 }
+            } else {
+                ptr += dex_annotations->methods_size * sizeof(dex::MethodAnnotationsItem);
             }
-            for (auto value: annotations->param_annotations) {
-                auto &method_parameter_annotation = method_parameter_annotations[value->method_decl->orig_index];
-                for (auto &annotation: value->annotations->annotations) {
-                    std::vector<ir::Annotation *> ann_vec;
-                    ann_vec.reserve(annotation->annotations.size());
-                    for (auto &parameter_annotation: annotation->annotations) {
-                        ann_vec.emplace_back(parameter_annotation);
+            if (need_param_annotation) {
+                for (dex::u4 i = 0; i < dex_annotations->parameters_size; ++i) {
+                    auto dex_parameter_annotation = reinterpret_cast<const dex::ParameterAnnotationsItem *>(ptr);
+                    auto dex_annotation_set_ref_list = reader.dataPtr<dex::AnnotationSetRefList>(dex_parameter_annotation->annotations_off);
+                    for (dex::u4 j = 0; j < dex_annotation_set_ref_list->size; ++j) {
+                        auto dex_annotation_set_ref_item = dex_annotation_set_ref_list->list[j];
+                        method_parameter_annotations[dex_parameter_annotation->method_idx].emplace_back(reader.ExtractAnnotationSet(dex_annotation_set_ref_item.annotations_off));
                     }
-                    method_parameter_annotation.emplace_back(ann_vec);
+                    ptr += sizeof(dex::ParameterAnnotationsItem);
                 }
             }
         }
@@ -661,7 +678,7 @@ DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
     }
     auto annotationSet = this->class_annotations[class_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet) {
+    for (auto annotation: annotationSet->annotations) {
         AnnotationBean bean = GetAnnotationBean(annotation);
         beans.emplace_back(std::move(bean));
     }
@@ -697,7 +714,7 @@ DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
     }
     auto annotationSet = this->method_annotations[method_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet) {
+    for (auto annotation: annotationSet->annotations) {
         AnnotationBean bean = GetAnnotationBean(annotation);
         beans.emplace_back(std::move(bean));
     }
@@ -733,7 +750,7 @@ DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
     }
     auto annotationSet = this->field_annotations[field_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet) {
+    for (auto annotation: annotationSet->annotations) {
         AnnotationBean bean = GetAnnotationBean(annotation);
         beans.emplace_back(std::move(bean));
     }
@@ -746,7 +763,7 @@ DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
     std::vector<std::vector<AnnotationBean>> beans;
     for (auto &annotationSet: param_annotations) {
         std::vector<AnnotationBean> annotationBeans;
-        for (auto annotation: annotationSet) {
+        for (auto annotation: annotationSet->annotations) {
             AnnotationBean bean = GetAnnotationBean(annotation);
             annotationBeans.emplace_back(std::move(bean));
         }

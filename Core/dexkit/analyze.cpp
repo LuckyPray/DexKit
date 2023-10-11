@@ -26,19 +26,18 @@ AnalyzeRet Analyze(const schema::ClassMatcher *matcher, int dex_depth) {
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->annotations()) {
+        ret.need_flags |= kClassAnnotation;
         // class 的注解必定存在于本 dex 中
         auto result = Analyze(matcher->annotations(), dex_depth);
         ret.need_flags |= result.need_flags;
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->fields()) {
-        ret.need_flags |= kClassField;
         auto result = Analyze(matcher->fields(), dex_depth);
         ret.need_flags |= result.need_flags;
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->methods()) {
-        ret.need_flags |= kClassMethod;
         auto result = Analyze(matcher->methods(), dex_depth);
         ret.need_flags |= result.need_flags;
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
@@ -65,6 +64,7 @@ AnalyzeRet Analyze(const schema::FieldMatcher *matcher, int dex_depth) {
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->annotations()) {
+        ret.need_flags |= kFieldAnnotation;
         // field 的注解必定存在于本 dex 中
         auto result = Analyze(matcher->annotations(), dex_depth);
         ret.need_flags |= result.need_flags;
@@ -115,6 +115,7 @@ AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth) {
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->annotations()) {
+        ret.need_flags |= kMethodAnnotation;
         // method 的注解必定存在于本 dex 中
         auto result = Analyze(matcher->annotations(), dex_depth);
         ret.need_flags |= result.need_flags;
@@ -157,7 +158,7 @@ AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth) {
 
 AnalyzeRet Analyze(const schema::AnnotationEncodeArrayMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
-    AnalyzeRet ret{.need_flags = kAnnotation};
+    AnalyzeRet ret{};
     if (matcher->values()) {
         for (auto i = 0; i < matcher->values()->size(); ++i) {
             auto type = matcher->values_type()->Get(i);
@@ -196,7 +197,7 @@ AnalyzeRet Analyze(const schema::AnnotationEncodeArrayMatcher *matcher, int dex_
 
 AnalyzeRet Analyze(const schema::AnnotationElementMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
-    AnalyzeRet ret{.need_flags = kAnnotation};
+    AnalyzeRet ret{};
     if (matcher->value()) {
         switch (matcher->value_type()) {
             case schema::AnnotationEncodeValueMatcher::ClassMatcher: {
@@ -232,7 +233,7 @@ AnalyzeRet Analyze(const schema::AnnotationElementMatcher *matcher, int dex_dept
 
 AnalyzeRet Analyze(const schema::AnnotationElementsMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
-    AnalyzeRet ret{.need_flags = kAnnotation};
+    AnalyzeRet ret{};
     if (matcher->elements()) {
         for (auto i = 0; i < matcher->elements()->size(); ++i) {
             auto result = Analyze(matcher->elements()->Get(i), dex_depth);
@@ -245,7 +246,7 @@ AnalyzeRet Analyze(const schema::AnnotationElementsMatcher *matcher, int dex_dep
 
 AnalyzeRet Analyze(const schema::AnnotationMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
-    AnalyzeRet ret{.need_flags = kAnnotation};
+    AnalyzeRet ret{};
     if (matcher->type()) {
         auto result = Analyze(matcher->type(), dex_depth + 1);
         ret.need_flags |= result.need_flags;
@@ -261,7 +262,7 @@ AnalyzeRet Analyze(const schema::AnnotationMatcher *matcher, int dex_depth) {
 
 AnalyzeRet Analyze(const schema::AnnotationsMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
-    AnalyzeRet ret{.need_flags = kAnnotation};
+    AnalyzeRet ret{};
     if (matcher->annotations()) {
         for (auto i = 0; i < matcher->annotations()->size(); ++i) {
             auto result = Analyze(matcher->annotations()->Get(i), dex_depth);
@@ -274,7 +275,7 @@ AnalyzeRet Analyze(const schema::AnnotationsMatcher *matcher, int dex_depth) {
 
 AnalyzeRet Analyze(const schema::InterfacesMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
-    AnalyzeRet ret{.need_flags = kInterface};
+    AnalyzeRet ret{};
     if (matcher->interfaces()) {
         for (auto i = 0; i < matcher->interfaces()->size(); ++i) {
             auto result = Analyze(matcher->interfaces()->Get(i), dex_depth);
@@ -322,6 +323,7 @@ AnalyzeRet Analyze(const schema::ParameterMatcher *matcher, int dex_depth) {
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->annotations()) {
+        ret.need_flags |= kParamAnnotation;
         auto result = Analyze(matcher->annotations(), dex_depth);
         ret.need_flags |= result.need_flags;
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
