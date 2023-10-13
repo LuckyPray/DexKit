@@ -43,17 +43,17 @@ class NumberEncodeValueMatcher {
      * ----------------
      * 设置待匹配的数值。
      * 
-     * @param value number / 数字
+     * @param number number / 数字
      * @return [NumberEncodeValueMatcher]
      */
-    fun value(value: Number) = also {
-        when (value) {
-            is Byte -> byteValue(value)
-            is Short -> shortValue(value)
-            is Int -> intValue(value)
-            is Long -> longValue(value)
-            is Float -> floatValue(value)
-            is Double -> doubleValue(value)
+    fun value(number: Number) = also {
+        when (number) {
+            is Byte -> byteValue(number)
+            is Short -> shortValue(number)
+            is Int -> intValue(number)
+            is Long -> longValue(number)
+            is Float -> floatValue(number)
+            is Double -> doubleValue(number)
         }
     }
 

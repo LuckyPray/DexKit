@@ -4,29 +4,44 @@ package org.luckypray.dexkit.query
 
 import org.luckypray.dexkit.query.base.IQuery
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.query.matchers.FieldMatcher
 import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
-import org.luckypray.dexkit.result.ClassData
-import org.luckypray.dexkit.result.FieldData
-import org.luckypray.dexkit.result.MethodData
 
 class StringMatcherList : ArrayList<StringMatcher>, IQuery {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<StringMatcher>): super(elements)
 
+    /**
+     * Add using string.
+     * ----------------
+     * 添加使用字符串。
+     *
+     *     addUsingString("string", StringMatchType.Equals, false)
+     *
+     * @param usingString using string / 使用字符串
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [StringMatcherList]
+     */
     @JvmOverloads
     fun add(
-        value: String,
+        usingString: String,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
     ) = also {
-        add(StringMatcher(value, matchType, ignoreCase))
+        add(StringMatcher(usingString, matchType, ignoreCase))
     }
 
+    /**
+     * Add [StringMatcher].
+     * ----------------
+     * 添加 [StringMatcher]。
+     */
     @kotlin.internal.InlineOnly
     inline fun add(init: StringMatcher.() -> Unit) = also {
         add(StringMatcher().apply(init))
@@ -38,10 +53,18 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<FieldMatcher>): super(elements)
 
-    fun add(init: FieldMatcher.() -> Unit) = also {
-        add(FieldMatcher().apply(init))
-    }
-
+    /**
+     * Add class field type matcher.
+     * ----------------
+     * 添加类字段的类型的匹配器。
+     *
+     *     addForType("org.luckypray.dexkit.demo.Annotation", StringMatchType.Equals, false)
+     *
+     * @param typeName field type name / 字段类型名
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [ClassMatcher]
+     */
     @JvmOverloads
     fun addForType(
         typeName: String,
@@ -51,8 +74,30 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
         add(FieldMatcher().apply { type(typeName, matchType, ignoreCase) })
     }
 
-    fun addForName(name: String) = also {
-        add(FieldMatcher().apply { name(name) })
+    /**
+     * Add class field name matcher.
+     * ----------------
+     * 添加类字段的名的匹配器。
+     *
+     *     addField("field", false)
+     *
+     * @param name field name / 字段名
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [ClassMatcher]
+     */
+    @JvmOverloads
+    fun addForName(name: String, ignoreCase: Boolean = false) = also {
+        add(FieldMatcher().apply { name(name, ignoreCase) })
+    }
+
+    /**
+     * Add [FieldMatcher].
+     * ----------------
+     * 添加 [FieldMatcher]。
+     */
+    @kotlin.internal.InlineOnly
+    inline fun add(init: FieldMatcher.() -> Unit) = also {
+        add(FieldMatcher().apply(init))
     }
 }
 
@@ -61,6 +106,11 @@ class UsingFieldMatcherList : ArrayList<UsingFieldMatcher>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<UsingFieldMatcher>): super(elements)
 
+    /**
+     * Add [UsingFieldMatcher].
+     * ----------------
+     * 添加 [UsingFieldMatcher]。
+     */
     @kotlin.internal.InlineOnly
     inline fun add(init: UsingFieldMatcher.() -> Unit) = also {
         add(UsingFieldMatcher().apply(init))
@@ -72,41 +122,102 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<NumberEncodeValueMatcher>): super(elements)
 
-    fun add(value: Number) = also {
-        when (value) {
-            is Byte -> addByte(value)
-            is Short -> addShort(value)
-            is Int -> addInt(value)
-            is Long -> addLong(value)
-            is Float -> addFloat(value)
-            is Double -> addDouble(value)
+    /**
+     * add number to be matched.
+     * ----------------
+     * 添加待匹配的数字。
+     *
+     * @param number number / 数字
+     * @return [NumberEncodeValueMatcherList]
+     */
+    fun add(number: Number) = also {
+        when (number) {
+            is Byte -> addByte(number)
+            is Short -> addShort(number)
+            is Int -> addInt(number)
+            is Long -> addLong(number)
+            is Float -> addFloat(number)
+            is Double -> addDouble(number)
         }
     }
 
+    /**
+     * add byteValue to be matched.
+     * ----------------
+     * 添加待匹配的 byteValue。
+     *
+     * @param value byteValue / 字节
+     * @return [NumberEncodeValueMatcherList]
+     */
     fun addByte(value: Byte) = also {
         add(NumberEncodeValueMatcher.createByte(value))
     }
 
+    /**
+     * add shortValue to be matched.
+     * ----------------
+     * 添加待匹配的 shortValue。
+     *
+     * @param value shortValue / 短整型
+     * @return [NumberEncodeValueMatcherList]
+     */
     fun addShort(value: Short) = also {
         add(NumberEncodeValueMatcher.createShort(value))
     }
 
+    /**
+     * add intValue to be matched.
+     * ----------------
+     * 添加待匹配的 intValue。
+     *
+     * @param value intValue / 整型
+     * @return [NumberEncodeValueMatcherList]
+     */
     fun addInt(value: Int) = also {
         add(NumberEncodeValueMatcher.createInt(value))
     }
 
+    /**
+     * add longValue to be matched.
+     * ----------------
+     * 添加待匹配的 longValue。
+     *
+     * @param value longValue / 长整型
+     * @return [NumberEncodeValueMatcherList]
+     */
     fun addLong(value: Long) = also {
         add(NumberEncodeValueMatcher.createLong(value))
     }
 
+    /**
+     * add floatValue to be matched.
+     * ----------------
+     * 添加待匹配的 floatValue。
+     *
+     * @param value floatValue / 单精度浮点型
+     * @return [NumberEncodeValueMatcherList]
+     */
     fun addFloat(value: Float) = also {
         add(NumberEncodeValueMatcher.createFloat(value))
     }
 
+    /**
+     * add doubleValue to be matched.
+     * ----------------
+     * 添加待匹配的 doubleValue。
+     *
+     * @param value doubleValue / 双精度浮点型
+     * @return [NumberEncodeValueMatcherList]
+     */
     fun addDouble(value: Double) = also {
         add(NumberEncodeValueMatcher.createDouble(value))
     }
 
+    /**
+     * Add [NumberEncodeValueMatcher].
+     * ----------------
+     * 添加 [NumberEncodeValueMatcher]。
+     */
     @kotlin.internal.InlineOnly
     inline fun add(init: NumberEncodeValueMatcher.() -> Unit) = also {
         add(NumberEncodeValueMatcher().apply(init))
@@ -118,6 +229,17 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<StringMatchersGroup>): super(elements)
 
+    /**
+     * add a string matchers group.
+     * ----------------
+     * 添加一个字符串匹配器分组。
+     *
+     * @param groupName group name / 分组名称
+     * @param usingStrings using strings / 使用的字符串
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [StringMatchersGroupList]
+     */
     fun add(
         groupName: String,
         usingStrings: Collection<String>,
@@ -127,6 +249,15 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
         add(StringMatchersGroup(groupName, usingStrings.map { StringMatcher(it, matchType, ignoreCase) }))
     }
 
+    /**
+     * add a string matchers group.
+     * ----------------
+     * 添加一个字符串匹配器分组。
+     *
+     * @param groupName group name / 分组名称
+     * @param init init / 初始化
+     * @return [StringMatchersGroupList]
+     */
     @kotlin.internal.InlineOnly
     inline fun add(
         groupName: String,
@@ -135,85 +266,14 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
         add(StringMatchersGroup(groupName, StringMatcherList().apply(init)))
     }
 
+    /**
+     * Add [StringMatchersGroup].
+     * ----------------
+     * 添加 [StringMatchersGroup]。
+     */
     @kotlin.internal.InlineOnly
     inline fun add(init: StringMatchersGroup.() -> Unit) = also {
         add(StringMatchersGroup().apply(init))
     }
 }
 
-class ClassDataList : ArrayList<ClassData>, IQuery {
-    constructor(): super()
-    constructor(initialCapacity: Int): super(initialCapacity)
-    constructor(elements: Collection<ClassData>): super(elements)
-
-    fun findClass(findClass: FindClass): ClassDataList {
-        if (isEmpty()) return ClassDataList()
-        val bridge = first().getBridge()
-        findClass.searchInClass(this)
-        return bridge.findClass(findClass)
-    }
-
-    @kotlin.internal.InlineOnly
-    inline fun findClass(init: FindClass.() -> Unit): ClassDataList {
-        return findClass(FindClass().apply(init))
-    }
-
-    fun findMethod(findMethod: FindMethod): MethodDataList {
-        if (isEmpty()) return MethodDataList()
-        val bridge = first().getBridge()
-        findMethod.searchInClass(this)
-        return bridge.findMethod(findMethod)
-    }
-
-    @kotlin.internal.InlineOnly
-    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
-        return findMethod(FindMethod().apply(init))
-    }
-
-    fun findField(findField: FindField): FieldDataList {
-        if (isEmpty()) return FieldDataList()
-        val bridge = first().getBridge()
-        findField.searchInClass(this)
-        return bridge.findField(findField)
-    }
-
-    @kotlin.internal.InlineOnly
-    inline fun findField(init: FindField.() -> Unit): FieldDataList {
-        return findField(FindField().apply(init))
-    }
-}
-
-class MethodDataList : ArrayList<MethodData>, IQuery {
-    constructor(): super()
-    constructor(initialCapacity: Int): super(initialCapacity)
-    constructor(elements: Collection<MethodData>): super(elements)
-
-    fun findMethod(findMethod: FindMethod): MethodDataList {
-        if (isEmpty()) return MethodDataList()
-        val bridge = first().getBridge()
-        findMethod.searchInMethod(this)
-        return bridge.findMethod(findMethod)
-    }
-
-    @kotlin.internal.InlineOnly
-    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
-        return findMethod(FindMethod().apply(init))
-    }
-}
-
-class FieldDataList : ArrayList<FieldData>, IQuery {
-    constructor(): super()
-    constructor(initialCapacity: Int): super(initialCapacity)
-    constructor(elements: Collection<FieldData>): super(elements)
-    fun findField(findField: FindField): FieldDataList {
-        if (isEmpty()) return FieldDataList()
-        val bridge = first().getBridge()
-        findField.searchInField(this)
-        return bridge.findField(findField)
-    }
-
-    @kotlin.internal.InlineOnly
-    inline fun findField(init: FindField.() -> Unit): FieldDataList {
-        return findField(FindField().apply(init))
-    }
-}
