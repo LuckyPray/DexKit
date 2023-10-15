@@ -24,5 +24,6 @@ jobs:
           TARGET_BRANCH: docs
           BUILD_SCRIPT: |
             git config --global --add safe.directory "*" \
-            && cd doc-source && npm install --global yarn && yarn && yarn docs:dev
+            && cd doc-source && npm install --global yarn \
+            && yarn -i && yarn docs:build
           BUILD_DIR: ../docs
