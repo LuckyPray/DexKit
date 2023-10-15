@@ -133,6 +133,12 @@ public class PlayActivity extends AppCompatActivity {
 ```java
 public class MainHook implements IXposedHookLoadPackage {
     
+    static {
+        System.loadLibrary("dexkit");
+    }
+    
+    private ClassLoader hostClassLoader;
+    
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         String packageName = loadPackageParam.packageName;
@@ -140,40 +146,37 @@ public class MainHook implements IXposedHookLoadPackage {
         if (!packageName.equals("org.luckypray.dexkit.demo")) {
             return;
         }
-        // need minSdkVersion >= 23
-        System.loadLibrary("dexkit");
-        //
-        // !!! 切记使用完成后调用 bridge.close() 释放内存 !!!
-        //
-        // 或者使用 try-with-resources 语法
-        //
-        // Example:
-        //     try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
-        //         // bridge.findClass(...)
-        //         // bridge.findMethod(...)
-        //         // bridge.findField(...)
-        //     }
-        // 
-        DexKitBridge bridge = DexKitBridge.create(apkPath);
-        bridge.findClass(FindClass.create()
-            // 从指定的包名范围内进行查找
+        this.hostClassLoader = loadPackageParam.classLoader;
+        try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+            findPlayActivity(bridge);
+            // Other use cases
+        }
+    }
+    
+    private void findPlayActivity(DexKitBridge bridge) {
+        ClassData classData = bridge.findClass(FindClass.create()
+            // 指定搜索的包名范围
             .searchPackages("org.luckypray.dexkit.demo")
             // 排除指定的包名范围
             .excludePackages("org.luckypray.dexkit.demo.annotations")
             .matcher(ClassMatcher.create()
                 // ClassMatcher 针对类的匹配器
                 .className("org.luckypray.dexkit.demo.PlayActivity")
-                // FieldsMatcher 针对类中包含属性的匹配器
+                // FieldsMatcher 针对类中包含字段的匹配器
                 .fields(FieldsMatcher.create()
-                    // 添加对于属性的匹配器
+                    // 添加对于字段的匹配器
                     .add(FieldMatcher.create()
+                        // 指定字段的修饰符
                         .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
+                        // 指定字段的类型
                         .type("java.lang.String")
+                        // 指定字段的名称
                         .name("TAG")
                     )
+                    // 添加指定字段的类型的字段匹配器
                     .addForType("android.widget.TextView")
                     .addForType("android.os.Handler")
-                    // 指定类中属性的数量
+                    // 指定类中字段的数量
                     .count(3)
                 )
                 // MethodsMatcher 针对类中包含方法的匹配器
@@ -181,45 +184,61 @@ public class MainHook implements IXposedHookLoadPackage {
                     // 添加对于方法的匹配器
                     .methods(List.of(
                         MethodMatcher.create()
+                            // 指定方法的修饰符
                             .modifiers(Modifier.PROTECTED)
+                            // 指定方法的名称
                             .name("onCreate")
+                            // 指定方法的返回值类型
                             .returnType("void")
+                            // 指定方法的参数类型，如果参数类型不确定，使用 null，使用此方法会隐式声明参数个数
                             .paramTypes("android.os.Bundle")
+                            // 指定方法中使用的字符串
                             .usingStrings("onCreate"),
                         MethodMatcher.create()
                             .paramTypes("android.view.View")
+                            // 指定方法中使用的数字，类型为 Byte, Short, Int, Long, Float, Double 之一
                             .usingNumbers(0.01, -1, 0.987, 0, 114514),
                         MethodMatcher.create()
                             .modifiers(Modifier.PUBLIC)
                             .paramTypes("boolean")
+                            // 指定方法中调用的方法列表
+                            .invokeMethods(MethodsMatcher.create()
+                                .add(MethodMatcher.create()
+                                    .modifiers(Modifier.PUBLIC | Modifier.STATIC)
+                                    .returnType("int")
+                                    // 指定方法中调用的方法中使用的字符串，所有字符串均使用 Equals 匹配
+                                    .usingStrings(List.of("getRandomDice: "), StringMatchType.Equals)
+                                )
+                                // 只需要包含上述方法的调用即可
+                                .matchType(MatchType.Contains)
+                            )
                     ))
                     // 指定类中方法的数量，最少不少于1个，最多不超过10个
                     .count(1, 10)
                 )
                 // AnnotationsMatcher 针对类中包含注解的匹配器
                 .annotations(AnnotationsMatcher.create()
+                    // 添加对于注解的匹配器
                     .add(AnnotationMatcher.create()
+                        // 指定注解的类型
                         .type("org.luckypray.dexkit.demo.annotations.Router")
-                        .addElement(
-                            AnnotationElementMatcher.create()
-                                .name("path")
-                                .stringValue("/play")
+                        // 该注解需要包含指定的 element
+                        .addElement(AnnotationElementMatcher.create()
+                            // 指定 element 的名称
+                            .name("path")
+                            // 指定 element 的值
+                            .stringValue("/play")
                         )
                     )
                 )
                 // 类中所有方法使用的字符串
                 .usingStrings("PlayActivity", "onClick", "onCreate")
             )
-        ).forEach(classData -> {
-            // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-            System.out.println(classData.getName());
-            // 获取对应的类实例
-            Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
-        });
-        //
-        // !!! native 缓存一定要释放，避免内存泄漏 !!!
-        //
-        bridge.close();
+        ).firstOrThrow(() -> new IllegalStateException("No class found"));
+        // 打印找到的类：org.luckypray.dexkit.demo.PlayActivity
+        System.out.println(classData.getName());
+        // 获取对应的类实例
+        Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
     }
 }
 ```
@@ -232,92 +251,112 @@ public class MainHook implements IXposedHookLoadPackage {
 ```kotlin
 class MainHook : IXposedHookLoadPackage {
     
-    override fun handleLoadPackage(loadPackageParam: LoadPackageParam) {
+    companion object {
+        init {
+            System.loadLibrary("dexkit")
+        }
+    }
+
+    private lateinit var hostClassLoader: ClassLoader
+    
+    override fun handleLoadPackage(loadPackageParam: XC_LoadPackage.LoadPackageParam) {
         val packageName = loadPackageParam.packageName
         val apkPath = loadPackageParam.appInfo.sourceDir
         if (!packageName.equals("org.luckypray.dexkit.demo")) {
             return
         }
-        // need minSdkVersion >= 23
-        System.loadLibrary("dexkit")
-        //
-        // !!! 切记使用完成后调用 bridge.close() 释放内存 !!!
-        //
-        // 或者使用 Kotlin 的扩展函数 `Closeable.use {}` 自动释放内存
-        //
-        // Example:
-        //     DexKitBridge.create(apkPath).use { bridge ->
-        //         // bridge.findClass { ... }
-        //         // bridge.findMethod { ... }
-        //         // bridge.findField { ... }
-        //     }
-        // 
-        val bridge = DexKitBridge.create(apkPath)
-            ?: throw NullPointerException("DexKitBridge.create() failed")
-        bridge.findClass {
-            // 从指定的包名范围内进行查找
-            searchPackages = listOf("org.luckypray.dexkit.demo")
+        this.hostClassLoader = loadPackageParam.classLoader
+        DexKitBridge.create(apkPath)?.use { bridge ->
+            findPlayActivity(bridge)
+            // Other use cases
+        }
+    }
+
+    private fun findPlayActivity(bridge: DexKitBridge) {
+        val classData = bridge.findClass {
+            // 指定搜索的包名范围
+            searchPackages("org.luckypray.dexkit.demo")
             // 排除指定的包名范围
-            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
+            excludePackages("org.luckypray.dexkit.demo.annotations")
             // ClassMatcher 针对类的匹配器
             matcher {
-                className = "org.luckypray.dexkit.demo.PlayActivity"
-                // FieldsMatcher 针对类中包含属性的匹配器
+                // FieldsMatcher 针对类中包含字段的匹配器
                 fields {
-                    // 添加对于属性的匹配器
+                    // 添加对于字段的匹配器
                     add {
-                        modifiers(Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL)
-                        type("java.lang.String")
-                        name("TAG")
+                        // 指定字段的修饰符
+                        modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
+                        // 指定字段的类型
+                        type = "java.lang.String"
+                        // 指定字段的名称
+                        name = "TAG"
                     }
+                    // 添加指定字段的类型的字段匹配器
                     addForType("android.widget.TextView")
                     addForType("android.os.Handler")
-                    // 指定类中属性的数量
+                    // 指定类中字段的数量
                     count = 3
                 }
                 // MethodsMatcher 针对类中包含方法的匹配器
                 methods {
                     // 添加对于方法的匹配器
                     add {
+                        // 指定方法的修饰符
                         modifiers = Modifier.PROTECTED
+                        // 指定方法的名称
                         name = "onCreate"
+                        // 指定方法的返回值类型
                         returnType = "void"
-                        paramTypes = listOf("android.os.Bundle")
-                        usingStrings = listOf("onCreate")
+                        // 指定方法的参数类型，如果参数类型不确定，使用 null，使用此方法会隐式声明参数个数
+                        paramTypes("android.os.Bundle")
+                        // 指定方法中使用的字符串
+                        usingStrings("onCreate")
                     }
                     add {
-                        paramTypes = listOf("android.view.View")
-                        usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
+                        paramTypes("android.view.View")
+                        // 指定方法中使用的数字，类型为 Byte, Short, Int, Long, Float, Double 之一
+                        usingNumbers(0.01, -1, 0.987, 0, 114514)
                     }
                     add {
-                        paramTypes = listOf("boolean")
+                        paramTypes("boolean")
+                        // 指定方法中调用的方法列表
+                        invokeMethods {
+                            add {
+                                modifiers = Modifier.PUBLIC or Modifier.STATIC
+                                returnType = "int"
+                                // 指定方法中调用的方法中使用的字符串，所有字符串均使用 Equals 匹配
+                                usingStrings(listOf("getRandomDice: "), StringMatchType.Equals)
+                            }
+                            // 只需要包含上述方法的调用即可
+                            matchType = MatchType.Contains
+                        }
                     }
                     // 指定类中方法的数量，最少不少于1个，最多不超过10个
                     count(1..10)
                 }
                 // AnnotationsMatcher 针对类中包含注解的匹配器
                 annotations {
+                    // 添加对于注解的匹配器
                     add {
+                        // 指定注解的类型
                         type = "org.luckypray.dexkit.demo.annotations.Router"
+                        // 该注解需要包含指定的 element
                         addElement {
+                            // 指定 element 的名称
                             name = "path"
+                            // 指定 element 的值
                             stringValue("/play")
                         }
                     }
                 }
                 // 类中所有方法使用的字符串
-                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
+                usingStrings("PlayActivity", "onClick", "onCreate")
             }
-        }.forEach {
-            // 打印查找到的类: org.luckypray.dexkit.demo.PlayActivity
-            println(it.name)
-            // 获取对应的类实例
-            val clazz = it.getInstance(loadPackageParam.classLoader)
-        }
-        //
-        // !!! native 缓存一定要释放，避免内存泄漏 !!!
-        //
-        bridge.close()
+        }.firstOrNull() ?: error("Not found class")
+        // 打印找到的类：org.luckypray.dexkit.demo.PlayActivity
+        println(classData.name)
+        // Get the corresponding class instance
+        val clazz = classData.getInstance(loadPackageParam.classLoader)
     }
 }
 ```
@@ -326,8 +365,9 @@ class MainHook : IXposedHookLoadPackage {
 
 ### 使用文档
 
-- [点击此处]() 文档正在编写中，可能需要一段时间
-- [DexKit API KDoc]() 文档正在编写中，可能需要一段时间
+- [点击此处](https://luckypray.org/DexKit/zh-cn/)进入文档页面查看更详细的教程。
+- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) 基于源码注释生成的 KDoc（类似于 JavaDoc）。
+  但是更推荐使用 IDEA 等 IDE 在开发时查看源码内注释。
 
 ## 第三方开源引用
 

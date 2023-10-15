@@ -139,6 +139,12 @@ At this point, to obtain this class, you can use the following code:
 ```java
 public class MainHook implements IXposedHookLoadPackage {
     
+    static {
+        System.loadLibrary("dexkit");
+    }
+    
+    private ClassLoader hostClassLoader;
+    
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         String packageName = loadPackageParam.packageName;
@@ -146,86 +152,99 @@ public class MainHook implements IXposedHookLoadPackage {
         if (!packageName.equals("org.luckypray.dexkit.demo")) {
             return;
         }
-        // need minSdkVersion >= 23
-        System.loadLibrary("dexkit");
-        //
-        // !!! Remember to call bridge.close() after use to release the memory !!!
-        //
-        // or use try-with-resources
-        //
-        // Example:
-        //     try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
-        //         // bridge.findClass(...);
-        //         // bridge.findMethod(...);
-        //         // bridge.findField(...);
-        //     }
-        // 
-        DexKitBridge bridge = DexKitBridge.create(apkPath);
-        bridge.findClass(FindClass.create()
+        this.hostClassLoader = loadPackageParam.classLoader;
+        try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
+            findPlayActivity(bridge);
+            // Other use cases
+        }
+    }
+    
+    private void findPlayActivity(DexKitBridge bridge) {
+        ClassData classData = bridge.findClass(FindClass.create()
             // Search within the specified package name range
             .searchPackages("org.luckypray.dexkit.demo")
             // Exclude the specified package name range
             .excludePackages("org.luckypray.dexkit.demo.annotations")
             .matcher(ClassMatcher.create()
-                // ClassMatcher for class matching
+                // ClassMatcher Matcher for classes
                 .className("org.luckypray.dexkit.demo.PlayActivity")
-                // FieldsMatcher for matching properties within the class
+                // FieldsMatcher Matcher for fields in a class
                 .fields(FieldsMatcher.create()
-                    // Add a matcher for properties
+                    // Add a matcher for the field
                     .add(FieldMatcher.create()
+                        // Specify the modifiers of the field
                         .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
+                        // Specify the type of the field
                         .type("java.lang.String")
+                        // Specify the name of the field
                         .name("TAG")
                     )
+                    // Add a matcher for the field of the specified type
                     .addForType("android.widget.TextView")
                     .addForType("android.os.Handler")
-                    // Specify the number of properties in the class
+                    // Specify the number of fields in the class
                     .count(3)
                 )
-                // MethodsMatcher for matching methods within the class
+                // MethodsMatcher Matcher for methods in a class
                 .methods(MethodsMatcher.create()
-                    // Add a matcher for methods
+                    // Add a matcher for the method
                     .methods(List.of(
                         MethodMatcher.create()
+                            // Specify the modifiers of the method
                             .modifiers(Modifier.PROTECTED)
+                            // Specify the name of the method
                             .name("onCreate")
+                            // Specify the return type of the method
                             .returnType("void")
+                            // Specify the parameter type of the method
                             .paramTypes("android.os.Bundle")
+                            // Specify the strings used by the method
                             .usingStrings("onCreate"),
                         MethodMatcher.create()
                             .paramTypes("android.view.View")
+                            // Specify the numbers used in the method, the type is Byte, Short, Int, Long, Float, Double
                             .usingNumbers(0.01, -1, 0.987, 0, 114514),
                         MethodMatcher.create()
                             .modifiers(Modifier.PUBLIC)
                             .paramTypes("boolean")
+                            // Specify the methods called in the method list
+                            .invokeMethods(MethodsMatcher.create()
+                                .add(MethodMatcher.create()
+                                    .modifiers(Modifier.PUBLIC | Modifier.STATIC)
+                                    .returnType("int")
+                                    // Specify the strings used in the method called in the method,
+                                    .usingStrings(List.of("getRandomDice: "), StringMatchType.Equals)
+                                )
+                                // Only need to contain the call to the above method
+                                .matchType(MatchType.Contains)
+                            )
                     ))
                     // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                     .count(1, 10)
                 )
-                // AnnotationsMatcher for matching annotations within the class
+                // AnnotationsMatcher Matcher for annotations in a class
                 .annotations(AnnotationsMatcher.create()
+                    // Add a matcher for the annotation
                     .add(AnnotationMatcher.create()
+                        // Specify the type of the annotation
                         .type("org.luckypray.dexkit.demo.annotations.Router")
-                        .addElement(
-                            AnnotationElementMatcher.create()
-                                .name("path")
-                                .stringValue("/play")
+                        // The annotation needs to contain the specified element
+                        .addElement(AnnotationElementMatcher.create()
+                            // Specify the name of the element
+                            .name("path")
+                            // Specify the value of the element
+                            .stringValue("/play")
                         )
                     )
                 )
                 // Strings used by all methods in the class
                 .usingStrings("PlayActivity", "onClick", "onCreate")
             )
-        ).forEach(classData -> {
-            // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            System.out.println(classData.getName());
-            // Get the corresponding class instance
-            Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
-        });
-        //
-        // The native cache must be released, avoid memory leaks !!!
-        //
-        bridge.close();
+        ).firstOrThrow(() -> new IllegalStateException("No class found"));
+        // Print the found class: org.luckypray.dexkit.demo.PlayActivity
+        System.out.println(classData.getName());
+        // Get the corresponding class instance
+        Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
     }
 }
 ```
@@ -238,93 +257,112 @@ public class MainHook implements IXposedHookLoadPackage {
 ```kotlin
 class MainHook : IXposedHookLoadPackage {
     
-    override fun handleLoadPackage(loadPackageParam: LoadPackageParam) {
+    companion object {
+        init {
+            System.loadLibrary("dexkit")
+        }
+    }
+
+    private lateinit var hostClassLoader: ClassLoader
+
+    override fun handleLoadPackage(loadPackageParam: XC_LoadPackage.LoadPackageParam) {
         val packageName = loadPackageParam.packageName
         val apkPath = loadPackageParam.appInfo.sourceDir
-        if (packageName != "org.luckypray.dexkit.demo") {
+        if (!packageName.equals("org.luckypray.dexkit.demo")) {
             return
         }
-        // need minSdkVersion >= 23
-        System.loadLibrary("dexkit")
-        //
-        // !!! Remember to call bridge.close() after use to release the memory !!!
-        //
-        // or use Kotlin extension function `Closeable.use { ... }` to automatically release memory
-        //
-        // Example:
-        //     DexKitBridge.create(demoApk.absolutePath).use { bridge ->
-        //         // bridge.findClass { ... }
-        //         // bridge.findMethod { ... }
-        //         // bridge.findField { ... }
-        //     }
-        //
-        val bridge = DexKitBridge.create(apkPath) 
-            ?: throw NullPointerException("DexKitBridge.create() failed")
-        bridge.findClass {
+        this.hostClassLoader = loadPackageParam.classLoader
+        DexKitBridge.create(apkPath)?.use { bridge ->
+            findPlayActivity(bridge)
+            // Other use cases
+        }
+    }
+
+    private fun findPlayActivity(bridge: DexKitBridge) {
+        val classData = bridge.findClass {
             // Search within the specified package name range
-            searchPackages = listOf("org.luckypray.dexkit.demo")
+            searchPackages("org.luckypray.dexkit.demo")
             // Exclude the specified package name range
-            excludePackages = listOf("org.luckypray.dexkit.demo.annotations")
-            // ClassMatcher for class matching
+            excludePackages("org.luckypray.dexkit.demo.annotations")
+            // ClassMatcher Matcher for classes
             matcher {
-                className = "org.luckypray.dexkit.demo.PlayActivity"
-                // FieldsMatcher for matching properties within the class
+                // FieldsMatcher Matcher for fields in a class
                 fields {
-                    // Add a matcher for properties
+                    // Add a matcher for the field
                     add {
+                        // Specify the modifiers of the field
                         modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
+                        // Specify the type of the field
                         type = "java.lang.String"
+                        // Specify the name of the field
                         name = "TAG"
                     }
+                    // Add a matcher for the field of the specified type
                     addForType("android.widget.TextView")
                     addForType("android.os.Handler")
-                    // Specify the number of properties in the class
+                    // Specify the number of fields in the class
                     count = 3
                 }
-                // MethodsMatcher for matching methods within the class
+                // MethodsMatcher Matcher for methods in a class
                 methods {
-                    // Add a matcher for methods
+                    // Add a matcher for the method
                     add {
+                        // Specify the modifiers of the method
                         modifiers = Modifier.PROTECTED
+                        // Specify the name of the method
                         name = "onCreate"
+                        // Specify the return type of the method
                         returnType = "void"
-                        paramTypes = listOf("android.os.Bundle")
-                        usingStrings = listOf("onCreate")
+                        // Specify the parameter types of the method, if the parameter types are uncertain,
+                        // use null, and this method will implicitly declare the number of parameters
+                        paramTypes("android.os.Bundle")
+                        // Specify the strings used in the method
+                        usingStrings("onCreate")
                     }
                     add {
-                        paramTypes = listOf("android.view.View")
-                        usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
+                        paramTypes("android.view.View")
+                        // Specify the numbers used in the method, the type is Byte, Short, Int, Long, Float, Double
+                        usingNumbers(0.01, -1, 0.987, 0, 114514)
                     }
                     add {
-                        modifiers = Modifier.PUBLIC
-                        paramTypes = listOf("boolean")
+                        paramTypes("boolean")
+                        // Specify the methods called in the method list
+                        invokeMethods {
+                            add {
+                                modifiers = Modifier.PUBLIC or Modifier.STATIC
+                                returnType = "int"
+                                // Specify the strings used in the method called in the method,
+                                usingStrings(listOf("getRandomDice: "), StringMatchType.Equals)
+                            }
+                            // Only need to contain the call to the above method
+                            matchType = MatchType.Contains
+                        }
                     }
-                    // Specify the number of methods in the class, a minimum of 1, and a maximum of 10
                     count(1..10)
                 }
-                // AnnotationsMatcher for matching annotations within the class
+                // AnnotationsMatcher Matcher for annotations in a class
                 annotations {
+                    // Add a matcher for the annotation
                     add {
+                        // Specify the type of the annotation
                         type = "org.luckypray.dexkit.demo.annotations.Router"
+                        // The annotation needs to contain the specified element
                         addElement {
+                            // Specify the name of the element
                             name = "path"
+                            // Specify the value of the element
                             stringValue("/play")
                         }
                     }
                 }
                 // Strings used by all methods in the class
-                usingStrings = listOf("PlayActivity", "onClick", "onCreate")
+                usingStrings("PlayActivity", "onClick", "onCreate")
             }
-        }.forEach {
-            // Print the found class: org.luckypray.dexkit.demo.PlayActivity
-            println(it.name)
-            // Get the corresponding class instance
-            val clazz = it.getInstance(loadPackageParam.classLoader)
-        }
-        //
-        // The native cache must be released, avoid memory leaks !!!
-        //
-        bridge.close()
+        }.firstOrNull() ?: error("Not found class")
+        // Print the found class: org.luckypray.dexkit.demo.PlayActivity
+        println(classData.name)
+        // Get the corresponding class instance
+        val clazz = classData.getInstance(loadPackageParam.classLoader)
     }
 }
 ```
@@ -333,8 +371,9 @@ class MainHook : IXposedHookLoadPackage {
 
 ### Documentation
 
-- [Click here]() Documentation is currently being written and might take some time.
-- [DexKit API KDoc]() Documentation is currently being written and might take some time.
+- [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
+- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) is a KDoc (similar to JavaDoc) generated from source code comments.
+  However, it is recommended to use an IDE such as IDEA to view source code comments during development.
 
 ## Third-Party Open Source References
 
