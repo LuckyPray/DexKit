@@ -1,4 +1,4 @@
-name: Document Build and Deploy
+name: Vuepress Document Deploy
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - '.github/workflows/docs-deploy.yml'
 
 jobs:
-  build-and-deploy:
+  vuepress-doc-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,5 +24,5 @@ jobs:
           TARGET_BRANCH: docs
           BUILD_SCRIPT: |
             git config --global --add safe.directory "*" \
-            && cd doc-source && npm install && npm run docs:build
+            && cd doc-source && npm install --global yarn && yarn && yarn docs:dev
           BUILD_DIR: ../docs

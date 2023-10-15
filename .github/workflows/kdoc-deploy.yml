@@ -9,7 +9,7 @@ on:
       - '.github/workflows/kdoc-deploy.yml'
 
 jobs:
-  build:
+  KDoc-deploy:
     runs-on: ubuntu-latest
 
     steps:
