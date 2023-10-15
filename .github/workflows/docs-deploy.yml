@@ -8,6 +8,9 @@ on:
       - 'doc-source/**'
       - '.github/workflows/docs-deploy.yml'
 
+permissions:
+  contents: write
+
 jobs:
   vuepress-doc-deploy:
     runs-on: ubuntu-latest
@@ -24,6 +27,5 @@ jobs:
           TARGET_BRANCH: docs
           BUILD_SCRIPT: |
             git config --global --add safe.directory "*" \
-            && cd doc-source && npm install --global yarn \
-            && yarn -i && yarn docs:build
+            && cd doc-source && yarn && yarn docs:build
           BUILD_DIR: ../docs
