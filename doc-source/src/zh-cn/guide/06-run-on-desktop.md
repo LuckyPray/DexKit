@@ -18,7 +18,7 @@ pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
 安装完成后，我们需要将 `mingw64/bin` 目录添加进环境变量中便于后续使用。
 
 ::: warning warning
-DexKit 默认将使用 `ninja` 作为默认构建系统，如果你需要在 mingw 中使用 `make` 进行构建， 需要执行 
+DexKit 默认将使用 `ninja` 作为默认构建系统，如果您需要在 mingw 中使用 `make` 进行构建， 需要执行 
 `pacman -S mingw-w64-x86_64-make`，安装完成后需要将 `msys64\mingw64\bin\mingw32-make.exe`
 重命名为 `make.exe` 或者添加为快捷方式，否则会由于 `gradle-cmake-plugin` 找不到 `make` 命令而构建失败。
 同时删除 `:dexkit/build.gradle` 中的 `generator.set(generators.ninja)` ，或者修改为 
