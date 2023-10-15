@@ -69,7 +69,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
      * @param elements elements / 元素列表
      * @return [AnnotationEncodeArrayMatcher]
      */
-    fun matchers(elements: Collection<AnnotationEncodeValueMatcher>) = also {
+    fun values(elements: Collection<AnnotationEncodeValueMatcher>) = also {
         this.encodeValuesMatcher = elements.toMutableList()
     }
 

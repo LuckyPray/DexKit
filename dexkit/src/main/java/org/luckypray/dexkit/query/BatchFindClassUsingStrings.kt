@@ -151,11 +151,11 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * ----------------
      * 查找所有使用指定字符串的类。
      *
-     * @param matchers string matchers group / 字符串匹配器分组
+     * @param groups string matchers group / 字符串匹配器分组
      * @return [BatchFindClassUsingStrings]
      */
-    fun matchers(matchers: Collection<StringMatchersGroup>) = also {
-        this.searchGroups = matchers.toMutableList()
+    fun groups(groups: Collection<StringMatchersGroup>) = also {
+        this.searchGroups = groups.toMutableList()
     }
 
     /**
@@ -175,7 +175,7 @@ class BatchFindClassUsingStrings : BaseQuery() {
      * @return [BatchFindClassUsingStrings]
      */
     @JvmOverloads
-    fun matchers(
+    fun groups(
         keywordsMap: Map<String, Collection<String>>,
         matchType: StringMatchType = StringMatchType.Contains,
         ignoreCase: Boolean = false
@@ -222,8 +222,8 @@ class BatchFindClassUsingStrings : BaseQuery() {
     // region DSL
 
     @kotlin.internal.InlineOnly
-    inline fun matchers(init: StringMatchersGroupList.() -> Unit) = also {
-        matchers(StringMatchersGroupList().apply(init))
+    inline fun groups(init: StringMatchersGroupList.() -> Unit) = also {
+        groups(StringMatchersGroupList().apply(init))
     }
 
     @kotlin.internal.InlineOnly

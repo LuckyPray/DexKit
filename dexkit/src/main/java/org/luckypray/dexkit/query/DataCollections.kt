@@ -78,7 +78,7 @@ class ClassDataList : BaseDataList<ClassData> {
     fun findClass(findClass: FindClass): ClassDataList {
         if (isEmpty()) return ClassDataList()
         val bridge = first().getBridge()
-        findClass.searchInClass(this)
+        findClass.searchIn(this)
         return bridge.findClass(findClass)
     }
 

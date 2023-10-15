@@ -46,7 +46,7 @@ class UsingFieldMatcher : BaseQuery() {
      * @param matcher field / 字段
      * @return [UsingFieldMatcher]
      */
-    fun matcher(matcher: FieldMatcher) = also {
+    fun field(matcher: FieldMatcher) = also {
         this.matcher = matcher
     }
 
@@ -65,11 +65,11 @@ class UsingFieldMatcher : BaseQuery() {
     // region DSL
 
     /**
-     * @see matcher
+     * @see field
      */
     @kotlin.internal.InlineOnly
-    inline fun matcher(init: FieldMatcher.() -> Unit) = also {
-        matcher(FieldMatcher().apply(init))
+    inline fun field(init: FieldMatcher.() -> Unit) = also {
+        field(FieldMatcher().apply(init))
     }
 
     // endregion

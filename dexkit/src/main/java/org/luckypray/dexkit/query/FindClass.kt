@@ -149,7 +149,7 @@ class FindClass : BaseQuery() {
      * @param classes search classes / 类列表
      * @return [FindClass]
      */
-    fun searchInClass(classes: Collection<ClassData>) = also {
+    fun searchIn(classes: Collection<ClassData>) = also {
         this.searchClasses = classes
     }
 

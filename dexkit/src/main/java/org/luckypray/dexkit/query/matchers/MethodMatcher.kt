@@ -839,7 +839,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     fun addUsingField(usingField: FieldMatcher, usingType: UsingType = UsingType.Any) = also {
         usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
         usingFieldsMatcher!!.add(UsingFieldMatcher().apply {
-            matcher(usingField)
+            field(usingField)
             usingType(usingType)
         })
     }
@@ -859,7 +859,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     fun addUsingField(fieldDescriptor: String, usingType: UsingType = UsingType.Any) = also {
         usingFieldsMatcher = usingFieldsMatcher ?: mutableListOf()
         usingFieldsMatcher!!.add(UsingFieldMatcher().apply {
-            matcher(FieldMatcher(fieldDescriptor))
+            field(FieldMatcher(fieldDescriptor))
             usingType(usingType)
         })
     }
