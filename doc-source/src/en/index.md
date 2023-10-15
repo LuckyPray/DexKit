@@ -56,9 +56,7 @@ needed to prevent memory leaks.
 ```kotlin
 class AppHooker {
     companion object {
-        init {
-            System.loadLibrary("dexkit")
-        }
+        init { System.loadLibrary("dexkit") }
     }
 
     private var hostClassLoader: ClassLoader

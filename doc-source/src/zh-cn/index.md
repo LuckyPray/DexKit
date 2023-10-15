@@ -53,9 +53,7 @@ DexKit 可以轻松解决这个问题！
 ```kotlin
 class AppHooker {
     companion object {
-        init {
-            System.loadLibrary("dexkit")
-        }
+        init { System.loadLibrary("dexkit") }
     }
     
     private var hostClassLoader: ClassLoader
