@@ -27,5 +27,5 @@ jobs:
           TARGET_BRANCH: docs
           BUILD_SCRIPT: |
             git config --global --add safe.directory "*" \
-            && cd doc-source && yarn && yarn docs:build
+            && cd doc-source && yarn -i --network-timeout 1000000000 && yarn docs:build
           BUILD_DIR: ../docs

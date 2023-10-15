@@ -3,10 +3,10 @@
   "license": "LGPL-3.0-or-later",
   "devDependencies": {
     "@mr-hope/vuepress-plugin-copy-code": "^1.30.0",
-    "@vuepress/plugin-prismjs": "^2.0.0-beta.67",
-    "@vuepress/plugin-search": "^2.0.0-beta.67",
-    "@vuepress/plugin-shiki": "^2.0.0-beta.67",
-    "vuepress": "^2.0.0-beta.67"
+    "@vuepress/plugin-prismjs": "2.0.0-beta.67",
+    "@vuepress/plugin-search": "2.0.0-beta.67",
+    "@vuepress/plugin-shiki": "2.0.0-beta.67",
+    "vuepress": "2.0.0-beta.67"
   },
   "scripts": {
     "docs:dev": "vuepress dev src",
