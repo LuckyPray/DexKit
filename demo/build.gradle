@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "org.luckypray.dexkit.demo"
-        minSdk 24
+        minSdk 21
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -27,9 +27,16 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging false
+        }
+    }
 }
 
 dependencies {
+    compileOnly 'de.robv.android.xposed:api:82'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
+    implementation 'org.luckypray:dexkit:2.0.0-rc6'
 }
