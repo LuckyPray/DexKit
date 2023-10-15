@@ -128,4 +128,4 @@ class AppHooker {
 :::
 ::::
 
-How about that? Isn't it easy!
+It's that simple!
