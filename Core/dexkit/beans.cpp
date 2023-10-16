@@ -71,6 +71,17 @@ FieldBean::CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     return field_meta;
 }
 
+flatbuffers::Offset<schema::UsingFieldMeta>
+UsingFieldBean::CreateUsingFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const {
+    auto using_field_meta = schema::CreateUsingFieldMeta(
+            fbb,
+            this->field.CreateFieldMeta(fbb),
+            this->is_getting ? schema::UsingType::Get : schema::UsingType::Put
+    );
+    fbb.Finish(using_field_meta);
+    return using_field_meta;
+}
+
 flatbuffers::Offset<schema::AnnotationEncodeValueMeta> // NOLINTNEXTLINE
 AnnotationEncodeValueBean::CreateAnnotationEncodeValueMeta(flatbuffers::FlatBufferBuilder &fbb) const {
     using namespace schema;

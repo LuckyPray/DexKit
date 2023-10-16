@@ -35,10 +35,12 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.MethodDataList
+import org.luckypray.dexkit.query.enums.UsingType
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import org.luckypray.dexkit.result.AnnotationData
+import org.luckypray.dexkit.result.UsingFieldData
 import org.luckypray.dexkit.util.DexSignUtil
 import java.io.Closeable
 import java.lang.reflect.Constructor
@@ -536,6 +538,17 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
+    internal inline fun getMethodUsingFields(encodeId: Long): List<UsingFieldData> {
+        val res = nativeGetMethodUsingFields(safeToken, encodeId)
+        val holder = InnerUsingFieldMetaArrayHolder.getRootAsUsingFieldMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = mutableListOf<UsingFieldData>()
+        for (i in 0 until holder.itemsLength) {
+            list.add(UsingFieldData.from(this@DexKitBridge, holder.items(i)!!))
+        }
+        return list
+    }
+
+    @kotlin.internal.InlineOnly
     internal inline fun readFieldMethods(encodeId: Long): List<MethodData> {
         val res = nativeFieldGetMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
@@ -683,6 +696,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetMethodUsingStrings(nativePtr: Long, encodeId: Long): Array<String>
+
+        @JvmStatic
+        private external fun nativeGetMethodUsingFields(nativePtr: Long, encodeId: Long): ByteArray
 
         @JvmStatic
         private external fun nativeFieldGetMethods(nativePtr: Long, encodeId: Long): ByteArray

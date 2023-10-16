@@ -114,3 +114,12 @@ table BatchMethodMeta {
 table BatchMethodMetaArrayHolder {
     items: [BatchMethodMeta];
 }
+
+table UsingFieldMeta {
+    field: FieldMeta;
+    using_type: UsingType;
+}
+
+table UsingFieldMetaArrayHolder {
+    items: [UsingFieldMeta];
+}

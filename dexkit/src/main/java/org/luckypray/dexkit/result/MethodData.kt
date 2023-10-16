@@ -26,6 +26,7 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
+import org.luckypray.dexkit.query.enums.UsingType
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
 import org.luckypray.dexkit.util.OpCodeUtil
@@ -217,6 +218,15 @@ class MethodData private constructor(
      */
     fun getUsingStrings(): List<String> {
         return bridge.getMethodUsingStrings(getEncodeId(dexId, id))
+    }
+
+    /**
+     * Get method using fields
+     * ----------------
+     * 获取该方法使用的字段列表
+     */
+    fun getUsingFields(): List<UsingFieldData> {
+        return bridge.getMethodUsingFields(getEncodeId(dexId, id))
     }
 
     /**

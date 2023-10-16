@@ -360,18 +360,6 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     }
 
     /**
-     * Add a array matcher to the array to be matched.
-     * ----------------
-     * 向待匹配数组中添加一个已知的数组匹配器。
-     *
-     * @param value array matcher / 数组匹配器
-     * @return [AnnotationEncodeArrayMatcher]
-     */
-    fun addArray(value: AnnotationEncodeArrayMatcher) = also {
-        add(AnnotationEncodeValueMatcher().apply { arrayValue(value) })
-    }
-
-    /**
      * Add a annotation matcher to the array to be matched.
      * ----------------
      * 向待匹配数组中添加一个已知的注解匹配器。
@@ -440,14 +428,6 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     @kotlin.internal.InlineOnly
     inline fun addEnum(init: FieldMatcher.() -> Unit) = also {
         addEnum(FieldMatcher().apply(init))
-    }
-
-    /**
-     * @see addArray
-     */
-    @kotlin.internal.InlineOnly
-    inline fun addArray(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
-        addArray(AnnotationEncodeArrayMatcher().apply(init))
     }
 
     /**

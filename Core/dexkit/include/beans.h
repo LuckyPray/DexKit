@@ -73,6 +73,16 @@ public:
     CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const;
 };
 
+class UsingFieldBean {
+public:
+    FieldBean field;
+    bool is_getting;
+
+public:
+    flatbuffers::Offset<schema::UsingFieldMeta>
+    CreateUsingFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const;
+};
+
 class AnnotationBean;
 class AnnotationElementBean;
 class AnnotationEncodeArrayBean;

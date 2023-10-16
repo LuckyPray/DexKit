@@ -575,6 +575,77 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
     return 0;
 }
 
+int DexKitFindMethodUsingAnnotationTest(dexkit::DexKit &dexkit) {
+    printf("-----------DexKitFindMethodUsingAnnotationTest Start-----------\n");
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto find = CreateFindMethod(
+            fbb, 0, 0, false, 0, 0, false,
+            CreateMethodMatcher(
+                    fbb,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    CreateAnnotationsMatcher(
+                            fbb,
+                            fbb.CreateVector(std::vector<flatbuffers::Offset<AnnotationMatcher>>{
+                                    CreateAnnotationMatcher(
+                                            fbb,
+                                            0,
+                                            0,
+                                            dexkit::schema::RetentionPolicyType::Any,
+                                            0,
+                                            fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("Ljava/lang/Boolean;"),
+                                                            StringMatchType::Contains
+                                                    ),
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("("),
+                                                            StringMatchType::Equal
+                                                    ),
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString("Lkotlin/jvm/functions/Function0<"),
+                                                            StringMatchType::Contains
+                                                    ),
+                                                    CreateStringMatcher(
+                                                            fbb,
+                                                            fbb.CreateString(">;)V"),
+                                                            StringMatchType::Contains
+                                                    ),
+                                            })
+                                    ),
+                            })
+                    )
+            )
+    );
+    fbb.Finish(find);
+
+    auto buf = fbb.GetBufferPointer();
+    auto query = From<FindMethod>(buf);
+    printf("build query: %p, size: %d\n", query, fbb.GetSize());
+    auto builder = dexkit.FindMethod(query);
+    auto buffer = builder->GetBufferPointer();
+    auto size = builder->GetSize();
+    printf("buffer size: %d\n", size);
+
+    auto result = From<MethodMetaArrayHolder>(buffer);
+    if (result->methods()) {
+        printf("result->methods()->size() = %d\n", result->methods()->size());
+        for (int i = 0; i < result->methods()->size(); ++i) {
+            auto item = result->methods()->Get(i);
+            printf("dex: %02d, idx: %d, method: %s\n",
+                   item->dex_id(), item->id(), item->dex_descriptor()->string_view().data());
+        }
+    }
+    return 0;
+}
+
 int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
     printf("-----------DexKitFindMethodInvoking Start-----------\n");
 
@@ -1198,8 +1269,8 @@ int DexKitFindDyClassUsingStrings(dexkit::DexKit &dexkit) {
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/dy_27.0.0.apk");
-//    dexkit.SetThreadNum(32);
+    auto dexkit = dexkit::DexKit("../apks/QQ_8.9.70_clone.apk");
+//    dexkit.SetThreadNum(1);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
     std::cout << "unzip and init base cache used time: " << now_ms1.count() - now_ms.count() << " ms" << std::endl;
@@ -1219,12 +1290,13 @@ int main() {
 //    DexKitFindMethodInvoking(dexkit);
 //    DexKitFindMethodCaller(dexkit);
 //    DexKitFindClassUsingAnnotationTest(dexkit);
+    DexKitFindMethodUsingAnnotationTest(dexkit);
 //    DexKitPackageTest(dexkit);
 //    DexKitFindParameterTypeArray(dexkit);
 //    DexKitFindFieldTest(dexkit);
 //    DexKitFindMethodUsingNumbers(dexkit);
 //    DexKitFindDyClassTest(dexkit);
-    DexKitFindDyClassUsingStrings(dexkit);
+//    DexKitFindDyClassUsingStrings(dexkit);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

@@ -172,6 +172,7 @@ public:
     std::vector<MethodBean> GetCallMethods(uint32_t method_idx);
     std::vector<MethodBean> GetInvokeMethods(uint32_t method_idx);
     std::vector<std::string_view> GetUsingStrings(uint32_t method_idx);
+    std::vector<UsingFieldBean> GetUsingFields(uint32_t method_idx);
     std::vector<MethodBean> FieldGetMethods(uint32_t field_idx);
     std::vector<MethodBean> FieldPutMethods(uint32_t field_idx);
 

@@ -869,6 +869,18 @@ std::vector<std::string_view> DexItem::GetUsingStrings(uint32_t method_idx) {
     return using_strings;
 }
 
+std::vector<UsingFieldBean> DexItem::GetUsingFields(uint32_t method_idx) {
+    auto &method_using_fields = this->method_using_field_ids[method_idx];
+    std::vector<UsingFieldBean> using_fields;
+    for (auto [method_id, is_getting]: method_using_fields) {
+        UsingFieldBean bean;
+        bean.field = GetFieldBean(method_id);
+        bean.is_getting = is_getting;
+        using_fields.emplace_back(bean);
+    }
+    return using_fields;
+}
+
 std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
     auto &method_ids = this->field_get_method_ids[field_idx];
     std::vector<MethodBean> beans;

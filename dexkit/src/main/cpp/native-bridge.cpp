@@ -672,6 +672,23 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingStrings(JNIEnv *env, 
 }
 
 DEXKIT_JNI jbyteArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingFields(JNIEnv *env, jclass clazz,
+                                                                   jlong native_ptr,
+                                                                   jlong encode_method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetUsingFields(encode_method_id);
+    auto buf_ptr = result->GetBufferPointer();
+    auto buf_size = result->GetSize();
+    jbyteArray ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
+    result->Release();
+    return ret;
+}
+
+DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeFieldGetMethods(JNIEnv *env, jclass clazz,
                                                              jlong native_ptr,
                                                              jlong encode_field_id) {
