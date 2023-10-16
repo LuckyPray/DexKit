@@ -438,11 +438,11 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      *
      *     params(ParametersMatcher().add(ParameterMatcher().type("int[]")))
      *
-     * @param parameters method parameter types matcher / 方法参数类型匹配器
+     * @param params method parameter types matcher / 方法参数类型匹配器
      * @return [MethodMatcher]
      */
-    fun params(parameters: ParametersMatcher) = also {
-        this.paramsMatcher = parameters
+    fun params(params: ParametersMatcher) = also {
+        this.paramsMatcher = params
     }
 
     /**

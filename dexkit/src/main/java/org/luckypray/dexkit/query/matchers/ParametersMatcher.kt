@@ -29,7 +29,7 @@ import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class ParametersMatcher : BaseQuery() {
-    var parametersMatcher: MutableList<ParameterMatcher?>? = null
+    var paramsMatcher: MutableList<ParameterMatcher?>? = null
         private set
     var rangeMatcher: IntRange? = null
         private set
@@ -53,11 +53,11 @@ class ParametersMatcher : BaseQuery() {
      * ----------------
      * 要匹配的参数列表。列表长度暗含了参数数量。
      *
-     * @param parameters parameters / 参数列表
+     * @param params parameters / 参数列表
      * @return [ParametersMatcher]
      */
-    fun params(parameters: Collection<ParameterMatcher?>) = also {
-        this.parametersMatcher = parameters.toMutableList()
+    fun params(params: Collection<ParameterMatcher?>) = also {
+        this.paramsMatcher = params.toMutableList()
     }
 
     /**
@@ -142,8 +142,8 @@ class ParametersMatcher : BaseQuery() {
      * @return [ParametersMatcher]
      */
     fun add(matcher: ParameterMatcher?) = also {
-        parametersMatcher = parametersMatcher ?: mutableListOf()
-        parametersMatcher!!.add(matcher)
+        paramsMatcher = paramsMatcher ?: mutableListOf()
+        paramsMatcher!!.add(matcher)
     }
 
     // region DSL
@@ -166,7 +166,7 @@ class ParametersMatcher : BaseQuery() {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         val root = InnerParametersMatcher.createParametersMatcher(
             fbb,
-            parametersMatcher?.map { it?.build(fbb) ?: ParameterMatcher().build(fbb) }?.toIntArray()
+            paramsMatcher?.map { it?.build(fbb) ?: ParameterMatcher().build(fbb) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             rangeMatcher?.build(fbb) ?: 0
         )

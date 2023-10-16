@@ -26,7 +26,6 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.ClassDataList
-import org.luckypray.dexkit.query.enums.UsingType
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
 import org.luckypray.dexkit.util.OpCodeUtil
@@ -43,7 +42,7 @@ class MethodData private constructor(
     val modifiers: Int,
     val descriptor: String,
     val returnTypeId: Int,
-    val parameterTypeIds: List<Int>
+    val paramTypeIds: List<Int>
 ) : BaseData(bridge) {
 
     internal companion object `-Companion` {
@@ -145,7 +144,7 @@ class MethodData private constructor(
      * 获取参数类型的 [ClassDataList]
      */
     fun getParameterTypes(): ClassDataList {
-        return bridge.getTypeByIds(parameterTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
+        return bridge.getTypeByIds(paramTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
     /**
