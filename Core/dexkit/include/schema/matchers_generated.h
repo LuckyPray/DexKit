@@ -857,7 +857,8 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
     VT_TYPE = 4,
     VT_TARGET_ELEMENT_TYPES = 6,
     VT_POLICY = 8,
-    VT_ELEMENTS = 10
+    VT_ELEMENTS = 10,
+    VT_USING_STRINGS = 12
   };
   const dexkit::schema::ClassMatcher *type() const {
     return GetPointer<const dexkit::schema::ClassMatcher *>(VT_TYPE);
@@ -871,6 +872,9 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   const dexkit::schema::AnnotationElementsMatcher *elements() const {
     return GetPointer<const dexkit::schema::AnnotationElementsMatcher *>(VT_ELEMENTS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_USING_STRINGS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_TYPE) &&
@@ -880,6 +884,9 @@ struct AnnotationMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
            VerifyField<int8_t>(verifier, VT_POLICY, 1) &&
            VerifyOffset(verifier, VT_ELEMENTS) &&
            verifier.VerifyTable(elements()) &&
+           VerifyOffset(verifier, VT_USING_STRINGS) &&
+           verifier.VerifyVector(using_strings()) &&
+           verifier.VerifyVectorOfTables(using_strings()) &&
            verifier.EndTable();
   }
 };
@@ -900,6 +907,9 @@ struct AnnotationMatcherBuilder {
   void add_elements(::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements) {
     fbb_.AddOffset(AnnotationMatcher::VT_ELEMENTS, elements);
   }
+  void add_using_strings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings) {
+    fbb_.AddOffset(AnnotationMatcher::VT_USING_STRINGS, using_strings);
+  }
   explicit AnnotationMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -916,8 +926,10 @@ inline ::flatbuffers::Offset<AnnotationMatcher> CreateAnnotationMatcher(
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type = 0,
     ::flatbuffers::Offset<dexkit::schema::TargetElementTypesMatcher> target_element_types = 0,
     dexkit::schema::RetentionPolicyType policy = dexkit::schema::RetentionPolicyType::Any,
-    ::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements = 0) {
+    ::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings = 0) {
   AnnotationMatcherBuilder builder_(_fbb);
+  builder_.add_using_strings(using_strings);
   builder_.add_elements(elements);
   builder_.add_target_element_types(target_element_types);
   builder_.add_type(type);
@@ -929,6 +941,23 @@ struct AnnotationMatcher::Traits {
   using type = AnnotationMatcher;
   static auto constexpr Create = CreateAnnotationMatcher;
 };
+
+inline ::flatbuffers::Offset<AnnotationMatcher> CreateAnnotationMatcherDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type = 0,
+    ::flatbuffers::Offset<dexkit::schema::TargetElementTypesMatcher> target_element_types = 0,
+    dexkit::schema::RetentionPolicyType policy = dexkit::schema::RetentionPolicyType::Any,
+    ::flatbuffers::Offset<dexkit::schema::AnnotationElementsMatcher> elements = 0,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings = nullptr) {
+  auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
+  return dexkit::schema::CreateAnnotationMatcher(
+      _fbb,
+      type,
+      target_element_types,
+      policy,
+      elements,
+      using_strings__);
+}
 
 struct AnnotationsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AnnotationsMatcherBuilder Builder;

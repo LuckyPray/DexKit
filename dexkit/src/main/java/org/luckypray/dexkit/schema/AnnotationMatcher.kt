@@ -69,6 +69,19 @@ internal class `-AnnotationMatcher` : Table() {
             null
         }
     }
+    fun usingStrings(j: Int) : `-StringMatcher`? = usingStrings(`-StringMatcher`(), j)
+    fun usingStrings(obj: `-StringMatcher`, j: Int) : `-StringMatcher`? {
+        val o = __offset(12)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val usingStringsLength : Int
+        get() {
+            val o = __offset(12); return if (o != 0) __vector_len(o) else 0
+        }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsAnnotationMatcher(_bb: ByteBuffer): `-AnnotationMatcher` = getRootAsAnnotationMatcher(_bb, `-AnnotationMatcher`())
@@ -76,19 +89,29 @@ internal class `-AnnotationMatcher` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createAnnotationMatcher(builder: FlatBufferBuilder, typeOffset: Int, targetElementTypesOffset: Int, policy: Byte, elementsOffset: Int) : Int {
-            builder.startTable(4)
+        fun createAnnotationMatcher(builder: FlatBufferBuilder, typeOffset: Int, targetElementTypesOffset: Int, policy: Byte, elementsOffset: Int, usingStringsOffset: Int) : Int {
+            builder.startTable(5)
+            addUsingStrings(builder, usingStringsOffset)
             addElements(builder, elementsOffset)
             addTargetElementTypes(builder, targetElementTypesOffset)
             addType(builder, typeOffset)
             addPolicy(builder, policy)
             return endAnnotationMatcher(builder)
         }
-        fun startAnnotationMatcher(builder: FlatBufferBuilder) = builder.startTable(4)
+        fun startAnnotationMatcher(builder: FlatBufferBuilder) = builder.startTable(5)
         fun addType(builder: FlatBufferBuilder, type: Int) = builder.addOffset(0, type, 0)
         fun addTargetElementTypes(builder: FlatBufferBuilder, targetElementTypes: Int) = builder.addOffset(1, targetElementTypes, 0)
         fun addPolicy(builder: FlatBufferBuilder, policy: Byte) = builder.addByte(2, policy, 0)
         fun addElements(builder: FlatBufferBuilder, elements: Int) = builder.addOffset(3, elements, 0)
+        fun addUsingStrings(builder: FlatBufferBuilder, usingStrings: Int) = builder.addOffset(4, usingStrings, 0)
+        fun createUsingStringsVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startUsingStringsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endAnnotationMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

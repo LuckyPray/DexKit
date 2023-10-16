@@ -25,6 +25,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationMatcher
+import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.base.BaseQuery
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
@@ -32,12 +33,15 @@ import org.luckypray.dexkit.query.enums.RetentionPolicyType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.enums.TargetElementType
 import org.luckypray.dexkit.query.matchers.base.IntRange
+import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.matchers.base.TargetElementTypesMatcher
 
 class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
     var typeMatcher: ClassMatcher? = null
         private set
     var targetElementTypesMatcher: TargetElementTypesMatcher? = null
+        private set
+    var usingStringsMatcher: MutableList<StringMatcher>? = null
         private set
 
     /**
@@ -64,6 +68,22 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
         @JvmSynthetic
         set(value) {
             type(value)
+        }
+
+    /**
+     * Using string list. Default match type is contains, if you need to match exactly,
+     * please use [usingStrings] or [addUsingString] overloaded function for each string.
+     * ----------------
+     * 使用字符串列表。默认匹配关系为包含，如需为每个字符串设置匹配关系，
+     * 请使用 [usingStrings] 或者 [addUsingString] 重载函数。
+     */
+    var usingStrings: Collection<String>
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            usingStrings(value)
         }
 
     /**
@@ -286,6 +306,94 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
         (elementsMatcher as AnnotationElementsMatcher).count(min, max)
     }
 
+    /**
+     * Using strings matcher.
+     * ----------------
+     * 使用字符串列表匹配器。
+     *
+     *     usingStrings(StringMatcherList().add(StringMatcher("string")))
+     *
+     * @param usingStrings using string list matcher / 使用字符串列表匹配器
+     * @return [AnnotationMatcher]
+     */
+    fun usingStrings(usingStrings: StringMatcherList) = also {
+        this.usingStringsMatcher = usingStrings
+    }
+
+    /**
+     * Using strings matcher.
+     * ----------------
+     * 使用字符串匹配器。
+     *
+     *     usingStrings(List.of("TAG", "Activity"), StringMatchType.Equals, false)
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [AnnotationMatcher]
+     */
+    @JvmOverloads
+    fun usingStrings(
+        usingStrings: Collection<String>,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, matchType, ignoreCase) }.toMutableList()
+    }
+
+    /**
+     * Using strings matcher. default match type is contains, if you need to match exactly,
+     * please use [usingStrings] or [addUsingString] overloaded function for each string.
+     * ----------------
+     * 使用字符串匹配器。默认匹配关系为包含，如需为每个字符串设置匹配关系，
+     * 请使用 [usingStrings] 或者 [addUsingString] 重载函数。
+     *
+     *     usingStrings("TAG", "Activity")
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [AnnotationMatcher]
+     */
+    fun usingStrings(vararg usingStrings: String) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it) }.toMutableList()
+    }
+
+    /**
+     * Add using string matcher.
+     * ----------------
+     * 添加使用字符串的匹配器。
+     *
+     *     addUsingString(StringMatcher("string", StringMatchType.Equals, false))
+     *
+     * @param usingString using string matcher / 使用字符串匹配器
+     * @return [AnnotationMatcher]
+     */
+    fun addUsingString(usingString: StringMatcher) = also {
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
+        usingStringsMatcher!!.add(usingString)
+    }
+
+    /**
+     * Add using string.
+     * ----------------
+     * 添加使用字符串。
+     *
+     *     addUsingString("string", StringMatchType.Equals, false)
+     *
+     * @param usingString using string / 使用字符串
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
+     * @return [AnnotationMatcher]
+     */
+    @JvmOverloads
+    fun addUsingString(
+        usingString: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
+        usingStringsMatcher!!.add(StringMatcher(usingString, matchType, ignoreCase))
+    }
+
     // region DSL
 
     /**
@@ -333,7 +441,9 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
             typeMatcher?.build(fbb) ?: 0,
             targetElementTypesMatcher?.build(fbb) ?: 0,
             policy?.value ?: 0,
-            elementsMatcher?.build(fbb) ?: 0
+            elementsMatcher?.build(fbb) ?: 0,
+            usingStringsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0
         )
         fbb.finish(root)
         return root

@@ -62,6 +62,7 @@ table AnnotationMatcher {
     target_element_types: TargetElementTypesMatcher;
     policy: RetentionPolicyType;
     elements: AnnotationElementsMatcher;
+    using_strings: [StringMatcher];
 }
 
 table AnnotationsMatcher {
