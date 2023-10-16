@@ -151,6 +151,8 @@ public class MainHook implements IXposedHookLoadPackage {
             return;
         }
         this.hostClassLoader = loadPackageParam.classLoader;
+        // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
+        // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             findPlayActivity(bridge);
             // Other use cases
@@ -270,6 +272,8 @@ class MainHook : IXposedHookLoadPackage {
             return
         }
         this.hostClassLoader = loadPackageParam.classLoader
+        // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
+        // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏
         DexKitBridge.create(apkPath)?.use { bridge ->
             findPlayActivity(bridge)
             // Other use cases

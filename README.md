@@ -157,6 +157,9 @@ public class MainHook implements IXposedHookLoadPackage {
             return;
         }
         this.hostClassLoader = loadPackageParam.classLoader;
+        // DexKit creation is a time-consuming operation, please do not create the object repeatedly. 
+        // If you need to use it globally, please manage the life cycle yourself and ensure 
+        // that the .close() method is called when not needed to prevent memory leaks
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             findPlayActivity(bridge);
             // Other use cases
@@ -276,6 +279,9 @@ class MainHook : IXposedHookLoadPackage {
             return
         }
         this.hostClassLoader = loadPackageParam.classLoader
+        // DexKit creation is a time-consuming operation, please do not create the object repeatedly. 
+        // If you need to use it globally, please manage the life cycle yourself and ensure 
+        // that the .close() method is called when not needed to prevent memory leaks
         DexKitBridge.create(apkPath)?.use { bridge ->
             findPlayActivity(bridge)
             // Other use cases
