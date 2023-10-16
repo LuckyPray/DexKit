@@ -41,6 +41,8 @@ import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.result.base.BaseData
+import org.luckypray.dexkit.util.MUtf8Util
+import org.luckypray.dexkit.util.StringUnicodeEncoderDecoder
 
 class AnnotationEncodeArrayData private constructor(
     bridge: DexKitBridge,
@@ -65,13 +67,17 @@ class AnnotationEncodeArrayData private constructor(
                         AnnotationEncodeValueType.FloatValue -> (encodeValue.value(InnerEncodeValueFloat()) as InnerEncodeValueFloat).value
                         AnnotationEncodeValueType.DoubleValue -> (encodeValue.value(InnerEncodeValueDouble()) as InnerEncodeValueDouble).value
                         AnnotationEncodeValueType.StringValue -> {
+                            val encodeValueString = (encodeValue.value(InnerEncodeValueString()) as InnerEncodeValueString)
                             try {
-                                (encodeValue.value(InnerEncodeValueString()) as InnerEncodeValueString).value!!
+                                encodeValueString.value!!
                             } catch (e: IllegalArgumentException) {
-                                if (e.message?.contains("Invalid UTF-8") == false) {
-                                    throw e
-                                }
-                                ""
+                                // try to unescape unicode
+                                runCatching {
+                                    encodeValueString.valueAsByteBuffer.let {
+                                        val mUtf8String = MUtf8Util.decode(it)
+                                        StringUnicodeEncoderDecoder.encodeStringToUnicodeSequence(mUtf8String)
+                                    }
+                                }.getOrElse { "" }
                             }
                         }
                         AnnotationEncodeValueType.TypeValue -> ClassData.from(bridge, encodeValue.value(InnerClassMeta()) as InnerClassMeta)
