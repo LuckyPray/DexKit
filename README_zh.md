@@ -33,6 +33,10 @@
 
 > 备注：对于字符串搜索场景进行了优化，可以大幅度提升搜索速度，增加查询分组不会导致耗时成倍增长
 
+### 使用文档
+
+- [点击此处](https://luckypray.org/DexKit/zh-cn/)进入文档页面查看更详细的教程。
+
 ### 依赖
 
 添加 `dexkit` 依赖进 `build.gradle`.
@@ -362,12 +366,6 @@ class MainHook : IXposedHookLoadPackage {
 ```
 
 </p></details>
-
-### 使用文档
-
-- [点击此处](https://luckypray.org/DexKit/zh-cn/)进入文档页面查看更详细的教程。
-- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) 基于源码注释生成的 KDoc（类似于 JavaDoc）。
-  但是更推荐使用 IDEA 等 IDE 在开发时查看源码内注释。
 
 ## 第三方开源引用
 

@@ -36,6 +36,10 @@ Basic Features:
 > Note: Optimizations have been implemented for string search scenarios, significantly enhancing 
 > search speed. Increasing query groups will not lead to a linear increase in time consumption.
 
+### Documentation
+
+- [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
+
 ### Dependencies
 
 Add `dexkit` dependency in `build.gradle`. 
@@ -368,12 +372,6 @@ class MainHook : IXposedHookLoadPackage {
 ```
 
 </p></details>
-
-### Documentation
-
-- [Click here](https://luckypray.org/DexKit/en/) to go to the documentation page to view more detailed tutorials.
-- [DexKit API KDoc](https://luckypray.org/DexKit-Doc) is a KDoc (similar to JavaDoc) generated from source code comments.
-  However, it is recommended to use an IDE such as IDEA to view source code comments during development.
 
 ## Third-Party Open Source References
 
