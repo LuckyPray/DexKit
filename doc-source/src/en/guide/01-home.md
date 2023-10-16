@@ -24,7 +24,7 @@ code based on known features. The results are then written into the adaptation f
 this process, we need an automated way. Currently, most solutions for parsing Dex files rely
 on `dexlib2`, but due to its development in Java, there are performance bottlenecks. Especially when
 the host application has a large number of dex files, the parsing time is long, affecting the user
-experience. Therefore, `DexKit` is introduced. It is implemented in C++, providing superior
+experience. Therefore, `DexKit` came into being. It is implemented in C++, providing superior
 performance, internal optimizations using multi-threading and various algorithms, enabling complex
 searches to be completed in a very short time.
 
