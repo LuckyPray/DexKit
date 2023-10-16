@@ -688,9 +688,6 @@ DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
                              : std::vector<ir::Annotation *>();
         std::vector<AnnotationBean> beans;
         for (auto annotation: annotationSet) {
-            if (annotation->visibility == 2) {
-                continue;
-            }
             AnnotationBean bean = GetAnnotationBean(annotation);
             beans.emplace_back(std::move(bean));
         }
@@ -722,9 +719,6 @@ DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
                                  : std::vector<ir::Annotation *>();
             std::vector<AnnotationBean> beans;
             for (auto annotation: annotationSet) {
-                if (annotation->visibility == 2) {
-                    continue;
-                }
                 AnnotationBean bean = GetAnnotationBean(annotation);
                 beans.emplace_back(std::move(bean));
             }
@@ -758,9 +752,6 @@ DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
                                  : std::vector<ir::Annotation *>();
             std::vector<AnnotationBean> beans;
             for (auto annotation: annotationSet) {
-                if (annotation->visibility == 2) {
-                    continue;
-                }
                 AnnotationBean bean = GetAnnotationBean(annotation);
                 beans.emplace_back(std::move(bean));
             }
@@ -779,6 +770,36 @@ DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
 
 std::vector<std::vector<AnnotationBean>>
 DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
+    if (method_parameter_annotations.empty()) {
+        auto method_def = reader.MethodIds()[method_idx];
+        auto class_def = reader.ClassDefs()[type_def_idx[method_def.class_idx]];
+        auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
+        if (!annotationsDirectory) return {};
+        std::vector<std::vector<AnnotationBean>> beans;
+        for (auto params_ann_ptr: annotationsDirectory->param_annotations) {
+            auto method_decl = params_ann_ptr->method_decl;
+            if (method_decl->orig_index != method_idx) {
+                continue;
+            }
+            if (params_ann_ptr->annotations == nullptr) {
+                return {};
+            }
+            for (auto ann_ptr : params_ann_ptr->annotations->annotations) {
+                auto annotationSet = ann_ptr
+                                     ? ann_ptr->annotations
+                                     : std::vector<ir::Annotation *>();
+
+                std::vector<AnnotationBean> annotationBeans;
+                for (auto annotation: annotationSet) {
+                    AnnotationBean bean = GetAnnotationBean(annotation);
+                    annotationBeans.emplace_back(std::move(bean));
+                }
+                beans.emplace_back(std::move(annotationBeans));
+            }
+            return beans;
+        }
+        return {};
+    }
     auto param_annotations = this->method_parameter_annotations[method_idx];
     std::vector<std::vector<AnnotationBean>> beans;
     for (auto &annotationSet: param_annotations) {
