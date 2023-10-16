@@ -272,6 +272,12 @@ AnalyzeRet Analyze(const schema::AnnotationMatcher *matcher, int dex_depth) {
         ret.need_flags |= result.need_flags;
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
+    if (matcher->target_element_types()) {
+        ret.need_flags |= kClassAnnotation;
+    }
+    if (matcher->policy() != schema::RetentionPolicyType::Any) {
+        ret.need_flags |= kClassAnnotation;
+    }
     if (matcher->elements()) {
         auto result = Analyze(matcher->elements(), dex_depth);
         ret.need_flags |= result.need_flags;

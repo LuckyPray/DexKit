@@ -204,8 +204,8 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
     if (!IsClassMatched(annotation->type->orig_index, matcher->type())) {
         return false;
     }
-    auto m_class_annotations = this->class_annotations[annotation->type->orig_index];
     if (matcher->target_element_types() || (uint8_t) matcher->policy()) {
+        auto m_class_annotations = this->class_annotations[annotation->type->orig_index];
         if (m_class_annotations == nullptr) {
             return false;
         }
