@@ -3,7 +3,7 @@ home: true
 title: Home
 actions:
 - text: QuickStart
-  link: /en/guide/home
+  link: /en/guide/01-home
   type: primary
 - text: API KDoc
   link: https://luckypray.org/DexKit-Doc
