@@ -119,7 +119,7 @@ class StringMatcher : BaseQuery, IAnnotationEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
         value ?: throw IllegalArgumentException("value must not be null")
         if (value!!.isEmpty() && matchType != StringMatchType.Equals) {
-            throw IllegalAccessException("value '$value' is empty, matchType must be equals")
+            matchType = StringMatchType.Equals
         }
         val root = InnerStringMatcher.createStringMatcher(
             fbb,
