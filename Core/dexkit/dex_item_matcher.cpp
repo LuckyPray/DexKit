@@ -960,11 +960,16 @@ bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersM
         }
         for (size_t i = 0; i < type_list_size; ++i) {
             auto parameter_matcher = matcher->parameters()->Get(i);
+            DEXKIT_CHECK(parameter_matcher);
             if (!IsClassMatched(type_list->list[i].type_idx, parameter_matcher->parameter_type())) {
                 return false;
             }
             if (parameter_matcher->annotations()) {
-                if (!IsAnnotationsMatched(this->method_parameter_annotations[method_idx][i], parameter_matcher->annotations())) {
+                auto &method_parameter_annotation = this->method_parameter_annotations[method_idx];
+                if (method_parameter_annotation.size() <= i) {
+                    return false;
+                }
+                if (!IsAnnotationsMatched(method_parameter_annotation[i], parameter_matcher->annotations())) {
                     return false;
                 }
             }
