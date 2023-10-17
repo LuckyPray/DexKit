@@ -802,11 +802,13 @@ DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
     }
     auto param_annotations = this->method_parameter_annotations[method_idx];
     std::vector<std::vector<AnnotationBean>> beans;
-    for (auto &annotationSet: param_annotations) {
+    for (auto annotationSet: param_annotations) {
         std::vector<AnnotationBean> annotationBeans;
-        for (auto annotation: annotationSet->annotations) {
-            AnnotationBean bean = GetAnnotationBean(annotation);
-            annotationBeans.emplace_back(std::move(bean));
+        if (annotationSet) {
+            for (auto annotation: annotationSet->annotations) {
+                AnnotationBean bean = GetAnnotationBean(annotation);
+                annotationBeans.emplace_back(std::move(bean));
+            }
         }
         beans.emplace_back(std::move(annotationBeans));
     }
