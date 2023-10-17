@@ -2,16 +2,16 @@ import { i18n } from './utils';
 
 const navigationLinks = {
     start: [
-        '/guide/01-home',
-        '/guide/02-knowledge',
-        '/guide/03-quick-start',
-        '/guide/04-example',
-        '/guide/05-structural-zoom-table',
-        '/guide/06-run-on-desktop'
+        '/guide/home',
+        '/guide/knowledge',
+        '/guide/quick-start',
+        '/guide/example',
+        '/guide/structural-zoom-table',
+        '/guide/run-on-desktop'
     ],
     about: [
-        '/about/01-contacts',
-        '/about/02-about'
+        '/about/contacts',
+        '/about/about'
     ]
 };
 

@@ -1,6 +1,6 @@
 # Usage Examples
 
-During the reading of this section, you may need to refer to the [Structural Quick Reference Table](./05-structural-zoom-table) for a better understanding.
+During the reading of this section, you may need to refer to the [Structural Quick Reference Table](./structural-zoom-table) for a better understanding.
 
 > You can get the source code and some test cases for the demo below.
 

@@ -3,7 +3,7 @@ home: true
 title: Home
 actions:
 - text: QuickStart
-  link: /en/guide/01-home
+  link: /en/guide/home
   type: primary
 - text: API KDoc
   link: https://luckypray.org/DexKit-Doc
@@ -11,7 +11,7 @@ actions:
 features:
 - title: Elegant and Simple
   details: DexKit is built with a user-friendly API entirely using Kotlin DSL, supporting nested complex queries and providing good support for Java as well.
-- title: Superior Performance
+- title: High-Performance
   details: Implemented using C++ at its core, DexKit delivers superior performance. It utilizes multiple algorithms on top of multithreading, allowing it to complete complex searches in an extremely short time.
 - title: Cross-platform
   details: It offers multi-platform support. After testing on Windows, Linux, or MacOS, the code can be directly migrated to the Android platform.
@@ -64,6 +64,10 @@ class AppHooker {
     public constructor(loadPackageParam: LoadPackageParam) {
         this.hostClassLoader = loadPackageParam.classLoader
         val apkPath = loadPackageParam.appInfo.sourceDir
+        // DexKit creation is a time-consuming operation, please do not create the object repeatedly. 
+        // If you need to use it globally, please manage the life cycle yourself and ensure 
+        // that the .close() method is called when not needed to prevent memory leaks.
+        // Here we use `Closable.use` to automatically close the DexKitBridge instance.
         DexKitBridge.create(apkPath)?.use { bridge ->
             isVipHook(bridge)
             // Other hook ...
@@ -100,6 +104,10 @@ class AppHooker {
     public AppHooker(LoadPackageParam loadPackageParam) {
         this.hostClassLoader = loadPackageParam.classLoader;
         String apkPath = loadPackageParam.appInfo.sourceDir;
+        // DexKit creation is a time-consuming operation, please do not create the object repeatedly. 
+        // If you need to use it globally, please manage the life cycle yourself and ensure 
+        // that the .close() method is called when not needed to prevent memory leaks.
+        // Here we use `try-with-resources` to automatically close the DexKitBridge instance.
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             isVipHook(bridge);
             // Other hook ...

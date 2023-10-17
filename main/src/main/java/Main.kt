@@ -1,4 +1,5 @@
 import org.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
 import java.util.Locale
 
@@ -24,7 +25,7 @@ fun loadLibrary(name: String) {
 fun main() {
     loadLibrary("dexkit")
     println("current work dir: ${File("").absolutePath}")
-    val file = File("apk/demo.apk")
+    val file = File("apk/QQ_8.9.70_clone.apk")
     if (!file.exists()) {
         println("apk not found")
         return
@@ -46,7 +47,23 @@ fun doSearch(path: String) {
 }
 
 fun search(bridge: DexKitBridge) {
-
+    val method = bridge.findMethod {
+        matcher {
+            usingStrings("xxxxx")
+            paramCount = 3
+        }
+    }.first()
+    bridge.findMethod {
+        matcher {
+            declaredClass = "xxxxx"
+            returnType = "boolean"
+            paramTypes()
+            addCall {
+                declaredClass = method.className
+                returnType = method.returnTypeName
+            }
+        }
+    }
 }
 
 

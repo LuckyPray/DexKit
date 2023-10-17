@@ -3,7 +3,7 @@ home: true
 title: 首页
 actions:
 - text: 快速上手
-  link: /zh-cn/guide/01-home
+  link: /zh-cn/guide/home
   type: primary
 - text: API KDoc
   link: https://luckypray.org/DexKit-Doc
@@ -11,8 +11,8 @@ actions:
 features:
 - title: 优雅简洁
   details: 完全使用 Kotlin DSL 打造的人性化 API，可以支持嵌套复杂查询，同时对 Java 也提供了良好的支持。
-- title: 性能优越
-  details: 底层使用 C++ 实现，性能优越，同时在多线程的基础上使用多种算法对进行优化，能够在极短时间内完成复杂的搜索。
+- title: 性能卓越
+  details: 底层使用 C++ 实现，性能卓越，同时在多线程的基础上使用多种算法对进行优化，能够在极短时间内完成复杂的搜索。
 - title: 可跨平台
   details: 提供多平台支持，例如在 Windows、Linux 或者 MacOS 中测试后，代码可以直接迁移至 Android 平台。
 footer: LGPL-3.0 License | Copyright © 2022 LuckyPray
@@ -61,6 +61,9 @@ class AppHooker {
     public constructor(loadPackageParam: LoadPackageParam) {
         this.hostClassLoader = loadPackageParam.classLoader
         val apkPath = loadPackageParam.appInfo.sourceDir
+        // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
+        // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏。
+        // 这里使用 `Closable.use` 语法糖自动关闭 DexKitBridge 实例
         DexKitBridge.create(apkPath)?.use { bridge ->
             isVipHook(bridge)
             // Other hook ...
@@ -97,6 +100,9 @@ class AppHooker {
     public AppHooker(LoadPackageParam loadPackageParam) {
         this.hostClassLoader = loadPackageParam.classLoader;
         String apkPath = loadPackageParam.appInfo.sourceDir;
+        // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
+        // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏。
+        // 这里使用 `try-with-resources` 语法糖自动关闭 DexKitBridge 实例
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             isVipHook(bridge);
             // Other hook ...
