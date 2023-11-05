@@ -626,8 +626,7 @@ int DexKitFindMethodUsingAnnotationTest(dexkit::DexKit &dexkit) {
     );
     fbb.Finish(find);
 
-//    auto buf = fbb.GetBufferPointer();
-    auto buf = new int8_t [] {24, 0, 0, 0, 0, 0, 18, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 18, 0, 0, 0, 24, 0, 0, 0, 20, 0, 0, 0, 0, 0, 14, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 14, 0, 0, 0, 8, 0, 0, 0, 4, 0, 0, 0, -70, -1, -1, -1, 4, 0, 0, 0, 5, 0, 0, 0, -68, 0, 0, 0, -84, 0, 0, 0, -96, 0, 0, 0, -108, 0, 0, 0, 8, 0, 0, 0, 4, 0, 0, 0, -34, -1, -1, -1, 8, 0, 0, 0, 4, 0, 0, 0, -22, -1, -1, -1, 4, 0, 0, 0, 1, 0, 0, 0, 16, 0, 0, 0, 12, 0, 0, 0, 0, 0, 6, 0, 8, 0, 4, 0, 6, 0, 0, 0, 16, 0, 0, 0, 12, 0, 0, 0, 8, 0, 8, 0, 0, 0, 4, 0, 8, 0, 0, 0, 16, 0, 0, 0, 12, 0, 0, 0, 8, 0, 12, 0, 8, 0, 7, 0, 8, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 33, 0, 0, 0, 111, 114, 103, 46, 106, 101, 116, 98, 114, 97, 105, 110, 115, 46, 97, 110, 110, 111, 116, 97, 116, 105, 111, 110, 115, 46, 78, 111, 116, 78, 117, 108, 108, 0, 0, 0, 4, 0, 0, 0, -24, -1, -1, -1, 4, 0, 0, 0, -16, -1, -1, -1, 4, 0, 0, 0, -8, -1, -1, -1, 8, 0, 0, 0, 4, 0, 4, 0, 4, 0, 0, 0};
+    auto buf = fbb.GetBufferPointer();
     auto query = From<FindMethod>(buf);
     printf("build query: %p, size: %d\n", query, fbb.GetSize());
     auto builder = dexkit.FindMethod(query);
@@ -1270,7 +1269,7 @@ int DexKitFindDyClassUsingStrings(dexkit::DexKit &dexkit) {
 int main() {
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    auto dexkit = dexkit::DexKit("../apks/QQ_8.9.70_clone.apk");
+    auto dexkit = dexkit::DexKit("../apks/wyy_8.10.10.apk");
 //    dexkit.SetThreadNum(1);
     auto now1 = std::chrono::system_clock::now();
     auto now_ms1 = std::chrono::duration_cast<std::chrono::milliseconds>(now1.time_since_epoch());
@@ -1298,7 +1297,6 @@ int main() {
 //    DexKitFindMethodUsingNumbers(dexkit);
 //    DexKitFindDyClassTest(dexkit);
 //    DexKitFindDyClassUsingStrings(dexkit);
-    dexkit.GetParameterAnnotations(17179890467);
 
     auto now2 = std::chrono::system_clock::now();
     auto now_ms2 = std::chrono::duration_cast<std::chrono::milliseconds>(now2.time_since_epoch());

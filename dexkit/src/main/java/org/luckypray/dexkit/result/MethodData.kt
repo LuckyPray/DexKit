@@ -46,20 +46,32 @@ class MethodData private constructor(
 ) : BaseData(bridge) {
 
     internal companion object `-Companion` {
-        fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta) = MethodData(
-            bridge,
-            methodMeta.id.toInt(),
-            methodMeta.dexId.toInt(),
-            methodMeta.classId.toInt(),
-            methodMeta.accessFlags.toInt(),
-            methodMeta.dexDescriptor ?: "",
-            methodMeta.returnType.toInt(),
-            mutableListOf<Int>().apply {
-                for (i in 0 until methodMeta.parameterTypesLength) {
-                    add(methodMeta.parameterTypes(i))
-                }
+
+        /**
+         * [ACC_DECLARED_SYNCHRONIZED](https://source.android.com/docs/core/runtime/dex-format#access-flags)
+         */
+        const val ACC_DECLARED_SYNCHRONIZED = 0x20000
+
+        fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta): MethodData {
+            var modifiers = methodMeta.accessFlags.toInt()
+            if ((modifiers and ACC_DECLARED_SYNCHRONIZED) > 0) {
+                modifiers = modifiers xor ACC_DECLARED_SYNCHRONIZED or Modifier.SYNCHRONIZED
             }
-        )
+            return MethodData(
+                bridge,
+                methodMeta.id.toInt(),
+                methodMeta.dexId.toInt(),
+                methodMeta.classId.toInt(),
+                modifiers,
+                methodMeta.dexDescriptor ?: "",
+                methodMeta.returnType.toInt(),
+                mutableListOf<Int>().apply {
+                    for (i in 0 until methodMeta.parameterTypesLength) {
+                        add(methodMeta.parameterTypes(i))
+                    }
+                }
+            )
+        }
     }
 
     private val dexMethod by lazy {

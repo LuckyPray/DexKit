@@ -195,7 +195,14 @@ void DexItem::InitBaseCache() {
 
         for (uint32_t i = 0, class_method_idx = 0; i < direct_methods_count; ++i) {
             class_method_idx += ReadULeb128(&class_data);
-            method_access_flags[class_method_idx] = ReadULeb128(&class_data);
+            uint32_t access_flags = ReadULeb128(&class_data);
+            // fix 'declared-synchronized' for java Modifiers
+            // Java's [declared-synchronized] and  JNI's [synchronized native].
+            // see https://source.android.com/docs/core/runtime/dex-format#access-flags
+            if (access_flags & dex::kAccDeclaredSynchronized) {
+                access_flags = access_flags ^ dex::kAccDeclaredSynchronized | dex::kAccSynchronized;
+            }
+            method_access_flags[class_method_idx] = access_flags;
             uint32_t code_off = ReadULeb128(&class_data);
             if (code_off) {
                 method_codes[class_method_idx] = reader.dataPtr<const dex::Code>(code_off);
@@ -204,7 +211,14 @@ void DexItem::InitBaseCache() {
         }
         for (uint32_t i = 0, class_method_idx = 0; i < virtual_methods_count; ++i) {
             class_method_idx += ReadULeb128(&class_data);
-            method_access_flags[class_method_idx] = ReadULeb128(&class_data);
+            uint32_t access_flags = ReadULeb128(&class_data);
+            // fix 'declared-synchronized' for java Modifiers
+            // Java's [declared-synchronized] and  JNI's [synchronized native].
+            // see https://source.android.com/docs/core/runtime/dex-format#access-flags
+            if (access_flags & dex::kAccDeclaredSynchronized) {
+                access_flags = access_flags ^ dex::kAccDeclaredSynchronized | dex::kAccSynchronized;
+            }
+            method_access_flags[class_method_idx] = access_flags;
             uint32_t code_off = ReadULeb128(&class_data);
             if (code_off) {
                 method_codes[class_method_idx] = reader.dataPtr<const dex::Code>(code_off);
