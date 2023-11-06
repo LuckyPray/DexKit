@@ -64,18 +64,18 @@ object DexSignUtil {
      * ----------------
      * 转换描述符为类名。
      *
-     *     getSimpleName("Ljava/lang/String;") -> "java.lang.String"
-     *     getSimpleName("[Ljava/lang/String;") -> "java.lang.String[]"
-     *     getSimpleName("[[Ljava/lang/String;") -> "java.lang.String[][]"
-     *     getSimpleName("[I") -> "int[]"
+     *     getTypeName("Ljava/lang/String;") -> "java.lang.String"
+     *     getTypeName("[Ljava/lang/String;") -> "java.lang.String[]"
+     *     getTypeName("[[Ljava/lang/String;") -> "java.lang.String[][]"
+     *     getTypeName("[I") -> "int[]"
      *
      * @param typeSign type sign / 类型签名
      * @return simple name / 类名
      */
     @JvmStatic
-    fun getSimpleName(typeSign: String): String {
+    fun getTypeName(typeSign: String): String {
         if (typeSign[0] == '[') {
-            return getSimpleName(typeSign.substring(1)) + "[]"
+            return getTypeName(typeSign.substring(1)) + "[]"
         }
         if (typeSign.length == 1) {
             return primitiveTypeName(typeSign)
@@ -91,18 +91,18 @@ object DexSignUtil {
      * ----------------
      * 转换类为类名。
      *
-     *     getSimpleName(String.class) -> "java.lang.String"
-     *     getSimpleName(int.class) -> "int"
-     *     getSimpleName(int[].class) -> "int[]"
-     *     getSimpleName(int[][].class) -> "int[][]"
+     *     getTypeName(String.class) -> "java.lang.String"
+     *     getTypeName(int.class) -> "int"
+     *     getTypeName(int[].class) -> "int[]"
+     *     getTypeName(int[][].class) -> "int[][]"
      *
      * @param clazz class / 类
      * @return simple name / 类名
      */
     @JvmStatic
-    fun getSimpleName(clazz: Class<*>): String {
+    fun getTypeName(clazz: Class<*>): String {
         if (clazz.isArray) {
-            return getSimpleName(clazz.componentType!!) + "[]"
+            return getTypeName(clazz.componentType!!) + "[]"
         }
         if (clazz.isPrimitive) {
             return when (clazz) {
@@ -146,7 +146,7 @@ object DexSignUtil {
                 right = end
             }
             val sign = paramSigns.substring(left, right + 1)
-            params.add(getSimpleName(sign))
+            params.add(getTypeName(sign))
             left = ++right
         }
         if (left != right) {

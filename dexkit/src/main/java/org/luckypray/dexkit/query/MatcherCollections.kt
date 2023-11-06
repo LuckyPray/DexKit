@@ -57,16 +57,6 @@ class StringMatcherList : ArrayList<StringMatcher>, IQuery {
     ) = also {
         add(StringMatcher(usingString, matchType, ignoreCase))
     }
-
-    /**
-     * Add [StringMatcher].
-     * ----------------
-     * 添加 [StringMatcher]。
-     */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: StringMatcher.() -> Unit) = also {
-        add(StringMatcher().apply(init))
-    }
 }
 
 class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {

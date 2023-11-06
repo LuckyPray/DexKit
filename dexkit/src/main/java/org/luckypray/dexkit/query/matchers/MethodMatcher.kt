@@ -362,7 +362,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * @return [MethodMatcher]
      */
     fun declaredClass(clazz: Class<*>) = also {
-        this.classMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
+        this.classMatcher = ClassMatcher().className(DexSignUtil.getTypeName(clazz))
     }
 
     /**
@@ -409,7 +409,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * @return [MethodMatcher]
      */
     fun returnType(clazz: Class<*>) = also {
-        this.returnTypeMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
+        this.returnTypeMatcher = ClassMatcher().className(DexSignUtil.getTypeName(clazz))
     }
 
     /**

@@ -24,7 +24,7 @@
 package org.luckypray.dexkit.wrap
 
 import org.luckypray.dexkit.util.DexSignUtil.getParamTypeNames
-import org.luckypray.dexkit.util.DexSignUtil.getSimpleName
+import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.util.InstanceUtil
 import java.io.Serializable
@@ -81,10 +81,10 @@ class DexMethod: Serializable {
         if (idx1 == -1 || idx2 == -1 || idx3 == -1) {
             throw IllegalAccessError("not method descriptor: $methodDescriptor")
         }
-        className = getSimpleName(methodDescriptor.substring(0, idx1))
+        className = getTypeName(methodDescriptor.substring(0, idx1))
         name = methodDescriptor.substring(idx1 + 2, idx2)
         paramTypeNames = getParamTypeNames(methodDescriptor.substring(idx2 + 1, idx3))
-        returnTypeName = getSimpleName(methodDescriptor.substring(idx3 + 1))
+        returnTypeName = getTypeName(methodDescriptor.substring(idx3 + 1))
     }
 
     /**
@@ -95,10 +95,10 @@ class DexMethod: Serializable {
      * @param method method / 方法
      */
     constructor(method: Method) {
-        className = getSimpleName(method.declaringClass)
+        className = getTypeName(method.declaringClass)
         name = method.name
-        paramTypeNames = method.parameterTypes.map { getSimpleName(it) }
-        returnTypeName = getSimpleName(method.returnType)
+        paramTypeNames = method.parameterTypes.map { getTypeName(it) }
+        returnTypeName = getTypeName(method.returnType)
     }
 
     /**

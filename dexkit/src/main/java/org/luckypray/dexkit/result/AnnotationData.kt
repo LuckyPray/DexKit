@@ -65,7 +65,7 @@ class AnnotationData private constructor(
 
     override fun toString(): String {
         return buildString {
-            append("@${DexSignUtil.getSimpleName(typeDescriptor)}")
+            append("@${DexSignUtil.getTypeName(typeDescriptor)}")
             append("(")
             elements.forEachIndexed { index, element ->
                 if (index != 0) {

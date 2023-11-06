@@ -75,7 +75,7 @@ class ParameterMatcher : BaseQuery() {
      * @return [ParameterMatcher]
      */
     fun type(clazz: Class<*>) = also {
-        this.typeMatcher = ClassMatcher().className(DexSignUtil.getSimpleName(clazz))
+        this.typeMatcher = ClassMatcher().className(DexSignUtil.getTypeName(clazz))
     }
 
     /**

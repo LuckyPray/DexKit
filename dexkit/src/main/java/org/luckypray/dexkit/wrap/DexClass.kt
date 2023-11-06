@@ -23,7 +23,7 @@
 
 package org.luckypray.dexkit.wrap
 
-import org.luckypray.dexkit.util.DexSignUtil.getSimpleName
+import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.util.InstanceUtil
 import java.io.Serializable
@@ -43,7 +43,7 @@ class DexClass: Serializable {
      * @param classDescriptor class descriptor / 类描述符
      */
     constructor(classDescriptor: String) {
-        typeName = getSimpleName(classDescriptor)
+        typeName = getTypeName(classDescriptor)
     }
 
     /**
@@ -54,7 +54,7 @@ class DexClass: Serializable {
      * @param clazz class / 类
      */
     constructor(clazz: Class<*>) {
-        typeName = clazz.typeName
+        typeName = getTypeName(clazz)
     }
     /**
      * Load this class from [ClassLoader]

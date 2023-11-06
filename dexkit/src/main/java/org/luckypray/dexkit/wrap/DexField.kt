@@ -23,7 +23,7 @@
 
 package org.luckypray.dexkit.wrap
 
-import org.luckypray.dexkit.util.DexSignUtil.getSimpleName
+import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.util.InstanceUtil
 import java.io.Serializable
@@ -58,9 +58,9 @@ class DexField: Serializable {
         if (idx1 == -1 || idx2 == -1) {
             throw IllegalAccessError("not field descriptor: $fieldDescriptor")
         }
-        className = getSimpleName(fieldDescriptor.substring(0, idx1))
+        className = getTypeName(fieldDescriptor.substring(0, idx1))
         name = fieldDescriptor.substring(idx1 + 2, idx2)
-        typeName = getSimpleName(fieldDescriptor.substring(idx2 + 1))
+        typeName = getTypeName(fieldDescriptor.substring(idx2 + 1))
     }
 
     /**
@@ -71,9 +71,9 @@ class DexField: Serializable {
      * @param field field / 字段
      */
     constructor(field: Field) {
-        className = getSimpleName(field.declaringClass)
+        className = getTypeName(field.declaringClass)
         name = field.name
-        typeName = getSimpleName(field.type)
+        typeName = getTypeName(field.type)
     }
 
     /**
