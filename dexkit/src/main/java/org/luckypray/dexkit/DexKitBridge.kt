@@ -29,13 +29,12 @@ import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.query.BatchFindClassUsingStrings
 import org.luckypray.dexkit.query.BatchFindMethodUsingStrings
-import org.luckypray.dexkit.query.ClassDataList
-import org.luckypray.dexkit.query.FieldDataList
+import org.luckypray.dexkit.result.ClassDataList
+import org.luckypray.dexkit.result.FieldDataList
 import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
-import org.luckypray.dexkit.query.MethodDataList
-import org.luckypray.dexkit.query.enums.UsingType
+import org.luckypray.dexkit.result.MethodDataList
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
@@ -216,12 +215,12 @@ class DexKitBridge : Closeable {
      * ----------------
      * 转换类描述符为 [ClassData] （如果存在）。
      *
-     * @param [dexDescriptor] class descriptor / 类描述符
+     * @param [descriptor] class descriptor / 类描述符
      * @return [ClassData]
      */
-    fun getClassData(dexDescriptor: String): ClassData? {
-        DexClass(dexDescriptor)
-        return nativeGetClassData(safeToken, dexDescriptor)?.let {
+    fun getClassData(descriptor: String): ClassData? {
+        DexClass(descriptor)
+        return nativeGetClassData(safeToken, descriptor)?.let {
             ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
         }
     }
@@ -255,12 +254,12 @@ class DexKitBridge : Closeable {
      * ----------------
      * 转换方法描述符为 [MethodData] （如果存在）。
      *
-     * @param [dexDescriptor] method descriptor / 方法描述符
+     * @param [descriptor] method descriptor / 方法描述符
      * @return [MethodData]
      */
-    fun getMethodData(dexDescriptor: String): MethodData? {
-        DexMethod(dexDescriptor)
-        return nativeGetMethodData(safeToken, dexDescriptor)?.let {
+    fun getMethodData(descriptor: String): MethodData? {
+        DexMethod(descriptor)
+        return nativeGetMethodData(safeToken, descriptor)?.let {
             MethodData.from(this, InnerMethodMeta.getRootAsMethodMeta(ByteBuffer.wrap(it)))
         }
     }
@@ -282,12 +281,12 @@ class DexKitBridge : Closeable {
      * ----------------
      * 转换字段描述符为 [FieldData] （如果存在）。
      *
-     * @param [dexDescriptor] field descriptor / 字段描述符
+     * @param [descriptor] field descriptor / 字段描述符
      * @return [FieldData]
      */
-    fun getFieldData(dexDescriptor: String): FieldData? {
-        DexField(dexDescriptor)
-        return nativeGetFieldData(safeToken, dexDescriptor)?.let {
+    fun getFieldData(descriptor: String): FieldData? {
+        DexField(descriptor)
+        return nativeGetFieldData(safeToken, descriptor)?.let {
             FieldData.from(this, InnerFieldMeta.getRootAsFieldMeta(ByteBuffer.wrap(it)))
         }
     }

@@ -21,12 +21,12 @@
  */
 @file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-package org.luckypray.dexkit.query
+package org.luckypray.dexkit.result
 
+import org.luckypray.dexkit.query.FindClass
+import org.luckypray.dexkit.query.FindField
+import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.base.IQuery
-import org.luckypray.dexkit.result.ClassData
-import org.luckypray.dexkit.result.FieldData
-import org.luckypray.dexkit.result.MethodData
 
 
 abstract class BaseDataList<T> : ArrayList<T>, IQuery {

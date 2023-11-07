@@ -19,15 +19,14 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package org.luckypray.dexkit.result
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerClassMeta
-import org.luckypray.dexkit.query.ClassDataList
-import org.luckypray.dexkit.query.FieldDataList
-import org.luckypray.dexkit.query.MethodDataList
+import org.luckypray.dexkit.query.FindField
+import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
 import org.luckypray.dexkit.wrap.DexClass
@@ -206,6 +205,52 @@ class ClassData private constructor(
     fun toDexType(): DexClass {
         return dexClass
     }
+
+    // region DexKit Search
+
+    /**
+     * Search in this class with multiple conditions.
+     * ----------------
+     * 在本类中进行多条件方法搜索。
+     *
+     * @param [findMethod] query object / 查询对象
+     * @return [MethodDataList]
+     */
+    fun findMethod(findMethod: FindMethod): MethodDataList {
+        findMethod.searchInClass(listOf(this))
+        return bridge.findMethod(findMethod)
+    }
+
+    /**
+     * @see findMethod
+     */
+    @kotlin.internal.InlineOnly
+    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+        return findMethod(FindMethod().apply(init))
+    }
+
+    /**
+     * Search in this class with multiple conditions.
+     * ----------------
+     * 在本类中进行多条件字段搜索。
+     *
+     * @param [findField] query object / 查询对象
+     * @return [FieldDataList]
+     */
+    fun findField(findField: FindField): FieldDataList {
+        findField.searchInClass(listOf(this))
+        return bridge.findField(findField)
+    }
+
+    /**
+     * @see findField
+     */
+    @kotlin.internal.InlineOnly
+    inline fun findField(init: FindField.() -> Unit): FieldDataList {
+        return findField(FindField().apply(init))
+    }
+
+    // endregion
 
     override fun toString(): String {
         return buildString {
