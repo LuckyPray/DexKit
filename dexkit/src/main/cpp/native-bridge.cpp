@@ -57,6 +57,25 @@ const T *From(const void *buf) {
 
 extern "C" {
 
+using dexkit::Error;
+
+void throwException(JNIEnv *env, const char *message) {
+    static jclass clazz = static_cast<jclass>(env->NewGlobalRef(
+            env->FindClass("java/lang/IllegalStateException")));
+    env->ThrowNew(clazz, message);
+}
+
+void checkAndSetFlatBufferResult(JNIEnv *env, std::unique_ptr<flatbuffers::FlatBufferBuilder> &ptr, jbyteArray &ret) {
+    if (ptr == nullptr) {
+        return;
+    }
+    auto buf_ptr = ptr->GetBufferPointer();
+    auto buf_size = ptr->GetSize();
+    ret = env->NewByteArray(buf_size);
+    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    ptr->Release();
+}
+
 #ifdef __ANDROID__
 // android memory processing
 #include <sys/eventfd.h>
@@ -170,7 +189,12 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             if (!file_name_obj) continue;
             auto file_name = env->GetStringUTFChars(file_name_obj, nullptr);
             LOGD("contains compact dex, use path load: %s", file_name);
-            dexkit->AddZipPath(file_name);
+            auto ret = dexkit->AddZipPath(file_name);
+            if (ret != Error::SUCCESS) {
+                throwException(env, "Open zip file failed");
+                delete dexkit;
+                return 0;
+            }
         } else {
             std::vector<std::unique_ptr<dexkit::MemMap>> images;
             for (auto &image: dex_images) {
@@ -178,7 +202,12 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
                 memcpy(mmap.addr(), image->begin_, image->size_);
                 images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
             }
-            dexkit->AddImage(std::move(images));
+            auto ret = dexkit->AddImage(std::move(images));
+            if (ret != Error::SUCCESS) {
+                throwException(env, "Add dex image failed");
+                delete dexkit;
+                return 0;
+            }
         }
     }
     return (jlong) dexkit;
@@ -205,7 +234,12 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
         images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
         env->ReleaseByteArrayElements(dex_byte, dex_byte_ptr, 0);
     }
-    dexkit->AddImage(std::move(images));
+    auto ret = dexkit->AddImage(std::move(images));
+    if (ret != Error::SUCCESS) {
+        throwException(env, "Add dex image failed");
+        delete dexkit;
+        return 0;
+    }
     return (jlong) dexkit;
 }
 
@@ -285,12 +319,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeBatchFindClassUsingStrings(JNIEnv *
     jbyte *bytes = env->GetByteArrayElements(arr, nullptr);
     auto query = From<dexkit::schema::BatchFindClassUsingStrings>(bytes);
     auto result = dexkit->BatchFindClassUsingStrings(query);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     env->ReleaseByteArrayElements(arr, bytes, 0);
-    result->Release();
     return ret;
 }
 
@@ -307,12 +338,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeBatchFindMethodUsingStrings(JNIEnv 
     jbyte *bytes = env->GetByteArrayElements(arr, nullptr);
     auto query = From<dexkit::schema::BatchFindMethodUsingStrings>(bytes);
     auto result = dexkit->BatchFindMethodUsingStrings(query);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     env->ReleaseByteArrayElements(arr, bytes, 0);
-    result->Release();
     return ret;
 }
 
@@ -328,12 +356,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFindClass(JNIEnv *env, jclass clazz
     jbyte *bytes = env->GetByteArrayElements(arr, nullptr);
     auto query = From<dexkit::schema::FindClass>(bytes);
     auto result = dexkit->FindClass(query);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     env->ReleaseByteArrayElements(arr, bytes, 0);
-    result->Release();
     return ret;
 }
 
@@ -349,12 +374,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFindMethod(JNIEnv *env, jclass claz
     jbyte *bytes = env->GetByteArrayElements(arr, nullptr);
     auto query = From<dexkit::schema::FindMethod>(bytes);
     auto result = dexkit->FindMethod(query);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     env->ReleaseByteArrayElements(arr, bytes, 0);
-    result->Release();
     return ret;
 }
 
@@ -370,12 +392,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFindField(JNIEnv *env, jclass clazz
     jbyte *bytes = env->GetByteArrayElements(arr, nullptr);
     auto query = From<dexkit::schema::FindField>(bytes);
     auto result = dexkit->FindField(query);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     env->ReleaseByteArrayElements(arr, bytes, 0);
-    result->Release();
     return ret;
 }
 
@@ -390,15 +409,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassData(JNIEnv *env, jclass cl
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto dex_descriptor_str = env->GetStringUTFChars(dex_descriptor, nullptr);
     auto result = dexkit->GetClassData(dex_descriptor_str);
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     env->ReleaseStringUTFChars(dex_descriptor, dex_descriptor_str);
-    if (result == nullptr) {
-        return {};
-    }
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
     return ret;
 }
 
@@ -412,15 +425,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodData(JNIEnv *env, jclass c
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto dex_descriptor_str = env->GetStringUTFChars(dex_descriptor, nullptr);
     auto result = dexkit->GetMethodData(dex_descriptor_str);
-    env->ReleaseStringUTFChars(dex_descriptor, dex_descriptor_str);
-    if (result == nullptr) {
-        return {};
-    }
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -434,15 +440,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldData(JNIEnv *env, jclass cl
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto dex_descriptor_str = env->GetStringUTFChars(dex_descriptor, nullptr);
     auto result = dexkit->GetFieldData(dex_descriptor_str);
-    env->ReleaseStringUTFChars(dex_descriptor, dex_descriptor_str);
-    if (result == nullptr) {
-        return {};
-    }
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -461,11 +460,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassByIds(JNIEnv *env, jclass c
     memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetClassByIds(ids_vec);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -483,11 +479,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodByIds(JNIEnv *env, jclass 
     memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetMethodByIds(ids_vec);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -505,11 +498,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldByIds(JNIEnv *env, jclass c
     memcpy(ids_vec.data(), ids_ptr, ids_len * sizeof(int64_t));
     env->ReleaseLongArrayElements(encode_id_array, ids_ptr, 0);
     auto result = dexkit->GetFieldByIds(ids_vec);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -522,11 +512,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassAnnotations(JNIEnv *env, jc
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetClassAnnotations(encode_class_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -539,11 +526,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldAnnotations(JNIEnv *env, jc
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetFieldAnnotations(encode_field_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -556,11 +540,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodAnnotations(JNIEnv *env, j
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetMethodAnnotations(encode_method_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -598,11 +579,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetParameterAnnotations(JNIEnv *env
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetParameterAnnotations(encode_method_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -630,11 +608,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetCallMethods(JNIEnv *env, jclass 
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetCallMethods(encode_method_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -647,11 +622,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetInvokeMethods(JNIEnv *env, jclas
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetInvokeMethods(encode_method_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -680,11 +652,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingFields(JNIEnv *env, j
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->GetUsingFields(encode_method_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -697,11 +666,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFieldGetMethods(JNIEnv *env, jclass
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->FieldGetMethods(encode_field_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 
@@ -714,11 +680,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFieldPutMethods(JNIEnv *env, jclass
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     auto result = dexkit->FieldPutMethods(encode_field_id);
-    auto buf_ptr = result->GetBufferPointer();
-    auto buf_size = result->GetSize();
-    jbyteArray ret = env->NewByteArray(buf_size);
-    env->SetByteArrayRegion(ret, 0, buf_size, (const jbyte *) buf_ptr);
-    result->Release();
+    jbyteArray ret = nullptr;
+    checkAndSetFlatBufferResult(env, result, ret);
     return ret;
 }
 

@@ -33,7 +33,7 @@ fun main() {
 fun doSearch(path: String) {
     val createTime = System.currentTimeMillis()
     var releaseTime = 0L
-    DexKitBridge.create(path)?.use { bridge ->
+    DexKitBridge.create(path).use { bridge ->
         println("create use time: ${System.currentTimeMillis() - createTime}ms")
         val startTime = System.currentTimeMillis()
         search(bridge)

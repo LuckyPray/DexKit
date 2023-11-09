@@ -576,9 +576,8 @@ class DexKitBridge : Closeable {
 
     companion object {
         @JvmStatic
-        fun create(apkPath: String): DexKitBridge? {
-            val helper = DexKitBridge(apkPath)
-            return if (helper.isValid) helper else null
+        fun create(apkPath: String): DexKitBridge {
+            return DexKitBridge(apkPath)
         }
 
         /**
@@ -590,9 +589,8 @@ class DexKitBridge : Closeable {
          * @return [DexKitBridge]
          */
         @JvmStatic
-        fun create(dexBytesArray: Array<ByteArray>): DexKitBridge? {
-            val helper = DexKitBridge(dexBytesArray)
-            return if (helper.isValid) helper else null
+        fun create(dexBytesArray: Array<ByteArray>): DexKitBridge {
+            return DexKitBridge(dexBytesArray)
         }
 
         /**
@@ -607,9 +605,8 @@ class DexKitBridge : Closeable {
          * @param useMemoryDexFile whether to use memory dex file / 是否使用内存 dex 文件
          */
         @JvmStatic
-        fun create(loader: ClassLoader, useMemoryDexFile: Boolean): DexKitBridge? {
-            val helper = DexKitBridge(loader, useMemoryDexFile)
-            return if (helper.isValid) helper else null
+        fun create(loader: ClassLoader, useMemoryDexFile: Boolean): DexKitBridge {
+            return DexKitBridge(loader, useMemoryDexFile)
         }
 
         @JvmStatic

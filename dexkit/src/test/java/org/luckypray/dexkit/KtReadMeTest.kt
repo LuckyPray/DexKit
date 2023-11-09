@@ -16,7 +16,7 @@ class KtReadMeTest {
             loadLibrary("dexkit")
             val path = System.getProperty("apk.path")
             val demoApk = File(path, "demo.apk")
-            bridge = DexKitBridge.create(demoApk.absolutePath)!!
+            bridge = DexKitBridge.create(demoApk.absolutePath)
         }
     }
 

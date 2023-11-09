@@ -29,7 +29,6 @@ public class JavaReadMeTest {
         String path = System.getProperty("apk.path");
         File demoApk = new File(path, "demo.apk");
         bridge = DexKitBridge.create(demoApk.getAbsolutePath());
-        assert bridge != null;
     }
 
     @Test
