@@ -325,7 +325,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     @JvmOverloads
     fun addClass(
         className: String,
-        matchType: StringMatchType = StringMatchType.Contains,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         add(AnnotationEncodeValueMatcher().apply {

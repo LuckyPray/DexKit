@@ -298,11 +298,17 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      *     name("length")
      *
      * @param name method name / 方法名
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
      * @return [MethodMatcher]
      */
     @JvmOverloads
-    fun name(name: String, ignoreCase: Boolean = false) = also {
-        this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
+    fun name(
+        name: String,
+        matchType: StringMatchType = StringMatchType.Equals,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.nameMatcher = StringMatcher(name, matchType, ignoreCase)
     }
 
     /**
@@ -420,6 +426,8 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      *     returnType("int[]")
      *
      * @param typeName method return type / 方法返回值类型
+     * @param matchType string match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
      * @return [MethodMatcher]
      */
     @JvmOverloads

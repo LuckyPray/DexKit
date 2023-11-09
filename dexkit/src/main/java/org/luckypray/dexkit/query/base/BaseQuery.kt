@@ -31,6 +31,4 @@ abstract class BaseQuery : IQuery {
     internal inline fun build(fbb: FlatBufferBuilder): Int {
         return innerBuild(fbb)
     }
-
-    protected fun getEncodeId(dexId: Int, id: Int) = ((dexId.toLong() shl 32) or id.toLong())
 }

@@ -32,7 +32,7 @@ import org.luckypray.dexkit.wrap.DexClass
 
 class AnnotationData private constructor(
     bridge: DexKitBridge,
-    val dexId: Int,
+    dexId: Int,
     val typeId: Int,
     val typeDescriptor: String,
     val visibility: AnnotationVisibilityType?,

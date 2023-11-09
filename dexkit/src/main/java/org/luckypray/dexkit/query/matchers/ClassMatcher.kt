@@ -559,16 +559,18 @@ class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
      *     addField("field", false)
      *
      * @param fieldName field name / 字段名
+     * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
      * @return [ClassMatcher]
      */
     @JvmOverloads
     fun addFieldForName(
         fieldName: String,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
-        this.fieldsMatcher!!.add(FieldMatcher().name(fieldName, ignoreCase))
+        this.fieldsMatcher!!.add(FieldMatcher().name(fieldName, matchType, ignoreCase))
     }
 
     /**

@@ -35,14 +35,14 @@ import java.lang.reflect.Modifier
 
 class MethodData private constructor(
     bridge: DexKitBridge,
-    val id: Int,
-    val dexId: Int,
-    val classId: Int,
+    id: Int,
+    dexId: Int,
+    private val classId: Int,
     val modifiers: Int,
     val descriptor: String,
-    val returnTypeId: Int,
-    val paramTypeIds: List<Int>
-) : BaseData(bridge) {
+    private val returnTypeId: Int,
+    private val paramTypeIds: List<Int>
+) : BaseData(bridge, id, dexId) {
 
     internal companion object `-Companion` {
 
@@ -136,8 +136,8 @@ class MethodData private constructor(
      * ----------------
      * 获取定义方法的类的 [ClassData]
      */
-    fun getClass(): ClassData? {
-        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
+    val declaredClass by lazy {
+        bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).firstOrNull()
     }
 
     /**
@@ -145,8 +145,8 @@ class MethodData private constructor(
      * ----------------
      * 获取返回类型的 [ClassData]
      */
-    fun getReturnType(): ClassData? {
-        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, returnTypeId))).firstOrNull()
+    val returnType by lazy {
+        bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, returnTypeId))).firstOrNull()
     }
 
     /**
@@ -154,8 +154,8 @@ class MethodData private constructor(
      * ----------------
      * 获取参数类型的 [ClassDataList]
      */
-    fun getParameterTypes(): ClassDataList {
-        return bridge.getTypeByIds(paramTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
+    val parameterTypes by lazy {
+        bridge.getTypeByIds(paramTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
     /**
@@ -163,8 +163,8 @@ class MethodData private constructor(
      * ----------------
      * 获取参数类型的数量
      */
-    fun getParameterNames(): List<String?>? {
-        return bridge.getParameterNames(getEncodeId(dexId, id))
+    val parameterNames by lazy {
+        bridge.getParameterNames(getEncodeId(dexId, id))
     }
 
     /**
@@ -172,8 +172,8 @@ class MethodData private constructor(
      * ----------------
      * 获取标注的注解列表。
      */
-    fun getAnnotations(): List<AnnotationData> {
-        return bridge.getMethodAnnotations(getEncodeId(dexId, id))
+    val annotations by lazy {
+        bridge.getMethodAnnotations(getEncodeId(dexId, id))
     }
 
     /**
@@ -181,8 +181,8 @@ class MethodData private constructor(
      * ----------------
      * 获取标注的注解列表。
      */
-    fun getParamAnnotations(): List<List<AnnotationData>> {
-        return bridge.getParameterAnnotations(getEncodeId(dexId, id))
+    val parameterAnnotations by lazy {
+        bridge.getParameterAnnotations(getEncodeId(dexId, id))
     }
 
     /**
@@ -190,8 +190,8 @@ class MethodData private constructor(
      * ----------------
      * 获取操作码列表 (范围：0-255)
      */
-    fun getOpCodes(): List<Int> {
-        return bridge.getMethodOpCodes(getEncodeId(dexId, id))
+    val opCodes by lazy {
+        bridge.getMethodOpCodes(getEncodeId(dexId, id))
     }
 
     /**
@@ -199,17 +199,15 @@ class MethodData private constructor(
      * ----------------
      * 获取操作码对应的 smali 指令
      */
-    fun getOpNames(): List<String> {
-        return getOpCodes().map { OpCodeUtil.getOpFormat(it) }
-    }
+    val opNames get() = opCodes.map { OpCodeUtil.getOpFormat(it) }
 
     /**
      * Get method callers
      * ----------------
      * 获取调用该方法的方法列表
      */
-    fun getMethodCallers(): List<MethodData> {
-        return bridge.getCallMethods(getEncodeId(dexId, id))
+    val methodCallers by lazy {
+        bridge.getCallMethods(getEncodeId(dexId, id))
     }
 
     /**
@@ -217,8 +215,8 @@ class MethodData private constructor(
      * ----------------
      * 获取该方法调用的方法列表
      */
-    fun getInvokeMethods(): List<MethodData> {
-        return bridge.getInvokeMethods(getEncodeId(dexId, id))
+    val invokeMethods by lazy {
+        bridge.getInvokeMethods(getEncodeId(dexId, id))
     }
 
     /**
@@ -226,8 +224,8 @@ class MethodData private constructor(
      * ----------------
      * 获取该方法使用的字符串列表
      */
-    fun getUsingStrings(): List<String> {
-        return bridge.getMethodUsingStrings(getEncodeId(dexId, id))
+    val usingStrings by lazy {
+        bridge.getMethodUsingStrings(getEncodeId(dexId, id))
     }
 
     /**
@@ -235,8 +233,8 @@ class MethodData private constructor(
      * ----------------
      * 获取该方法使用的字段列表
      */
-    fun getUsingFields(): List<UsingFieldData> {
-        return bridge.getMethodUsingFields(getEncodeId(dexId, id))
+    val usingFields by lazy {
+        bridge.getMethodUsingFields(getEncodeId(dexId, id))
     }
 
     /**

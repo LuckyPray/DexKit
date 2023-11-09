@@ -26,10 +26,17 @@ package org.luckypray.dexkit.result.base
 import org.luckypray.dexkit.DexKitBridge
 
 abstract class BaseData(
-    protected val bridge: DexKitBridge
+    protected val bridge: DexKitBridge,
+    protected val id: Int = -1,
+    protected val dexId: Int = -1,
 ) {
     @kotlin.internal.InlineOnly
     internal fun getBridge() = bridge
 
     protected fun getEncodeId(dexId: Int, id: Int) = ((dexId.toLong() shl 32) or id.toLong())
+
+    fun getEncodeId(): Long {
+        if (id < 0) error("not has id")
+        return getEncodeId(dexId, id)
+    }
 }

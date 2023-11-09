@@ -212,9 +212,9 @@ class FindMethod : BaseQuery() {
             excludePackages?.map { fbb.createString(it) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             ignorePackagesCase,
-            searchClasses?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchClasses?.map { it.getEncodeId() }?.toLongArray()
                 ?.let { InnerFindMethod.createInClassesVector(fbb, it) } ?: 0,
-            searchMethods?.map { getEncodeId(it.dexId, it.id) }?.toLongArray()
+            searchMethods?.map { it.getEncodeId() }?.toLongArray()
                 ?.let { InnerFindMethod.createInMethodsVector(fbb, it) } ?: 0,
             findFirst,
             matcher?.build(fbb) ?: 0

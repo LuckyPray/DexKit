@@ -41,9 +41,8 @@ class UnitTest {
                 declaredClass("org.luckypray.dexkit.demo.PlayActivity")
             }
         }.forEach {
-            println("${it.dexId} ${it.id} ${it.descriptor}")
-            val paramNames = it.getParameterNames()
-            println("paramNames: ${paramNames?.joinToString(",")}")
+            println(it.descriptor)
+            println("paramNames: ${it.parameterNames?.joinToString(",")}")
         }
     }
 
@@ -63,9 +62,8 @@ class UnitTest {
         res.forEach {
             assert(it.name.startsWith("org.luckypray.dexkit.demo"))
             assert(it.name.endsWith("Activity"))
-            val annotation = it.getAnnotations()
-            assert(annotation.size == 1)
-            assert(annotation.first().typeName == "org.luckypray.dexkit.demo.annotations.Router")
+            assert(it.annotations.size == 1)
+            assert(it.annotations.first().typeName == "org.luckypray.dexkit.demo.annotations.Router")
         }
     }
 
@@ -88,8 +86,8 @@ class UnitTest {
         assert(res.size == 1)
         val mainActivity = res.first()
         assert(mainActivity.name == "org.luckypray.dexkit.demo.MainActivity")
-        assert(mainActivity.getSuperClass()!!.name == "androidx.appcompat.app.AppCompatActivity")
-        assert(mainActivity.getInterfaces().size == 1)
+        assert(mainActivity.superClass!!.name == "androidx.appcompat.app.AppCompatActivity")
+        assert(mainActivity.interfaceCount == 1)
     }
 
     @Test
@@ -107,8 +105,7 @@ class UnitTest {
         println(res)
         assert(res.size == 1)
         val playActivity = res.first()
-        val fields = playActivity.getFields()
-        assert(fields.size == 3)
+        assert(playActivity.fields.size == 3)
         assert(playActivity.name == "org.luckypray.dexkit.demo.PlayActivity")
     }
 
@@ -223,7 +220,7 @@ class UnitTest {
         val res = bridge.getClassData("Lorg/luckypray/dexkit/demo/MainActivity;")
         assert(res != null)
         assert(res!!.name == "org.luckypray.dexkit.demo.MainActivity")
-        res.getMethods().forEach {
+        res.methods.forEach {
             println(it.descriptor)
         }
     }
@@ -261,7 +258,7 @@ class UnitTest {
     fun testGetMethodUsingStrings() {
         val res = bridge.getMethodData("Lorg/luckypray/dexkit/demo/PlayActivity;->onCreate(Landroid/os/Bundle;)V")
         assert(res != null)
-        val usingStrings = res!!.getUsingStrings()
+        val usingStrings = res!!.usingStrings
         assert(usingStrings.size == 2)
         usingStrings.containsAll(listOf("onCreate", "PlayActivity"))
     }

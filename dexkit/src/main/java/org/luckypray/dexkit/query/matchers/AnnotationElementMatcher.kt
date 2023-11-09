@@ -82,11 +82,17 @@ class AnnotationElementMatcher : BaseQuery() {
      *             name
      *
      * @param name annotation element name / 注解元素名称
+     * @param matchType match type / 匹配类型
+     * @param ignoreCase ignore case / 忽略大小写
      * @return [AnnotationElementMatcher]
      */
     @JvmOverloads
-    fun name(name: String, ignoreCase: Boolean = false) = also {
-        this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
+    fun name(
+        name: String,
+        matchType: StringMatchType = StringMatchType.Equals,
+        ignoreCase: Boolean = false
+    ) = also {
+        this.nameMatcher = StringMatcher(name, matchType, ignoreCase)
     }
 
     /**

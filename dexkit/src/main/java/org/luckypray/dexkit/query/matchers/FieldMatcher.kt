@@ -182,15 +182,17 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
      *     name("mText")
      *
      * @param name field name / 字段名称
+     * @param matchType match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
      * @return [FieldMatcher]
      */
     @JvmOverloads
     fun name(
         name: String,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
-        this.nameMatcher = StringMatcher(name, StringMatchType.Equals, ignoreCase)
+        this.nameMatcher = StringMatcher(name, matchType, ignoreCase)
     }
 
     /**

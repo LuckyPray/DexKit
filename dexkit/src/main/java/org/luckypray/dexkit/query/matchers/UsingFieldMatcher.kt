@@ -200,16 +200,18 @@ class UsingFieldMatcher : BaseQuery {
      *     fieldName("mText")
      *
      * @param name field name / 字段名称
+     * @param matchType match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
      * @return [FieldMatcher]
      */
     @JvmOverloads
     fun fieldName(
         name: String,
+        matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
     ) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.name(name, ignoreCase)
+        this.matcher!!.name(name, matchType, ignoreCase)
     }
 
     /**
@@ -335,7 +337,7 @@ class UsingFieldMatcher : BaseQuery {
      *     type("java.lang.String", StringMatchType.Equals, true)
      *
      * @param typeName type name / 类型名称
-     * @param matchType match type / 匹配关系
+     * @param matchType match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
      * @return [FieldMatcher]
      */

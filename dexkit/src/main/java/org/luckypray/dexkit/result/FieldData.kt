@@ -33,13 +33,13 @@ import java.lang.reflect.Modifier
 
 class FieldData private constructor(
     bridge: DexKitBridge,
-    val id: Int,
-    val dexId: Int,
-    val classId: Int,
+    id: Int,
+    dexId: Int,
+    private val classId: Int,
     val modifiers: Int,
     val descriptor: String,
-    val typeId: Int
-): BaseData(bridge) {
+    private val typeId: Int
+): BaseData(bridge, id, dexId) {
 
     internal companion object `-Companion` {
         fun from(bridge: DexKitBridge, fieldMeta: InnerFieldMeta) = FieldData(
@@ -95,8 +95,8 @@ class FieldData private constructor(
      * ----------------
      * 获取定义字段的类的 [ClassData]
      */
-    fun getClass(): ClassData {
-        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).first()
+    val declaredClass: ClassData by lazy {
+        bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, classId))).first()
     }
 
     /**
@@ -104,8 +104,8 @@ class FieldData private constructor(
      * ----------------
      * 获取字段类型的 [ClassData]
      */
-    fun getType(): ClassData {
-        return bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, typeId))).first()
+    val type: ClassData by lazy {
+        bridge.getTypeByIds(longArrayOf(getEncodeId(dexId, typeId))).first()
     }
 
     /**
@@ -113,8 +113,8 @@ class FieldData private constructor(
      * ----------------
      * 获取标注的注解列表。
      */
-    fun getAnnotations(): List<AnnotationData> {
-        return bridge.getFieldAnnotations(getEncodeId(dexId, id))
+    val annotations: List<AnnotationData> by lazy {
+        bridge.getFieldAnnotations(getEncodeId(dexId, id))
     }
 
     /**
@@ -122,8 +122,8 @@ class FieldData private constructor(
      * ----------------
      * 使用 smali `iget-*`、`sget-*` 指令读取字段的方法
      */
-    fun getReadMethods(): List<MethodData> {
-        return bridge.readFieldMethods(getEncodeId(dexId, id))
+    val readMethods by lazy {
+        bridge.readFieldMethods(getEncodeId(dexId, id))
     }
 
     /**
@@ -131,8 +131,8 @@ class FieldData private constructor(
      * ----------------
      * 使用 smali `iput-*`、`sput-*` 指令写入字段的方法
      */
-    fun getWriteMethods(): List<MethodData> {
-        return bridge.writeFieldMethods(getEncodeId(dexId, id))
+    val writeMethods by lazy {
+        bridge.writeFieldMethods(getEncodeId(dexId, id))
     }
 
     /**
@@ -170,7 +170,9 @@ class FieldData private constructor(
      * @return [Field]
      */
     @Throws(NoSuchFieldException::class)
-    fun getFieldInstance(classLoader: ClassLoader) = dexField.getFieldInstance(classLoader)
+    fun getFieldInstance(classLoader: ClassLoader): Field {
+        return dexField.getFieldInstance(classLoader)
+    }
 
     /**
      * Convert to [DexField]

@@ -93,12 +93,17 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
      *     addField("field", false)
      *
      * @param name field name / 字段名
+     * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
      * @return [ClassMatcher]
      */
     @JvmOverloads
-    fun addForName(name: String, ignoreCase: Boolean = false) = also {
-        add(FieldMatcher().apply { name(name, ignoreCase) })
+    fun addForName(
+        name: String,
+        matchType: StringMatchType = StringMatchType.Equals,
+        ignoreCase: Boolean = false
+    ) = also {
+        add(FieldMatcher().apply { name(name, matchType, ignoreCase) })
     }
 
     /**
@@ -251,6 +256,7 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
      * @param ignoreCase ignore case / 忽略大小写
      * @return [StringMatchersGroupList]
      */
+    @JvmOverloads
     fun add(
         groupName: String,
         usingStrings: Collection<String>,
