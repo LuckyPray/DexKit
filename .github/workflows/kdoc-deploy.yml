@@ -2,11 +2,8 @@ name: KDoc Build and Deploy
 
 on:
   push:
-    branches:
-      - master
-    paths:
-      - 'dexkit/src/main/java/**'
-      - '.github/workflows/kdoc-deploy.yml'
+    tags:
+      - '**'
 
 jobs:
   KDoc-deploy:
