@@ -126,7 +126,12 @@ Error DexKit::ExportDexFile(std::string_view path) {
         if (fp == nullptr) {
             return Error::OPEN_FILE_FAILED;
         }
-        fwrite(image, 1, image->len(), fp);
+        size_t size = fwrite(image, 1, image->len(), fp);
+        if (size != image->len()) {
+            fclose(fp);
+            return Error::WRITE_FILE_INCOMPLETE;
+        }
+        fflush(fp);
         fclose(fp);
     }
     return Error::SUCCESS;

@@ -27,7 +27,7 @@
 
 #include "flatbuffers/flatbuffers.h"
 #include "file_helper.h"
-#include "error.h"
+#include "dexkit_error.h"
 #include "dex_item.h"
 #include "package_trie.h"
 #include "analyze.h"

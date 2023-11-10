@@ -26,7 +26,7 @@
 #include "beans.h"
 #include "common.h"
 #include "constant.h"
-#include "error.h"
+#include "dexkit_error.h"
 #include "string_match.h"
 
 #include "parallel_hashmap/phmap.h"

@@ -60,7 +60,7 @@ object DexSignUtil {
     }
 
     /**
-     * Convert descriptor to class name.
+     * Convert descriptor to type name.
      * ----------------
      * 转换描述符为类名。
      *
@@ -87,7 +87,7 @@ object DexSignUtil {
     }
 
     /**
-     * Convert class to simple name.
+     * Convert class to type name.
      * ----------------
      * 转换类为类名。
      *

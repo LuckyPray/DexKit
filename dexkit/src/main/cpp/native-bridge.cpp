@@ -39,9 +39,7 @@
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, TAG ,__VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
 #else
-
 #include <cstdio>
-
 #define LOGI(__FORMAT__, ...) fprintf(stdout, "I/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
 #define LOGD(__FORMAT__, ...) fprintf(stdout, "D/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
 #define LOGE(__FORMAT__, ...) fprintf(stdout, "E/" TAG ": " __FORMAT__ "\n", ##__VA_ARGS__); fflush(stdout)
@@ -55,14 +53,16 @@ const T *From(const void *buf) {
     return ::flatbuffers::GetRoot<T>(buf);
 }
 
-extern "C" {
-
 using dexkit::Error;
 
-void throwException(JNIEnv *env, const char *message) {
+void throwException(JNIEnv *env, const char *msg) {
     static jclass clazz = static_cast<jclass>(env->NewGlobalRef(
             env->FindClass("java/lang/IllegalStateException")));
-    env->ThrowNew(clazz, message);
+    env->ThrowNew(clazz, msg);
+}
+
+void throwException(JNIEnv *env, Error error) {
+    throwException(env, dexkit::GetErrorMessage(error).data());
 }
 
 void checkAndSetFlatBufferResult(JNIEnv *env, std::unique_ptr<flatbuffers::FlatBufferBuilder> &ptr, jbyteArray &ret) {
@@ -75,6 +75,8 @@ void checkAndSetFlatBufferResult(JNIEnv *env, std::unique_ptr<flatbuffers::FlatB
     env->SetByteArrayRegion(ret, 0, buf_size, (jbyte *) buf_ptr);
     ptr->Release();
 }
+
+extern "C" {
 
 #ifdef __ANDROID__
 // android memory processing
@@ -191,7 +193,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             LOGD("contains compact dex, use path load: %s", file_name);
             auto ret = dexkit->AddZipPath(file_name);
             if (ret != Error::SUCCESS) {
-                throwException(env, "Open zip file failed");
+                throwException(env, ret);
                 delete dexkit;
                 return 0;
             }
@@ -204,7 +206,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             }
             auto ret = dexkit->AddImage(std::move(images));
             if (ret != Error::SUCCESS) {
-                throwException(env, "Add dex image failed");
+                throwException(env, ret);
                 delete dexkit;
                 return 0;
             }
@@ -236,7 +238,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
     }
     auto ret = dexkit->AddImage(std::move(images));
     if (ret != Error::SUCCESS) {
-        throwException(env, "Add dex image failed");
+        throwException(env, ret);
         delete dexkit;
         return 0;
     }
@@ -253,7 +255,13 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass claz
     const char *cStr = env->GetStringUTFChars(apk_path, nullptr);
     LOGI("apkPath -> %s", cStr);
     std::string filePathStr(cStr);
-    auto dexkit = new dexkit::DexKit(filePathStr);
+    auto dexkit = new dexkit::DexKit();
+    auto ret = dexkit->AddZipPath(filePathStr);
+    if (ret != Error::SUCCESS) {
+        throwException(env, ret);
+        delete dexkit;
+        return 0;
+    }
     env->ReleaseStringUTFChars(apk_path, cStr);
     return (jlong) dexkit;
 }
@@ -302,7 +310,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeExportDexFile(JNIEnv *env,
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     const char *outDir = env->GetStringUTFChars(out_dir, nullptr);
     std::string outDirStr(outDir);
-    dexkit->ExportDexFile(outDirStr);
+    auto ret = dexkit->ExportDexFile(outDirStr);
+    if (ret != Error::SUCCESS) {
+        throwException(env, ret);
+    }
     env->ReleaseStringUTFChars(out_dir, outDir);
 }
 
