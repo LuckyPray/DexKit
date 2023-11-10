@@ -122,7 +122,7 @@ class FieldData private constructor(
      * ----------------
      * 使用 smali `iget-*`、`sget-*` 指令读取字段的方法
      */
-    val readMethods by lazy {
+    val readers by lazy {
         bridge.readFieldMethods(getEncodeId(dexId, id))
     }
 
@@ -131,7 +131,7 @@ class FieldData private constructor(
      * ----------------
      * 使用 smali `iput-*`、`sput-*` 指令写入字段的方法
      */
-    val writeMethods by lazy {
+    val writers by lazy {
         bridge.writeFieldMethods(getEncodeId(dexId, id))
     }
 

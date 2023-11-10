@@ -206,7 +206,7 @@ class MethodData private constructor(
      * ----------------
      * 获取调用该方法的方法列表
      */
-    val methodCallers by lazy {
+    val callers by lazy {
         bridge.getCallMethods(getEncodeId(dexId, id))
     }
 
@@ -215,7 +215,7 @@ class MethodData private constructor(
      * ----------------
      * 获取该方法调用的方法列表
      */
-    val invokeMethods by lazy {
+    val invokes by lazy {
         bridge.getInvokeMethods(getEncodeId(dexId, id))
     }
 

@@ -26,6 +26,7 @@ package org.luckypray.dexkit.query.matchers
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerParametersMatcher
 import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
 class ParametersMatcher : BaseQuery() {
@@ -144,6 +145,15 @@ class ParametersMatcher : BaseQuery() {
     fun add(matcher: ParameterMatcher?) = also {
         paramsMatcher = paramsMatcher ?: mutableListOf()
         paramsMatcher!!.add(matcher)
+    }
+
+    @JvmOverloads
+    fun add(
+        typeName: String,
+        matchType: StringMatchType = StringMatchType.Equals,
+        ignoreCase: Boolean = false
+    ) = also {
+        add(ParameterMatcher().type(typeName, matchType, ignoreCase))
     }
 
     // region DSL

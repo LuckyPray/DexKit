@@ -510,10 +510,10 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
-    internal inline fun getCallMethods(encodeId: Long): List<MethodData> {
+    internal inline fun getCallMethods(encodeId: Long): MethodDataList {
         val res = nativeGetCallMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<MethodData>()
+        val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
@@ -521,10 +521,10 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
-    internal inline fun getInvokeMethods(encodeId: Long): List<MethodData> {
+    internal inline fun getInvokeMethods(encodeId: Long): MethodDataList {
         val res = nativeGetInvokeMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<MethodData>()
+        val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
@@ -548,10 +548,10 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
-    internal inline fun readFieldMethods(encodeId: Long): List<MethodData> {
+    internal inline fun readFieldMethods(encodeId: Long): MethodDataList {
         val res = nativeFieldGetMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<MethodData>()
+        val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
@@ -559,10 +559,10 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
-    internal inline fun writeFieldMethods(encodeId: Long): List<MethodData> {
+    internal inline fun writeFieldMethods(encodeId: Long): MethodDataList {
         val res = nativeFieldPutMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
-        val list = mutableListOf<MethodData>()
+        val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
             list.add(MethodData.from(this@DexKitBridge, holder.methods(i)!!))
         }
