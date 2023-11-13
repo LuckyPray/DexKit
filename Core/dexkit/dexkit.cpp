@@ -24,6 +24,8 @@
 #include "schema/querys_generated.h"
 #include "schema/results_generated.h"
 
+#define WRITE_FILE_BLOCK_SIZE 1024 * 1024
+
 namespace dexkit {
 
 bool comp(std::unique_ptr<DexItem> &a, std::unique_ptr<DexItem> &b) {
@@ -126,12 +128,18 @@ Error DexKit::ExportDexFile(std::string_view path) {
         if (fp == nullptr) {
             return Error::OPEN_FILE_FAILED;
         }
-        size_t size = fwrite(image, 1, image->len(), fp);
-        if (size != image->len()) {
-            fclose(fp);
-            return Error::WRITE_FILE_INCOMPLETE;
+        int len = (int) image->len();
+        int offset = 0;
+        while (offset < len) {
+            int size = std::min(WRITE_FILE_BLOCK_SIZE, len - offset);
+            size_t write_size = fwrite(image->addr() + offset, 1, size, fp);
+            if (write_size != size) {
+                fclose(fp);
+                return Error::WRITE_FILE_INCOMPLETE;
+            }
+            offset += size;
+            fflush(fp);
         }
-        fflush(fp);
         fclose(fp);
     }
     return Error::SUCCESS;
