@@ -26,10 +26,10 @@ import org.luckypray.dexkit.InnerUsingType
 
 enum class UsingType(val value: Byte) {
     /**
-     * Get or Put
+     * [Read] or [Write]
      */
     Any(InnerUsingType.Any_),
-    Get(InnerUsingType.Get),
-    Put(InnerUsingType.Put),
+    Read(InnerUsingType.Get),
+    Write(InnerUsingType.Put),
     ;
 }
