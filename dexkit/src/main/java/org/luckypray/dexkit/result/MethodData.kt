@@ -154,7 +154,7 @@ class MethodData private constructor(
      * ----------------
      * 获取参数类型的 [ClassDataList]
      */
-    val parameterTypes by lazy {
+    val paramTypes by lazy {
         bridge.getTypeByIds(paramTypeIds.map { getEncodeId(dexId, it) }.toLongArray())
     }
 
@@ -163,7 +163,7 @@ class MethodData private constructor(
      * ----------------
      * 获取参数类型的数量
      */
-    val parameterNames by lazy {
+    val paramNames by lazy {
         bridge.getParameterNames(getEncodeId(dexId, id))
     }
 

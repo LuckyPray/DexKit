@@ -42,7 +42,7 @@ class UnitTest {
             }
         }.forEach {
             println(it.descriptor)
-            println("paramNames: ${it.parameterNames?.joinToString(",")}")
+            println("paramNames: ${it.paramNames?.joinToString(",")}")
         }
     }
 
