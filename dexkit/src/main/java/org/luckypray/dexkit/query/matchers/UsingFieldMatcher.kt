@@ -62,13 +62,13 @@ class UsingFieldMatcher : BaseQuery {
      *
      *     descriptor = "Lorg/luckypray/dexkit/demo/MainActivity;->mText:Ljava/lang/String;"
      */
-    var fieldDescriptor: String
+    var descriptor: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            fieldDescriptor(value)
+            descriptor(value)
         }
 
     /**
@@ -76,32 +76,32 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段名称。
      */
-    var fieldName: String
+    var name: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            fieldName(value)
+            name(value)
         }
 
     /**
      * Field modifiers. Match using [java.lang.reflect.Modifier] mask bits,
      * default match type is contains, if you need to match exactly,
-     * please use [fieldModifiers] overloaded function.
+     * please use [modifiers] overloaded function.
      * ----------------
      * 字段修饰符。使用 [java.lang.reflect.Modifier] mask bits 进行匹配，
-     * 默认匹配关系为包含，如果需要完全限定匹配请使用 [fieldModifiers] 重载函数。
+     * 默认匹配关系为包含，如果需要完全限定匹配请使用 [modifiers] 重载函数。
      *
      *     modifiers = Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL
      */
-    var fieldModifiers: Int
+    var modifiers: Int
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            fieldModifiers(value)
+            modifiers(value)
         }
 
     /**
@@ -111,13 +111,13 @@ class UsingFieldMatcher : BaseQuery {
      *
      *     declaredClass = "org.luckypray.dexkit.demo.MainActivity"
      */
-    var fieldDeclaredClass: String
+    var declaredClass: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            fieldDeclaredClass(value)
+            declaredClass(value)
         }
 
     /**
@@ -127,13 +127,13 @@ class UsingFieldMatcher : BaseQuery {
      *
      *     type = "java.lang.String"
      */
-    var fieldType: String
+    var type: String
         @JvmSynthetic
         @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
         get() = throw NotImplementedError()
         @JvmSynthetic
         set(value) {
-            fieldType(value)
+            type(value)
         }
 
     /**
@@ -165,16 +165,16 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段描述符，指定唯一的字段。
      *
-     *     fieldDescriptor("Lorg/luckypray/dexkit/demo/MainActivity;->mText:Ljava/lang/String;")
+     *     descriptor("Lorg/luckypray/dexkit/demo/MainActivity;->mText:Ljava/lang/String;")
      *
      * @param descriptor field descriptor / 字段描述符
      * @return [FieldMatcher]
      */
-    fun fieldDescriptor(descriptor: String) = also {
+    fun descriptor(descriptor: String) = also {
         val dexField = DexField(descriptor)
-        fieldName(dexField.name)
-        fieldDeclaredClass(dexField.className)
-        fieldType(dexField.typeName)
+        name(dexField.name)
+        declaredClass(dexField.className)
+        type(dexField.typeName)
     }
 
     /**
@@ -182,12 +182,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段名称字符串匹配器
      *
-     *     fieldName(StringMatcher().value("mText"))
+     *     name(StringMatcher().value("mText"))
      *
      * @param name field name / 字段名称
      * @return [FieldMatcher]
      */
-    fun fieldName(name: StringMatcher) = also {
+    fun name(name: StringMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.name(name)
     }
@@ -197,7 +197,7 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段名称。
      *
-     *     fieldName("mText")
+     *     name("mText")
      *
      * @param name field name / 字段名称
      * @param matchType match type / 字符串匹配类型
@@ -205,7 +205,7 @@ class UsingFieldMatcher : BaseQuery {
      * @return [FieldMatcher]
      */
     @JvmOverloads
-    fun fieldName(
+    fun name(
         name: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
@@ -219,12 +219,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段修饰符匹配器。
      *
-     *     fieldModifiers(AccessFlagsMatcher().flags(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL))
+     *     modifiers(AccessFlagsMatcher().flags(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL))
      *
      * @param modifiers modifiers matcher / 修饰符匹配器
      * @return [FieldMatcher]
      */
-    fun fieldModifiers(modifiers: AccessFlagsMatcher) = also {
+    fun modifiers(modifiers: AccessFlagsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.modifiers(modifiers)
     }
@@ -234,14 +234,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段修饰符。使用 [java.lang.reflect.Modifier] mask bits 进行匹配。
      *
-     *     fieldModifiers(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL)
+     *     modifiers(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL)
      *
      * @param modifiers modifiers / 修饰符
      * @param matchType match type / 匹配关系
      * @return [FieldMatcher]
      */
     @JvmOverloads
-    fun fieldModifiers(
+    fun modifiers(
         modifiers: Int,
         matchType: MatchType = MatchType.Contains
     ) = also {
@@ -254,12 +254,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段声明类匹配器。
      *
-     *     fieldDeclaredClass(ClassMatcher().className("org.luckypray.dexkit.demo.MainActivity"))
+     *     declaredClass(ClassMatcher().className("org.luckypray.dexkit.demo.MainActivity"))
      *
      * @param declaredClass declared class matcher / 声明类匹配器
      * @return [FieldMatcher]
      */
-    fun fieldDeclaredClass(declaredClass: ClassMatcher) = also {
+    fun declaredClass(declaredClass: ClassMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.declaredClass(declaredClass)
     }
@@ -274,7 +274,7 @@ class UsingFieldMatcher : BaseQuery {
      * @param clazz declared class / 声明类
      * @return [FieldMatcher]
      */
-    fun fieldDeclaredClass(clazz: Class<*>) = also {
+    fun declaredClass(clazz: Class<*>) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.declaredClass(clazz)
     }
@@ -284,7 +284,7 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段声明类的名称匹配器。
      *
-     *     fieldDeclaredClass("org.luckypray.dexkit.demo.MainActivity", StringMatchType.Equals, true)
+     *     declaredClass("org.luckypray.dexkit.demo.MainActivity", StringMatchType.Equals, true)
      *
      * @param className declared class name / 声明类名称
      * @param matchType match type / 匹配关系
@@ -292,7 +292,7 @@ class UsingFieldMatcher : BaseQuery {
      * @return [FieldMatcher]
      */
     @JvmOverloads
-    fun fieldDeclaredClass(
+    fun declaredClass(
         className: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
@@ -306,12 +306,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段类型匹配器。
      *
-     *     fieldType(ClassMatcher().className("java.lang.String"))
+     *     type(ClassMatcher().className("java.lang.String"))
      *
      * @param type type matcher / 类型匹配器
      * @return [FieldMatcher]
      */
-    fun fieldType(type: ClassMatcher) = also {
+    fun type(type: ClassMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.type(type)
     }
@@ -324,7 +324,7 @@ class UsingFieldMatcher : BaseQuery {
      * @param clazz type class / 类型类
      * @return [FieldMatcher]
      */
-    fun fieldType(clazz: Class<*>) = also {
+    fun type(clazz: Class<*>) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.type(clazz)
     }
@@ -342,7 +342,7 @@ class UsingFieldMatcher : BaseQuery {
      * @return [FieldMatcher]
      */
     @JvmOverloads
-    fun fieldType(
+    fun type(
         typeName: String,
         matchType: StringMatchType = StringMatchType.Equals,
         ignoreCase: Boolean = false
@@ -356,12 +356,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段注解匹配器。
      *
-     *     fieldAnnotations(AnnotationsMatcher().count(1))
+     *     annotations(AnnotationsMatcher().count(1))
      *
      * @param annotations annotations matcher / 注解匹配器
      * @return [FieldMatcher]
      */
-    fun fieldAnnotations(annotations: AnnotationsMatcher) = also {
+    fun annotations(annotations: AnnotationsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.annotations(annotations)
     }
@@ -371,12 +371,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 添加字段注解匹配器。
      *
-     *     addFieldAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
+     *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
      * @param annotation annotation matcher / 注解匹配器
      * @return [FieldMatcher]
      */
-    fun addFieldAnnotation(annotation: AnnotationMatcher) = also {
+    fun addAnnotation(annotation: AnnotationMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.addAnnotation(annotation)
     }
@@ -389,7 +389,7 @@ class UsingFieldMatcher : BaseQuery {
      * @param count annotation count / 注解数量
      * @return [FieldMatcher]
      */
-    fun fieldAnnotationCount(count: Int) = also {
+    fun annotationCount(count: Int) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.annotationCount(count)
     }
@@ -399,12 +399,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段注解数量范围。
      *
-     *     fieldAnnotationCount(IntRange(1, 2))
+     *     annotationCount(IntRange(1, 2))
      *
      * @param range annotation count range / 注解数量范围
      * @return [FieldMatcher]
      */
-    fun fieldAnnotationCount(range: IntRange) = also {
+    fun annotationCount(range: IntRange) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.annotationCount(range)
     }
@@ -414,12 +414,12 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段注解数量范围。
      *
-     *     fieldAnnotationCount(1..2)
+     *     annotationCount(1..2)
      *
      * @param range annotation count range / 注解数量范围
      * @return [FieldMatcher]
      */
-    fun fieldAnnotationCount(range: kotlin.ranges.IntRange) = also {
+    fun annotationCount(range: kotlin.ranges.IntRange) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.annotationCount(range)
     }
@@ -429,13 +429,13 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 字段注解数量范围。
      *
-     *     fieldAnnotationCount(1, 2)
+     *     annotationCount(1, 2)
      *
      * @param min min annotation count / 最小注解数量
      * @param max max annotation count / 最大注解数量
      * @return [FieldMatcher]
      */
-    fun fieldAnnotationCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
+    fun annotationCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.matcher = matcher ?: FieldMatcher()
         this.matcher!!.annotationCount(min, max)
     }
@@ -445,14 +445,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 读取该字段值的方法匹配器。
      *
-     *     getFieldMethods(MethodsMatcher().add(MethodMatcher().name("getText")))
+     *     readMethods(MethodsMatcher().add(MethodMatcher().name("getText")))
      *
-     * @param getMethods methods matcher / 方法匹配器
+     * @param readMethods methods matcher / 方法匹配器
      * @return [FieldMatcher]
      */
-    fun getFieldMethods(getMethods: MethodsMatcher) = also {
+    fun readMethods(readMethods: MethodsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.getMethods(getMethods)
+        this.matcher!!.readMethods(readMethods)
     }
 
     /**
@@ -460,14 +460,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 添加读取该字段值的方法匹配器。
      *
-     *     addGetFieldMethod(MethodMatcher().name("getText"))
+     *     addReadMethods(MethodMatcher().name("getText"))
      *
-     * @param getMethod method matcher / 方法匹配器
+     * @param readMethod method matcher / 方法匹配器
      * @return [FieldMatcher]
      */
-    fun addGetFieldMethod(getMethod: MethodMatcher) = also {
+    fun addReadMethods(readMethod: MethodMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.addGetMethod(getMethod)
+        this.matcher!!.addReadMethod(readMethod)
     }
 
     /**
@@ -475,14 +475,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 读取该字段值的方法匹配器。
      *
-     *     addGetFieldMethod("Landroid/widget/TextView;->getText()Ljava/lang/CharSequence;")
+     *     addReadMethods("Landroid/widget/TextView;->getText()Ljava/lang/CharSequence;")
      *
      * @param methodDescriptor method descriptor / 方法描述符
      * @return [FieldMatcher]
      */
-    fun addGetFieldMethod(methodDescriptor: String) = also {
+    fun addReadMethods(methodDescriptor: String) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.addGetMethod(MethodMatcher(methodDescriptor))
+        this.matcher!!.addReadMethod(MethodMatcher(methodDescriptor))
     }
 
     /**
@@ -490,14 +490,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 写入该字段值的方法匹配器。
      *
-     *     putFieldMethods(MethodsMatcher().add(MethodMatcher().name("setText")))
+     *     writeMethods(MethodsMatcher().add(MethodMatcher().name("setText")))
      *
      * @param putMethods methods matcher / 方法匹配器
      * @return [FieldMatcher]
      */
-    fun putFieldMethods(putMethods: MethodsMatcher) = also {
+    fun writeMethods(putMethods: MethodsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.putMethods(putMethods)
+        this.matcher!!.writeMethods(putMethods)
     }
 
     /**
@@ -505,14 +505,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 添加写入该字段值的方法匹配器。
      *
-     *     addPutFieldMethod(MethodMatcher().name("setText"))
+     *     addWriteMethod(MethodMatcher().name("setText"))
      *
      * @param putMethod method matcher / 方法匹配器
      * @return [FieldMatcher]
      */
-    fun addPutFieldMethod(putMethod: MethodMatcher) = also {
+    fun addWriteMethod(putMethod: MethodMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.addPutMethod(putMethod)
+        this.matcher!!.addWriteMethod(putMethod)
     }
 
     /**
@@ -520,14 +520,14 @@ class UsingFieldMatcher : BaseQuery {
      * ----------------
      * 写入该字段值的方法匹配器。
      *
-     *     addPutFieldMethod("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V")
+     *     addWriteMethod("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V")
      *
      * @param methodDescriptor method descriptor / 方法描述符
      * @return [FieldMatcher]
      */
-    fun addPutFieldMethod(methodDescriptor: String) = also {
+    fun addWriteMethod(methodDescriptor: String) = also {
         this.matcher = matcher ?: FieldMatcher()
-        this.matcher!!.addPutMethod(MethodMatcher(methodDescriptor))
+        this.matcher!!.addWriteMethod(MethodMatcher(methodDescriptor))
     }
 
     // region DSL
@@ -540,67 +540,67 @@ class UsingFieldMatcher : BaseQuery {
         field(FieldMatcher().apply(init))
     }
     /**
-     * @see fieldDeclaredClass
+     * @see declaredClass
      */
     @kotlin.internal.InlineOnly
-    inline fun fieldDeclaredClass(init: ClassMatcher.() -> Unit) = also {
-        fieldDeclaredClass(ClassMatcher().apply(init))
+    inline fun declaredClass(init: ClassMatcher.() -> Unit) = also {
+        declaredClass(ClassMatcher().apply(init))
     }
 
     /**
-     * @see fieldType
+     * @see type
      */
     @kotlin.internal.InlineOnly
-    inline fun fieldType(init: ClassMatcher.() -> Unit) = also {
-        fieldType(ClassMatcher().apply(init))
+    inline fun type(init: ClassMatcher.() -> Unit) = also {
+        type(ClassMatcher().apply(init))
     }
 
     /**
-     * @see fieldAnnotations
+     * @see annotations
      */
     @kotlin.internal.InlineOnly
-    inline fun fieldAnnotations(init: AnnotationsMatcher.() -> Unit) = also {
-        fieldAnnotations(AnnotationsMatcher().apply(init))
+    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+        annotations(AnnotationsMatcher().apply(init))
     }
 
     /**
-     * @see addFieldAnnotation
+     * @see addAnnotation
      */
     @kotlin.internal.InlineOnly
-    inline fun addFieldAnnotation(init: AnnotationMatcher.() -> Unit) = also {
-        addFieldAnnotation(AnnotationMatcher().apply(init))
+    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+        addAnnotation(AnnotationMatcher().apply(init))
     }
 
     /**
-     * @see getFieldMethods
+     * @see readMethods
      */
     @kotlin.internal.InlineOnly
-    inline fun getFieldMethods(init: MethodsMatcher.() -> Unit) = also {
-        getFieldMethods(MethodsMatcher().apply(init))
+    inline fun readMethods(init: MethodsMatcher.() -> Unit) = also {
+        readMethods(MethodsMatcher().apply(init))
     }
 
     /**
-     * @see addGetFieldMethod
+     * @see addReadMethods
      */
     @kotlin.internal.InlineOnly
-    inline fun addGetFieldMethod(init: MethodMatcher.() -> Unit) = also {
-        addGetFieldMethod(MethodMatcher().apply(init))
+    inline fun addReadMethods(init: MethodMatcher.() -> Unit) = also {
+        addReadMethods(MethodMatcher().apply(init))
     }
 
     /**
-     * @see putFieldMethods
+     * @see writeMethods
      */
     @kotlin.internal.InlineOnly
-    inline fun putFieldMethods(init: MethodsMatcher.() -> Unit) = also {
-        putFieldMethods(MethodsMatcher().apply(init))
+    inline fun writeMethods(init: MethodsMatcher.() -> Unit) = also {
+        writeMethods(MethodsMatcher().apply(init))
     }
 
     /**
-     * @see addPutFieldMethod
+     * @see addWriteMethod
      */
     @kotlin.internal.InlineOnly
-    inline fun addPutFieldMethod(init: MethodMatcher.() -> Unit) = also {
-        addPutFieldMethod(MethodMatcher().apply(init))
+    inline fun addWriteMethod(init: MethodMatcher.() -> Unit) = also {
+        addWriteMethod(MethodMatcher().apply(init))
     }
 
     // endregion
