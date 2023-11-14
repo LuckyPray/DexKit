@@ -10,13 +10,13 @@ enum class FieldUsingType {
      * ----------------
      * 读取了字段
      */
-    Get,
+    Read,
 
     /**
      * Write field
      * ----------------
      * 写入了字段
      */
-    Put,
+    Write,
     ;
 }

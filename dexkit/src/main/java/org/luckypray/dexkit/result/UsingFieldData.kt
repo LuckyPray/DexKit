@@ -12,8 +12,8 @@ data class UsingFieldData(
         fun from(bridge: DexKitBridge, usingFieldMeta: InnerUsingFieldMeta): UsingFieldData {
             val fieldData = FieldData.from(bridge, usingFieldMeta.field!!)
             val usingType = when (usingFieldMeta.usingType) {
-                InnerUsingType.Get -> FieldUsingType.Get
-                InnerUsingType.Put -> FieldUsingType.Put
+                InnerUsingType.Get -> FieldUsingType.Read
+                InnerUsingType.Put -> FieldUsingType.Write
                 else -> throw IllegalArgumentException("Unknown using type: ${usingFieldMeta.usingType}")
             }
             return UsingFieldData(fieldData, usingType)
