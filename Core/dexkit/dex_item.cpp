@@ -226,6 +226,13 @@ void DexItem::InitBaseCache() {
             methods.emplace_back(class_method_idx);
         }
     }
+    auto method_idx = 0;
+    for (auto &method_def: reader.MethodIds()) {
+        if (!type_def_flag[method_def.class_idx]) {
+            class_method_ids[method_def.class_idx].emplace_back(method_idx);
+        }
+        ++method_idx;
+    }
     {
         static std::mutex put_declare_class_mutex;
         std::lock_guard<std::mutex> lock(put_declare_class_mutex);

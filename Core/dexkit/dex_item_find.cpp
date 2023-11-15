@@ -161,6 +161,7 @@ DexItem::FindMethod(
     for (auto method_idx = start; method_idx < end; ++method_idx) {
         if (query->find_first() && find_fist_flag) break;
         auto &method_def = this->reader.MethodIds()[method_idx];
+        if (!this->type_def_flag[method_def.class_idx]) continue;
         if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[method_def.class_idx], query->ignore_packages_case());
@@ -201,6 +202,7 @@ DexItem::FindField(
     for (auto field_idx = start; field_idx < end; ++field_idx) {
         if (query->find_first() && find_fist_flag) break;
         auto &field_def = this->reader.FieldIds()[field_idx];
+        if (!this->type_def_flag[field_def.class_idx]) continue;
         if (query->in_classes() && !in_class_set.contains(field_def.class_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[field_def.class_idx], query->ignore_packages_case());
