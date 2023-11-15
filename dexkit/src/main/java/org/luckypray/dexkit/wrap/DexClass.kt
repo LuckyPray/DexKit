@@ -35,6 +35,10 @@ class DexClass: Serializable {
 
     val typeName: String
 
+    val simpleName get() = typeName.substringAfterLast('.')
+
+    val isArray get() = typeName.endsWith("[]")
+
     /**
      * Convert class descriptor to [DexClass].
      * ----------------

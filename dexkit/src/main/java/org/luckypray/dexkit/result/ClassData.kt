@@ -86,6 +86,17 @@ class ClassData private constructor(
     val name get() = dexClass.typeName
 
     /**
+     * Simple class name
+     * ----------------
+     * 简单类名
+     *
+     *     e.g. String
+     */
+    val simpleName get() = dexClass.simpleName
+
+    val isArray get() = dexClass.isArray
+
+    /**
      * Get super's [ClassData], if super class not defined in dex, return null
      * ----------------
      * 获取父类的 [ClassData]，如果父类未在 dex 中定义，返回 null
