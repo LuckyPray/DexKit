@@ -111,6 +111,13 @@ class MethodData private constructor(
     val paramTypeNames get() = dexMethod.paramTypeNames
 
     /**
+     * method parameter count
+     * ----------------
+     * 方法参数数量
+     */
+    val paramCount get() = paramTypeIds.size
+
+    /**
      * method return type name
      * ----------------
      * 方法返回类型名

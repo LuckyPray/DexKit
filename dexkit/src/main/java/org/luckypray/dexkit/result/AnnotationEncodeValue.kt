@@ -75,6 +75,92 @@ class AnnotationEncodeValue private constructor(
         }
     }
 
+    fun charValue(): Char {
+        if (type != AnnotationEncodeValueType.CharValue) error("type is not CharValue")
+        return value as Char
+    }
+
+    fun byteValue(): Byte {
+        if (type != AnnotationEncodeValueType.ByteValue) error("type is not ByteValue")
+        return value as Byte
+    }
+
+    fun shortValue(): Short {
+        if (type != AnnotationEncodeValueType.ShortValue) error("type is not ShortValue")
+        return value as Short
+    }
+
+    fun intValue(): Int {
+        if (type != AnnotationEncodeValueType.IntValue) error("type is not IntValue")
+        return value as Int
+    }
+
+    fun longValue(): Long {
+        if (type != AnnotationEncodeValueType.LongValue) error("type is not LongValue")
+        return value as Long
+    }
+
+    fun floatValue(): Float {
+        if (type != AnnotationEncodeValueType.FloatValue) error("type is not FloatValue")
+        return value as Float
+    }
+
+    fun doubleValue(): Double {
+        if (type != AnnotationEncodeValueType.DoubleValue) error("type is not DoubleValue")
+        return value as Double
+    }
+
+    fun numberValue(): Number {
+        return when (type) {
+            AnnotationEncodeValueType.ByteValue -> byteValue()
+            AnnotationEncodeValueType.ShortValue -> shortValue()
+            AnnotationEncodeValueType.IntValue -> intValue()
+            AnnotationEncodeValueType.LongValue -> longValue()
+            AnnotationEncodeValueType.FloatValue -> floatValue()
+            AnnotationEncodeValueType.DoubleValue -> doubleValue()
+            else -> error("type is not number")
+        }
+    }
+
+    fun stringValue(): String {
+        if (type != AnnotationEncodeValueType.StringValue) error("type is not StringValue")
+        return value as String
+    }
+
+    fun typeValue(): ClassData {
+        if (type != AnnotationEncodeValueType.TypeValue) error("type is not TypeValue")
+        return value as ClassData
+    }
+
+    fun methodValue(): MethodData {
+        if (type != AnnotationEncodeValueType.MethodValue) error("type is not MethodValue")
+        return value as MethodData
+    }
+
+    fun enumValue(): FieldData {
+        if (type != AnnotationEncodeValueType.EnumValue) error("type is not EnumValue")
+        return value as FieldData
+    }
+
+    fun arrayValue(): AnnotationEncodeArrayData {
+        if (type != AnnotationEncodeValueType.ArrayValue) error("type is not ArrayValue")
+        return value as AnnotationEncodeArrayData
+    }
+
+    fun annotationValue(): AnnotationData {
+        if (type != AnnotationEncodeValueType.AnnotationValue) error("type is not AnnotationValue")
+        return value as AnnotationData
+    }
+
+    fun boolValue(): Boolean {
+        if (type != AnnotationEncodeValueType.BoolValue) error("type is not BoolValue")
+        return value as Boolean
+    }
+
+    fun isNullValue(): Boolean {
+        return type == AnnotationEncodeValueType.NullValue
+    }
+
     override fun toString(): String {
         return buildString {
             when (type) {

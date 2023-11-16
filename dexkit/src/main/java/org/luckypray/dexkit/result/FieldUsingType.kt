@@ -19,4 +19,8 @@ enum class FieldUsingType {
      */
     Write,
     ;
+
+    fun isRead() = this == Read
+
+    fun isWrite() = this == Write
 }
