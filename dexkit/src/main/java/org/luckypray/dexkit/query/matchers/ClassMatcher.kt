@@ -794,6 +794,30 @@ class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
+     * Using strings matcher(fuzzy match).
+     * ----------------
+     * 使用字符串匹配器(完全匹配)。
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [ClassMatcher]
+     */
+    fun usingEqStrings(usingStrings: Collection<String>) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, StringMatchType.Equals, false) }.toMutableList()
+    }
+
+    /**
+     * Using strings matcher(fuzzy match).
+     * ----------------
+     * 使用字符串匹配器(完全匹配)。
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [ClassMatcher]
+     */
+    fun usingEqStrings(vararg usingStrings: String) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, StringMatchType.Equals, false) }.toMutableList()
+    }
+
+    /**
      * Add using string matcher.
      * ----------------
      * 添加使用字符串的匹配器。
@@ -827,6 +851,19 @@ class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
         ignoreCase: Boolean = false
     ) = also {
         addUsingString(StringMatcher(usingString, matchType, ignoreCase))
+    }
+
+    /**
+     * Add using string(fuzzy match).
+     * ----------------
+     * 添加使用字符串(完全匹配)。
+     *
+     * @param usingString using string / 使用字符串
+     * @return [ClassMatcher]
+     */
+    fun addEqString(usingString: String) = also {
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
+        usingStringsMatcher!!.add(StringMatcher(usingString, StringMatchType.Equals, false))
     }
 
     // region DSL

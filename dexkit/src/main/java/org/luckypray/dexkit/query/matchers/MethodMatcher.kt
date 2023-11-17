@@ -544,6 +544,11 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         paramsMatcher!!.add(paramType?.let { ParameterMatcher().type(paramType) })
     }
 
+    fun addParamType(type: ClassMatcher?) = also {
+        paramsMatcher = paramsMatcher ?: ParametersMatcher()
+        paramsMatcher!!.add(type?.let { ParameterMatcher().type(it) })
+    }
+
     /**
      * The method parameter count.
      * ----------------
@@ -799,6 +804,30 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
+     * Using strings matcher(fuzzy match).
+     * ----------------
+     * 使用字符串匹配器(完全匹配)。
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [MethodMatcher]
+     */
+    fun usingEqStrings(usingStrings: Collection<String>) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, StringMatchType.Equals, false) }.toMutableList()
+    }
+
+    /**
+     * Using strings matcher(fuzzy match).
+     * ----------------
+     * 使用字符串匹配器(完全匹配)。
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [MethodMatcher]
+     */
+    fun usingEqStrings(vararg usingStrings: String) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, StringMatchType.Equals, false) }.toMutableList()
+    }
+
+    /**
      * Add using string matcher.
      * ----------------
      * 添加使用字符串的匹配器。
@@ -833,6 +862,19 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     ) = also {
         usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
         usingStringsMatcher!!.add(StringMatcher(usingString, matchType, ignoreCase))
+    }
+
+    /**
+     * Add using string(fuzzy match).
+     * ----------------
+     * 添加使用字符串(完全匹配)。
+     *
+     * @param usingString using string / 使用字符串
+     * @return [MethodMatcher]
+     */
+    fun addEqString(usingString: String) = also {
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
+        usingStringsMatcher!!.add(StringMatcher(usingString, StringMatchType.Equals, false))
     }
 
     /**
@@ -1077,6 +1119,11 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     @kotlin.internal.InlineOnly
     inline fun params(init: ParametersMatcher.() -> Unit) = also {
         params(ParametersMatcher().apply(init))
+    }
+
+    @kotlin.internal.InlineOnly
+    inline fun addParamType(init: ClassMatcher.() -> Unit) = also {
+        addParamType(ClassMatcher().apply(init))
     }
 
     /**

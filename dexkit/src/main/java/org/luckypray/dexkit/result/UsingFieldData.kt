@@ -5,7 +5,7 @@ import org.luckypray.dexkit.InnerUsingFieldMeta
 import org.luckypray.dexkit.InnerUsingType
 
 data class UsingFieldData(
-    val fieldData: FieldData,
+    val field: FieldData,
     val usingType: FieldUsingType,
 ) {
     internal companion object `-Companion` {

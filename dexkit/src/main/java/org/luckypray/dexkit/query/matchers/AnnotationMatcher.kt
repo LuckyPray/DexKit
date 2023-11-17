@@ -358,6 +358,30 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
     }
 
     /**
+     * Using strings matcher(fuzzy match).
+     * ----------------
+     * 使用字符串匹配器(完全匹配)。
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [AnnotationMatcher]
+     */
+    fun usingEqStrings(usingStrings: Collection<String>) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, StringMatchType.Equals, false) }.toMutableList()
+    }
+
+    /**
+     * Using strings matcher(fuzzy match).
+     * ----------------
+     * 使用字符串匹配器(完全匹配)。
+     *
+     * @param usingStrings using string list / 使用字符串列表
+     * @return [AnnotationMatcher]
+     */
+    fun usingEqStrings(vararg usingStrings: String) = also {
+        this.usingStringsMatcher = usingStrings.map { StringMatcher(it, StringMatchType.Equals, false) }.toMutableList()
+    }
+
+    /**
      * Add using string matcher.
      * ----------------
      * 添加使用字符串的匹配器。
@@ -392,6 +416,19 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
     ) = also {
         usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
         usingStringsMatcher!!.add(StringMatcher(usingString, matchType, ignoreCase))
+    }
+
+    /**
+     * Add using string(fuzzy match).
+     * ----------------
+     * 添加使用字符串(完全匹配)。
+     *
+     * @param usingString using string / 使用字符串
+     * @return [MethodMatcher]
+     */
+    fun addEqString(usingString: String) = also {
+        usingStringsMatcher = usingStringsMatcher ?: mutableListOf()
+        usingStringsMatcher!!.add(StringMatcher(usingString, StringMatchType.Equals, false))
     }
 
     // region DSL
