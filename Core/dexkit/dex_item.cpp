@@ -714,11 +714,13 @@ DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
         }
         return beans;
     }
-    auto annotationSet = this->class_annotations[class_idx];
     std::vector<AnnotationBean> beans;
-    for (auto annotation: annotationSet->annotations) {
-        AnnotationBean bean = GetAnnotationBean(annotation);
-        beans.emplace_back(std::move(bean));
+    auto annotationSet = this->class_annotations[class_idx];
+    if (annotationSet) {
+        for (auto annotation: annotationSet->annotations) {
+            AnnotationBean bean = GetAnnotationBean(annotation);
+            beans.emplace_back(std::move(bean));
+        }
     }
     return beans;
 }
@@ -748,6 +750,9 @@ DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
         return {};
     }
     auto annotationSet = this->method_annotations[method_idx];
+    if (annotationSet == nullptr) {
+        return {};
+    }
     std::vector<AnnotationBean> beans;
     for (auto annotation: annotationSet->annotations) {
         AnnotationBean bean = GetAnnotationBean(annotation);
@@ -781,6 +786,9 @@ DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
         return {};
     }
     auto annotationSet = this->field_annotations[field_idx];
+    if (annotationSet == nullptr) {
+        return {};
+    }
     std::vector<AnnotationBean> beans;
     for (auto annotation: annotationSet->annotations) {
         AnnotationBean bean = GetAnnotationBean(annotation);
@@ -821,8 +829,11 @@ DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
         }
         return {};
     }
-    auto param_annotations = this->method_parameter_annotations[method_idx];
     std::vector<std::vector<AnnotationBean>> beans;
+    auto param_annotations = this->method_parameter_annotations[method_idx];
+    if (param_annotations.empty()) {
+        return {};
+    }
     for (auto annotationSet: param_annotations) {
         std::vector<AnnotationBean> annotationBeans;
         if (annotationSet) {
