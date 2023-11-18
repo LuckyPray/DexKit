@@ -211,14 +211,19 @@ class DexKitBridge : Closeable {
     }
 
     /**
-     * Convert class descriptor to [ClassData] (if exists).
+     * Convert class name or descriptor to [ClassData] (if exists).
      * ----------------
-     * 转换类描述符为 [ClassData] （如果存在）。
+     * 转换类名或描述符为 [ClassData] （如果存在）。
      *
-     * @param [descriptor] class descriptor / 类描述符
+     * @param [identifier] class name or descriptor / 类名或类描述
      * @return [ClassData]
      */
-    fun getClassData(descriptor: String): ClassData? {
+    fun getClassData(identifier: String): ClassData? {
+        val descriptor: String = if (identifier.first() == 'L' && identifier.last() == ';') {
+            identifier
+        } else {
+            "L" + identifier.replace('.', '/') + ";"
+        }
         DexClass(descriptor)
         return nativeGetClassData(safeToken, descriptor)?.let {
             ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
