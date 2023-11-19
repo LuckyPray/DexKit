@@ -596,6 +596,19 @@ class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
+     * Add class field type matcher.
+     * ----------------
+     * 添加类字段的类型的匹配器。
+     *
+     * @param clazz field type / 字段类型
+     * @return [ClassMatcher]
+     */
+    fun addFieldForType(clazz: Class<*>) = also {
+        this.fieldsMatcher = this.fieldsMatcher ?: FieldsMatcher()
+        this.fieldsMatcher!!.add(FieldMatcher().type(clazz))
+    }
+
+    /**
      * Class field count.
      * ----------------
      * 类字段数量。

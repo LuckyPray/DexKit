@@ -74,7 +74,7 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
      * @param typeName field type name / 字段类型名
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [ClassMatcher]
+     * @return [FieldMatcherList]
      */
     @JvmOverloads
     fun addForType(
@@ -83,6 +83,18 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
         ignoreCase: Boolean = false
     ) = also {
         add(FieldMatcher().apply { type(typeName, matchType, ignoreCase) })
+    }
+
+    /**
+     * Add class field type matcher.
+     * ----------------
+     * 添加类字段的类型的匹配器。
+     *
+     * @param clazz type class / 类型
+     * @return [FieldMatcherList]
+     */
+    fun addForType(clazz: Class<*>) = also {
+        add(FieldMatcher().apply { type(clazz) })
     }
 
     /**
@@ -95,7 +107,7 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
      * @param name field name / 字段名
      * @param matchType string match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [ClassMatcher]
+     * @return [FieldMatcherList]
      */
     @JvmOverloads
     fun addForName(

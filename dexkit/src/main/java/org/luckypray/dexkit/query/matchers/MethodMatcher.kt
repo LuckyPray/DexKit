@@ -474,6 +474,19 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
+     * empty parameters overload.
+     * ----------------
+     * 无参数重载.
+     *
+     * @return [MethodMatcher]
+     */
+    fun paramTypes() = also {
+        this.paramsMatcher = ParametersMatcher().apply {
+            params(listOf())
+        }
+    }
+
+    /**
      * The method parameter types fully qualified name. If set to null,
      * it means matching any parameter type. The list implies the number of parameters.
      * ----------------
@@ -522,11 +535,18 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      *     addParamType("java.lang.String")
      *
      * @param paramType method parameter type / 方法参数类型
+     * @param matchType class name match type / 类名字符串匹配类型
+     * @param ignoreCase ignore case / 是否忽略大小写
      * @return [MethodMatcher]
      */
-    fun addParamType(paramType: String?) = also {
+    @JvmOverloads
+    fun addParamType(
+        paramType: String?,
+        matchType: StringMatchType = StringMatchType.Equals,
+        ignoreCase: Boolean = false
+    ) = also {
         paramsMatcher = paramsMatcher ?: ParametersMatcher()
-        paramsMatcher!!.add(paramType?.let { ParameterMatcher().type(paramType) })
+        paramsMatcher!!.add(paramType?.let { ParameterMatcher().type(paramType, matchType, ignoreCase) })
     }
 
     /**
@@ -536,7 +556,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      *
      *     addParamType(String::class.java)
      *
-     * @param paramType method parameter type class matcher / 方法参数类型类匹配器
+     * @param paramType param type / 参数类型
      * @return [MethodMatcher]
      */
     fun addParamType(paramType: Class<*>?) = also {
@@ -544,6 +564,14 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         paramsMatcher!!.add(paramType?.let { ParameterMatcher().type(paramType) })
     }
 
+    /**
+     * Add method parameter type class matcher.
+     * ----------------
+     * 添加方法参数类型类匹配器。
+     *
+     * @param type method parameter type class matcher / 方法参数类型类匹配器
+     * @return [MethodMatcher]
+     */
     fun addParamType(type: ClassMatcher?) = also {
         paramsMatcher = paramsMatcher ?: ParametersMatcher()
         paramsMatcher!!.add(type?.let { ParameterMatcher().type(it) })

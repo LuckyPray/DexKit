@@ -147,6 +147,16 @@ class ParametersMatcher : BaseQuery() {
         paramsMatcher!!.add(matcher)
     }
 
+    /**
+     * Add a parameter type to match.
+     * ----------------
+     * 添加一个参数类型匹配器。
+     *
+     * @param typeName type name / 类型名
+     * @param matchType match type / 字符串匹配类型
+     * @param ignoreCase ignore case / 是否忽略大小写
+     * @return [ParametersMatcher]
+     */
     @JvmOverloads
     fun add(
         typeName: String,
@@ -154,6 +164,18 @@ class ParametersMatcher : BaseQuery() {
         ignoreCase: Boolean = false
     ) = also {
         add(ParameterMatcher().type(typeName, matchType, ignoreCase))
+    }
+
+    /**
+     * Add a parameter type to match.
+     * ----------------
+     * 添加一个参数类型匹配器。
+     *
+     * @param clazz type class / 类型
+     * @return [ParametersMatcher]
+     */
+    fun add(clazz: Class<*>) = also {
+        add(ParameterMatcher().type(clazz))
     }
 
     // region DSL

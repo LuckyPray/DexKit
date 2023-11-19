@@ -169,9 +169,9 @@ class FieldsMatcher : BaseQuery() {
     }
 
     /**
-     * Add field to match.
+     * Add field name to match.
      * ----------------
-     * 添加要匹配的字段。
+     * 添加要匹配的字段名。
      *
      * @param name field name / 字段名
      * @return [FieldsMatcher]
@@ -181,9 +181,9 @@ class FieldsMatcher : BaseQuery() {
     }
 
     /**
-     * Add field to match.
+     * Add field type to match.
      * ----------------
-     * 添加要匹配的字段。
+     * 添加要匹配的字段类型。
      *
      * @param typeName field type name / 字段类型名
      * @param matchType match type / 匹配类型
@@ -197,6 +197,18 @@ class FieldsMatcher : BaseQuery() {
         ignoreCase: Boolean = false
     ) = also {
         add(FieldMatcher().apply { type(typeName, matchType, ignoreCase) })
+    }
+
+    /**
+     * add field type to match.
+     * ----------------
+     * 添加要匹配的字段类型。
+     *
+     * @param clazz field type / 字段类型
+     * @return [FieldsMatcher]
+     */
+    fun addForType(clazz: Class<*>) = also {
+        add(FieldMatcher().apply { type(clazz) })
     }
 
     // region DSL
