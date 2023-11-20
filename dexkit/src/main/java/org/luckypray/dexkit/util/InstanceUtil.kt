@@ -63,7 +63,7 @@ object InstanceUtil {
             var clz = classLoader.loadClass(dexField.className)
             do {
                 for (field in clz.declaredFields) {
-                    if (dexField.name == field.name && dexField.typeName == field.type.name) {
+                    if (dexField.name == field.name && dexField.typeName == field.type.typeName) {
                         field.isAccessible = true
                         return field
                     }
