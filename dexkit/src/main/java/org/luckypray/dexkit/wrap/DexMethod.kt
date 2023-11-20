@@ -46,7 +46,11 @@ class DexMethod: Serializable {
      * ----------------
      * 方法签名
      */
-    val methodSign get() = buildString {
+    val methodSign by lazy {
+        getSign()
+    }
+
+    private fun getSign() = buildString {
         append("(")
         append(paramTypeNames.joinToString("") { getTypeSign(it) })
         append(")")
@@ -146,10 +150,7 @@ class DexMethod: Serializable {
             append(getTypeSign(className))
             append("->")
             append(name)
-            append("(")
-            append(paramTypeNames.joinToString("") { getTypeSign(it) })
-            append(")")
-            append(getTypeSign(returnTypeName))
+            append(methodSign)
         }
     }
 

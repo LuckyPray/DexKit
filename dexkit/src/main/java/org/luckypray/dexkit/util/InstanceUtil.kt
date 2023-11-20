@@ -22,6 +22,9 @@
 
 package org.luckypray.dexkit.util
 
+import org.luckypray.dexkit.util.DexSignUtil.getConstructorSign
+import org.luckypray.dexkit.util.DexSignUtil.getMethodSign
+import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
@@ -63,7 +66,8 @@ object InstanceUtil {
             var clz = classLoader.loadClass(dexField.className)
             do {
                 for (field in clz.declaredFields) {
-                    if (dexField.name == field.name && dexField.typeName == field.type.typeName) {
+                    if (dexField.name == field.name
+                        && dexField.typeSign == getTypeSign(field.type)) {
                         field.isAccessible = true
                         return field
                     }
@@ -84,7 +88,7 @@ object InstanceUtil {
             var clz = classLoader.loadClass(dexMethod.className)
             do {
                 for (constructor in clz.declaredConstructors) {
-                    if (dexMethod.methodSign == DexSignUtil.getConstructorSign(constructor)) {
+                    if (dexMethod.methodSign == getConstructorSign(constructor)) {
                         constructor.isAccessible = true
                         return constructor
                     }
@@ -106,7 +110,7 @@ object InstanceUtil {
             do {
                 for (method in clz.declaredMethods) {
                     if (method.name == dexMethod.name
-                        && dexMethod.methodSign == DexSignUtil.getMethodSign(method)) {
+                        && dexMethod.methodSign == getMethodSign(method)) {
                         method.isAccessible = true
                         return method
                     }

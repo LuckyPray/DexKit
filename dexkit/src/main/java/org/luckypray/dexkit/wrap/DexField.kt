@@ -43,7 +43,13 @@ class DexField: Serializable {
      * ----------------
      * 字段类型签名
      */
-    val typeSign get() = getTypeSign(typeName)
+    val typeSign by lazy {
+        getSign()
+    }
+
+    private fun getSign(): String {
+        return getTypeSign(typeName)
+    }
 
     /**
      * Convert field descriptor to [DexField].
@@ -95,7 +101,7 @@ class DexField: Serializable {
             append("->")
             append(name)
             append(":")
-            append(getTypeSign(typeName))
+            append(typeSign)
         }
     }
 
