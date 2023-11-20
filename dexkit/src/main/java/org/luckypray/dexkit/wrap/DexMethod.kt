@@ -65,11 +65,18 @@ class DexMethod: Serializable {
     val isConstructor get() = name == "<init>"
 
     /**
+     * Whether the method is a static initializer
+     * ----------------
+     * 该方法是否为静态初始化方法
+     */
+    val isStaticInitializer get() = name == "<clinit>"
+
+    /**
      * Whether the method is a normal method
      * ----------------
      * 该方法是否为普通方法
      */
-    val isMethod get() = name != "<clinit>" && !isConstructor
+    val isMethod get() = !isStaticInitializer && !isConstructor
 
     /**
      * Convert method descriptor to [DexMethod].
@@ -80,8 +87,8 @@ class DexMethod: Serializable {
      */
     constructor(methodDescriptor: String) {
         val idx1 = methodDescriptor.indexOf("->")
-        val idx2 = methodDescriptor.indexOf("(")
-        val idx3 = methodDescriptor.indexOf(")")
+        val idx2 = methodDescriptor.indexOf("(", idx1 + 1)
+        val idx3 = methodDescriptor.indexOf(")", idx2 + 1)
         if (idx1 == -1 || idx2 == -1 || idx3 == -1) {
             throw IllegalAccessError("not method descriptor: $methodDescriptor")
         }

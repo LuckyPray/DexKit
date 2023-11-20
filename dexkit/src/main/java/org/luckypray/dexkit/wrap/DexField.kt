@@ -60,7 +60,7 @@ class DexField: Serializable {
      */
     constructor(fieldDescriptor: String) {
         val idx1 = fieldDescriptor.indexOf("->")
-        val idx2 = fieldDescriptor.indexOf(":")
+        val idx2 = fieldDescriptor.indexOf(":", idx1 + 1)
         if (idx1 == -1 || idx2 == -1) {
             throw IllegalAccessError("not field descriptor: $fieldDescriptor")
         }

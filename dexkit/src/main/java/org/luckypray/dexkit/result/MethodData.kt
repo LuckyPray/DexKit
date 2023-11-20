@@ -132,6 +132,13 @@ class MethodData private constructor(
     val isConstructor get() = dexMethod.isConstructor
 
     /**
+     * Whether the method is a static initializer
+     * ----------------
+     * 该方法是否为静态初始化方法
+     */
+    val isStaticInitializer get() = dexMethod.isStaticInitializer
+
+    /**
      * Whether the method is a normal method
      * ----------------
      * 该方法是否为普通方法
