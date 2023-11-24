@@ -195,7 +195,7 @@ class MethodData private constructor(
      * ----------------
      * 获取标注的注解列表。
      */
-    val parameterAnnotations by lazy {
+    val paramAnnotations by lazy {
         bridge.getParameterAnnotations(getEncodeId(dexId, id))
     }
 
