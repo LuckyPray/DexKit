@@ -15,12 +15,12 @@ def libVersion = "2.0.0-rc8"
 
 android {
     namespace "org.luckypray.dexkit"
-    compileSdk 33
+    compileSdk 34
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
         minSdk 21
-        targetSdk 33
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -110,7 +110,12 @@ tasks.withType(KotlinCompile).configureEach {
 
 dependencies {
     implementation 'com.google.flatbuffers:flatbuffers-java:23.5.26'
-    implementation "dev.rikka.ndk.thirdparty:cxx:1.2.0"
+    implementation 'dev.rikka.ndk.thirdparty:cxx:1.2.0'
+    implementation('org.jetbrains.kotlin:kotlin-stdlib') {
+        version {
+            require '1.5.0'
+        }
+    }
 }
 
 mavenPublishing {
