@@ -23,6 +23,8 @@
 
 package org.luckypray.dexkit.result
 
+import org.luckypray.dexkit.exceptions.NoResultException
+import org.luckypray.dexkit.exceptions.NonUniqueResultException
 import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
@@ -36,8 +38,10 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
 
     /**
      * Returns the first element, or `null` if the list is empty.
+     * None-unique results may cause unexpected problems and are not recommended.
      * ----------------
      * 返回第一个元素，如果列表为空，则返回 `null`。
+     * 非唯一结果可能会导致意外的问题，不推荐使用。
      */
     fun firstOrNull(): T? {
         return if (isEmpty()) null else first()
@@ -45,8 +49,10 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
 
     /**
      * Returns the first element, or throws an exception if the list is empty.
+     * None-unique results may cause unexpected problems and are not recommended.
      * ----------------
      * 返回第一个元素，如果列表为空，则抛出异常。
+     * 非唯一结果可能会导致意外的问题，不推荐使用。
      */
     fun first(): T {
         return if (isEmpty()) error("list is empty") else get(0)
@@ -54,11 +60,29 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
 
     /**
      * Returns the first element, or throws the specified exception if the list is empty.
+     * None-unique results may cause unexpected problems and are not recommended.
      * ----------------
      * 返回第一个元素，如果列表为空，则抛出指定的异常。
+     * 非唯一结果可能会导致意外的问题，不推荐使用。
      */
     fun firstOrThrow(exceptionSupplier: () -> Throwable): T {
         return if (isEmpty()) throw exceptionSupplier() else get(0)
+    }
+
+    /**
+     * Returns the first element, or `null` if the list length is not 1.
+     * ----------------
+     * 返回第一个元素，如果列表长度不为 1，则返回 `null`。
+     */
+    fun singleOrNull(): T? {
+        if (size == 0) return null
+        val t = get(0)
+        for (i in 1 until size) {
+            if (t != get(i)) {
+                return null
+            }
+        }
+        return t
     }
 
     /**
@@ -66,6 +90,32 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
      * ----------------
      * 返回第一个元素，如果列表长度不为 1，则抛出异常。
      */
+    fun single(): T {
+        if (size == 0) throw NoResultException("No result found for query")
+        val t = get(0)
+        for (i in 1 until size) {
+            if (t != get(i)) {
+                throw NonUniqueResultException(size)
+            }
+        }
+        return t
+    }
+
+    /**
+     * Returns the first element, or throws the specified exception if the list length is not 1.
+     * ----------------
+     * 返回第一个元素，如果列表长度不为 1，则抛出指定的异常。
+     */
+    fun singleOrThrow(exceptionSupplier: () -> Throwable): T {
+        return singleOrNull() ?: throw exceptionSupplier()
+    }
+
+    /**
+     * Returns the first element, or throws an exception if the list length is not 1.
+     * ----------------
+     * 返回第一个元素，如果列表长度不为 1，则抛出异常。
+     */
+    @Deprecated("Use single instead", ReplaceWith("single()"))
     fun fetchOne(): T {
         if (isEmpty()) error("list is empty")
         if (size > 1) error("list has more than one element")
