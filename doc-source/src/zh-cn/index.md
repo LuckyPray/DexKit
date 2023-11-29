@@ -64,7 +64,7 @@ class AppHooker {
         // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
         // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏。
         // 这里使用 `Closable.use` 语法糖自动关闭 DexKitBridge 实例
-        DexKitBridge.create(apkPath)?.use { bridge ->
+        DexKitBridge.create(apkPath).use { bridge ->
             isVipHook(bridge)
             // Other hook ...
         }

@@ -248,7 +248,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 // Strings used by all methods in the class
                 .usingStrings("PlayActivity", "onClick", "onCreate")
             )
-        ).singleOrThrow(() -> new IllegalStateException("No class found"));
+        ).singleOrThrow(() -> new IllegalStateException("返回结果非唯一"));
         // Print the found class: org.luckypray.dexkit.demo.PlayActivity
         System.out.println(classData.getName());
         // Get the corresponding class instance
@@ -284,7 +284,7 @@ class MainHook : IXposedHookLoadPackage {
         // If you need to use it globally, please manage the life cycle yourself and ensure 
         // that the .close() method is called when not needed to prevent memory leaks.
         // Here we use `Closable.use` to automatically close the DexKitBridge instance.
-        DexKitBridge.create(apkPath)?.use { bridge ->
+        DexKitBridge.create(apkPath).use { bridge ->
             findPlayActivity(bridge)
             // Other use cases
         }
@@ -370,7 +370,7 @@ class MainHook : IXposedHookLoadPackage {
                 // Strings used by all methods in the class
                 usingStrings("PlayActivity", "onClick", "onCreate")
             }
-        }.singleOrNull() ?: error("Not found class")
+        }.singleOrNull() ?: error("返回结果非唯一")
         // Print the found class: org.luckypray.dexkit.demo.PlayActivity
         println(classData.name)
         // Get the corresponding class instance

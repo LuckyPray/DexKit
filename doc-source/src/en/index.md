@@ -68,7 +68,7 @@ class AppHooker {
         // If you need to use it globally, please manage the life cycle yourself and ensure 
         // that the .close() method is called when not needed to prevent memory leaks.
         // Here we use `Closable.use` to automatically close the DexKitBridge instance.
-        DexKitBridge.create(apkPath)?.use { bridge ->
+        DexKitBridge.create(apkPath).use { bridge ->
             isVipHook(bridge)
             // Other hook ...
         }
