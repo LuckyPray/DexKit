@@ -72,6 +72,13 @@ class FieldData private constructor(
     val className get() = dexField.className
 
     /**
+     * field declaring class name
+     * ----------------
+     * 定义字段的类名
+     */
+    val declaredClassName get() = className
+
+    /**
      * field name
      * ----------------
      * 字段名

@@ -41,6 +41,8 @@ class DexMethod: Serializable {
     val paramTypeNames: List<String>
     val returnTypeName: String
 
+    val declaredClassName get() = className
+
     /**
      * method sign
      * ----------------

@@ -92,6 +92,13 @@ class MethodData private constructor(
     val className get() = dexMethod.className
 
     /**
+     * method declaring class name
+     * ----------------
+     * 定义方法的类名
+     */
+    val declaredClassName get() = className
+
+    /**
      * method name
      * ----------------
      * 方法名

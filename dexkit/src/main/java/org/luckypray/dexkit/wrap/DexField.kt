@@ -38,6 +38,8 @@ class DexField: Serializable {
     val name: String
     val typeName: String
 
+    val declaredClassName get() = className
+
     /**
      * field type sign
      * ----------------

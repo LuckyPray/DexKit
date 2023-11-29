@@ -35,6 +35,8 @@ class DexClass: Serializable {
 
     val typeName: String
 
+    val className get() = typeName
+
     val simpleName get() = typeName.substringAfterLast('.')
 
     val isArray get() = typeName.endsWith("[]")
