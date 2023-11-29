@@ -166,7 +166,7 @@ private fun findPlayActivity(bridge: DexKitBridge) {
             // Strings used by all methods in the class
             usingStrings("PlayActivity", "onClick", "onCreate")
         }
-    }.firstOrNull() ?: error("Not found class")
+    }.single()
     println(classData.name)
 }
 ```

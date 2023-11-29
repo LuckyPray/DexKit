@@ -83,7 +83,7 @@ class AppHooker {
                 paramCount = 0
                 usingStrings("VipCheckUtil", "userInfo:")
             }
-        }.firstOrNull() ?: error("method not found")
+        }.single()
         val method: Method = methodData.getMethodInstance(hostClassLoader)
         XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true))
     }
@@ -123,7 +123,7 @@ class AppHooker {
                         .returnType("boolean")
                         .usingStrings("VipCheckUtil", "userInfo:")
                 )
-        ).firstOrThrow(() -> new RuntimeException("Method not found"));
+        ).single();
         Method method = methodData.getMethodInstance(hostClassLoader);
         XposedBridge.hookMethod(method, XC_MethodReplacement.returnConstant(true));
     }
