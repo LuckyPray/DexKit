@@ -248,7 +248,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 // Strings used by all methods in the class
                 .usingStrings("PlayActivity", "onClick", "onCreate")
             )
-        ).singleOrThrow(() -> new IllegalStateException("返回结果非唯一"));
+        ).singleOrThrow(() -> new IllegalStateException("The returned result is not unique"));
         // Print the found class: org.luckypray.dexkit.demo.PlayActivity
         System.out.println(classData.getName());
         // Get the corresponding class instance
@@ -370,7 +370,7 @@ class MainHook : IXposedHookLoadPackage {
                 // Strings used by all methods in the class
                 usingStrings("PlayActivity", "onClick", "onCreate")
             }
-        }.singleOrNull() ?: error("返回结果非唯一")
+        }.singleOrNull() ?: error("The returned result is not unique")
         // Print the found class: org.luckypray.dexkit.demo.PlayActivity
         println(classData.name)
         // Get the corresponding class instance

@@ -241,7 +241,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 // 类中所有方法使用的字符串
                 .usingStrings("PlayActivity", "onClick", "onCreate")
             )
-        ).singleOrThrow(() -> new IllegalStateException("The returned result is not unique"));
+        ).singleOrThrow(() -> new IllegalStateException("返回结果不唯一"));
         // 打印找到的类：org.luckypray.dexkit.demo.PlayActivity
         System.out.println(classData.getName());
         // 获取对应的类实例
@@ -362,7 +362,7 @@ class MainHook : IXposedHookLoadPackage {
                 // 类中所有方法使用的字符串
                 usingStrings("PlayActivity", "onClick", "onCreate")
             }
-        }.singleOrNull() ?: error("The returned result is not unique")
+        }.singleOrNull() ?: error("返回结果不唯一")
         // 打印找到的类：org.luckypray.dexkit.demo.PlayActivity
         println(classData.name)
         // Get the corresponding class instance
