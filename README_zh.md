@@ -46,6 +46,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
+    // 替换 <version> 为您需要的版本，例如 '2.0.0-rc1'
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```

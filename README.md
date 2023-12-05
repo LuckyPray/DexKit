@@ -49,6 +49,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
+    // replace <version> with your desired version, e.g. 2.0.0-rc1
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```

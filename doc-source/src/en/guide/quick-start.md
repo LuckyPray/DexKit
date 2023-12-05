@@ -40,6 +40,7 @@ Current DexKit version: [![Maven Central](https://img.shields.io/maven-central/v
 ::: code-group-item gradle
 ```groovy
 dependencies {
+    // replace <version> with your desired version, e.g. '2.0.0-rc1'
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```
@@ -47,6 +48,7 @@ dependencies {
 ::: code-group-item gradle-kts
 ```kotlin
 dependencies {
+    // replace <version> with your desired version, e.g. '2.0.0-rc1'
     implementation("org.luckypray:dexkit:<version>")
 }
 ```

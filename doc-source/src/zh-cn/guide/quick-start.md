@@ -39,6 +39,7 @@ DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/or
 ::: code-group-item gradle
 ```groovy
 dependencies {
+    // 将 <version> 替换为您需要的版本，例如 '2.0.0-rc1'
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```
@@ -46,6 +47,7 @@ dependencies {
 ::: code-group-item gradle-kts
 ```kotlin
 dependencies {
+    // 将 <version> 替换为您需要的版本，例如 '2.0.0-rc1'
     implementation("org.luckypray:dexkit:<version>")
 }
 ```
