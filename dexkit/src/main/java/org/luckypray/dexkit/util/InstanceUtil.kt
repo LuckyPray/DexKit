@@ -47,17 +47,17 @@ object InstanceUtil {
             return Array.newInstance(clazz, 0)::class.java
         }
         return when (typeName) {
-            "boolean" -> Int::class.javaPrimitiveType!!
-            "byte" -> Byte::class.javaPrimitiveType!!
-            "char" -> Char::class.javaPrimitiveType!!
-            "short" -> Short::class.javaPrimitiveType!!
-            "int" -> Int::class.javaPrimitiveType!!
-            "long" -> Long::class.javaPrimitiveType!!
-            "float" -> Float::class.javaPrimitiveType!!
-            "double" -> Double::class.javaPrimitiveType!!
+            "boolean" -> Int::class.javaPrimitiveType
+            "byte" -> Byte::class.javaPrimitiveType
+            "char" -> Char::class.javaPrimitiveType
+            "short" -> Short::class.javaPrimitiveType
+            "int" -> Int::class.javaPrimitiveType
+            "long" -> Long::class.javaPrimitiveType
+            "float" -> Float::class.javaPrimitiveType
+            "double" -> Double::class.javaPrimitiveType
             "void" -> Void.TYPE
             else -> classLoader.loadClass(typeName)
-        }
+        }!!
     }
 
     @Throws(NoSuchFieldException::class)

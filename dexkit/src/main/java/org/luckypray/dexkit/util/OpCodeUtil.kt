@@ -284,9 +284,9 @@ object OpCodeUtil {
     )
 
     private val opFormatMap by lazy {
-        val map = mutableMapOf<String, Int>()
-        opFormat.forEachIndexed { index, s -> map[s] = index }
-        map
+        mutableMapOf<String, Int>().apply {
+            opFormat.forEachIndexed { index, s -> this[s] = index }
+        }
     }
 
     /**
