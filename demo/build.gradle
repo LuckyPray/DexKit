@@ -1,42 +1,49 @@
 plugins {
-    id 'com.android.application'
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace 'org.luckypray.dexkit.demo'
-    compileSdk 34
+    namespace = "org.luckypray.dexkit.demo"
+    compileSdk = 34
 
     defaultConfig {
         applicationId "org.luckypray.dexkit.demo"
-        minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        minSdk = 21
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles 'proguard-rules.pro'
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles "proguard-rules.pro"
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
+
     packagingOptions {
         jniLibs {
             useLegacyPackaging false
         }
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+    }
 }
 
 dependencies {
-    compileOnly 'de.robv.android.xposed:api:82'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'org.luckypray:dexkit:2.0.0-rc8'
+    compileOnly("de.robv.android.xposed:api:82")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.10.0")
+    implementation("org.luckypray:dexkit:2.0.0-rc9")
 }

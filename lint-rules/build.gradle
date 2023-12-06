@@ -1,0 +1,35 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    id("org.jetbrains.kotlin.jvm")
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
+tasks.withType(KotlinCompile).configureEach {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+    kotlinOptions.languageVersion = "1.5"
+}
+
+jar {
+    manifest {
+        attributes("Lint-Registry-V2": "org.luckypray.dexkit.lint.DexKitIssueRegistry")
+    }
+}
+
+dependencies {
+    //noinspection DifferentStdlibGradleVersion
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib") {
+        version {
+            strictly "$kotlin_require_version"
+        }
+    }
+
+    compileOnly("com.android.tools.lint:lint-api:${lint_version}")
+    compileOnly("com.android.tools.lint:lint-checks:${lint_version}")
+
+    testImplementation("com.android.tools.lint:lint:${lint_version}")
+    testImplementation("com.android.tools.lint:lint-tests:${lint_version}")
+}

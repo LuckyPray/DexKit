@@ -185,6 +185,7 @@ class UnitTest {
     @Test
     fun testIntNumberSearch() {
         val res = bridge.findMethod {
+            excludePackages("org.luckypray.dexkit.demo.hook")
             matcher {
                 usingNumbers {
                     add {
@@ -200,6 +201,7 @@ class UnitTest {
     @Test
     fun testIntAndFloatNumberSearch() {
         val res = bridge.findMethod {
+            excludePackages("org.luckypray.dexkit.demo.hook")
             matcher {
                 usingNumbers {
                     add {
@@ -265,12 +267,12 @@ class UnitTest {
 
     @Test
     fun testMethodUsingNumbers() {
-        val res = bridge.findMethod {
+        val cls = bridge.findMethod {
+            excludePackages("org.luckypray.dexkit.demo.hook")
             matcher {
                 usingNumbers(0, -1, 0.01, 0.987, 114514)
             }
-        }
-        assert(res.size == 1)
-        assert(res.first().className == "org.luckypray.dexkit.demo.PlayActivity")
+        }.single()
+        assert(cls.className == "org.luckypray.dexkit.demo.PlayActivity")
     }
 }

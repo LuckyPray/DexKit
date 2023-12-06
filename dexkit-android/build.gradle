@@ -2,11 +2,11 @@ import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id "com.android.library"
-    id "com.vanniktech.maven.publish" version "0.25.3"
-    id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.dokka"
-    id "signing"
+    id("com.android.library")
+    id("com.vanniktech.maven.publish") version "0.25.3"
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.dokka")
+    id("signing")
 }
 
 def KDockRepoName = "LuckyPray/DexKit-Doc"
@@ -14,13 +14,13 @@ def KDockRepoName = "LuckyPray/DexKit-Doc"
 def libVersion = "2.0.0-rc9"
 
 android {
-    namespace "org.luckypray.dexkit"
-    compileSdk 34
+    namespace = "org.luckypray.dexkit"
+    compileSdk = 34
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
-        minSdk 21
-        targetSdk 34
+        minSdk = 21
+        targetSdk = 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -103,32 +103,39 @@ android {
     }
 }
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
 tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
     kotlinOptions.languageVersion = "1.5"
 }
 
 dependencies {
-    implementation 'com.google.flatbuffers:flatbuffers-java:23.5.26'
-    implementation 'dev.rikka.ndk.thirdparty:cxx:1.2.0'
-    implementation('org.jetbrains.kotlin:kotlin-stdlib') {
+    implementation("com.google.flatbuffers:flatbuffers-java:23.5.26")
+    implementation("dev.rikka.ndk.thirdparty:cxx:1.2.0")
+    //noinspection DifferentStdlibGradleVersion
+    implementation("org.jetbrains.kotlin:kotlin-stdlib") {
         version {
-            require '1.5.0'
+            require "$kotlin_require_version"
         }
     }
+
+    lintPublish(project(":lint-rules"))
 }
 
 mavenPublishing {
     coordinates("org.luckypray", "dexkit", libVersion)
     pom {
-        name = 'dexkit'
-        description = 'A high-performance runtime parsing library for dex implemented in C++.'
-        url = 'https://github.com/LuckyPray/DexKit'
+        name = "dexkit"
+        description = "A high-performance runtime parsing library for dex implemented in C++."
+        url = "https://github.com/LuckyPray/DexKit"
         licenses {
             license {
-                name = 'LGPL-3.0 license'
-                url = 'https://www.gnu.org/licenses/lgpl-3.0.html'
-                distribution = 'https://www.gnu.org/licenses/lgpl-3.0.html'
+                name = "LGPL-3.0 license"
+                url = "https://www.gnu.org/licenses/lgpl-3.0.html"
+                distribution = "https://www.gnu.org/licenses/lgpl-3.0.html"
             }
         }
         developers {
@@ -138,9 +145,9 @@ mavenPublishing {
             }
         }
         scm {
-            connection = 'scm:git:git://github.com/LuckyPray/DexKit.git'
-            developerConnection = 'scm:git:ssh://github.com/LuckyPray/DexKit.git'
-            url = 'https://github.com/LuckyPray/DexKit.git'
+            connection = "scm:git:git://github.com/LuckyPray/DexKit.git"
+            developerConnection = "scm:git:ssh://github.com/LuckyPray/DexKit.git"
+            url = "https://github.com/LuckyPray/DexKit.git"
         }
     }
     publishToMavenCentral(SonatypeHost.S01)
@@ -159,7 +166,7 @@ dokkaHtml.configure {
 
 tasks.register("updateKDoc") {
     doLast {
-        def dokkaHtmlDir = new File(buildDir, "dokka/html")
+        def dokkaHtmlDir = layout.buildDirectory.file("dokka/html").get().asFile
         if (dokkaHtmlDir.exists()) {
             println(dokkaHtmlDir.absolutePath)
             exec {
@@ -167,16 +174,16 @@ tasks.register("updateKDoc") {
                 def deployRepo = "https://username:${System.getenv("ACCESS_TOKEN")}@github.com/${KDockRepoName}.git"
                 def userName = System.getenv("GITHUB_ACTOR")
                 def userEmail = "${userName}@users.noreply.github.com"
-                if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-                    commandLine = ['cmd', '/c']
+                if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")) {
+                    commandLine = ["cmd", "/c"]
                 } else {
-                    commandLine = ['sh', '-c']
+                    commandLine = ["sh", "-c"]
                 }
                 def gitCommand = "git init -b master " +
                         "&& git config user.name ${userName} " +
                         "&& git config user.email ${userEmail} " +
-                        '&& git add . ' +
-                        '&& git commit -m "Auto deploy KDoc" ' +
+                        "&& git add . " +
+                        "&& git commit -m 'Auto deploy KDoc' " +
                         "&& git push -f ${deployRepo} master:main"
                 commandLine += [gitCommand]
                 println(gitCommand)

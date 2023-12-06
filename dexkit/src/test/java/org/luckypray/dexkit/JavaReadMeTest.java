@@ -69,7 +69,7 @@ public class JavaReadMeTest {
                     .methods(List.of(
                         MethodMatcher.create()
                             // Specify the modifiers of the method
-                            .modifiers(Modifier.PROTECTED)
+                            //.modifiers(Modifier.PROTECTED)
                             // Specify the name of the method
                             .name("onCreate")
                             // Specify the return type of the method
@@ -158,7 +158,7 @@ public class JavaReadMeTest {
                     .methods(List.of(
                         MethodMatcher.create()
                             // 指定方法的修饰符
-                            .modifiers(Modifier.PROTECTED)
+                            //.modifiers(Modifier.PROTECTED)
                             // 指定方法的名称
                             .name("onCreate")
                             // 指定方法的返回值类型

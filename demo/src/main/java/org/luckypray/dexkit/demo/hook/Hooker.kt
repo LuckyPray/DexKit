@@ -1,4 +1,4 @@
-package org.luckypray.dexkit.demo
+package org.luckypray.dexkit.demo.hook
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import org.luckypray.dexkit.DexKitBridge
@@ -17,7 +17,7 @@ public class AppHooker {
     public constructor(loadPackageParam: XC_LoadPackage.LoadPackageParam) {
         this.hostClassLoader = loadPackageParam.classLoader
         val apkPath = loadPackageParam.appInfo.sourceDir
-        DexKitBridge.create(apkPath)?.use { bridge ->
+        DexKitBridge.create(apkPath).use { bridge ->
             findPlayActivity(bridge)
             findActivity(bridge)
             // Other use cases

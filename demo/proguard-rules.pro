@@ -26,5 +26,7 @@
 -keep class !org.luckypray.dexkit.demo.** {*;}
 -keep class org.luckypray.dexkit.demo.R$* {*;}
 -keep class org.luckypray.dexkit.demo.** {
-static <fields>;
+    static <fields>;
 }
+
+-dontwarn javax.lang.model.element.Modifier

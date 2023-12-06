@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id 'java-library'
-    id 'org.jetbrains.kotlin.jvm'
-    id 'io.github.tomtzook.gradle-cmake' version '1.2.2'
+    id("java-library")
+    id("org.jetbrains.kotlin.jvm")
+    id("io.github.tomtzook.gradle-cmake") version "1.2.2"
 }
 
 cmake {
@@ -27,12 +27,13 @@ cmake {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
     kotlinOptions.languageVersion = "1.5"
     kotlinOptions.freeCompilerArgs += [
             "-opt-in=kotlin.RequiresOptIn",
@@ -40,24 +41,24 @@ tasks.withType(KotlinCompile).configureEach {
 }
 
 test {
-    systemProperty("java.library.path", "$buildDir/library")
-    systemProperty("apk.path", "$projectDir/apk")
+    systemProperty("java.library.path", "${layout.buildDirectory.file("library").get().asFile.absolutePath}")
+    systemProperty("apk.path", "${layout.projectDirectory.file("apk").asFile.absolutePath}")
 }
 
 dependencies {
-    implementation 'com.google.flatbuffers:flatbuffers-java:23.5.26'
-    testImplementation 'junit:junit:4.13.2'
+    implementation("com.google.flatbuffers:flatbuffers-java:23.5.26")
+    testImplementation("junit:junit:4.13.2")
 }
 
 afterEvaluate {
-    tasks.register('copyLibrary') {
+    tasks.register("copyLibrary") {
         def build = tasks.cmakeBuild
         dependsOn(build)
         doLast {
             copy {
-                from "$buildDir/cmake"
-                into "$buildDir/library"
-                include('**/*.so', '**/*.dll', '**/*.dylib')
+                from layout.buildDirectory.file("cmake").get()
+                into layout.buildDirectory.file("library").get()
+                include("**/*.so", "**/*.dll", "**/*.dylib")
                 eachFile {
                     path = name
                 }
@@ -72,9 +73,9 @@ afterEvaluate {
         dependsOn(assemble)
         doLast {
             copy {
-                from "${project(":demo").buildDir}/outputs/apk/release"
+                from project(":demo").layout.buildDirectory.file("outputs/apk/release").get()
                 into "$projectDir/apk"
-                include('**/*.apk')
+                include("**/*.apk")
                 eachFile {
                     path = name
                 }

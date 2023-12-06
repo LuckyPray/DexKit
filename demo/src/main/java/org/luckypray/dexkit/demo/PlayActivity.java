@@ -1,10 +1,5 @@
 package org.luckypray.dexkit.demo;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
-import org.luckypray.dexkit.demo.annotations.Router;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -12,6 +7,11 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import org.luckypray.dexkit.demo.annotations.Router;
 
 import java.util.Random;
 

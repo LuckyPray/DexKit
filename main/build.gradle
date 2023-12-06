@@ -1,13 +1,14 @@
 plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm'
-    id 'application'
+    id("java")
+    id("org.jetbrains.kotlin.jvm")
+    id("application")
 }
 
-group = 'org.luckypray'
-version = '1.0-SNAPSHOT'
+group = "org.luckypray"
+version = "1.0-SNAPSHOT"
 
-def library = "$buildDir/library"
+def library = "${layout.buildDirectory.file("library").get()}"
+println(library)
 def args = ["-Djava.library.path=$library"]
 
 application {
@@ -16,25 +17,26 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 dependencies {
-    implementation project(':dexkit')
+    implementation(project(":dexkit"))
 }
 
 
 afterEvaluate {
-    tasks.register('cmakeBuild') {
-        group = 'build'
-        def build = project(':dexkit').tasks.named('cmakeBuild')
+    tasks.register("cmakeBuild") {
+        group = "build"
+        def build = project(":dexkit").tasks.named("cmakeBuild")
         dependsOn(build)
         doLast {
             copy {
-                from("${project(':dexkit').buildDir}/cmake")
+                from project(":dexkit").layout.buildDirectory.file("cmake").get()
                 into library
-                include('**/*.so', '**/*.dll', '**/*.dylib')
+                include("**/*.so", "**/*.dll", "**/*.dylib")
                 eachFile {
                     path = name
                 }

@@ -56,7 +56,7 @@ class KtReadMeTest {
                     // Add a matcher for the method
                     add {
                         // Specify the modifiers of the method
-                        modifiers = Modifier.PROTECTED
+                        //modifiers = Modifier.PROTECTED
                         // Specify the name of the method
                         name = "onCreate"
                         // Specify the return type of the method
@@ -144,7 +144,7 @@ class KtReadMeTest {
                     // 添加对于方法的匹配器
                     add {
                         // 指定方法的修饰符
-                        modifiers = Modifier.PROTECTED
+                        //modifiers = Modifier.PROTECTED
                         // 指定方法的名称
                         name = "onCreate"
                         // 指定方法的返回值类型

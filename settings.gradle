@@ -10,11 +10,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://api.xposed.info/' }
+        maven { url = "https://api.xposed.info/" }
     }
 }
 
-include ':dexkit'
-include ':dexkit-android'
-include ':demo'
-include ':main'
+include(":dexkit")
+include(":dexkit-android")
+include(":demo")
+include(":main")
+include(":lint-rules")
