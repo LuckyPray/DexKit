@@ -32,7 +32,7 @@ class DexKitCreateDetector : Detector(), Detector.UastScanner {
             explanation,
             category = Category.CORRECTNESS,
             priority = 9,
-            severity = Severity.ERROR,
+            severity = Severity.WARNING,
             implementation = Implementation(
                 DexKitCreateDetector::class.java,
                 Scope.JAVA_FILE_SCOPE

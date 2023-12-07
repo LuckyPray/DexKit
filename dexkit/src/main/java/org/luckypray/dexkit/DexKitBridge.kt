@@ -24,23 +24,23 @@
 package org.luckypray.dexkit
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.result.ClassData
-import org.luckypray.dexkit.result.FieldData
-import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.query.BatchFindClassUsingStrings
 import org.luckypray.dexkit.query.BatchFindMethodUsingStrings
-import org.luckypray.dexkit.result.ClassDataList
-import org.luckypray.dexkit.result.FieldDataList
 import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
+import org.luckypray.dexkit.result.AnnotationData
+import org.luckypray.dexkit.result.ClassData
+import org.luckypray.dexkit.result.ClassDataList
+import org.luckypray.dexkit.result.FieldData
+import org.luckypray.dexkit.result.FieldDataList
+import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.result.MethodDataList
+import org.luckypray.dexkit.result.UsingFieldData
+import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
-import org.luckypray.dexkit.result.AnnotationData
-import org.luckypray.dexkit.result.UsingFieldData
-import org.luckypray.dexkit.util.DexSignUtil
 import java.io.Closeable
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -580,6 +580,16 @@ class DexKitBridge : Closeable {
     }
 
     companion object {
+        /**
+         * create DexKitBridge by apk path
+         * ----------------
+         * 通过 apk 路径创建 DexKitBridge
+         *
+         * @see [Companion.create]
+         *
+         * @param apkPath apk path / apk 路径
+         * @return [DexKitBridge]
+         */
         @JvmStatic
         fun create(apkPath: String): DexKitBridge {
             return DexKitBridge(apkPath)
