@@ -9,6 +9,7 @@ class DexKitIssueRegistry : IssueRegistry() {
     override val issues: List<Issue>
         get() = listOf(
             DexKitCreateDetector.ISSUE,
+            DexKitDataFirstDetector.ISSUE,
         )
     override val minApi: Int
         get() = 9

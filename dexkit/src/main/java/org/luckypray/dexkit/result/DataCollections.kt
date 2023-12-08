@@ -48,6 +48,18 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
     }
 
     /**
+     * Returns the first element matching the given [predicate], or `null` if no such element was found.
+     * None-unique results may cause unexpected problems and are not recommended.
+     * ----------------
+     * 返回与给定 [predicate] 匹配的第一个元素，如果未找到此类元素，则返回 `null`。
+     * 非唯一结果可能会导致意外的问题，不推荐使用。
+     */
+    fun firstOrNull(predicate: (T) -> Boolean): T? {
+        for (element in this) if (predicate(element)) return element
+        return null
+    }
+
+    /**
      * Returns the first element, or throws an exception if the list is empty.
      * None-unique results may cause unexpected problems and are not recommended.
      * ----------------
@@ -56,6 +68,18 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
      */
     fun first(): T {
         return if (isEmpty()) error("list is empty") else get(0)
+    }
+
+    /**
+     * Returns the first element matching the given [predicate], or throws an exception if no such element was found.
+     * None-unique results may cause unexpected problems and are not recommended.
+     * ----------------
+     * 返回与给定 [predicate] 匹配的第一个元素，如果未找到此类元素，则抛出异常。
+     * 非唯一结果可能会导致意外的问题，不推荐使用。
+     */
+    fun first(predicate: (T) -> Boolean): T {
+        for (element in this) if (predicate(element)) return element
+        error("No element matching predicate was found.")
     }
 
     /**
@@ -86,6 +110,25 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
     }
 
     /**
+     * Returns the first element matching the given [predicate], or `null` if no such element was found.
+     * ----------------
+     * 返回与给定 [predicate] 匹配的第一个元素，如果未找到此类元素，则返回 `null`。
+     */
+    fun singleOrNull(predicate: (T) -> Boolean): T? {
+        if (size == 0) return null
+        var t: T? = null
+        for (element in this) {
+            if (predicate(element)) {
+                if (t != null && t != element) {
+                    return null
+                }
+                t = element
+            }
+        }
+        return t
+    }
+
+    /**
      * Returns the first element, or throws an exception if the list length is not 1.
      * ----------------
      * 返回第一个元素，如果列表长度不为 1，则抛出异常。
@@ -99,6 +142,25 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
             }
         }
         return t
+    }
+
+    /**
+     * Returns the first element matching the given [predicate], or throws an exception if no such element was found.
+     * ----------------
+     * 返回与给定 [predicate] 匹配的第一个元素，如果未找到此类元素，则抛出异常。
+     */
+    fun single(predicate: (T) -> Boolean): T {
+        if (size == 0) throw NoResultException("No result found for query")
+        var t: T? = null
+        for (element in this) {
+            if (predicate(element)) {
+                if (t != null && t != element) {
+                    throw NonUniqueResultException(size)
+                }
+                t = element
+            }
+        }
+        return t ?: throw NoResultException("No result found for query")
     }
 
     /**

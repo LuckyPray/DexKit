@@ -7,8 +7,7 @@ plugins {
 group = "org.luckypray"
 version = "1.0-SNAPSHOT"
 
-def library = "${layout.buildDirectory.file("library").get()}"
-println(library)
+def library = "${layout.buildDirectory.file("library").get().asFile}"
 def args = ["-Djava.library.path=$library"]
 
 application {

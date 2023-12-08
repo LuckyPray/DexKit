@@ -73,7 +73,7 @@ public class AppHooker {
                     }
                 }
             }
-        }.first().let {
+        }.single().let {
             // org.luckypray.dexkit.demo.PlayActivity
             println(it.name)
         }
