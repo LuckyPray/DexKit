@@ -277,6 +277,20 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeSetThreadNum(JNIEnv *env, jclass cl
     dexkit->SetThreadNum(thread_num);
 }
 
+DEXKIT_JNI void
+Java_org_luckypray_dexkit_DexKitBridge_nativeInitFullCache(JNIEnv *env, jclass clazz,
+                                                           jlong native_ptr
+) {
+    if (!native_ptr) {
+        return;
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto ret = dexkit->InitFullCache();
+    if (ret != Error::SUCCESS) {
+        throwException(env, ret);
+    }
+}
+
 DEXKIT_JNI jint
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetDexNum(JNIEnv *env, jclass clazz,
                                                        jlong native_ptr

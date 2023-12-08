@@ -45,6 +45,11 @@ void DexKit::SetThreadNum(int num) {
     _thread_num = num;
 }
 
+Error DexKit::InitFullCache() {
+    InitDexCache(UINT32_MAX);
+    return Error::SUCCESS;
+}
+
 Error DexKit::AddDex(uint8_t *data, size_t size) {
     std::lock_guard lock(_mutex);
     dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, data, size, this));

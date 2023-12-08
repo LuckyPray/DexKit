@@ -46,6 +46,7 @@ public:
     ~DexKit() = default;
 
     void SetThreadNum(int num);
+    Error InitFullCache();
     Error AddDex(uint8_t *data, size_t size);
     Error AddImage(std::unique_ptr<MemMap> dex_image);
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);

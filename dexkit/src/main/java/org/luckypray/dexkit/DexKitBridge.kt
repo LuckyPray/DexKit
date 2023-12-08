@@ -96,6 +96,16 @@ class DexKitBridge : Closeable {
     }
 
     /**
+     * Initialize full cache, note: this will take up a lot of memory and time.
+     * Only recommended for performance testing.
+     * ----------------
+     * 初始化全量缓存，注意：这将会占用大量内存以及时间。仅推荐用于性能测试。
+     */
+    fun initFullCache() {
+        nativeInitFullCache(safeToken)
+    }
+
+    /**
      * set DexKit work thread number
      * ----------------
      * 设置 DexKit 工作线程数
@@ -638,6 +648,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeSetThreadNum(nativePtr: Long, threadNum: Int)
+
+        @JvmStatic
+        private external fun nativeInitFullCache(nativePtr: Long)
 
         @JvmStatic
         private external fun nativeGetDexNum(nativePtr: Long): Int

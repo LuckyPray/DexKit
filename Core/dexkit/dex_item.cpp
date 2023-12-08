@@ -26,6 +26,8 @@
 
 namespace dexkit {
 
+inline void PushEncodeNumber(dex::InstructionFormat op_format, uint8_t op, const uint16_t *ptr, std::vector<EncodeNumber> *using_numbers);
+
 DexItem::DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit) :
         _image(std::make_unique<MemMap>(data, size)),
         dexkit(dexkit),
@@ -262,6 +264,7 @@ void DexItem::InitCache(uint32_t init_flags) {
     bool need_method_annotation = init_flags & kMethodAnnotation && (dex_flag & kMethodAnnotation) == 0;
     bool need_param_annotation = init_flags & kParamAnnotation && (dex_flag & kParamAnnotation) == 0;
     bool need_annotation = need_class_annotation || need_field_annotation || need_method_annotation || need_param_annotation;
+    // only used for full cache
     bool need_method_using_number = init_flags & kUsingNumber && (dex_flag & kUsingNumber) == 0;
 
     if (need_op_seq) {
@@ -289,6 +292,10 @@ void DexItem::InitCache(uint32_t init_flags) {
         field_put_method_ids.resize(reader.FieldIds().size());
         need_foreach_method = true;
     }
+    if (need_method_using_number) {
+        method_using_numbers.resize(reader.MethodIds().size());
+        need_foreach_method = true;
+    }
 
     if (need_foreach_method) {
         for (auto &class_def: reader.ClassDefs()) {
@@ -302,6 +309,7 @@ void DexItem::InitCache(uint32_t init_flags) {
                 std::vector<uint32_t> *method_using_string_ptr = nullptr;
                 std::vector<std::pair<uint32_t, bool>> *method_using_field_ptr = nullptr;
                 std::vector<uint32_t> *method_invoking_ptr = nullptr;
+                std::vector<EncodeNumber> *method_using_number_ptr = nullptr;
 
                 if (need_op_seq) {
                     op_seq_ptr = &method_opcode_seq[method_id];
@@ -315,6 +323,9 @@ void DexItem::InitCache(uint32_t init_flags) {
                 }
                 if (need_method_invoking) {
                     method_invoking_ptr = &method_invoking_ids[method_id];
+                }
+                if (need_method_using_number) {
+                    method_using_number_ptr = &method_using_numbers[method_id];
                 }
 
                 auto p = code->insns;
@@ -358,6 +369,11 @@ void DexItem::InitCache(uint32_t init_flags) {
                             method_invoking_ptr->emplace_back(index);
                         }
                     }
+
+                    if (need_method_using_number) {
+                        PushEncodeNumber(op_format, op, ptr, method_using_number_ptr);
+                    }
+
                     p += width;
                 }
             }
@@ -1069,7 +1085,59 @@ std::vector<uint32_t> DexItem::GetInvokeMethodsFromCode(uint32_t method_idx) {
     return std::move(invoke_methods);
 }
 
-std::vector<EncodeNumber> DexItem::GetUsingNumberFromCode(uint32_t method_idx) {
+void PushEncodeNumber(dex::InstructionFormat op_format, uint8_t op, const uint16_t *ptr, std::vector<EncodeNumber> *using_numbers) {
+    switch (op_format) {
+        // using number
+        case dex::k11n: { // const/4
+            uint8_t value = *(ptr - 1) >> 12;
+            if (value & 0x8) {
+                value |= 0xf0;
+            }
+            using_numbers->emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) value}});
+            break;
+        }
+        case dex::k21s: { // const/16, const-wide/16
+            uint16_t value = *ptr;
+            if (value & 0x8000) {
+                value |= 0xffff0000;
+            }
+            using_numbers->emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) value}});
+            break;
+        }
+        case dex::k21h: { // const/high16, const-wide/high16
+            if (op == 0x15) {
+                using_numbers->emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) (*ptr << 16)}}});
+            } else { // 0x19
+                using_numbers->emplace_back(EncodeNumber{.type = DOUBLE, .value = {.L64 = {.long_value = (int64_t) (((uint64_t) *ptr) << 48)}}});
+            }
+            break;
+        }
+        case dex::k31i: { // const, const-wide/32
+            if (op == 0x14) {
+                using_numbers->emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
+            } else { // 0x17
+                using_numbers->emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
+            }
+            break;
+        }
+        case dex::k51l: // const-wide
+            using_numbers->emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadLong(ptr)}}});
+            break;
+        case dex::k22s: // binop/lit16
+            using_numbers->emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) *ptr}});
+            break;
+        case dex::k22b: // binop/lit8
+            using_numbers->emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) (*ptr >> 8)}});
+            break;
+        default:
+            break;
+    }
+}
+
+std::vector<EncodeNumber> DexItem::GetUsingNumbersFromCode(uint32_t method_idx) {
+    if (dex_flag & kUsingNumber) {
+        return method_using_numbers[method_idx];
+    }
     auto code = method_codes[method_idx];
     if (code == nullptr) {
         return {};
@@ -1082,52 +1150,7 @@ std::vector<EncodeNumber> DexItem::GetUsingNumberFromCode(uint32_t method_idx) {
         auto ptr = p;
         auto width = GetBytecodeWidth(ptr++);
         auto op_format = ins_formats[op];
-        switch (op_format) {
-            // using number
-            case dex::k11n: { // const/4
-                uint8_t value = *(ptr - 1) >> 12;
-                if (value & 0x8) {
-                    value |= 0xf0;
-                }
-                using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) value}});
-                break;
-            }
-            case dex::k21s: { // const/16, const-wide/16
-                uint16_t value = *ptr;
-                if (value & 0x8000) {
-                    value |= 0xffff0000;
-                }
-                using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) value}});
-                break;
-            }
-            case dex::k21h: { // const/high16, const-wide/high16
-                if (op == 0x15) {
-                    using_numbers.emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) (*ptr << 16)}}});
-                } else { // 0x19
-                    using_numbers.emplace_back(EncodeNumber{.type = DOUBLE, .value = {.L64 = {.long_value = (int64_t) (((uint64_t) *ptr) << 48)}}});
-                }
-                break;
-            }
-            case dex::k31i: { // const, const-wide/32
-                if (op == 0x14) {
-                    using_numbers.emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
-                } else { // 0x17
-                    using_numbers.emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
-                }
-                break;
-            }
-            case dex::k51l: // const-wide
-                using_numbers.emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadLong(ptr)}}});
-                break;
-            case dex::k22s: // binop/lit16
-                using_numbers.emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) *ptr}});
-                break;
-            case dex::k22b: // binop/lit8
-                using_numbers.emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) (*ptr >> 8)}});
-                break;
-            default:
-                break;
-        }
+        PushEncodeNumber(op_format, op, ptr, &using_numbers);
         p += width;
     }
     return std::move(using_numbers);
