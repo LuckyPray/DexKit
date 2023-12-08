@@ -171,18 +171,6 @@ abstract class BaseDataList<T> : ArrayList<T>, IQuery {
     fun singleOrThrow(exceptionSupplier: () -> Throwable): T {
         return singleOrNull() ?: throw exceptionSupplier()
     }
-
-    /**
-     * Returns the first element, or throws an exception if the list length is not 1.
-     * ----------------
-     * 返回第一个元素，如果列表长度不为 1，则抛出异常。
-     */
-    @Deprecated("Use single instead", ReplaceWith("single()"))
-    fun fetchOne(): T {
-        if (isEmpty()) error("list is empty")
-        if (size > 1) error("list has more than one element")
-        return get(0)
-    }
 }
 
 class ClassDataList : BaseDataList<ClassData> {
