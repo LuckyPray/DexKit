@@ -163,6 +163,7 @@
 | targetElementTypes | [TargetElementTypesMatcher](#targetelementtypesmatcher) | List of matched annotation element types |
 | policy             | [RetentionPolicyType](#retentionpolicytype)             | Matched retention policy                 |
 | elements           | [AnnotationElementsMatcher](#annotationelementsmatcher) | List of matched annotation elements      |
+| usingStrings       | Collection&lt;[StringMatcher](#stringmatcher)&gt;       | List of strings used in the annotation   |
 
 ### AnnotationsMatcher
 

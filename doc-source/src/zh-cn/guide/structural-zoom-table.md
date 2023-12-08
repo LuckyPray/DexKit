@@ -162,6 +162,7 @@
 | targetElementTypes | [TargetElementTypesMatcher](#targetelementtypesmatcher) | 匹配的注解声明的元素类型列表 |
 | policy             | [RetentionPolicyType](#retentionpolicytype)             | 匹配的注解声明的保留策略   |
 | elements           | [AnnotationElementsMatcher](#annotationelementsmatcher) | 匹配的注解声明的元素列表   |
+| usingStrings       | Collection&lt;[StringMatcher](#stringmatcher)&gt;       | 注解中使用的字符串列表    |
 
 ### AnnotationsMatcher
 
