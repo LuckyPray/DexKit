@@ -1,4 +1,4 @@
-package org.luckypray.dexkit.lint
+package org.luckypray.dexkit.lint.detector
 
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
@@ -9,27 +9,27 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
-import java.util.Locale
+import org.luckypray.dexkit.lint.util.lang
+import org.luckypray.dexkit.lint.util.log
 
 class DexKitDataFirstDetector : Detector(), Detector.UastScanner {
     companion object {
-        private val lang: String = runCatching { Locale.getDefault().language }.getOrElse { "en" }
         val title = when (lang) {
-            "zh" -> "结果可能不唯一！"
-            else -> "The result may not be unique! "
+            "zh" -> "返回结果不唯一！"
+            else -> "The result is not unique! "
         }
         val explanation = when (lang) {
             "zh" -> "可能会导致预期外的问题，不推荐使用。"
-            else -> "May cause unexpected problems and are not recommended"
+            else -> "May cause unexpected problems and are not recommended."
         }
 
-        private const val ISSUE_ID = "DataMayNonUnique"
+        private const val ISSUE_ID = "NonUniqueDexKitData"
         val ISSUE = Issue.create(
             ISSUE_ID,
             title,
             explanation,
             category = Category.CORRECTNESS,
-            priority = 9,
+            priority = 5,
             severity = Severity.WARNING,
             implementation = Implementation(
                 DexKitDataFirstDetector::class.java,
@@ -56,18 +56,20 @@ class DexKitDataFirstDetector : Detector(), Detector.UastScanner {
                 .text(method.name)
                 .with(fixMap[method.name]!!)
                 .build()
+            val location = context.uastParser.getCallLocation(
+                context,
+                node,
+                includeReceiver = false,
+                includeArguments = false
+            )
             context.report(
                 ISSUE,
                 node,
-                context.uastParser.getCallLocation(
-                    context,
-                    node,
-                    includeReceiver = false,
-                    includeArguments = false
-                ),
+                location,
                 title + explanation,
                 replaceFix
             )
+            context.log(title, explanation, node, location)
         }
     }
 }

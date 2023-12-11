@@ -4,6 +4,8 @@ import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.CURRENT_API
 import com.android.tools.lint.detector.api.Issue
+import org.luckypray.dexkit.lint.detector.DexKitCreateDetector
+import org.luckypray.dexkit.lint.detector.DexKitDataFirstDetector
 
 class DexKitIssueRegistry : IssueRegistry() {
     override val issues: List<Issue>

@@ -1,4 +1,4 @@
-package org.luckypray.dexkit.lint
+package org.luckypray.dexkit.lint.detector
 
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
@@ -10,12 +10,12 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
-import java.util.Locale
+import org.luckypray.dexkit.lint.util.lang
+import org.luckypray.dexkit.lint.util.log
 
 
 class DexKitCreateDetector : Detector(), Detector.UastScanner {
     companion object {
-        private val lang: String = runCatching { Locale.getDefault().language }.getOrElse { "en" }
         val title = when (lang) {
             "zh" -> "请不要重复创建相同的 DexKitBridge 对象！"
             else -> "Don't create the same DexKitBridge object repeatedly! "
@@ -25,7 +25,7 @@ class DexKitCreateDetector : Detector(), Detector.UastScanner {
             else -> "Creating DexKitBridge is a time-consuming operation, and you should maintain a global object instead of calling `create()` every time you search."
         }
 
-        private const val ISSUE_ID = "DuplicateCreationDexKit"
+        private const val ISSUE_ID = "DuplicateCreateDexKit"
         val ISSUE = Issue.create(
             ISSUE_ID,
             title,
@@ -54,6 +54,7 @@ class DexKitCreateDetector : Detector(), Detector.UastScanner {
             if (createParamSet.contains(params)) {
                 val location = context.getLocation(node)
                 context.report(ISSUE, node, location, title + explanation)
+                context.log(title, explanation, node, location)
             } else {
                 createParamSet.add(params)
             }
