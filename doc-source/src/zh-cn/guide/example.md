@@ -77,8 +77,7 @@ public class PlayActivity extends AppCompatActivity {
 }
 ```
 
-
-## 多条件匹配类多条件用法示例。
+## 多条件匹配类多条件用法示例
 
 此时我们想得到这个 PlayActivity 可以使用如下代码：
 
@@ -216,3 +215,61 @@ org.luckypray.dexkit.demo.PlayActivity
 ::: tip
 在 `DexKit` 中，一切符合逻辑的关系都可以作为查询条件
 :::
+
+## 模糊参数匹配
+
+如果我们需要寻找的方法中存在一个被混淆的参数，我们可以使用 `null` 来替代，这样它就能匹配任意类型的参数。
+
+```kotlin
+private fun findMethodWithFuzzyParam(bridge: DexKitBridge) {
+    bridge.findMethod {
+        matcher {
+            modifiers = Modifier.PUBLIC or Modifier.STATIC
+            returnType = "void"
+            // 指定方法的参数类型，如果参数类型不确定，使用 null
+            paramTypes("android.view.View", null)
+            // paramCount = 2 // paramTypes 长度为 2 已经隐式确定了参数个数
+            usingStrings("onClick")
+        }
+    }.single().let {
+        println(it)
+    }
+}
+```
+
+## 查询结果保存与读取
+
+使用 DexKit 查询到的结果如何序列化保存下来，以便下次使用呢？
+
+DexKit 中对 Class、Method、Field 提供了相应的包装类，分别是 `DexClass`、`DexMethod`、`DexField`。
+包装类继承了 `Serializable` 接口，因此可以直接使用 Java 的序列化方式来保存。对于查询返回的对象，可以直接使用 
+`toDexClass()`、`toDexMethod()`、`toDexField()` 方法来转换为包装类。当然，您也可以使用 Data 对象的 
+`descriptor` 属性来保存，它是一个 `Dailvik 描述` 标识了唯一的对象。
+
+```kotlin
+private fun saveData(bridge: DexKitBridge) {
+    bridge.findMethod {
+        matcher {
+            modifiers = Modifier.PUBLIC or Modifier.STATIC
+            returnType = "void"
+            paramTypes("android.view.View", null)
+            usingStrings("onClick")
+        }
+    }.single().let {
+        val descriptor = it.toDexMethod().descriptor
+        val sp = getSharedPreferences("dexkit", Context.MODE_PRIVATE)
+        sp.edit().putString("onClickMethod", descriptor).apply()
+    }
+}
+
+private fun readData(): Method {
+    val sp = getSharedPreferences("dexkit", Context.MODE_PRIVATE)
+    val descriptor = sp.getString("onClickMethod", null)
+    if (descriptor != null) {
+        val dexMethod = DexMethod(descriptor)
+        val method = dexMethod.getMethodInstance(hostClassLoader)
+        return method
+    }
+    error("No saved")
+}
+```

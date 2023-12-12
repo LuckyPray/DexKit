@@ -1,6 +1,7 @@
 # Usage Examples
 
-During the reading of this section, you may need to refer to the [Structural Quick Reference Table](./structural-zoom-table) for a better understanding.
+During the reading of this section, you may need to refer to
+the [Structural Quick Reference Table](./structural-zoom-table) for a better understanding.
 
 > You can get the source code and some test cases for the demo below.
 
@@ -9,10 +10,10 @@ During the reading of this section, you may need to refer to the [Structural Qui
 
 ## Demo App
 
-Here is a simple Demo Activity, PlayActivity, where the internal properties and methods are obfuscated, and they change in each version.
+Here is a simple Demo Activity, PlayActivity, where the internal properties and methods are
+obfuscated, and they change in each version.
 
 > The four major components are not obfuscated by default. We assume this Activity is obfuscated.
-
 
 ```java
 package org.luckypray.dexkit.demo;
@@ -82,7 +83,7 @@ public class PlayActivity extends AppCompatActivity {
 
 In this scenario, we want to find the PlayActivity using the following code:
 
-> This is just an example. In actual use, you don't need conditions as complex and comprehensive 
+> This is just an example. In actual use, you don't need conditions as complex and comprehensive
 > as this. Use as needed.
 
 ```kotlin
@@ -179,7 +180,7 @@ org.luckypray.dexkit.demo.PlayActivity
 
 ## Parent Class Condition Nesting
 
-if there is such a class, its only feature is that the ancestors are not obfuscated, 
+if there is such a class, its only feature is that the ancestors are not obfuscated,
 and the middle parents are all obfuscated, we can also use `DexKit` to find it.
 
 ```kotlin
@@ -218,3 +219,64 @@ org.luckypray.dexkit.demo.PlayActivity
 ::: tip
 In `DexKit`, any logical relationship can be used as a query condition
 :::
+
+## Fuzzy Parameter Matching
+
+If we need to find a method with an obfuscated parameter, we can use `null` to replace it,
+so that it can match any type of parameter.
+
+```kotlin
+private fun findMethodWithFuzzyParam(bridge: DexKitBridge) {
+    bridge.findMethod {
+        matcher {
+            modifiers = Modifier.PUBLIC or Modifier.STATIC
+            returnType = "void"
+            // Specify the parameters of the method, if the parameters are uncertain, use null
+            paramTypes("android.view.View", null)
+            // paramCount = 2 // paramTypes length is 2, which has implicitly determined the number of parameters
+            usingStrings("onClick")
+        }
+    }.single().let {
+        println(it)
+    }
+}
+```
+
+## Saving and Retrieving Query Results
+
+How can you serialize and save the results obtained from DexKit queries for later use?
+
+DexKit provides corresponding packaging classes for Class, Method, and Field,
+namely `DexClass`, `DexMethod`, and `DexField`. The wrapper class inherits the `Serializable`
+interface, so it can be saved directly using Java's serialization method. For the objects returned
+by the query, you can directly use `toDexClass()`, `toDexMethod()`, `toDexField()` methods to
+convert to a wrapper class. Of course, you can also use the Data object's `descriptor` attribute,
+which is a `Dailvik description` that identifies a unique object.
+
+```kotlin
+private fun saveData(bridge: DexKitBridge) {
+    bridge.findMethod {
+        matcher {
+            modifiers = Modifier.PUBLIC or Modifier.STATIC
+            returnType = "void"
+            paramTypes("android.view.View", null)
+            usingStrings("onClick")
+        }
+    }.single().let {
+        val descriptor = it.toDexMethod().descriptor
+        val sp = getSharedPreferences("dexkit", Context.MODE_PRIVATE)
+        sp.edit().putString("onClickMethod", descriptor).apply()
+    }
+}
+
+private fun readData(): Method {
+    val sp = getSharedPreferences("dexkit", Context.MODE_PRIVATE)
+    val descriptor = sp.getString("onClickMethod", null)
+    if (descriptor != null) {
+        val dexMethod = DexMethod(descriptor)
+        val method = dexMethod.getMethodInstance(hostClassLoader)
+        return method
+    }
+    error("No saved")
+}
+```
