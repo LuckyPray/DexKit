@@ -16,8 +16,7 @@ methods, or properties.
 
 # DexKit 2.0
 
-At present, the 2.0 API is basically stable and needs to undergo final testing before it can be officially released.
-Documentation and comments will be gradually improved in the future.
+Currently 2.0 has been officially released, please refer to Release Notes for related improvements.
 
 ## Supported APIs
 
@@ -49,7 +48,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    // replace <version> with your desired version, e.g. 2.0.0-rc1
+    // replace <version> with your desired version, e.g. `2.0.0`
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```

@@ -15,7 +15,7 @@
 
 # DexKit 2.0
 
-目前 2.0 API 基本稳定，需要经过最终测试才能正式发布。 文档和注释今后会逐步完善。
+目前 2.0 已经正式发布，相关改进参考 Release Notes。
 
 ## 支持的 API
 
@@ -46,7 +46,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    // 替换 <version> 为您需要的版本，例如 '2.0.0-rc1'
+    // 替换 <version> 为您需要的版本，例如 `2.0.0`
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```

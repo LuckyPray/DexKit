@@ -6,7 +6,7 @@
 
 Make sure your development environment meets the following requirements:
 
-- JDK 8 and above
+- JDK 11 and above
 - Kotlin 1.5 and above
 - AGP 4.2 and above
 - minSdkVersion 21 and above (recommended 23 and above)
@@ -40,7 +40,7 @@ Current DexKit version: [![Maven Central](https://img.shields.io/maven-central/v
 ::: code-group-item gradle
 ```groovy
 dependencies {
-    // replace <version> with your desired version, e.g. '2.0.0-rc1'
+    // replace <version> with your desired version, e.g. '2.0.0'
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```
@@ -48,7 +48,7 @@ dependencies {
 ::: code-group-item gradle-kts
 ```kotlin
 dependencies {
-    // replace <version> with your desired version, e.g. '2.0.0-rc1'
+    // replace <version> with your desired version, e.g. '2.0.0'
     implementation("org.luckypray:dexkit:<version>")
 }
 ```
