@@ -6,8 +6,9 @@ const navigationLinks = {
         '/guide/knowledge',
         '/guide/quick-start',
         '/guide/example',
+        '/guide/performance-optimization.md',
         '/guide/structural-zoom-table',
-        '/guide/run-on-desktop'
+        '/guide/run-on-desktop',
     ],
     about: [
         '/about/contacts',
@@ -53,8 +54,9 @@ export const navBarItems = {
                 { text: 'Basic Knowledge', link: i18n.string(navigationLinks.start[1], 'en') },
                 { text: 'Quick Start', link: i18n.string(navigationLinks.start[2], 'en') },
                 { text: 'Usage Example', link: i18n.string(navigationLinks.start[3], 'en') },
-                { text: 'Structural Zoom Table', link: i18n.string(navigationLinks.start[4], 'en') },
-                { text: 'Run on Desktop', link: i18n.string(navigationLinks.start[5], 'en') },
+                { text: 'Performance optimization', link: i18n.string(navigationLinks.start[4], 'en') },
+                { text: 'Structural Zoom Table', link: i18n.string(navigationLinks.start[5], 'en') },
+                { text: 'Run on Desktop', link: i18n.string(navigationLinks.start[6], 'en') },
             ]
         }, {
             text: 'About',
@@ -73,8 +75,9 @@ export const navBarItems = {
                 { text: '基础知识', link: i18n.string(navigationLinks.start[1], 'zh-cn') },
                 { text: '快速开始', link: i18n.string(navigationLinks.start[2], 'zh-cn') },
                 { text: '用法示例', link: i18n.string(navigationLinks.start[3], 'zh-cn') },
-                { text: '结构速查表', link: i18n.string(navigationLinks.start[4], 'zh-cn') },
-                { text: '桌面平台运行', link: i18n.string(navigationLinks.start[5], 'zh-cn') },
+                { text: '性能优化', link: i18n.string(navigationLinks.start[4], 'zh-cn') },
+                { text: '结构速查表', link: i18n.string(navigationLinks.start[5], 'zh-cn') },
+                { text: '桌面平台运行', link: i18n.string(navigationLinks.start[6], 'zh-cn') },
             ]
         }, {
             text: '关于',
