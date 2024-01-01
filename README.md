@@ -25,7 +25,7 @@ Basic Features:
 - [x] Multi-condition class search
 - [x] Multi-condition method search
 - [x] Multi-condition field search
-- [x] Extract `Annotation` of classes/methods/fields/parameters
+- [x] Provides multiple metadata APIs to obtain field/method/class related data
 
 ⭐️ Distinctive Features (Recommended):
 
