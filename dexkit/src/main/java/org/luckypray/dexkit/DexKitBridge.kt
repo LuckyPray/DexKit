@@ -249,7 +249,7 @@ class DexKitBridge : Closeable {
      * @return [MethodData]
      */
     fun getMethodData(method: Method): MethodData? {
-        return getMethodData(DexSignUtil.getMethodSign(method))
+        return getMethodData(DexSignUtil.getDescriptor(method))
     }
 
     /**
@@ -261,7 +261,7 @@ class DexKitBridge : Closeable {
      * @return [MethodData]
      */
     fun getMethodData(constructor: Constructor<*>): MethodData? {
-        return getMethodData(DexSignUtil.getConstructorSign(constructor))
+        return getMethodData(DexSignUtil.getDescriptor(constructor))
     }
 
     /**
