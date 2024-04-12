@@ -256,7 +256,7 @@ private fun saveData(bridge: DexKitBridge) {
             usingStrings("onClick")
         }
     }.single().let {
-        val descriptor = it.toDexMethod().descriptor
+        val descriptor = it.descriptor
         val sp = getSharedPreferences("dexkit", Context.MODE_PRIVATE)
         sp.edit().putString("onClickMethod", descriptor).apply()
     }
