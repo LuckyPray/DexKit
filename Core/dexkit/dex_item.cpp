@@ -333,7 +333,7 @@ void DexItem::InitCache(uint32_t init_flags) {
                 while (p < end_p) {
                     auto op = (uint8_t) *p;
                     if (need_op_seq) {
-                        op_seq_ptr->emplace(op);
+                        op_seq_ptr->value().emplace_back(op);
                     }
                     auto ptr = p;
                     auto width = GetBytecodeWidth(ptr++);
