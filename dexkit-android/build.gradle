@@ -11,7 +11,7 @@ plugins {
 
 def KDockRepoName = "LuckyPray/DexKit-Doc"
 
-def libVersion = "2.0.0"
+def libVersion = "2.0.1"
 
 android {
     namespace = "org.luckypray.dexkit"
