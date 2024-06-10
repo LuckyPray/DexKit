@@ -907,6 +907,9 @@ void DexKit::BuildPackagesMatchTrie(
             if (package_str[0] != 'L') {
                 package_str = "L" + package_str; // NOLINT
             }
+            if (package_str.back() != '/') {
+                package_str += '/';
+            }
             trie.insert(package_str, true, ignore_packages_case);
             packages.emplace_back(std::move(package_str));
         }
@@ -918,6 +921,9 @@ void DexKit::BuildPackagesMatchTrie(
             std::replace(package_str.begin(), package_str.end(), '.', '/');
             if (package_str[0] != 'L') {
                 package_str = "L" + package_str; // NOLINT
+            }
+            if (package_str.back() != '/') {
+                package_str += '/';
             }
             trie.insert(package_str, false, ignore_packages_case);
             packages.emplace_back(std::move(package_str));
