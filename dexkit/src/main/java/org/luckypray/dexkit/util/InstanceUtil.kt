@@ -35,6 +35,11 @@ import java.lang.reflect.Method
 
 object InstanceUtil {
 
+    private val constructorCache = WeakCache<Class<*>, kotlin.Array<Constructor<*>>>()
+    private val fieldsCache = WeakCache<Class<*>, kotlin.Array<Field>>()
+    private val methodsCache = WeakCache<Class<*>, kotlin.Array<Method>>()
+    private val signCache = WeakCache<Any, String>()
+
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader, dexClass: DexClass): Class<*> {
         return getClassInstance(classLoader, dexClass.typeName)
@@ -65,9 +70,10 @@ object InstanceUtil {
         try {
             var clz = classLoader.loadClass(dexField.className)
             do {
-                for (field in clz.declaredFields) {
+                val declaredFields = fieldsCache.get(clz) { clz.declaredFields }
+                for (field in declaredFields) {
                     if (dexField.name == field.name
-                        && dexField.typeSign == getTypeSign(field.type)) {
+                        && dexField.typeSign == signCache.get(field) { getTypeSign(field.type) }) {
                         field.isAccessible = true
                         return field
                     }
@@ -87,8 +93,9 @@ object InstanceUtil {
         try {
             var clz = classLoader.loadClass(dexMethod.className)
             do {
-                for (constructor in clz.declaredConstructors) {
-                    if (dexMethod.methodSign == getConstructorSign(constructor)) {
+                val declaredConstructors = constructorCache.get(clz) { clz.declaredConstructors }
+                for (constructor in declaredConstructors) {
+                    if (dexMethod.methodSign == signCache.get(constructor) { getConstructorSign(constructor) }) {
                         constructor.isAccessible = true
                         return constructor
                     }
@@ -108,9 +115,10 @@ object InstanceUtil {
         try {
             var clz = classLoader.loadClass(dexMethod.className)
             do {
-                for (method in clz.declaredMethods) {
+                val declaredMethods = methodsCache.get(clz) { clz.declaredMethods }
+                for (method in declaredMethods) {
                     if (method.name == dexMethod.name
-                        && dexMethod.methodSign == getMethodSign(method)) {
+                        && dexMethod.methodSign == signCache.get(method) { getMethodSign(method) }) {
                         method.isAccessible = true
                         return method
                     }
