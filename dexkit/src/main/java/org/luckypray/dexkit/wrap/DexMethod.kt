@@ -27,13 +27,15 @@ import org.luckypray.dexkit.util.DexSignUtil.getParamTypeNames
 import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.util.InstanceUtil
-import java.io.Serializable
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
-class DexMethod: Serializable {
-    private companion object {
-        private const val serialVersionUID = 1L
+class DexMethod: ISerializable {
+
+    companion object {
+
+        @JvmStatic
+        fun deserialize(descriptor: String) = DexMethod(descriptor)
     }
 
     val className: String
@@ -85,19 +87,19 @@ class DexMethod: Serializable {
      * ----------------
      * 转换方法描述符为 [DexMethod]。
      *
-     * @param methodDescriptor method descriptor / 方法描述符
+     * @param descriptor method descriptor / 方法描述符
      */
-    constructor(methodDescriptor: String) {
-        val idx1 = methodDescriptor.indexOf("->")
-        val idx2 = methodDescriptor.indexOf("(", idx1 + 1)
-        val idx3 = methodDescriptor.indexOf(")", idx2 + 1)
+    constructor(descriptor: String) {
+        val idx1 = descriptor.indexOf("->")
+        val idx2 = descriptor.indexOf("(", idx1 + 1)
+        val idx3 = descriptor.indexOf(")", idx2 + 1)
         if (idx1 == -1 || idx2 == -1 || idx3 == -1) {
-            throw IllegalAccessError("not method descriptor: $methodDescriptor")
+            throw IllegalAccessError("not method descriptor: $descriptor")
         }
-        className = getTypeName(methodDescriptor.substring(0, idx1))
-        name = methodDescriptor.substring(idx1 + 2, idx2)
-        paramTypeNames = getParamTypeNames(methodDescriptor.substring(idx2 + 1, idx3))
-        returnTypeName = getTypeName(methodDescriptor.substring(idx3 + 1))
+        className = getTypeName(descriptor.substring(0, idx1))
+        name = descriptor.substring(idx1 + 2, idx2)
+        paramTypeNames = getParamTypeNames(descriptor.substring(idx2 + 1, idx3))
+        returnTypeName = getTypeName(descriptor.substring(idx3 + 1))
     }
 
     /**

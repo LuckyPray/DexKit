@@ -26,11 +26,13 @@ package org.luckypray.dexkit.wrap
 import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.util.InstanceUtil
-import java.io.Serializable
 
-class DexClass: Serializable {
-    private companion object {
-        private const val serialVersionUID = 1L
+class DexClass: ISerializable {
+
+    companion object {
+
+        @JvmStatic
+        fun deserialize(descriptor: String) = DexClass(descriptor)
     }
 
     val typeName: String
@@ -46,10 +48,10 @@ class DexClass: Serializable {
      * ----------------
      * 转换类描述符为 [DexClass]。
      *
-     * @param classDescriptor class descriptor / 类描述符
+     * @param descriptor class descriptor / 类描述符
      */
-    constructor(classDescriptor: String) {
-        typeName = getTypeName(classDescriptor)
+    constructor(descriptor: String) {
+        typeName = getTypeName(descriptor)
     }
 
     /**
