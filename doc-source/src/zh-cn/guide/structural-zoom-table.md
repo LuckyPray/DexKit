@@ -203,8 +203,8 @@
 | declaredClass | [ClassMatcher](#classmatcher)             | 字段的声明类     |
 | type          | [ClassMatcher](#classmatcher)             | 字段的类型      |
 | annotations   | [AnnotationsMatcher](#annotationsmatcher) | 字段的注解      |
-| getMethods    | [MethodsMatcher](#methodsmatcher)         | 读取该字段的方法列表 |
-| putMethods    | [MethodsMatcher](#methodsmatcher)         | 设置该字段的方法列表 |
+| readMethods   | [MethodsMatcher](#methodsmatcher)         | 读取该字段的方法列表 |
+| writeMethods  | [MethodsMatcher](#methodsmatcher)         | 设置该字段的方法列表 |
 
 ### FieldsMatcher
 
@@ -229,7 +229,7 @@
 | usingFields   | Collection&lt;[UsingFieldMatcher](#usingfieldmatcher)&gt; | 方法中使用的字段列表  |
 | usingNumbers  | Collection&lt;Number&gt;                                  | 方法中使用的数字列表  |
 | invokeMethods | [MethodsMatcher](#methodsmatcher)                         | 方法中调用的方法列表  |
-| callMethods   | [MethodsMatcher](#methodsmatcher)                         | 调用了该方法的方法列表 |
+| callerMethods | [MethodsMatcher](#methodsmatcher)                         | 调用了该方法的方法列表 |
 
 ### MethodsMatcher
 

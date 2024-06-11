@@ -214,7 +214,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                 .add(MethodMatcher.create()
                                     .modifiers(Modifier.PUBLIC | Modifier.STATIC)
                                     .returnType("int")
-                                    // 指定方法中调用的方法中使用的字符串，所有字符串均使用 Equals 匹配
+                                    // 被调用方法中使用的字符串，所有字符串均使用 Equals 匹配
                                     .usingStrings(List.of("getRandomDice: "), StringMatchType.Equals)
                                 )
                                 // 只需要包含上述方法的调用即可

@@ -215,12 +215,12 @@ public class MainHook implements IXposedHookLoadPackage {
                         MethodMatcher.create()
                             .modifiers(Modifier.PUBLIC)
                             .paramTypes("boolean")
-                            // Specify the methods called in the method list
+                            // Specify the method invoke the methods list
                             .invokeMethods(MethodsMatcher.create()
                                 .add(MethodMatcher.create()
                                     .modifiers(Modifier.PUBLIC | Modifier.STATIC)
                                     .returnType("int")
-                                    // Specify the strings used in the method called in the method,
+                                    // be invoke method using strings
                                     .usingStrings(List.of("getRandomDice: "), StringMatchType.Equals)
                                 )
                                 // Only need to contain the call to the above method

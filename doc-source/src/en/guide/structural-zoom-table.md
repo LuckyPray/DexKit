@@ -197,15 +197,15 @@
 
 ### FieldMatcher
 
-| Field Name    | Type                                      | Description                       |
-|:--------------|:------------------------------------------|:----------------------------------|
-| name          | [StringMatcher](#stringmatcher)           | Name of the field                 |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Modifiers of the field            |
-| declaredClass | [ClassMatcher](#classmatcher)             | Declaring class of the field      |
-| type          | [ClassMatcher](#classmatcher)             | Type of the field                 |
-| annotations   | [AnnotationsMatcher](#annotationsmatcher) | List of annotations for the field |
-| getMethods    | [MethodsMatcher](#methodsmatcher)         | List of methods to get the field  |
-| putMethods    | [MethodsMatcher](#methodsmatcher)         | List of methods to set the field  |
+| Field Name    | Type                                      | Description                        |
+|:--------------|:------------------------------------------|:-----------------------------------|
+| name          | [StringMatcher](#stringmatcher)           | Name of the field                  |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Modifiers of the field             |
+| declaredClass | [ClassMatcher](#classmatcher)             | Declaring class of the field       |
+| type          | [ClassMatcher](#classmatcher)             | Type of the field                  |
+| annotations   | [AnnotationsMatcher](#annotationsmatcher) | List of annotations for the field  |
+| readMethods   | [MethodsMatcher](#methodsmatcher)         | List of methods to read the field  |
+| writeMethods  | [MethodsMatcher](#methodsmatcher)         | List of methods to write the field |
 
 ### FieldsMatcher
 
@@ -230,7 +230,7 @@
 | usingFields   | Collection&lt;[UsingFieldMatcher](#usingfieldmatcher)&gt; | List of fields used in the method     |
 | usingNumbers  | Collection&lt;Number&gt;                                  | List of numbers used in the method    |
 | invokeMethods | [MethodsMatcher](#methodsmatcher)                         | List of methods invoked by the method |
-| callMethods   | [MethodsMatcher](#methodsmatcher)                         | List of methods that call the method  |
+| callerMethods | [MethodsMatcher](#methodsmatcher)                         | List of methods that call the method  |
 
 ### MethodsMatcher
 

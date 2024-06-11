@@ -246,12 +246,12 @@ private fun findMethodWithFuzzyParam(bridge: DexKitBridge) {
 
 How can you serialize and save the results obtained from DexKit queries for later use?
 
-DexKit provides corresponding packaging classes for Class, Method, and Field,
-namely `DexClass`, `DexMethod`, and `DexField`. The wrapper class inherits the `Serializable`
-interface, so it can be saved directly using Java's serialization method. For the objects returned
-by the query, you can directly use `toDexClass()`, `toDexMethod()`, `toDexField()` methods to
-convert to a wrapper class. Of course, you can also use the Data object's `descriptor` attribute,
-which is a `Dailvik description` that identifies a unique object.
+DexKit provides corresponding wrapper classes for Class, Method, and Field, namely `DexClass`, 
+`DexMethod`, and `DexField`. These wrapper classes inherit from the `ISerializable` interface, 
+allowing them to be freely converted to and from strings. For objects returned by queries, 
+you can directly use the `toDexClass()`, `toDexMethod()`, and `toDexField()` methods to convert 
+them into the respective wrapper classes.
+
 
 ```kotlin
 private fun saveData(bridge: DexKitBridge) {
@@ -263,9 +263,10 @@ private fun saveData(bridge: DexKitBridge) {
             usingStrings("onClick")
         }
     }.single().let {
-        val descriptor = it.descriptor
+        val dexMethod = it.toDexMethod()
+        val serialize = dexMethod.serialize()
         val sp = getSharedPreferences("dexkit", Context.MODE_PRIVATE)
-        sp.edit().putString("onClickMethod", descriptor).apply()
+        sp.edit().putString("onClickMethod", serialize).apply()
     }
 }
 
@@ -274,6 +275,9 @@ private fun readData(): Method {
     val descriptor = sp.getString("onClickMethod", null)
     if (descriptor != null) {
         val dexMethod = DexMethod(descriptor)
+        // val dexMethod = DexMethod.deserialize(serialize)
+        // val dexMethod = ISerializable.deserialize(serialize) as DexMethod
+        // val dexMethod = ISerializable.deserializeAs<DexMethod>(serialize)
         val method = dexMethod.getMethodInstance(hostClassLoader)
         return method
     }
