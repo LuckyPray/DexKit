@@ -138,7 +138,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * ----------------
      * 方法声明类全限定名。
      *
-     *     declaredClass = "Ljava/lang/String;"
+     *     declaredClass = "java.lang.String"
      */
     var declaredClass: String
         @JvmSynthetic
@@ -154,7 +154,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * ----------------
      * 方法返回值类型全限定名。
      *
-     *     returnType = "I"
+     *     returnType = "int"
      */
     var returnType: String
         @JvmSynthetic
@@ -395,7 +395,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * ----------------
      * 方法返回值类型匹配器。
      *
-     *     returnType(ClassMatcher().descriptor("[I"))
+     *     returnType(ClassMatcher().className("int[]"))
      *
      * @param type method return type matcher / 方法返回值类型匹配器
      * @return [MethodMatcher]
@@ -1036,9 +1036,9 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * The method invoke methods matcher.
+     * This method calls the matcher for the specified methods set.
      * ----------------
-     * 该方法调用方法的匹配器。
+     * 本方法调用了指定方法集合的匹配器。
      *
      *     invokeMethods(MethodsMatcher().add(MethodMatcher().name("length")))
      *
@@ -1050,9 +1050,9 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Add method invoke method matcher.
+     * This method calls the matcher for the specified method.
      * ----------------
-     * 添加该方法调用方法的匹配器。
+     * 本方法调用了指定方法的匹配器。
      *
      *     addInvoke(MethodMatcher().name("length"))
      *
@@ -1065,9 +1065,9 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Add method invoke method matcher.
+     * Add a matcher that calls the method corresponding to the descriptor.
      * ----------------
-     * 添加该方法调用方法的匹配器。
+     * 本方法调用了指定方法的匹配器。
      *
      *     addInvoke("Ljava/lang/String;->length()I")
      *
@@ -1080,9 +1080,9 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * This method caller methods matcher.
+     * The matcher for when this method is called by the specified set of methods.
      * ----------------
-     * 调用该方法的方法的匹配器。
+     * 本方法被指定方法集合调用的匹配器。
      *
      *     callMethods(MethodsMatcher().add(MethodMatcher().name("length")))
      *
@@ -1094,9 +1094,9 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Add method caller method matcher.
+     * Adds a matcher for when this method is called by a specified method.
      * ----------------
-     * 添加调用该方法的方法的匹配器。
+     * 添加本方法被指定方法调用的匹配器。
      *
      *     addCall(MethodMatcher().name("length"))
      *
@@ -1109,9 +1109,9 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     }
 
     /**
-     * Add method caller method matcher.
+     * Adds a matcher for when this method is called by a specified method.
      * ----------------
-     * 添加调用该方法的方法的匹配器。
+     * 添加本方法被指定方法调用的匹配器。
      *
      *     addCall("Ljava/lang/String;->length()I")
      *
