@@ -67,7 +67,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         private set
     var invokeMethodsMatcher: MethodsMatcher? = null
         private set
-    var callMethodsMatcher: MethodsMatcher? = null
+    var callerMethodsMatcher: MethodsMatcher? = null
         private set
 
     constructor()
@@ -1079,18 +1079,44 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         invokeMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
     }
 
+    @Deprecated(
+        message = "To avoid ambiguity, please use callerMethods",
+        replaceWith = ReplaceWith("callerMethods(callMethods)")
+    )
+    fun callMethods(callMethods: MethodsMatcher) = also {
+        this.callerMethodsMatcher = callMethods
+    }
+
+    @Deprecated(
+        message = "To avoid ambiguity, please use addCaller",
+        replaceWith = ReplaceWith("addCaller(callMethod)")
+    )
+    fun addCall(callMethod: MethodMatcher) = also {
+        callerMethodsMatcher = callerMethodsMatcher ?: MethodsMatcher()
+        callerMethodsMatcher!!.add(callMethod)
+    }
+
+    @Deprecated(
+        message = "To avoid ambiguity, please use addCaller",
+        replaceWith = ReplaceWith("addCaller(methodDescriptor)")
+    )
+    fun addCall(methodDescriptor: String) = also {
+        callerMethodsMatcher = callerMethodsMatcher ?: MethodsMatcher()
+        callerMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
+    }
+
     /**
      * The matcher for when this method is called by the specified set of methods.
      * ----------------
      * 本方法被指定方法集合调用的匹配器。
      *
-     *     callMethods(MethodsMatcher().add(MethodMatcher().name("length")))
+     *     callerMethods(MethodsMatcher().add(MethodMatcher().name("length")))
      *
-     * @param callMethods call methods matcher / 方法调用方法匹配器
+     * @param callerMethods call methods matcher / 方法调用方法匹配器
      * @return [MethodMatcher]
      */
-    fun callMethods(callMethods: MethodsMatcher) = also {
-        this.callMethodsMatcher = callMethods
+    fun callerMethods(callerMethods: MethodsMatcher) = also {
+        this.callerMethodsMatcher = callerMethods
     }
 
     /**
@@ -1098,14 +1124,14 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * ----------------
      * 添加本方法被指定方法调用的匹配器。
      *
-     *     addCall(MethodMatcher().name("length"))
+     *     addCaller(MethodMatcher().name("length"))
      *
-     * @param callMethod call method matcher / 方法调用方法匹配器
+     * @param callerMethod call method matcher / 方法调用方法匹配器
      * @return [MethodMatcher]
      */
-    fun addCall(callMethod: MethodMatcher) = also {
-        callMethodsMatcher = callMethodsMatcher ?: MethodsMatcher()
-        callMethodsMatcher!!.add(callMethod)
+    fun addCaller(callerMethod: MethodMatcher) = also {
+        callerMethodsMatcher = callerMethodsMatcher ?: MethodsMatcher()
+        callerMethodsMatcher!!.add(callerMethod)
     }
 
     /**
@@ -1113,14 +1139,14 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
      * ----------------
      * 添加本方法被指定方法调用的匹配器。
      *
-     *     addCall("Ljava/lang/String;->length()I")
+     *     addCaller("Ljava/lang/String;->length()I")
      *
      * @param methodDescriptor call method descriptor / 方法调用方法的描述符
      * @return [MethodMatcher]
      */
-    fun addCall(methodDescriptor: String) = also {
-        callMethodsMatcher = callMethodsMatcher ?: MethodsMatcher()
-        callMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
+    fun addCaller(methodDescriptor: String) = also {
+        callerMethodsMatcher = callerMethodsMatcher ?: MethodsMatcher()
+        callerMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
     }
 
     // region DSL
@@ -1221,6 +1247,10 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     /**
      * @see callMethods
      */
+    @Deprecated(
+        message = "To avoid ambiguity, please use callerMethods",
+        replaceWith = ReplaceWith("callerMethods { init() }")
+    )
     @kotlin.internal.InlineOnly
     inline fun callMethods(init: MethodsMatcher.() -> Unit) = also {
         callMethods(MethodsMatcher().apply(init))
@@ -1229,9 +1259,29 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     /**
      * @see addCall
      */
+    @Deprecated(
+        message = "To avoid ambiguity, please use addCaller",
+        replaceWith = ReplaceWith("addCaller { init() }")
+    )
     @kotlin.internal.InlineOnly
     inline fun addCall(init: MethodMatcher.() -> Unit) = also {
         addCall(MethodMatcher().apply(init))
+    }
+
+    /**
+     * @see callerMethods
+     */
+    @kotlin.internal.InlineOnly
+    inline fun callerMethods(init: MethodsMatcher.() -> Unit) = also {
+        callerMethods(MethodsMatcher().apply(init))
+    }
+
+    /**
+     * @see addCaller
+     */
+    @kotlin.internal.InlineOnly
+    inline fun addCaller(init: MethodMatcher.() -> Unit) = also {
+        addCaller(MethodMatcher().apply(init))
     }
 
     // endregion
@@ -1273,7 +1323,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
             usingNumbersMatcher?.map { (it.value as BaseQuery).build(fbb) }?.toIntArray()
                 ?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it) } ?: 0,
             invokeMethodsMatcher?.build(fbb) ?: 0,
-            callMethodsMatcher?.build(fbb) ?: 0
+            callerMethodsMatcher?.build(fbb) ?: 0
         )
         fbb.finish(root)
         return root
