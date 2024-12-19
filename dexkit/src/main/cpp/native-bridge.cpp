@@ -111,12 +111,11 @@ static bool CheckPoint(void *addr) {
         LOGE("eventfd failed: %s", strerror(errno));
         return false;
     }
-    bool valid = true;
     if (write(fd, (void *) addr, 8) < 0) {
-        valid = false;
+        return false;
     }
     close(fd);
-    return valid;
+    return true;
 }
 
 void init(JNIEnv *env) {
@@ -166,23 +165,32 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
         const auto *dex_files = reinterpret_cast<const DexFile **>(
                 env->GetLongArrayElements(cookie, nullptr));
         LOGI("dex_file_length -> %d", dex_file_length);
-        std::vector<const DexFile *> dex_images;
+        std::vector<const void *> dex_images;
+        bool has_compact = false;
         if (use_memory_dex_file) {
-            for (int j = 0; j < dex_file_length; ++j) {
+            for (int j = 1; j < dex_file_length; ++j) {
                 const auto *dex_file = dex_files[j];
-                if (!CheckPoint((void *) dex_file) ||
-                    !CheckPoint((void *) dex_file->begin_) ||
-                    dex_file->size_ < sizeof(dex::Header)) {
+                if (!CheckPoint((void *) dex_file)
+                    || !CheckPoint((void *) dex_file->begin_)) {
+                    LOGD("dex_file %d is invalid", j);
+                    continue;
+                }
+                // https://cs.android.com/android/_/android/platform/art/+/4b7aef13e87be3e35de747fb10845057f9ddb712
+                // in a14-r29+ size_ is unused
+                auto header = reinterpret_cast<const struct dex::Header *>(dex_file->begin_);
+                if (dex_file->size_ && dex_file->size_ != header->file_size) {
+                    // TODO dex verify
                     LOGD("dex_file %d is invalid", j);
                     continue;
                 }
                 if (IsCompactDexFile(dex_file->begin_)) {
                     LOGD("skip compact dex");
                     dex_images.clear();
+                    has_compact = true;
                     break;
                 } else {
-                    LOGD("push standard dex file %d, image size: %zu", j, dex_file->size_);
-                    dex_images.emplace_back(dex_file);
+                    LOGD("push standard dex file %d, image size: %zu", j, header->file_size);
+                    dex_images.emplace_back(dex_file->begin_);
                 }
             }
         }
@@ -190,7 +198,11 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             auto file_name_obj = (jstring) env->GetObjectField(java_dex_file, file_name_field);
             if (!file_name_obj) continue;
             auto file_name = env->GetStringUTFChars(file_name_obj, nullptr);
-            LOGD("contains compact dex, use path load: %s", file_name);
+            if (has_compact) {
+                LOGD("contains compact dex, use path load: %s", file_name);
+            } else {
+                LOGD("images is empty, use path load: %s", file_name);
+            }
             auto ret = dexkit->AddZipPath(file_name);
             if (ret != Error::SUCCESS) {
                 throwException(env, ret);
@@ -199,9 +211,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             }
         } else {
             std::vector<std::unique_ptr<dexkit::MemMap>> images;
-            for (auto &image: dex_images) {
-                auto mmap = dexkit::MemMap(image->size_);
-                memcpy(mmap.addr(), image->begin_, image->size_);
+            for (auto image: dex_images) {
+                auto header = reinterpret_cast<const struct dex::Header *>(image);
+                auto mmap = dexkit::MemMap(header->file_size);
+                memcpy(mmap.addr(), image, header->file_size);
                 images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
             }
             auto ret = dexkit->AddImage(std::move(images));
