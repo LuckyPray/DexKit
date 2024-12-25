@@ -464,12 +464,12 @@ void DexItem::InitCache(uint32_t init_flags) {
 }
 
 bool DexItem::NeedPutCrossRef(uint32_t need_cross_flag) const {
-    DEXKIT_CHECK(((dex_cross_flag | kCallerMethod | kRwFieldMethod) ^ (kCallerMethod | kRwFieldMethod)) == 0);
+    DEXKIT_CHECK((need_cross_flag & ~(kCallerMethod | kRwFieldMethod)) == 0);
     return (dex_cross_flag & need_cross_flag) != need_cross_flag;
 }
 
 void DexItem::PutCrossRef(uint32_t put_cross_flag) {
-    DEXKIT_CHECK(((put_cross_flag | kCallerMethod | kRwFieldMethod) ^ (kCallerMethod | kRwFieldMethod)) == 0);
+    DEXKIT_CHECK((put_cross_flag & ~(kCallerMethod | kRwFieldMethod)) == 0);
     if ((dex_cross_flag & put_cross_flag) == put_cross_flag) {
         return;
     }
