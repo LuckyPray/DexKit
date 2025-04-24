@@ -442,7 +442,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
 
     companion object {
         @JvmStatic
-        fun create() = AnnotationElementsMatcher()
+        fun create() = AnnotationEncodeArrayMatcher()
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
