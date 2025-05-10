@@ -78,8 +78,8 @@ class FindMethod : BaseQuery() {
      */
     @set:JvmSynthetic
     var findFirst: Boolean = false
-    private var matcher: MethodMatcher? = null
-    fun getMatcher() = matcher
+    var matcher: MethodMatcher? = null
+        private set
 
     /**
      * Search classes in the specified packages.
@@ -183,7 +183,7 @@ class FindMethod : BaseQuery() {
      * @param matcher [MethodMatcher]
      * @return [FindMethod]
      */
-    fun setMatcher(matcher: MethodMatcher) = also {
+    fun matcher(matcher: MethodMatcher) = also {
         this.matcher = matcher
     }
 
@@ -194,7 +194,7 @@ class FindMethod : BaseQuery() {
      */
     @kotlin.internal.InlineOnly
     inline fun matcher(init: MethodMatcher.() -> Unit) = also {
-        setMatcher(MethodMatcher().apply(init))
+        matcher(MethodMatcher().apply(init))
     }
 
     // endregion

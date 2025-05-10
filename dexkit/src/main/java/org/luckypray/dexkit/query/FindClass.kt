@@ -70,8 +70,8 @@ class FindClass : BaseQuery() {
     @set:JvmSynthetic
     var findFirst: Boolean = false
 
-    private var matcher: ClassMatcher? = null
-    fun getMatcher() = matcher
+    var matcher: ClassMatcher? = null
+        private set
 
     /**
      * Search classes in the specified packages.
@@ -163,7 +163,7 @@ class FindClass : BaseQuery() {
      * @param matcher class matcher / 类匹配器
      * @return [FindClass]
      */
-    fun setMatcher(matcher: ClassMatcher) = also {
+    fun matcher(matcher: ClassMatcher) = also {
         this.matcher = matcher
     }
 
@@ -174,7 +174,7 @@ class FindClass : BaseQuery() {
      */
     @kotlin.internal.InlineOnly
     inline fun matcher(init: ClassMatcher.() -> Unit) = also {
-        setMatcher(ClassMatcher().apply(init))
+        matcher(ClassMatcher().apply(init))
     }
 
     // endregion

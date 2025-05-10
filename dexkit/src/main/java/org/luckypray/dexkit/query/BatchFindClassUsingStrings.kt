@@ -63,8 +63,8 @@ class BatchFindClassUsingStrings : BaseQuery() {
      */
     @set:JvmSynthetic
     var searchClasses: Collection<ClassData>? = null
-    private var searchGroups: MutableList<StringMatchersGroup>? = null
-    fun getSearchGroups() = searchGroups
+    var searchGroups: MutableList<StringMatchersGroup>? = null
+        private set
 
     /**
      * Search classes in the specified packages.

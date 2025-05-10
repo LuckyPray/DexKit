@@ -79,8 +79,8 @@ class FindField : BaseQuery() {
     @set:JvmSynthetic
     var findFirst: Boolean = false
 
-    private var matcher: FieldMatcher? = null
-    fun getMatcher() = matcher
+    var matcher: FieldMatcher? = null
+        private set
 
     /**
      * Search classes in the specified packages.
@@ -184,7 +184,7 @@ class FindField : BaseQuery() {
      * @param matcher field matcher / 字段匹配器
      * @return [FindField]
      */
-    fun setMatcher(matcher: FieldMatcher) = also {
+    fun matcher(matcher: FieldMatcher) = also {
         this.matcher = matcher
     }
 
@@ -195,7 +195,7 @@ class FindField : BaseQuery() {
      */
     @kotlin.internal.InlineOnly
     inline fun matcher(init: FieldMatcher.() -> Unit) = also {
-        setMatcher(FieldMatcher().apply(init))
+        matcher(FieldMatcher().apply(init))
     }
 
     // endregion
