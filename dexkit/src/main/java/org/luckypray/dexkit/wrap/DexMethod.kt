@@ -126,7 +126,7 @@ class DexMethod: ISerializable {
     constructor(constructor: Constructor<*>) {
         className = constructor.declaringClass.name
         name = "<init>"
-        paramTypeNames = constructor.parameterTypes.map { getTypeSign(it) }
+        paramTypeNames = constructor.parameterTypes.map { getTypeName(it) }
         returnTypeName = "void"
     }
 
