@@ -162,9 +162,6 @@ void DexItem::InitBaseCache() {
         type_def_flag[class_def.class_idx] = true;
         type_def_idx[class_def.class_idx] = def_idx;
         class_access_flags[class_def.class_idx] = class_def.access_flags;
-        if (class_def.class_data_off == 0) {
-            continue;
-        }
 
         if (class_def.interfaces_off) {
             auto interface_type_list = this->reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
@@ -175,6 +172,10 @@ void DexItem::InitBaseCache() {
                     interfaces.emplace_back(interface_type_list->list[i].type_idx);
                 }
             }
+        }
+
+        if (class_def.class_data_off == 0) {
+            continue;
         }
 
         const auto *class_data = reader.dataPtr<dex::u1>(class_def.class_data_off);
