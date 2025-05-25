@@ -562,12 +562,7 @@ ClassBean DexItem::GetClassBean(uint32_t type_idx) {
         bean.source_file = this->class_source_files[type_idx];
         bean.access_flags = class_def.access_flags;
         bean.super_class_id = class_def.superclass_idx;
-        if (class_def.interfaces_off) {
-            auto interface_type_list = this->reader.dataPtr<dex::TypeList>(class_def.interfaces_off);
-            for (auto i = 0; i < interface_type_list->size; ++i) {
-                bean.interface_ids.push_back(interface_type_list->list[i].type_idx);
-            }
-        }
+        bean.interface_ids = this->class_interface_ids[type_idx];
         bean.field_ids = this->class_field_ids[type_idx];
         bean.method_ids = this->class_method_ids[type_idx];
     }
