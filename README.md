@@ -393,4 +393,11 @@ class MainHook : IXposedHookLoadPackage {
 
 ## License
 
-[LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html) © LuckyPray
+Except for the `Core/` directory, this project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  
+The code inside the `Core/` directory is licensed under the [GNU Lesser General Public License v3 (LGPL-3.0)](https://www.gnu.org/licenses/lgpl-3.0.html).
+
+For details, please refer to:
+- The `LICENSE` file in the project root (Apache 2.0 full text or summary), which applies to everything except `Core/`.
+- The `LICENSE` file within `Core/` (LGPL-3.0 full text or summary), which applies only to the files under `Core/`.
+
+Copyright © LuckyPray

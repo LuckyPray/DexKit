@@ -386,4 +386,11 @@ class MainHook : IXposedHookLoadPackage {
 
 ## 许可证
 
-[LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html) © LuckyPray
+本项目除 `Core/` 目录外，其它所有代码均采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 许可；  
+`Core/` 目录下的代码采用 [GNU Lesser General Public License v3 (LGPL-3.0)](https://www.gnu.org/licenses/lgpl-3.0.html) 许可。
+
+具体请参见：
+- 项目根目录下的 `LICENSE` 文件（Apache 2.0 全文或简要说明），适用于除 `Core/` 以外的所有内容。
+- `Core/` 目录下的 `LICENSE` 文件（LGPL-3.0 全文或简要说明），仅适用于 `Core/` 下的代码。
+
+版权所有 © LuckyPray
