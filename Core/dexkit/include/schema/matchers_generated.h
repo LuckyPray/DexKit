@@ -1328,7 +1328,8 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_USING_NUMBERS_TYPE = 22,
     VT_USING_NUMBERS = 24,
     VT_INVOKING_METHODS = 26,
-    VT_METHOD_CALLERS = 28
+    VT_METHOD_CALLERS = 28,
+    VT_PROTO_SHORTY = 30
   };
   const dexkit::schema::StringMatcher *method_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_METHOD_NAME);
@@ -1369,6 +1370,9 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const dexkit::schema::MethodsMatcher *method_callers() const {
     return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_METHOD_CALLERS);
   }
+  const ::flatbuffers::String *proto_shorty() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PROTO_SHORTY);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_METHOD_NAME) &&
@@ -1400,6 +1404,8 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(invoking_methods()) &&
            VerifyOffset(verifier, VT_METHOD_CALLERS) &&
            verifier.VerifyTable(method_callers()) &&
+           VerifyOffset(verifier, VT_PROTO_SHORTY) &&
+           verifier.VerifyString(proto_shorty()) &&
            verifier.EndTable();
   }
 };
@@ -1447,6 +1453,9 @@ struct MethodMatcherBuilder {
   void add_method_callers(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers) {
     fbb_.AddOffset(MethodMatcher::VT_METHOD_CALLERS, method_callers);
   }
+  void add_proto_shorty(::flatbuffers::Offset<::flatbuffers::String> proto_shorty) {
+    fbb_.AddOffset(MethodMatcher::VT_PROTO_SHORTY, proto_shorty);
+  }
   explicit MethodMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1472,8 +1481,10 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcher(
     ::flatbuffers::Offset<::flatbuffers::Vector<dexkit::schema::Number>> using_numbers_type = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> using_numbers = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0) {
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> proto_shorty = 0) {
   MethodMatcherBuilder builder_(_fbb);
+  builder_.add_proto_shorty(proto_shorty);
   builder_.add_method_callers(method_callers);
   builder_.add_invoking_methods(invoking_methods);
   builder_.add_using_numbers(using_numbers);
@@ -1509,11 +1520,13 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
     const std::vector<dexkit::schema::Number> *using_numbers_type = nullptr,
     const std::vector<::flatbuffers::Offset<void>> *using_numbers = nullptr,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0) {
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0,
+    const char *proto_shorty = nullptr) {
   auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
   auto using_fields__ = using_fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>(*using_fields) : 0;
   auto using_numbers_type__ = using_numbers_type ? _fbb.CreateVector<dexkit::schema::Number>(*using_numbers_type) : 0;
   auto using_numbers__ = using_numbers ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*using_numbers) : 0;
+  auto proto_shorty__ = proto_shorty ? _fbb.CreateString(proto_shorty) : 0;
   return dexkit::schema::CreateMethodMatcher(
       _fbb,
       method_name,
@@ -1528,7 +1541,8 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
       using_numbers_type__,
       using_numbers__,
       invoking_methods,
-      method_callers);
+      method_callers,
+      proto_shorty__);
 }
 
 struct MethodsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -51,6 +51,8 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         private set
     var classMatcher: ClassMatcher? = null
         private set
+    var protoShortyMatcher: String? = null
+        private set
     var returnTypeMatcher: ClassMatcher? = null
         private set
     var paramsMatcher: ParametersMatcher? = null
@@ -147,6 +149,26 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         @JvmSynthetic
         set(value) {
             declaredClass(value)
+        }
+
+
+    /**
+     * The method prototype shorty. The shorty is a string that represents the return type and parameter types
+     * of a method in a compact form.
+     * The first character represents the return type, and the rest represent parameter types.
+     * ----------------
+     * 方法原型简写。简写是一个表示方法返回类型和参数类型的紧凑形式字符串。每个字符代表一种类型
+     * 第一个字符代表返回类型，其余字符代表参数类型。
+     *
+     * @see [MethodMatcher.protoShorty]
+     */
+    var protoShorty: String
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            protoShorty(value)
         }
 
     /**
@@ -388,6 +410,40 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         ignoreCase: Boolean = false
     ) = also {
         this.classMatcher = ClassMatcher().className(className, matchType, ignoreCase)
+    }
+
+    /**
+     * The method prototype shorty. The shorty is a string that represents the return type and parameter types
+     * of a method in a compact form.
+     * The first character represents the return type, and the rest represent parameter types.
+     * ----------------
+     * 方法原型简写。简写是一个表示方法返回类型和参数类型的紧凑形式字符串。每个字符代表一种类型
+     * 第一个字符代表返回类型，其余字符代表参数类型。
+     *
+     * - 'V': void
+     * - 'Z': boolean
+     * - 'B': byte
+     * - 'S': short
+     * - 'C': char
+     * - 'I': int
+     * - 'J': long
+     * - 'F': float
+     * - 'D': double
+     * - 'L': Object/Object[]
+     *
+     *
+     *     protoShorty("VL")      // void method(Object)
+     *     protoShorty("ZLL")     // boolean method(Object, Object)
+     *     protoShorty("VILFD")   // void method(int, Object, long, float, double)
+     *     protoShorty("LL")      // Object method(Object) - also matches arrays
+     *     protoShorty("ILI")     // int method(Object, int) - works for arrays too
+     *     protoShorty("LIL")     // String[] method(int, String[])
+     *
+     * @param shorty method prototype shorty / 方法原型简写
+     * @return [MethodMatcher]
+     */
+    fun protoShorty(shorty: String) = also {
+        this.protoShortyMatcher = shorty
     }
 
     /**
@@ -1323,7 +1379,8 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
             usingNumbersMatcher?.map { (it.value as BaseQuery).build(fbb) }?.toIntArray()
                 ?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it) } ?: 0,
             invokeMethodsMatcher?.build(fbb) ?: 0,
-            callerMethodsMatcher?.build(fbb) ?: 0
+            callerMethodsMatcher?.build(fbb) ?: 0,
+            protoShortyMatcher?.let { fbb.createString(it) } ?: 0,
         )
         fbb.finish(root)
         return root

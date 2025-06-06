@@ -115,6 +115,7 @@ table MethodMatcher {
     using_numbers: [Number];
     invoking_methods: MethodsMatcher;
     method_callers: MethodsMatcher;
+    proto_shorty: string;
 }
 
 table MethodsMatcher {

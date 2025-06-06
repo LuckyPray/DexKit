@@ -223,6 +223,7 @@ private:
     bool IsMethodsMatched(uint32_t type_idx, const schema::MethodsMatcher *matcher);
 
     bool IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);
+    bool IsProtoShortyMatched(uint32_t shorty_idx, const ::flatbuffers::String *matcher);
     bool IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher);
     bool IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher *matcher);
     bool IsMethodUsingStringsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher);

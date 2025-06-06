@@ -920,6 +920,9 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
         return false;
     }
     auto &proto_def = this->reader.ProtoIds()[method_def.proto_idx];
+    if (!IsProtoShortyMatched(proto_def.shorty_idx, matcher->proto_shorty())) {
+        return false;
+    }
     if (!IsClassMatched(proto_def.return_type_idx, matcher->return_type())) {
         return false;
     }
@@ -939,6 +942,14 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
         return false;
     }
     return true;
+}
+
+bool DexItem::IsProtoShortyMatched(uint32_t shorty_idx, const ::flatbuffers::String *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    auto &shorty = this->strings[shorty_idx];
+    return shorty == matcher->string_view();
 }
 
 bool DexItem::IsParametersMatched(uint32_t method_idx, const schema::ParametersMatcher *matcher) {
