@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-193cf592","path":"/en/about/contacts.html","title":"Contact Us","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1749381613000,"contributors":[{"name":"teble","email":"me@teble.me","commits":1}]},"filePathRelative":"en/about/contacts.md"}');export{t as data};
