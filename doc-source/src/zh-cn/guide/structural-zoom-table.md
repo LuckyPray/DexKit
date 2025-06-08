@@ -216,20 +216,21 @@
 
 ### MethodMatcher
 
-| 字段名           | 类型                                                        | 说明          |
-|:--------------|:----------------------------------------------------------|:------------|
-| name          | [StringMatcher](#stringmatcher)                           | 方法的名称       |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | 方法的修饰符      |
-| declaredClass | [ClassMatcher](#classmatcher)                             | 方法的声明类      |
-| returnType    | [ClassMatcher](#classmatcher)                             | 方法的返回值类型    |
-| params        | [ParametersMatcher](#parametersmatcher)                   | 方法的参数列表     |
-| annotations   | [AnnotationsMatcher](#annotationsmatcher)                 | 方法的注解       |
-| opCodes       | [OpcodesMatcher](#opcodesmatcher)                         | 方法的操作码列表    |
-| usingStrings  | Collection&lt;[StringMatcher](#stringmatcher)&gt;         | 方法中使用的字符串列表 |
-| usingFields   | Collection&lt;[UsingFieldMatcher](#usingfieldmatcher)&gt; | 方法中使用的字段列表  |
-| usingNumbers  | Collection&lt;Number&gt;                                  | 方法中使用的数字列表  |
-| invokeMethods | [MethodsMatcher](#methodsmatcher)                         | 方法中调用的方法列表  |
-| callerMethods | [MethodsMatcher](#methodsmatcher)                         | 调用了该方法的方法列表 |
+| 字段名           | 类型                                                        | 说明               |
+|:--------------|:----------------------------------------------------------|:-----------------|
+| name          | [StringMatcher](#stringmatcher)                           | 方法的名称            |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | 方法的修饰符           |
+| declaredClass | [ClassMatcher](#classmatcher)                             | 方法的声明类           |
+| protoShorty   | String                                                    | 方法的原型简写          |
+| returnType    | [ClassMatcher](#classmatcher)                             | 方法的返回值类型         |
+| params        | [ParametersMatcher](#parametersmatcher)                   | 方法的参数列表          |
+| annotations   | [AnnotationsMatcher](#annotationsmatcher)                 | 方法的注解            |
+| opCodes       | [OpcodesMatcher](#opcodesmatcher)                         | 方法的操作码列表         |
+| usingStrings  | Collection&lt;[StringMatcher](#stringmatcher)&gt;         | 方法中使用的字符串列表      |
+| usingFields   | Collection&lt;[UsingFieldMatcher](#usingfieldmatcher)&gt; | 方法中使用的字段列表       |
+| usingNumbers  | Collection&lt;Number&gt;                                  | 方法中使用的数字列表       |
+| invokeMethods | [MethodsMatcher](#methodsmatcher)                         | 方法中调用的方法列表       |
+| callerMethods | [MethodsMatcher](#methodsmatcher)                         | 调用了该方法的方法列表      |
 
 ### MethodsMatcher
 

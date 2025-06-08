@@ -101,6 +101,44 @@ For example:
 | ([[Ljava/lang/String;)V | void function(java.lang.String[][])        |
 | ()[Ljava/lang/String;   | java.lang.String[] function()              |
 
+### Method Prototype Shorthand (ProtoShorty)
+
+The method prototype shorthand is a compact string representation of a method’s return and parameter
+types. Each character represents a type: the first character is the return type, and the remaining
+characters are the parameter types.
+
+#### Type Character Mapping
+
+| Character | Type    | Description                                                         |
+|:----------|:--------|:--------------------------------------------------------------------|
+| V         | void    | no value                                                            |
+| Z         | boolean | Boolean                                                             |
+| B         | byte    | Byte                                                                |
+| S         | short   | Short                                                               |
+| C         | char    | Character                                                           |
+| I         | int     | Integer                                                             |
+| J         | long    | Long                                                                |
+| F         | float   | Single‐precision floating point                                     |
+| D         | double  | Double‐precision floating point                                     |
+| L         | Object  | Reference type (including object arrays and primitive type arrays)) |
+
+#### Usage Examples
+
+| Shorthand | Corresponding Method Signature                  |
+|:----------|:------------------------------------------------|
+| VL        | `void method(Object)`                           |
+| ZLL       | `boolean method(Object, Object)`                |
+| VILFD     | `void method(int, Object, long, float, double)` |
+| LL        | `Object method(Object)`                         |
+| ILI       | `int method(Object, int)`                       |
+| LIL       | `Object method(int, Object)`                    |
+
+::: tip
+In the shorthand, all reference types (classes, interfaces, arrays, etc.) are represented by the
+character `L` to keep the string compact. This means `String`, `String[]`, `int[]`, and similar
+types are all encoded as `L`.
+:::
+
 ## Dalvik Descriptor
 
 In a Dex file, we can represent specific classes, methods, or fields using the 'Dalvik Descriptor.'

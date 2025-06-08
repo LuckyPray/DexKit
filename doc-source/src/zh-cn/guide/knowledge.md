@@ -54,7 +54,8 @@
 
 #### 数组(ArrayType)
 
-数组类型的类型签名以 `[` 开头，后面跟着数组元素的类型签名，如 `[[I` 表示一个二维数组，数组中的元素类型是 `int`。
+数组类型的类型签名以 `[` 开头，后面跟着数组元素的类型签名，如 `[[I` 表示一个二维数组，数组中的元素类型是
+`int`。
 
 例如:
 
@@ -64,9 +65,9 @@
 | [[C                 | char[][]           |
 | [Ljava/lang/String; | java.lang.String[] |
 
-
 ::: tip
 `类` 与 `类型` 并不完全等价：类型为 Type，而类为 Class。 `类` 是 `类型` 的子集。 例如：
+
 - `java.lang.Integer` 是 `类`，也是 `类型`
 - `java.lang.Integer[]` 是 `数组类型`，但不是 `类`
 - `int` 是 `原始类型`，但不是 `类`
@@ -90,6 +91,41 @@
 | (I[II)V                 | void function(int, int[], int)             |
 | ([[Ljava/lang/String;)V | void function(java.lang.String[][])        |
 | ()[Ljava/lang/String;   | java.lang.String[] function()              |
+
+### 方法原型简写 (ProtoShorty)
+
+方法原型简写是一个表示方法返回类型和参数类型的紧凑形式字符串。每个字符代表一种类型，第一个字符代表返回类型，其余字符代表参数类型。
+
+#### 类型字符映射
+
+| 字符 | 类型      | 说明                  |
+|:---|:--------|:--------------------|
+| V  | void    | 空类型                 |
+| Z  | boolean | 布尔类型                |
+| B  | byte    | 字节类型                |
+| S  | short   | 短整型                 |
+| C  | char    | 字符类型                |
+| I  | int     | 整型                  |
+| J  | long    | 长整型                 |
+| F  | float   | 单精度浮点型              |
+| D  | double  | 双精度浮点型              |
+| L  | Object  | 引用类型（包括对象数组和基本类型数组） |
+
+#### 使用示例
+
+| 原型简写  | 对应的方法签名                                       |
+|:------|:----------------------------------------------|
+| VL    | void method(Object)                           |
+| ZLL   | boolean method(Object, Object)                |
+| VILFD | void method(int, Object, long, float, double) |
+| LL    | Object method(Object)                         |
+| ILI   | int method(Object, int)                       |
+| LIL   | Object method(int, Object)                    |
+
+::: tip
+在方法原型简写中，所有的引用类型（包括类、接口、数组等）都用字符 `L` 表示，这使得简写更加紧凑。
+这意味着 `String`、`String[]`、`int[]` 等类型在简写中都表示为 `L`。
+:::
 
 ## Dalvik 描述
 
@@ -115,7 +151,8 @@
 
 ::: tip
 DexKit 中 className/Type 查询参数只支持 Java 原始写法，例如：
+
 - 对于基本类型，填写 `void`，`int`，`boolean` 形式的 Java PrimitiveType
 - 对于引用类型，填写 `java.lang.String` 或者 `java/lang/String` 形式的 FullClassName
 - 对于数组类型，填写 `int[]`，`java.lang.String[][]` 或者 `java/lang/String[][]` 形式的 ArrayTypeName
-:::
+  :::

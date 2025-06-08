@@ -222,6 +222,7 @@
 | name          | [StringMatcher](#stringmatcher)                           | Name of the method                    |
 | modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Modifiers of the method               |
 | declaredClass | [ClassMatcher](#classmatcher)                             | Declaring class of the method         |
+| protoShorty   | String                                                    | The method prototype shorty           |
 | returnType    | [ClassMatcher](#classmatcher)                             | Return type of the method             |
 | params        | [ParametersMatcher](#parametersmatcher)                   | List of parameters                    |
 | annotations   | [AnnotationsMatcher](#annotationsmatcher)                 | List of annotations for the method    |
