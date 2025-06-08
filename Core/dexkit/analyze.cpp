@@ -142,7 +142,8 @@ AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth) {
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->using_fields()) {
-        ret.need_flags |= kMethodUsingField;
+        // 不初始化 kRwFieldMethod 可能会导致复杂查询无法跳转至对应的 dexItem 执行
+        ret.need_flags |= kMethodUsingField | kRwFieldMethod;
         for (auto i = 0; i < matcher->using_fields()->size(); ++i) {
             // 使用的 field 可能定义在其它 dex 中
             auto result = Analyze(matcher->using_fields()->Get(i)->field(), dex_depth + 1);
@@ -151,7 +152,8 @@ AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth) {
         }
     }
     if (matcher->invoking_methods()) {
-        ret.need_flags |= kMethodInvoking;
+        // 不初始化 kCallerMethod 可能会导致复杂查询无法跳转至对应的 dexItem 执行
+        ret.need_flags |= kCallerMethod | kMethodInvoking;
         // invoke 的方法可能定义在其它 dex 中
         auto result = Analyze(matcher->invoking_methods(), dex_depth + 1);
         ret.need_flags |= result.need_flags;
