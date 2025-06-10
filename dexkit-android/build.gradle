@@ -133,10 +133,17 @@ mavenPublishing {
         description = "A high-performance runtime parsing library for dex implemented in C++."
         url = "https://github.com/LuckyPray/DexKit"
         licenses {
+            // LGPL-3.0 only applies to 'Core/'
             license {
-                name = "LGPL-3.0 license"
+                name = "GNU Lesser General Public License v3.0"
                 url = "https://www.gnu.org/licenses/lgpl-3.0.html"
-                distribution = "https://www.gnu.org/licenses/lgpl-3.0.html"
+                distribution = "repo"
+            }
+            // Apache 2.0 for everything except 'Core/'
+            license {
+                name = "The Apache License, Version 2.0"
+                url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "repo"
             }
         }
         developers {
