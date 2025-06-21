@@ -1,70 +1,74 @@
 <h1 align="center">DexKit</h1>
 
 <p align="center">
-    <a href="https://www.gnu.org/licenses/lgpl-3.0.html"><img loading="lazy" src="https://img.shields.io/github/license/LuckyPray/DexKit.svg?logo=github&label=%E8%AE%B8%E5%8F%AF%E8%AF%81"/></a>
+    <a href="https://www.gnu.org/licenses/lgpl-3.0.html"><img loading="lazy" src="https://img.shields.io/github/license/LuckyPray/DexKit.svg?logo=github&label=Licencia"/></a>
     <a href="https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray"><img loading="lazy" src="https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?logo=apachemaven&20Version&label=Maven%20Central"/></a>
-    <a href="https://t.me/LuckyPray_DexKit"><img loading="lazy" src="https://img.shields.io/badge/%E8%AE%A8%E8%AE%BA%E7%BB%84-Telegram-blue.svg?logo=telegram"/></a>
+    <a href="https://t.me/LuckyPray_DexKit"><img loading="lazy" src="https://img.shields.io/badge/Telegram-blue.svg?logo=telegram&label=Grupo%20de%20discusi%C3%B3n"/></a>
 </p>
 
 <p align="center">
-    <a href="./README.md">🇬🇧 <strong>English</strong></a> | <a href="./README_es.md">🇪🇸 <strong>Español</strong></a> | 🇨🇳 <strong><ins>简体中文</ins></strong>
+    <a href="./README.md">🇬🇧 <strong>English</strong></a> | 🇪🇸 <strong><ins>Español</ins></strong> | <a href="./README_zh.md">🇨🇳 <strong>简体中文</strong></a>
 </p>
 
-<p align="center"><strong>一个使用 C++ 实现的 dex 高性能运行时解析库，用于查找被混淆的类、方法或者属性。</strong></p>
+<p align="center"><strong>Una biblioteca de alto rendimiento para el análisis en tiempo de ejecución de archivos dex implementada en C++, usada para localizar clases, métodos o propiedades ofuscadas.</strong></p>
 
 ---
 
 # DexKit 2.0
 
-目前 2.0 已经正式发布，相关改进参考 Release Notes。
+Actualmente la versión 2.0 ha sido lanzada oficialmente; consulta las **Notas de la versión** para ver las mejoras relacionadas.
 
-## 支持的 API
+## APIs compatibles
 
-基础功能：
+Funciones básicas:
 
-- [x] 多条件查找类
-- [x] 多条件查找方法
-- [x] 多条件查找属性
-- [x] 提供多种元数据API获取 field/method/class 相关数据
+- [x] Búsqueda de clases con múltiples condiciones
+- [x] Búsqueda de métodos con múltiples condiciones
+- [x] Búsqueda de campos con múltiples condiciones
+- [x] Proporciona varias APIs de metadatos para obtener datos relacionados con campos/métodos/clases
 
-⭐️ 特色功能（推荐）：
+⭐️ Funciones distintivas (recomendadas):
 
-- [x] 批量查找使用字符串的类
-- [x] 批量查找使用字符串的方法
+- [x] Búsqueda por lotes de clases usando cadenas
+- [x] Búsqueda por lotes de métodos usando cadenas
 
 > [!NOTE]
-> 对于字符串搜索场景进行了优化，可以大幅度提升搜索速度，增加查询分组不会导致耗时成倍增长
+> Se han implementado optimizaciones para escenarios de búsqueda por cadenas, mejorando significativamente la velocidad de búsqueda.
+> Aumentar el número de grupos de consulta no supondrá un incremento lineal en el tiempo de ejecución.
 
-### 使用文档
+### Documentación
 
-- [点击此处](https://luckypray.org/DexKit/zh-cn/)进入文档页面查看更详细的教程。
+- [Haz click aquí](https://luckypray.org/DexKit/en/) para ir a la página de documentación y ver tutoriales más detallados.
 
-### 依赖
+### Dependencias
 
-添加 `dexkit` 依赖进 `build.gradle`.
+Agrega la dependencia `dexkit` en tu `build.gradle`:
 
 ```gradle
 repositories {
     mavenCentral()
 }
 dependencies {
-    // 替换 <version> 为您需要的版本，例如 `2.0.0`
+    // reemplaza <version> con la versión que desees, p. ej. `2.0.0`
     implementation 'org.luckypray:dexkit:<version>'
 }
 ```
 
 > [!IMPORTANT]
-> 从 **DexKit 2.0** 开始，新的 ArtifactId 已从 `DexKit` 更改为 `dexkit`。
+> A partir de **DexKit 2.0**, el `ArtifactId` ha cambiado de `DexKit` a `dexkit`.
 
-DexKit 当前版本: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
+### Versión actual de DexKit
+[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
 
-## 使用样例
 
-下面是一个简单的用法示例。
+## Ejemplo de uso
 
-假设这个 Class 是我们想得到的，其中大部分名称经过混淆，且每个版本都会发生变化。
+Aquí tienes un ejemplo sencillo de uso.
 
-> 样例 APP 如下
+Supongamos que esta es la clase que queremos localizar, con la mayoría de sus nombres ofuscados y cambiando en cada versión:
+
+<details open><summary>App de ejemplo</summary>
+<p>
 
 ```java
 package org.luckypray.dexkit.demo;
@@ -129,13 +133,15 @@ public class PlayActivity extends AppCompatActivity {
     }
 }
 ```
+</p></details>
 
-此时我们想得到这个类可以使用如下代码：
+Para obtener esta clase, puedes usar el siguiente código:
 
 > [!NOTE]
-> 这仅仅是个样例，实际使用中并不需要这么多条件进行匹配，按需选用即可，避免条件过多带来的匹配复杂度增长
+> Esto es solo un ejemplo; en la práctica, no es necesario usar un conjunto tan extenso de condiciones de matcheo. 
+> Elige y usa según tus necesidades para evitar complejidad innecesaria al matchear debido a un exceso de condiciones.
 
-<details><summary>Java Example</summary>
+<details><summary>Ejemplo en Java</summary>
 <p>
 
 ```java
@@ -155,100 +161,101 @@ public class MainHook implements IXposedHookLoadPackage {
             return;
         }
         this.hostClassLoader = loadPackageParam.classLoader;
-        // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
-        // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏。
-        // 这里使用 `try-with-resources` 语法糖自动关闭 DexKitBridge 实例。
+        // La creación de un objeto DexKit es una operación que consume mucho tiempo; por favor no crees el objeto de forma repetida.
+        // Si necesitas usarlo de manera global, gestiona su ciclo de vida tú mismo
+        // y asegúrate de llamar al método .close() cuando ya no lo necesites, para evitar fugas de memoria.
+        // Aquí utilizamos `try-with-resources` para cerrar automáticamente la instancia de DexKitBridge.
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             findPlayActivity(bridge);
-            // Other use cases
+            // Otros casos de uso
         }
     }
     
     private void findPlayActivity(DexKitBridge bridge) {
         ClassData classData = bridge.findClass(FindClass.create()
-            // 指定搜索的包名范围
+            // Incluir paquetes donde buscar
             .searchPackages("org.luckypray.dexkit.demo")
-            // 排除指定的包名范围
+            // Excluir paquetes no relevantes
             .excludePackages("org.luckypray.dexkit.demo.annotations")
             .matcher(ClassMatcher.create()
-                // ClassMatcher 针对类的匹配器
+                // ClassMatcher: Matcher para clases
                 .className("org.luckypray.dexkit.demo.PlayActivity")
-                // FieldsMatcher 针对类中包含字段的匹配器
+                // FieldsMatcher: Matcher para los campos de una clase
                 .fields(FieldsMatcher.create()
-                    // 添加对于字段的匹配器
+                    // FieldMatcher: Agregar un matcher para un campo
                     .add(FieldMatcher.create()
-                        // 指定字段的修饰符
+                        // Especificar los modificadores del campo
                         .modifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL)
-                        // 指定字段的类型
+                        // Especificar el tipo del campo
                         .type("java.lang.String")
-                        // 指定字段的名称
+                        // Especificar el nombre del campo
                         .name("TAG")
                     )
-                    // 添加指定字段的类型的字段匹配器
+                    // Agregar un matcher para campos del tipo especificado
                     .addForType("android.widget.TextView")
                     .addForType("android.os.Handler")
-                    // 指定类中字段的数量
+                    // Especificar la cantidad de campos en la clase
                     .count(3)
                 )
-                // MethodsMatcher 针对类中包含方法的匹配器
+                // MethodsMatcher: Matcher para métodos de una clase
                 .methods(MethodsMatcher.create()
-                    // 添加对于方法的匹配器
+                    // Agregar un matcher para el método
                     .methods(List.of(
                         MethodMatcher.create()
-                            // 指定方法的修饰符
+                            // Especificar los modificadores del método
                             .modifiers(Modifier.PROTECTED)
-                            // 指定方法的名称
+                            // Especificar el nombre del método
                             .name("onCreate")
-                            // 指定方法的返回值类型
+                            // Especificar el tipo de retorno del método
                             .returnType("void")
-                            // 指定方法的参数类型，如果参数类型不确定，使用 null，使用此方法会隐式声明参数个数
+                            // Especificar los tipos de parámetros del método
                             .paramTypes("android.os.Bundle")
-                            // 指定方法中使用的字符串
+                            // Especificar los strings utilizados en el método
                             .usingStrings("onCreate"),
                         MethodMatcher.create()
                             .paramTypes("android.view.View")
-                            // 指定方法中使用的数字，类型为 Byte, Short, Int, Long, Float, Double 之一
+                            // Especificar los números utilizados en el método; los tipos pueden ser Byte, Short, Int, Long, Float o Double
                             .usingNumbers(0.01, -1, 0.987, 0, 114514),
                         MethodMatcher.create()
                             .modifiers(Modifier.PUBLIC)
                             .paramTypes("boolean")
-                            // 指定方法中调用的方法列表
+                            // Especificar que el método invoque una lista de métodos
                             .invokeMethods(MethodsMatcher.create()
                                 .add(MethodMatcher.create()
                                     .modifiers(Modifier.PUBLIC | Modifier.STATIC)
                                     .returnType("int")
-                                    // 被调用方法中使用的字符串，所有字符串均使用 Equals 匹配
+                                    // Método invocado que utiliza los siguientes strings
                                     .usingStrings(List.of("getRandomDice: "), StringMatchType.Equals)
                                 )
-                                // 只需要包含上述方法的调用即可
+                                // Solo necesita contener la llamada al método anterior
                                 .matchType(MatchType.Contains)
                             )
                     ))
-                    // 指定类中方法的数量，最少不少于1个，最多不超过10个
+                    // Especificar la cantidad de métodos en la clase; mínimo 1 y máximo 10
                     .count(1, 10)
                 )
-                // AnnotationsMatcher 针对类中包含注解的匹配器
+                // AnnotationsMatcher: Matcher para anotaciones en una clase
                 .annotations(AnnotationsMatcher.create()
-                    // 添加对于注解的匹配器
+                    // Agregar un matcher para la anotación
                     .add(AnnotationMatcher.create()
-                        // 指定注解的类型
+                        // Especificar el tipo de la anotación
                         .type("org.luckypray.dexkit.demo.annotations.Router")
-                        // 该注解需要包含指定的 element
+                        // La anotación debe contener el elemento especificado
                         .addElement(AnnotationElementMatcher.create()
-                            // 指定 element 的名称
+                            // Especificar el nombre del elemento
                             .name("path")
-                            // 指定 element 的值
+                            // Especificar el valor del elemento
                             .stringValue("/play")
                         )
                     )
                 )
-                // 类中所有方法使用的字符串
+                // Strings utilizados por todos los métodos de la clase
                 .usingStrings("PlayActivity", "onClick", "onCreate")
             )
-        ).singleOrThrow(() -> new IllegalStateException("返回结果不唯一"));
-        // 打印找到的类：org.luckypray.dexkit.demo.PlayActivity
+        ).singleOrThrow(() -> new IllegalStateException("El resultado devuelto no es único"));
+        // Imprimir la clase encontrada: org.luckypray.dexkit.demo.PlayActivity
         System.out.println(classData.getName());
-        // 获取对应的类实例
+        // Obtener la instancia correspondiente de la clase
         Class<?> clazz = classData.getInstance(loadPackageParam.classLoader);
     }
 }
@@ -256,7 +263,7 @@ public class MainHook implements IXposedHookLoadPackage {
 
 </p></details>
 
-<details open><summary>Kotlin Example</summary>
+<details open><summary>Ejemplo en Kotlin</summary>
 <p>
 
 ```kotlin
@@ -269,7 +276,7 @@ class MainHook : IXposedHookLoadPackage {
     }
 
     private lateinit var hostClassLoader: ClassLoader
-    
+
     override fun handleLoadPackage(loadPackageParam: XC_LoadPackage.LoadPackageParam) {
         val packageName = loadPackageParam.packageName
         val apkPath = loadPackageParam.appInfo.sourceDir
@@ -277,99 +284,101 @@ class MainHook : IXposedHookLoadPackage {
             return
         }
         this.hostClassLoader = loadPackageParam.classLoader
-        // DexKit 创建是一项耗时操作，请不要重复创建。如果需要全局使用，
-        // 请自行管理生命周期，确保在不需要时调用 .close() 方法以防止内存泄漏。
-        // 这里使用 `Closable.use` 语法糖自动关闭 DexKitBridge 实例。
+        // La creación de un objeto DexKit es una operación que consume mucho tiempo; por favor no crees el objeto de forma repetida.
+        // Si necesitas usarlo de manera global, gestiona su ciclo de vida tú mismo
+        // y asegúrate de llamar al método .close() cuando ya no lo necesites, para evitar fugas de memoria.
+        // Aquí utilizamos `Closable.use` para cerrar automáticamente la instancia de DexKitBridge.
         DexKitBridge.create(apkPath).use { bridge ->
             findPlayActivity(bridge)
-            // Other use cases
+            // Otros casos de uso
         }
     }
 
     private fun findPlayActivity(bridge: DexKitBridge) {
         val classData = bridge.findClass {
-            // 指定搜索的包名范围
+            // Incluir paquetes donde buscar
             searchPackages("org.luckypray.dexkit.demo")
-            // 排除指定的包名范围
+            // Excluir paquetes no relevantes
             excludePackages("org.luckypray.dexkit.demo.annotations")
-            // ClassMatcher 针对类的匹配器
+            // ClassMatcher: Matcher para clases
             matcher {
-                // FieldsMatcher 针对类中包含字段的匹配器
+                // FieldsMatcher: Matcher para los campos de una clase
                 fields {
-                    // 添加对于字段的匹配器
+                    // FieldMatcher: Agregar un matcher para un campo
                     add {
-                        // 指定字段的修饰符
+                        // Especificar los modificadores del campo
                         modifiers = Modifier.PRIVATE or Modifier.STATIC or Modifier.FINAL
-                        // 指定字段的类型
+                        // Especificar el tipo del campo
                         type = "java.lang.String"
-                        // 指定字段的名称
+                        // Especificar el nombre del campo
                         name = "TAG"
                     }
-                    // 添加指定字段的类型的字段匹配器
+                    // Agregar un matcher para campos del tipo especificado
                     addForType("android.widget.TextView")
                     addForType("android.os.Handler")
-                    // 指定类中字段的数量
+                    // Especificar la cantidad de campos en la clase
                     count = 3
                 }
-                // MethodsMatcher 针对类中包含方法的匹配器
+                // MethodsMatcher: Matcher para métodos de una clase
                 methods {
-                    // 添加对于方法的匹配器
+                    // Agregar un matcher para el método
                     add {
-                        // 指定方法的修饰符
+                        // Especificar los modificadores del método
                         modifiers = Modifier.PROTECTED
-                        // 指定方法的名称
+                        // Especificar el nombre del método
                         name = "onCreate"
-                        // 指定方法的返回值类型
+                        // Especificar el tipo de retorno del método
                         returnType = "void"
-                        // 指定方法的参数类型，如果参数类型不确定，使用 null，使用此方法会隐式声明参数个数
+                        // Especificar los tipos de parámetros del método; si son inciertos, usa null;
+                        // en ese caso, se inferirá implícitamente la cantidad de parámetros
                         paramTypes("android.os.Bundle")
-                        // 指定方法中使用的字符串
+                        // Especificar los strings utilizados en el método
                         usingStrings("onCreate")
                     }
                     add {
                         paramTypes("android.view.View")
-                        // 指定方法中使用的数字，类型为 Byte, Short, Int, Long, Float, Double 之一
+                        // Especificar los números utilizados en el método; los tipos pueden ser Byte, Short, Int, Long, Float o Double
                         usingNumbers(0.01, -1, 0.987, 0, 114514)
                     }
                     add {
                         paramTypes("boolean")
-                        // 指定方法中调用的方法列表
+                        // Especificar que el método invoque una lista de métodos
                         invokeMethods {
                             add {
                                 modifiers = Modifier.PUBLIC or Modifier.STATIC
                                 returnType = "int"
-                                // 指定方法中调用的方法中使用的字符串，所有字符串均使用 Equals 匹配
+                                // Método invocado que utiliza los siguientes strings
                                 usingStrings(listOf("getRandomDice: "), StringMatchType.Equals)
                             }
-                            // 只需要包含上述方法的调用即可
+                            // Solo necesita contener la llamada al método anterior
                             matchType = MatchType.Contains
                         }
                     }
-                    // 指定类中方法的数量，最少不少于1个，最多不超过10个
+                    // Especificar la cantidad de métodos en la clase; mínimo 1 y máximo 10
                     count(1..10)
                 }
-                // AnnotationsMatcher 针对类中包含注解的匹配器
+                // AnnotationsMatcher: Matcher para anotaciones en una clase
                 annotations {
-                    // 添加对于注解的匹配器
+                    // Agregar un matcher para la anotación
                     add {
-                        // 指定注解的类型
+                        // Especificar el tipo de la anotación
                         type = "org.luckypray.dexkit.demo.annotations.Router"
-                        // 该注解需要包含指定的 element
+                        // La anotación debe contener el elemento especificado
                         addElement {
-                            // 指定 element 的名称
+                            // Especificar el nombre del elemento
                             name = "path"
-                            // 指定 element 的值
+                            // Especificar el valor del elemento
                             stringValue("/play")
                         }
                     }
                 }
-                // 类中所有方法使用的字符串
+                // Strings utilizados por todos los métodos de la clase
                 usingStrings("PlayActivity", "onClick", "onCreate")
             }
-        }.singleOrNull() ?: error("返回结果不唯一")
-        // 打印找到的类：org.luckypray.dexkit.demo.PlayActivity
+        }.singleOrNull() ?: error("El resultado devuelto no es único")
+        // Imprimir la clase encontrada: org.luckypray.dexkit.demo.PlayActivity
         println(classData.name)
-        // Get the corresponding class instance
+        // Obtener la instancia correspondiente de la clase
         val clazz = classData.getInstance(loadPackageParam.classLoader)
     }
 }
@@ -377,23 +386,16 @@ class MainHook : IXposedHookLoadPackage {
 
 </p></details>
 
-## 第三方开源引用
+## Referencias de código abierto de terceros
 
 - [slicer](https://cs.android.com/android/platform/superproject/+/main:tools/dexter/slicer/)
 - [ThreadPool](https://github.com/progschj/ThreadPool)
 - [parallel-hashmap](https://github.com/greg7mdp/parallel-hashmap)
 
-## Star History
+## Historial de estrellas
 
 [![Star History Chart](https://api.star-history.com/svg?repos=luckypray/dexkit&type=Date)](https://star-history.com/#luckypray/dexkit&Date)
 
-## 许可证
+## Licencia
 
-本项目除 `Core/` 目录外，其它所有代码均采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 许可；  
-`Core/` 目录下的代码采用 [GNU Lesser General Public License v3 (LGPL-3.0)](https://www.gnu.org/licenses/lgpl-3.0.html) 许可。
-
-具体请参见：
-- 项目根目录下的 `LICENSE` 文件（Apache 2.0 全文或简要说明），适用于除 `Core/` 以外的所有内容。
-- `Core/` 目录下的 `LICENSE` 文件（LGPL-3.0 全文或简要说明），仅适用于 `Core/` 下的代码。
-
-版权所有 © LuckyPray
+[LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html) © LuckyPray

@@ -1,16 +1,16 @@
-<div align="center">
-    <h1> DexKit </h1>
+<h1 align="center">DexKit</h1>
 
-[![license](https://img.shields.io/github/license/LuckyPray/DexKit.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-[![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
-[![Telegram](https://img.shields.io/badge/discussion%20dev-Telegram-blue.svg?logo=telegram)](https://t.me/LuckyPray_DexKit)
+<p align="center">
+    <a href="https://www.gnu.org/licenses/lgpl-3.0.html"><img loading="lazy" src="https://img.shields.io/github/license/LuckyPray/DexKit.svg?logo=github&label=License"/></a>
+    <a href="https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray"><img loading="lazy" src="https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?logo=apachemaven&20Version&label=Maven%20Central"/></a>
+    <a href="https://t.me/LuckyPray_DexKit"><img loading="lazy" src="https://img.shields.io/badge/Telegram-blue.svg?logo=telegram&label=Discussion%20group"/></a>
+</p>
 
-English | [简体中文](https://github.com/LuckyPray/DexKit/blob/master/README_zh.md)
+<p align="center">
+    🇬🇧 <strong><ins>English</ins></strong> | <a href="./README_es.md">🇪🇸 <strong>Español</strong></a> | <a href="./README_zh.md">🇨🇳 <strong>简体中文</strong></a>
+</p>
 
-</div>
-
-A high-performance runtime parsing library for dex implemented in C++, used for lookup of obfuscated classes,
-methods, or properties.
+<p align="center"><strong>A high-performance runtime parsing library for dex implemented in C++, used for lookup of obfuscated classes, methods, or properties.</strong></p>
 
 ---
 
@@ -32,7 +32,8 @@ Basic Features:
 - [x] Batch search of classes using strings
 - [x] Batch search of methods using strings
 
-> Note: Optimizations have been implemented for string search scenarios, significantly enhancing 
+> [!NOTE]
+> Optimizations have been implemented for string search scenarios, significantly enhancing 
 > search speed. Increasing query groups will not lead to a linear increase in time consumption.
 
 ### Documentation
@@ -53,7 +54,7 @@ dependencies {
 }
 ```
 
-> **Note**
+> [!IMPORTANT]
 > Starting with **DexKit 2.0**, the new ArtifactId has been changed from `DexKit` to `dexkit`.
 
 DexKit current version: [![Maven Central](https://img.shields.io/maven-central/v/org.luckypray/dexkit.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dexkit&namespace=org.luckypray)
@@ -133,6 +134,7 @@ public class PlayActivity extends AppCompatActivity {
 
 At this point, to obtain this class, you can use the following code:
 
+> [!NOTE]
 > This is just an example, in actual usage, there's no need for such an extensive set of matching 
 > conditions. Choose and use as needed to avoid unnecessary complexity in matching due to an 
 > excessive number of conditions.
