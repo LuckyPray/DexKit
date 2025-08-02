@@ -19,8 +19,6 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-
 package org.luckypray.dexkit.result.base
 
 import org.luckypray.dexkit.DexKitBridge
@@ -30,7 +28,7 @@ abstract class BaseData(
     protected val id: Int = -1,
     protected val dexId: Int = -1,
 ) {
-    @kotlin.internal.InlineOnly
+    @JvmSynthetic
     internal fun getBridge() = bridge
 
     protected fun getEncodeId(dexId: Int, id: Int) = ((dexId.toLong() shl 32) or id.toLong())

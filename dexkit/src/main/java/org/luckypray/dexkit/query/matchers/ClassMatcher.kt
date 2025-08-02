@@ -19,14 +19,14 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerClassMatcher
 import org.luckypray.dexkit.query.StringMatcherList
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -36,7 +36,7 @@ import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexClass
 
-class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
+class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
     var sourceMatcher: StringMatcher? = null
         private set
     var classNameMatcher: StringMatcher? = null
@@ -884,80 +884,80 @@ class ClassMatcher : BaseQuery, IAnnotationEncodeValue {
     /**
      * @see superClass
      */
-    @kotlin.internal.InlineOnly
-    inline fun superClass(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun superClass(init: ClassMatcher.() -> Unit) = also {
         superClass(ClassMatcher().apply(init))
     }
 
     /**
      * @see interfaces
      */
-    @kotlin.internal.InlineOnly
-    inline fun interfaces(init: InterfacesMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun interfaces(init: InterfacesMatcher.() -> Unit) = also {
         interfaces(InterfacesMatcher().apply(init))
     }
 
     /**
      * @see addInterface
      */
-    @kotlin.internal.InlineOnly
-    inline fun addInterface(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addInterface(init: ClassMatcher.() -> Unit) = also {
         addInterface(ClassMatcher().apply(init))
     }
 
     /**
      * @see annotations
      */
-    @kotlin.internal.InlineOnly
-    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
         annotations(AnnotationsMatcher().apply(init))
     }
 
     /**
      * @see addAnnotation
      */
-    @kotlin.internal.InlineOnly
-    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
         addAnnotation(AnnotationMatcher().apply(init))
     }
 
     /**
      * @see fields
      */
-    @kotlin.internal.InlineOnly
-    inline fun fields(init: FieldsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun fields(init: FieldsMatcher.() -> Unit) = also {
         fields(FieldsMatcher().apply(init))
     }
 
     /**
      * @see addField
      */
-    @kotlin.internal.InlineOnly
-    inline fun addField(init: FieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addField(init: FieldMatcher.() -> Unit) = also {
         addField(FieldMatcher().apply(init))
     }
 
     /**
      * @see methods
      */
-    @kotlin.internal.InlineOnly
-    inline fun methods(init: MethodsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun methods(init: MethodsMatcher.() -> Unit) = also {
         methods(MethodsMatcher().apply(init))
     }
 
     /**
      * @see addMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun addMethod(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addMethod(init: MethodMatcher.() -> Unit) = also {
         addMethod(MethodMatcher().apply(init))
     }
 
     /**
      * @see usingStrings
      */
-    @kotlin.internal.InlineOnly
-    inline fun usingStrings(init: StringMatcherList.() -> Unit) = also {
+    @JvmSynthetic
+    fun usingStrings(init: StringMatcherList.() -> Unit) = also {
         usingStrings(StringMatcherList().apply(init))
     }
 

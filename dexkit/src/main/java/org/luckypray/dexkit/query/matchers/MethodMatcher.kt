@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
@@ -28,7 +28,7 @@ import org.luckypray.dexkit.InnerMethodMatcher
 import org.luckypray.dexkit.query.NumberEncodeValueMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.UsingFieldMatcherList
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
@@ -44,7 +44,7 @@ import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
-class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
+class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     var nameMatcher: StringMatcher? = null
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null
@@ -1210,93 +1210,93 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
     /**
      * @see declaredClass
      */
-    @kotlin.internal.InlineOnly
-    inline fun declaredClass(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun declaredClass(init: ClassMatcher.() -> Unit) = also {
         declaredClass(ClassMatcher().apply(init))
     }
 
     /**
      * @see returnType
      */
-    @kotlin.internal.InlineOnly
-    inline fun returnType(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun returnType(init: ClassMatcher.() -> Unit) = also {
         returnType(ClassMatcher().apply(init))
     }
 
     /**
      * @see params
      */
-    @kotlin.internal.InlineOnly
-    inline fun params(init: ParametersMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun params(init: ParametersMatcher.() -> Unit) = also {
         params(ParametersMatcher().apply(init))
     }
 
-    @kotlin.internal.InlineOnly
-    inline fun addParamType(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addParamType(init: ClassMatcher.() -> Unit) = also {
         addParamType(ClassMatcher().apply(init))
     }
 
     /**
      * @see annotations
      */
-    @kotlin.internal.InlineOnly
-    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
         annotations(AnnotationsMatcher().apply(init))
     }
 
     /**
      * @see addAnnotation
      */
-    @kotlin.internal.InlineOnly
-    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
         addAnnotation(AnnotationMatcher().apply(init))
     }
 
     /**
      * @see usingStrings
      */
-    @kotlin.internal.InlineOnly
-    inline fun usingStrings(init: StringMatcherList.() -> Unit) = also {
+    @JvmSynthetic
+    fun usingStrings(init: StringMatcherList.() -> Unit) = also {
         usingStrings(StringMatcherList().apply(init))
     }
 
     /**
      * @see usingFields
      */
-    @kotlin.internal.InlineOnly
-    inline fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
+    @JvmSynthetic
+    fun usingFields(init: UsingFieldMatcherList.() -> Unit) = also {
         usingFields(UsingFieldMatcherList().apply(init))
     }
 
     /**
      * @see addUsingField
      */
-    @kotlin.internal.InlineOnly
-    inline fun addUsingField(init: UsingFieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addUsingField(init: UsingFieldMatcher.() -> Unit) = also {
         addUsingField(UsingFieldMatcher().apply(init))
     }
 
     /**
      * @see usingNumbers
      */
-    @kotlin.internal.InlineOnly
-    inline fun usingNumbers(init: NumberEncodeValueMatcherList.() -> Unit) = also {
+    @JvmSynthetic
+    fun usingNumbers(init: NumberEncodeValueMatcherList.() -> Unit) = also {
         usingNumbers(NumberEncodeValueMatcherList().apply(init))
     }
 
     /**
      * @see invokeMethods
      */
-    @kotlin.internal.InlineOnly
-    inline fun invokeMethods(init: MethodsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun invokeMethods(init: MethodsMatcher.() -> Unit) = also {
         invokeMethods(MethodsMatcher().apply(init))
     }
 
     /**
      * @see addInvoke
      */
-    @kotlin.internal.InlineOnly
-    inline fun addInvoke(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addInvoke(init: MethodMatcher.() -> Unit) = also {
         addInvoke(MethodMatcher().apply(init))
     }
 
@@ -1307,8 +1307,8 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         message = "To avoid ambiguity, please use callerMethods",
         replaceWith = ReplaceWith("callerMethods { init() }")
     )
-    @kotlin.internal.InlineOnly
-    inline fun callMethods(init: MethodsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun callMethods(init: MethodsMatcher.() -> Unit) = also {
         callMethods(MethodsMatcher().apply(init))
     }
 
@@ -1319,24 +1319,24 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
         message = "To avoid ambiguity, please use addCaller",
         replaceWith = ReplaceWith("addCaller { init() }")
     )
-    @kotlin.internal.InlineOnly
-    inline fun addCall(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addCall(init: MethodMatcher.() -> Unit) = also {
         addCall(MethodMatcher().apply(init))
     }
 
     /**
      * @see callerMethods
      */
-    @kotlin.internal.InlineOnly
-    inline fun callerMethods(init: MethodsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun callerMethods(init: MethodsMatcher.() -> Unit) = also {
         callerMethods(MethodsMatcher().apply(init))
     }
 
     /**
      * @see addCaller
      */
-    @kotlin.internal.InlineOnly
-    inline fun addCaller(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addCaller(init: MethodMatcher.() -> Unit) = also {
         addCaller(MethodMatcher().apply(init))
     }
 
@@ -1376,7 +1376,7 @@ class MethodMatcher : BaseQuery, IAnnotationEncodeValue {
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             usingNumbersMatcher?.map { it.type!!.value }?.toUByteArray()
                 ?.let { InnerMethodMatcher.createUsingNumbersTypeVector(fbb, it) } ?: 0,
-            usingNumbersMatcher?.map { (it.value as BaseQuery).build(fbb) }?.toIntArray()
+            usingNumbersMatcher?.map { (it.value as BaseMatcher).build(fbb) }?.toIntArray()
                 ?.let { InnerMethodMatcher.createUsingNumbersVector(fbb, it) } ?: 0,
             invokeMethodsMatcher?.build(fbb) ?: 0,
             callerMethodsMatcher?.build(fbb) ?: 0,

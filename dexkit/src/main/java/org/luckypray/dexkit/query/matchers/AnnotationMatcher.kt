@@ -19,14 +19,14 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationMatcher
 import org.luckypray.dexkit.query.StringMatcherList
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.RetentionPolicyType
@@ -36,7 +36,7 @@ import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.query.matchers.base.TargetElementTypesMatcher
 
-class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
+class AnnotationMatcher : BaseMatcher(), IAnnotationEncodeValue {
     var typeMatcher: ClassMatcher? = null
         private set
     var targetElementTypesMatcher: TargetElementTypesMatcher? = null
@@ -436,32 +436,32 @@ class AnnotationMatcher : BaseQuery(), IAnnotationEncodeValue {
     /**
      * @see type
      */
-    @kotlin.internal.InlineOnly
-    inline fun type(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun type(init: ClassMatcher.() -> Unit) = also {
         type(ClassMatcher().apply(init))
     }
 
     /**
      * @see targetElementTypes
      */
-    @kotlin.internal.InlineOnly
-    inline fun targetElementTypes(init: TargetElementTypesMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun targetElementTypes(init: TargetElementTypesMatcher.() -> Unit) = also {
         targetElementTypes(TargetElementTypesMatcher().apply(init))
     }
 
     /**
      * @see elements
      */
-    @kotlin.internal.InlineOnly
-    inline fun elements(init: AnnotationElementsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun elements(init: AnnotationElementsMatcher.() -> Unit) = also {
         elements(AnnotationElementsMatcher().apply(init))
     }
 
     /**
      * @see addElement
      */
-    @kotlin.internal.InlineOnly
-    inline fun addElement(init: AnnotationElementMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addElement(init: AnnotationElementMatcher.() -> Unit) = also {
         addElement(AnnotationElementMatcher().apply(init))
     }
 

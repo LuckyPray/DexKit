@@ -19,16 +19,10 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")package org.luckypray.dexkit.query.base
 
-import com.google.flatbuffers.FlatBufferBuilder
+package org.luckypray.dexkit.query.base
 
-abstract class BaseQuery : IQuery {
+import org.luckypray.dexkit.annotations.DexKitDsl
 
-    protected abstract fun innerBuild(fbb: FlatBufferBuilder): Int
-
-    @kotlin.internal.InlineOnly
-    internal inline fun build(fbb: FlatBufferBuilder): Int {
-        return innerBuild(fbb)
-    }
-}
+@DexKitDsl
+interface QueryComponent

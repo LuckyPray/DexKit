@@ -19,18 +19,18 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFindMethod
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseFinder
 import org.luckypray.dexkit.query.matchers.MethodMatcher
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 
-class FindMethod : BaseQuery() {
+class FindMethod : BaseFinder() {
     /**
      * Search methods in the specified packages.
      * ----------------
@@ -192,8 +192,8 @@ class FindMethod : BaseQuery() {
     /**
      * @see matcher
      */
-    @kotlin.internal.InlineOnly
-    inline fun matcher(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun matcher(init: MethodMatcher.() -> Unit) = also {
         matcher(MethodMatcher().apply(init))
     }
 

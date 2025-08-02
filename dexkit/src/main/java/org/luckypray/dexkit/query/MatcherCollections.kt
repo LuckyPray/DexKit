@@ -19,20 +19,19 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query
 
-import org.luckypray.dexkit.query.base.IQuery
+import org.luckypray.dexkit.query.base.QueryComponent
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.query.matchers.FieldMatcher
 import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
-class StringMatcherList : ArrayList<StringMatcher>, IQuery {
+class StringMatcherList : ArrayList<StringMatcher>, QueryComponent {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<StringMatcher>): super(elements)
@@ -59,7 +58,7 @@ class StringMatcherList : ArrayList<StringMatcher>, IQuery {
     }
 }
 
-class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
+class FieldMatcherList : ArrayList<FieldMatcher>, QueryComponent {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<FieldMatcher>): super(elements)
@@ -123,13 +122,13 @@ class FieldMatcherList : ArrayList<FieldMatcher>, IQuery {
      * ----------------
      * 添加 [FieldMatcher]。
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: FieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun add(init: FieldMatcher.() -> Unit) = also {
         add(FieldMatcher().apply(init))
     }
 }
 
-class UsingFieldMatcherList : ArrayList<UsingFieldMatcher>, IQuery {
+class UsingFieldMatcherList : ArrayList<UsingFieldMatcher>, QueryComponent {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<UsingFieldMatcher>): super(elements)
@@ -139,13 +138,13 @@ class UsingFieldMatcherList : ArrayList<UsingFieldMatcher>, IQuery {
      * ----------------
      * 添加 [UsingFieldMatcher]。
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: UsingFieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun add(init: UsingFieldMatcher.() -> Unit) = also {
         add(UsingFieldMatcher().apply(init))
     }
 }
 
-class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery {
+class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, QueryComponent {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<NumberEncodeValueMatcher>): super(elements)
@@ -246,13 +245,13 @@ class NumberEncodeValueMatcherList : ArrayList<NumberEncodeValueMatcher>, IQuery
      * ----------------
      * 添加 [NumberEncodeValueMatcher]。
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: NumberEncodeValueMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun add(init: NumberEncodeValueMatcher.() -> Unit) = also {
         add(NumberEncodeValueMatcher().apply(init))
     }
 }
 
-class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
+class StringMatchersGroupList : ArrayList<StringMatchersGroup>, QueryComponent {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<StringMatchersGroup>): super(elements)
@@ -287,8 +286,8 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
      * @param init init / 初始化
      * @return [StringMatchersGroupList]
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(
+    @JvmSynthetic
+    fun add(
         groupName: String,
         init: StringMatcherList.() -> Unit
     ) = also {
@@ -300,8 +299,8 @@ class StringMatchersGroupList : ArrayList<StringMatchersGroup>, IQuery {
      * ----------------
      * 添加 [StringMatchersGroup]。
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: StringMatchersGroup.() -> Unit) = also {
+    @JvmSynthetic
+    fun add(init: StringMatchersGroup.() -> Unit) = also {
         add(StringMatchersGroup().apply(init))
     }
 }

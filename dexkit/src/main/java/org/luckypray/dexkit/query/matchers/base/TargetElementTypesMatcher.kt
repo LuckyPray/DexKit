@@ -25,11 +25,11 @@ package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerTargetElementTypesMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.TargetElementType
 
-class TargetElementTypesMatcher  : BaseQuery {
+class TargetElementTypesMatcher  : BaseMatcher {
     /**
      * Target annotation declared element type list.
      * Corresponding to [java.lang.annotation.ElementType]

@@ -19,17 +19,17 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFindClass
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseFinder
 import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.result.ClassData
 
-class FindClass : BaseQuery() {
+class FindClass : BaseFinder() {
     /**
      * Search classes in the specified packages.
      * ----------------
@@ -67,6 +67,7 @@ class FindClass : BaseQuery() {
      * ----------------
      * 找到第一个匹配的类后终止搜索。
      */
+    // TODO 有问题
     @set:JvmSynthetic
     var findFirst: Boolean = false
 
@@ -172,8 +173,8 @@ class FindClass : BaseQuery() {
     /**
      * @see matcher
      */
-    @kotlin.internal.InlineOnly
-    inline fun matcher(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun matcher(init: ClassMatcher.() -> Unit) = also {
         matcher(ClassMatcher().apply(init))
     }
 

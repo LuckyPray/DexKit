@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit
 
@@ -147,9 +147,8 @@ class DexKitBridge : Closeable {
      * @return [Map]<[String], [ClassDataList]>
      */
     fun batchFindClassUsingStrings(batchFind: BatchFindClassUsingStrings): Map<String, ClassDataList> {
-        val fbb = FlatBufferBuilder()
-        batchFind.build(fbb)
-        return this.batchFindClassUsingStrings(fbb)
+        val bytes = batchFind.serializedBytes()
+        return batchFindClassUsingStrings(bytes)
     }
 
     /**
@@ -161,9 +160,8 @@ class DexKitBridge : Closeable {
      * @return [Map]<[String], [MethodDataList]>
      */
     fun batchFindMethodUsingStrings(batchFind: BatchFindMethodUsingStrings): Map<String, MethodDataList> {
-        val fbb = FlatBufferBuilder()
-        batchFind.build(fbb)
-        return this.batchFindMethodUsingStrings(fbb)
+        val bytes = batchFind.serializedBytes()
+        return batchFindMethodUsingStrings(bytes)
     }
 
     /**
@@ -175,9 +173,8 @@ class DexKitBridge : Closeable {
      * @return [ClassDataList]
      */
     fun findClass(findClass: FindClass): ClassDataList {
-        val fbb = FlatBufferBuilder()
-        findClass.build(fbb)
-        return this.findClass(fbb)
+        val bytes = findClass.serializedBytes()
+        return findClass(bytes)
     }
 
     /**
@@ -189,9 +186,8 @@ class DexKitBridge : Closeable {
      * @return [MethodDataList]
      */
     fun findMethod(findMethod: FindMethod): MethodDataList {
-        val fbb = FlatBufferBuilder()
-        findMethod.build(fbb)
-        return this.findMethod(fbb)
+        val bytes = findMethod.serializedBytes()
+        return findMethod(bytes)
     }
 
     /**
@@ -203,9 +199,8 @@ class DexKitBridge : Closeable {
      * @return [FieldDataList]
      */
     fun findField(findField: FindField): FieldDataList {
-        val fbb = FlatBufferBuilder()
-        findField.build(fbb)
-        return this.findField(fbb)
+        val bytes = findField.serializedBytes()
+        return findField(bytes)
     }
 
     /**
@@ -311,40 +306,40 @@ class DexKitBridge : Closeable {
     /**
      * @see [batchFindClassUsingStrings]
      */
-    @kotlin.internal.InlineOnly
-    inline fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, ClassDataList> {
+    @JvmSynthetic
+    fun batchFindClassUsingStrings(init: BatchFindClassUsingStrings.() -> Unit): Map<String, ClassDataList> {
         return batchFindClassUsingStrings(BatchFindClassUsingStrings().apply(init))
     }
 
     /**
      * @see [batchFindMethodUsingStrings]
      */
-    @kotlin.internal.InlineOnly
-    inline fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, MethodDataList> {
+    @JvmSynthetic
+    fun batchFindMethodUsingStrings(init: BatchFindMethodUsingStrings.() -> Unit): Map<String, MethodDataList> {
         return batchFindMethodUsingStrings(BatchFindMethodUsingStrings().apply(init))
     }
 
     /**
      * @see [findClass]
      */
-    @kotlin.internal.InlineOnly
-    inline fun findClass(init: FindClass.() -> Unit): ClassDataList {
+    @JvmSynthetic
+    fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
     /**
      * @see [findMethod]
      */
-    @kotlin.internal.InlineOnly
-    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @JvmSynthetic
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 
     /**
      * @see [findField]
      */
-    @kotlin.internal.InlineOnly
-    inline fun findField(init: FindField.() -> Unit): FieldDataList {
+    @JvmSynthetic
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 
@@ -353,9 +348,8 @@ class DexKitBridge : Closeable {
     /**
      * find class by [BatchFindMethodUsingStrings]'s [FlatBufferBuilder]
      */
-    @kotlin.internal.InlineOnly
-    internal inline fun batchFindClassUsingStrings(fbb: FlatBufferBuilder): Map<String, ClassDataList> {
-        val res = nativeBatchFindClassUsingStrings(safeToken, fbb.sizedByteArray())
+    private fun batchFindClassUsingStrings(encodeBytes: ByteArray): Map<String, ClassDataList> {
+        val res = nativeBatchFindClassUsingStrings(safeToken, encodeBytes)
         val holder = InnerBatchClassMetaArrayHolder.getRootAsBatchClassMetaArrayHolder(ByteBuffer.wrap(res))
         val map = HashMap<String, ClassDataList>()
         for (i in 0 until holder.itemsLength) {
@@ -374,9 +368,8 @@ class DexKitBridge : Closeable {
     /**
      * find class by [BatchFindClassUsingStrings]'s [FlatBufferBuilder]
      */
-    @kotlin.internal.InlineOnly
-    internal inline fun batchFindMethodUsingStrings(fbb: FlatBufferBuilder): Map<String, MethodDataList> {
-        val res = nativeBatchFindMethodUsingStrings(safeToken, fbb.sizedByteArray())
+    private fun batchFindMethodUsingStrings(encodeBytes: ByteArray): Map<String, MethodDataList> {
+        val res = nativeBatchFindMethodUsingStrings(safeToken, encodeBytes)
         val holder = InnerBatchMethodMetaArrayHolder.getRootAsBatchMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val map = HashMap<String, MethodDataList>()
         for (i in 0 until holder.itemsLength) {
@@ -395,9 +388,8 @@ class DexKitBridge : Closeable {
     /**
      * find class by [FindClass]'s [FlatBufferBuilder]
      */
-    @kotlin.internal.InlineOnly
-    internal inline fun findClass(fbb: FlatBufferBuilder): ClassDataList {
-        val res = nativeFindClass(safeToken, fbb.sizedByteArray())
+    private fun findClass(encodeBytes: ByteArray): ClassDataList {
+        val res = nativeFindClass(safeToken, encodeBytes)
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
@@ -410,9 +402,8 @@ class DexKitBridge : Closeable {
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    @kotlin.internal.InlineOnly
-    internal inline fun findMethod(fbb: FlatBufferBuilder): MethodDataList {
-        val res = nativeFindMethod(safeToken, fbb.sizedByteArray())
+    private fun findMethod(encodeBytes: ByteArray): MethodDataList {
+        val res = nativeFindMethod(safeToken, encodeBytes)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -425,9 +416,8 @@ class DexKitBridge : Closeable {
     /**
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
-    @kotlin.internal.InlineOnly
-    internal inline fun findField(fbb: FlatBufferBuilder): FieldDataList {
-        val res = nativeFindField(safeToken, fbb.sizedByteArray())
+    private fun findField(encodeBytes: ByteArray): FieldDataList {
+        val res = nativeFindField(safeToken, encodeBytes)
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
@@ -437,8 +427,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getTypeByIds(encodeIdArray: LongArray): ClassDataList {
+    @JvmSynthetic
+    internal fun getTypeByIds(encodeIdArray: LongArray): ClassDataList {
         val res = nativeGetClassByIds(safeToken, encodeIdArray)
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
@@ -448,8 +438,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getMethodByIds(encodeIdArray: LongArray): MethodDataList {
+    @JvmSynthetic
+    internal fun getMethodByIds(encodeIdArray: LongArray): MethodDataList {
         val res = nativeGetMethodByIds(safeToken, encodeIdArray)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -459,8 +449,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getFieldByIds(encodeIdArray: LongArray): FieldDataList {
+    @JvmSynthetic
+    internal fun getFieldByIds(encodeIdArray: LongArray): FieldDataList {
         val res = nativeGetFieldByIds(safeToken, encodeIdArray)
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
@@ -470,8 +460,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getClassAnnotations(classId: Long): List<AnnotationData> {
+    @JvmSynthetic
+    internal fun getClassAnnotations(classId: Long): List<AnnotationData> {
         val res = nativeGetClassAnnotations(safeToken, classId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -481,8 +471,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getFieldAnnotations(fieldId: Long): List<AnnotationData> {
+    @JvmSynthetic
+    internal fun getFieldAnnotations(fieldId: Long): List<AnnotationData> {
         val res = nativeGetFieldAnnotations(safeToken, fieldId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -492,8 +482,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getMethodAnnotations(methodId: Long): List<AnnotationData> {
+    @JvmSynthetic
+    internal fun getMethodAnnotations(methodId: Long): List<AnnotationData> {
         val res = nativeGetMethodAnnotations(safeToken, methodId)
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
@@ -503,13 +493,13 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getParameterNames(encodeId: Long): List<String?>? {
+    @JvmSynthetic
+    internal fun getParameterNames(encodeId: Long): List<String?>? {
         return nativeGetParameterNames(safeToken, encodeId)?.map { it }
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
+    @JvmSynthetic
+    internal fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
         val res = nativeGetParameterAnnotations(safeToken, methodId)
         val holder = InnerParametersAnnotationMetaArrayHoler.getRootAsParametersAnnotationMetaArrayHoler(ByteBuffer.wrap(res))
         val list = mutableListOf<List<AnnotationData>>()
@@ -524,8 +514,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getCallMethods(encodeId: Long): MethodDataList {
+    @JvmSynthetic
+    internal fun getCallMethods(encodeId: Long): MethodDataList {
         val res = nativeGetCallMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -535,8 +525,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getInvokeMethods(encodeId: Long): MethodDataList {
+    @JvmSynthetic
+    internal fun getInvokeMethods(encodeId: Long): MethodDataList {
         val res = nativeGetInvokeMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -546,13 +536,13 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getMethodUsingStrings(encodeId: Long): List<String> {
+    @JvmSynthetic
+    internal fun getMethodUsingStrings(encodeId: Long): List<String> {
         return nativeGetMethodUsingStrings(safeToken, encodeId).toList()
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getMethodUsingFields(encodeId: Long): List<UsingFieldData> {
+    @JvmSynthetic
+    internal fun getMethodUsingFields(encodeId: Long): List<UsingFieldData> {
         val res = nativeGetMethodUsingFields(safeToken, encodeId)
         val holder = InnerUsingFieldMetaArrayHolder.getRootAsUsingFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<UsingFieldData>()
@@ -562,8 +552,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun readFieldMethods(encodeId: Long): MethodDataList {
+    @JvmSynthetic
+    internal fun readFieldMethods(encodeId: Long): MethodDataList {
         val res = nativeFieldGetMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -573,8 +563,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun writeFieldMethods(encodeId: Long): MethodDataList {
+    @JvmSynthetic
+    internal fun writeFieldMethods(encodeId: Long): MethodDataList {
         val res = nativeFieldPutMethods(safeToken, encodeId)
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
@@ -584,8 +574,8 @@ class DexKitBridge : Closeable {
         return list
     }
 
-    @kotlin.internal.InlineOnly
-    internal inline fun getMethodOpCodes(encodeId: Long): List<Int> {
+    @JvmSynthetic
+    internal fun getMethodOpCodes(encodeId: Long): List<Int> {
         return nativeGetMethodOpCodes(safeToken, encodeId).toList()
     }
 

@@ -25,9 +25,9 @@ package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerIntRange
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 
-class IntRange : BaseQuery {
+class IntRange : BaseMatcher {
 
     @set:JvmSynthetic
     var min: Int = 0
