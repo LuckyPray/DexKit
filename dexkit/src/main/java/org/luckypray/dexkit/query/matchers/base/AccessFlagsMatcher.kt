@@ -25,10 +25,10 @@ package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAccessFlagsMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.MatchType
 
-class AccessFlagsMatcher  : BaseQuery {
+class AccessFlagsMatcher : BaseMatcher {
     /**
      * Access flags to match.
      * ----------------

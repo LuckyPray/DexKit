@@ -19,13 +19,13 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerAnnotationEncodeArrayMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -33,7 +33,7 @@ import org.luckypray.dexkit.query.matchers.base.AnnotationEncodeValueMatcher
 import org.luckypray.dexkit.query.matchers.base.IntRange
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 
-class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
+class AnnotationEncodeArrayMatcher : BaseMatcher(), IAnnotationEncodeValue {
     var encodeValuesMatcher: MutableList<AnnotationEncodeValueMatcher>? = null
         private set
 
@@ -401,40 +401,40 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
     /**
      * @see add
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: AnnotationEncodeValueMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun add(init: AnnotationEncodeValueMatcher.() -> Unit) = also {
         add(AnnotationEncodeValueMatcher().apply(init))
     }
 
     /**
      * @see addClass
      */
-    @kotlin.internal.InlineOnly
-    inline fun addClass(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addClass(init: ClassMatcher.() -> Unit) = also {
         addClass(ClassMatcher().apply(init))
     }
 
     /**
      * @see addMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun addMethod(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addMethod(init: MethodMatcher.() -> Unit) = also {
         addMethod(MethodMatcher().apply(init))
     }
 
     /**
      * @see addEnum
      */
-    @kotlin.internal.InlineOnly
-    inline fun addEnum(init: FieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addEnum(init: FieldMatcher.() -> Unit) = also {
         addEnum(FieldMatcher().apply(init))
     }
 
     /**
      * @see addAnnotation
      */
-    @kotlin.internal.InlineOnly
-    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
         addAnnotation(AnnotationMatcher().apply(init))
     }
 
@@ -451,7 +451,7 @@ class AnnotationEncodeArrayMatcher : BaseQuery(), IAnnotationEncodeValue {
             fbb,
             encodeValuesMatcher?.map { it.type!!.value }?.toUByteArray()
                 ?.let { InnerAnnotationEncodeArrayMatcher.createValuesTypeVector(fbb, it) } ?: 0,
-            encodeValuesMatcher?.map { (it.value as BaseQuery).build(fbb) }?.toIntArray()
+            encodeValuesMatcher?.map { (it.value as BaseMatcher).build(fbb) }?.toIntArray()
                 ?.let { InnerAnnotationEncodeArrayMatcher.createValuesVector(fbb, it) } ?: 0,
             matchType.value,
             rangeMatcher?.build(fbb) ?: 0

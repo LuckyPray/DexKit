@@ -19,12 +19,12 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers.base
 
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
-import org.luckypray.dexkit.query.base.IQuery
+import org.luckypray.dexkit.query.base.QueryComponent
 import org.luckypray.dexkit.query.enums.AnnotationEncodeValueType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.AnnotationEncodeArrayMatcher
@@ -42,7 +42,7 @@ import org.luckypray.dexkit.query.matchers.EncodeValueShort
 import org.luckypray.dexkit.query.matchers.FieldMatcher
 import org.luckypray.dexkit.query.matchers.MethodMatcher
 
-class AnnotationEncodeValueMatcher : IQuery {
+class AnnotationEncodeValueMatcher : QueryComponent {
     var value: IAnnotationEncodeValue? = null
         private set
     var type: AnnotationEncodeValueType? = null
@@ -299,40 +299,40 @@ class AnnotationEncodeValueMatcher : IQuery {
     /**
      * @see classValue
      */
-    @kotlin.internal.InlineOnly
-    inline fun classValue(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun classValue(init: ClassMatcher.() -> Unit) = also {
         classValue(ClassMatcher().apply(init))
     }
 
     /**
      * @see methodValue
      */
-    @kotlin.internal.InlineOnly
-    inline fun methodValue(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun methodValue(init: MethodMatcher.() -> Unit) = also {
         methodValue(MethodMatcher().apply(init))
     }
 
     /**
      * @see enumValue
      */
-    @kotlin.internal.InlineOnly
-    inline fun enumValue(init: FieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun enumValue(init: FieldMatcher.() -> Unit) = also {
         enumValue(FieldMatcher().apply(init))
     }
 
     /**
      * @see arrayValue
      */
-    @kotlin.internal.InlineOnly
-    inline fun arrayValue(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun arrayValue(init: AnnotationEncodeArrayMatcher.() -> Unit) = also {
         arrayValue(AnnotationEncodeArrayMatcher().apply(init))
     }
 
     /**
      * @see annotationValue
      */
-    @kotlin.internal.InlineOnly
-    inline fun annotationValue(init: AnnotationMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun annotationValue(init: AnnotationMatcher.() -> Unit) = also {
         annotationValue(AnnotationMatcher().apply(init))
     }
 

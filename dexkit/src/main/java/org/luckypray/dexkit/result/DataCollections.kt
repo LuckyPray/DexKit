@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.result
 
@@ -28,10 +28,10 @@ import org.luckypray.dexkit.exceptions.NonUniqueResultException
 import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
-import org.luckypray.dexkit.query.base.IQuery
+import org.luckypray.dexkit.query.base.QueryComponent
 
 
-abstract class BaseDataList<T> : ArrayList<T>, IQuery {
+abstract class BaseDataList<T> : ArrayList<T>, QueryComponent {
     constructor(): super()
     constructor(initialCapacity: Int): super(initialCapacity)
     constructor(elements: Collection<T>): super(elements)
@@ -196,8 +196,8 @@ class ClassDataList : BaseDataList<ClassData> {
     /**
      * @see findClass
      */
-    @kotlin.internal.InlineOnly
-    inline fun findClass(init: FindClass.() -> Unit): ClassDataList {
+    @JvmSynthetic
+    fun findClass(init: FindClass.() -> Unit): ClassDataList {
         return findClass(FindClass().apply(init))
     }
 
@@ -219,8 +219,8 @@ class ClassDataList : BaseDataList<ClassData> {
     /**
      * @see findMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @JvmSynthetic
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 
@@ -242,8 +242,8 @@ class ClassDataList : BaseDataList<ClassData> {
     /**
      * @see findField
      */
-    @kotlin.internal.InlineOnly
-    inline fun findField(init: FindField.() -> Unit): FieldDataList {
+    @JvmSynthetic
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 }
@@ -271,8 +271,8 @@ class MethodDataList : BaseDataList<MethodData> {
     /**
      * @see findMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @JvmSynthetic
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 }
@@ -300,8 +300,8 @@ class FieldDataList : BaseDataList<FieldData> {
     /**
      * @see findField
      */
-    @kotlin.internal.InlineOnly
-    inline fun findField(init: FindField.() -> Unit): FieldDataList {
+    @JvmSynthetic
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 }

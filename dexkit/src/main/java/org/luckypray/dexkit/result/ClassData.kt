@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.result
 
@@ -230,8 +230,8 @@ class ClassData private constructor(
     /**
      * @see findMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
+    @JvmSynthetic
+    fun findMethod(init: FindMethod.() -> Unit): MethodDataList {
         return findMethod(FindMethod().apply(init))
     }
 
@@ -251,8 +251,8 @@ class ClassData private constructor(
     /**
      * @see findField
      */
-    @kotlin.internal.InlineOnly
-    inline fun findField(init: FindField.() -> Unit): FieldDataList {
+    @JvmSynthetic
+    fun findField(init: FindField.() -> Unit): FieldDataList {
         return findField(FindField().apply(init))
     }
 

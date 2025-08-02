@@ -19,18 +19,18 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFieldsMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.base.IntRange
 
-class FieldsMatcher : BaseQuery() {
+class FieldsMatcher : BaseMatcher() {
     var fieldsMatcher: MutableList<FieldMatcher>? = null
         private set
 
@@ -216,8 +216,8 @@ class FieldsMatcher : BaseQuery() {
     /**
      * @see add
      */
-    @kotlin.internal.InlineOnly
-    inline fun add(init: FieldMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun add(init: FieldMatcher.() -> Unit) = also {
         add(FieldMatcher().apply(init))
     }
 

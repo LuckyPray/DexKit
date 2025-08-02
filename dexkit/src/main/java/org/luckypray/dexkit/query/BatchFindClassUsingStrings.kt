@@ -19,19 +19,19 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerBatchFindClassUsingStrings
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseFinder
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.base.StringMatcher
 import org.luckypray.dexkit.result.ClassData
 
-class BatchFindClassUsingStrings : BaseQuery() {
+class BatchFindClassUsingStrings : BaseFinder() {
     /**
      * Search classes in the specified packages.
      * ----------------
@@ -221,18 +221,18 @@ class BatchFindClassUsingStrings : BaseQuery() {
 
     // region DSL
 
-    @kotlin.internal.InlineOnly
-    inline fun groups(init: StringMatchersGroupList.() -> Unit) = also {
+    @JvmSynthetic
+    fun groups(init: StringMatchersGroupList.() -> Unit) = also {
         groups(StringMatchersGroupList().apply(init))
     }
 
-    @kotlin.internal.InlineOnly
-    inline fun addSearchGroup(init: StringMatchersGroup.() -> Unit) = also {
+    @JvmSynthetic
+    fun addSearchGroup(init: StringMatchersGroup.() -> Unit) = also {
         addSearchGroup(StringMatchersGroup().apply(init))
     }
 
-    @kotlin.internal.InlineOnly
-    inline fun addSearchGroup(
+    @JvmSynthetic
+    fun addSearchGroup(
         groupName: String,
         init: StringMatcherList.() -> Unit
     ) = also {

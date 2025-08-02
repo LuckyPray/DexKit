@@ -19,17 +19,17 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerParameterMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.util.DexSignUtil
 
-class ParameterMatcher : BaseQuery() {
+class ParameterMatcher : BaseMatcher() {
     var annotationsMatcher: AnnotationsMatcher? = null
         private set
     var typeMatcher: ClassMatcher? = null
@@ -147,24 +147,24 @@ class ParameterMatcher : BaseQuery() {
     /**
      * @see type
      */
-    @kotlin.internal.InlineOnly
-    inline fun type(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun type(init: ClassMatcher.() -> Unit) = also {
         type(ClassMatcher().apply(init))
     }
 
     /**
      * @see annotations
      */
-    @kotlin.internal.InlineOnly
-    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
         annotations(AnnotationsMatcher().apply(init))
     }
 
     /**
      * @see addAnnotation
      */
-    @kotlin.internal.InlineOnly
-    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
         addAnnotation(AnnotationMatcher().apply(init))
     }
 

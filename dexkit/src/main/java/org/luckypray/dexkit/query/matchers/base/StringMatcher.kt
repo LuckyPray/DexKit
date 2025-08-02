@@ -25,11 +25,11 @@ package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerStringMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.StringMatchType
 
-class StringMatcher : BaseQuery, IAnnotationEncodeValue {
+class StringMatcher : BaseMatcher, IAnnotationEncodeValue {
     @set:JvmSynthetic
     var value: String? = null
     @set:JvmSynthetic

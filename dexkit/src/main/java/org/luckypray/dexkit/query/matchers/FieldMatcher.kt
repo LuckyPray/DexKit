@@ -19,13 +19,13 @@
  * <https://www.gnu.org/licenses/>.
  * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
  */
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFieldMatcher
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -36,7 +36,7 @@ import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexField
 import java.lang.reflect.Field
 
-class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
+class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
     var nameMatcher: StringMatcher? = null
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null
@@ -505,64 +505,64 @@ class FieldMatcher : BaseQuery, IAnnotationEncodeValue {
     /**
      * @see declaredClass
      */
-    @kotlin.internal.InlineOnly
-    inline fun declaredClass(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun declaredClass(init: ClassMatcher.() -> Unit) = also {
         declaredClass(ClassMatcher().apply(init))
     }
 
     /**
      * @see type
      */
-    @kotlin.internal.InlineOnly
-    inline fun type(init: ClassMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun type(init: ClassMatcher.() -> Unit) = also {
         type(ClassMatcher().apply(init))
     }
 
     /**
      * @see annotations
      */
-    @kotlin.internal.InlineOnly
-    inline fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun annotations(init: AnnotationsMatcher.() -> Unit) = also {
         annotations(AnnotationsMatcher().apply(init))
     }
 
     /**
      * @see addAnnotation
      */
-    @kotlin.internal.InlineOnly
-    inline fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addAnnotation(init: AnnotationMatcher.() -> Unit) = also {
         addAnnotation(AnnotationMatcher().apply(init))
     }
 
     /**
      * @see readMethods
      */
-    @kotlin.internal.InlineOnly
-    inline fun readMethods(init: MethodsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun readMethods(init: MethodsMatcher.() -> Unit) = also {
         readMethods(MethodsMatcher().apply(init))
     }
 
     /**
      * @see addReadMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun addReadMethod(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addReadMethod(init: MethodMatcher.() -> Unit) = also {
         addReadMethod(MethodMatcher().apply(init))
     }
 
     /**
      * @see writeMethods
      */
-    @kotlin.internal.InlineOnly
-    inline fun writeMethods(init: MethodsMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun writeMethods(init: MethodsMatcher.() -> Unit) = also {
         writeMethods(MethodsMatcher().apply(init))
     }
 
     /**
      * @see addWriteMethod
      */
-    @kotlin.internal.InlineOnly
-    inline fun addWriteMethod(init: MethodMatcher.() -> Unit) = also {
+    @JvmSynthetic
+    fun addWriteMethod(init: MethodMatcher.() -> Unit) = also {
         addWriteMethod(MethodMatcher().apply(init))
     }
 

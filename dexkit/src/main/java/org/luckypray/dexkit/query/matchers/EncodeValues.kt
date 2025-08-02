@@ -34,11 +34,11 @@ import org.luckypray.dexkit.InnerEncodeValueLong
 import org.luckypray.dexkit.InnerEncodeValueNull
 import org.luckypray.dexkit.InnerEncodeValueShort
 import org.luckypray.dexkit.InnerEncodeValueString
-import org.luckypray.dexkit.query.base.BaseQuery
+import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.base.INumberEncodeValue
 
-abstract class EncodeValue : BaseQuery()
+abstract class EncodeValue : BaseMatcher()
 
 class EncodeValueByte(val value: Byte) : EncodeValue(), IAnnotationEncodeValue, INumberEncodeValue {
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
