@@ -28,7 +28,7 @@ interface ISerializable {
 
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> deserializeAs(descriptor: String): T {
+        fun <T : ISerializable> deserializeAs(descriptor: String): T {
             return deserialize(descriptor) as T
         }
 

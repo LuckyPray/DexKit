@@ -1135,32 +1135,6 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
         invokeMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
     }
 
-    @Deprecated(
-        message = "To avoid ambiguity, please use callerMethods",
-        replaceWith = ReplaceWith("callerMethods(callMethods)")
-    )
-    fun callMethods(callMethods: MethodsMatcher) = also {
-        this.callerMethodsMatcher = callMethods
-    }
-
-    @Deprecated(
-        message = "To avoid ambiguity, please use addCaller",
-        replaceWith = ReplaceWith("addCaller(callMethod)")
-    )
-    fun addCall(callMethod: MethodMatcher) = also {
-        callerMethodsMatcher = callerMethodsMatcher ?: MethodsMatcher()
-        callerMethodsMatcher!!.add(callMethod)
-    }
-
-    @Deprecated(
-        message = "To avoid ambiguity, please use addCaller",
-        replaceWith = ReplaceWith("addCaller(methodDescriptor)")
-    )
-    fun addCall(methodDescriptor: String) = also {
-        callerMethodsMatcher = callerMethodsMatcher ?: MethodsMatcher()
-        callerMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
-    }
-
     /**
      * The matcher for when this method is called by the specified set of methods.
      * ----------------
@@ -1298,30 +1272,6 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     @JvmSynthetic
     fun addInvoke(init: MethodMatcher.() -> Unit) = also {
         addInvoke(MethodMatcher().apply(init))
-    }
-
-    /**
-     * @see callMethods
-     */
-    @Deprecated(
-        message = "To avoid ambiguity, please use callerMethods",
-        replaceWith = ReplaceWith("callerMethods { init() }")
-    )
-    @JvmSynthetic
-    fun callMethods(init: MethodsMatcher.() -> Unit) = also {
-        callMethods(MethodsMatcher().apply(init))
-    }
-
-    /**
-     * @see addCall
-     */
-    @Deprecated(
-        message = "To avoid ambiguity, please use addCaller",
-        replaceWith = ReplaceWith("addCaller { init() }")
-    )
-    @JvmSynthetic
-    fun addCall(init: MethodMatcher.() -> Unit) = also {
-        addCall(MethodMatcher().apply(init))
     }
 
     /**

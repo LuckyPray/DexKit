@@ -2,6 +2,7 @@
 
 package org.luckypray.dexkit
 
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
@@ -23,6 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
+@DexKitExperimentalApi
 object DexKitCacheBridge {
     private lateinit var cache: Cache
     private val scheduler: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(1) { r ->
@@ -58,17 +60,6 @@ object DexKitCacheBridge {
     @JvmStatic
     fun create(appTag: String, classLoader: ClassLoader): RecyclableBridge {
         require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-
-        val baseDexClz = try {
-            Class.forName("dalvik.system.BaseDexClassLoader")
-        } catch (_: ClassNotFoundException) {
-            error("This method requires Android runtime")
-        }
-
-        if (!baseDexClz.isInstance(classLoader)) {
-            error("classLoader must be a BaseDexClassLoader (e.g. PathClassLoader/DexClassLoader)")
-        }
-
         pool[appTag]?.let { return it }
         val newBridge = RecyclableBridge.create(appTag, classLoader)
         val prev = pool.putIfAbsent(appTag, newBridge)
@@ -216,7 +207,7 @@ object DexKitCacheBridge {
             }
 
             lock.read { innerGet<T>(key)?.let { return Result.success(it) } }
-            loader ?: error("no found cache for key: $key")
+            loader ?: return Result.failure(NoSuchElementException("no found cache for key: $key"))
 
             return lock.write {
                 innerGet<T>(key)?.let { return Result.success(it) }
@@ -573,7 +564,7 @@ object DexKitCacheBridge {
             key = null,
             buildQuery = { FindClass().apply(query) },
             executor =  { b, q -> b.findClass(q).single() },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrThrow()
 
         @JvmSynthetic
@@ -583,7 +574,7 @@ object DexKitCacheBridge {
             key = null,
             buildQuery = { FindClass().apply(query) },
             executor =  { b, q -> b.findClass(q) },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrThrow()
 
         @JvmSynthetic
@@ -636,7 +627,7 @@ object DexKitCacheBridge {
             key = key,
             buildQuery = query?.let{ { FindClass().apply(query) } },
             executor =  { b, q: FindClass -> b.findClass(q).single() },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrThrow()
 
         @JvmSynthetic
@@ -647,7 +638,7 @@ object DexKitCacheBridge {
             key = key,
             buildQuery = query?.let{ { FindClass().apply(query) } },
             executor =  { b, q: FindClass -> b.findClass(q) },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrThrow()
 
         @JvmSynthetic
@@ -699,7 +690,7 @@ object DexKitCacheBridge {
             key = null,
             buildQuery = { FindClass().apply(query) },
             executor =  { b, q -> b.findClass(q).single() },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrNull()
 
         @JvmSynthetic
@@ -709,7 +700,7 @@ object DexKitCacheBridge {
             key = null,
             buildQuery = { FindClass().apply(query) },
             executor =  { b, q -> b.findClass(q) },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrNull()
 
         @JvmSynthetic
@@ -762,7 +753,7 @@ object DexKitCacheBridge {
             key = key,
             buildQuery = query?.let{ { FindClass().apply(query) } },
             executor =  { b, q: FindClass -> b.findClass(q).single() },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrNull()
 
         @JvmSynthetic
@@ -773,7 +764,7 @@ object DexKitCacheBridge {
             key = key,
             buildQuery = query?.let{ { FindClass().apply(query) } },
             executor =  { b, q: FindClass -> b.findClass(q) },
-            mapper = { it.toDexType() },
+            mapper = { it.toDexClass() },
         ).getOrNull()
 
         @JvmSynthetic
@@ -825,7 +816,7 @@ object DexKitCacheBridge {
         ): DexClass = getDirectInternal(
             key = key,
             executor = query,
-            mapper = { it.toDexType() }
+            mapper = { it.toDexClass() }
         ).getOrThrow()
 
         @JvmSynthetic
@@ -835,7 +826,7 @@ object DexKitCacheBridge {
         ): List<DexClass> = getDirectInternalList(
             key = key,
             executor = query,
-            mapper = { it.toDexType() }
+            mapper = { it.toDexClass() }
         ).getOrThrow()
 
         @JvmSynthetic
@@ -885,7 +876,7 @@ object DexKitCacheBridge {
         ): DexClass? = getDirectInternal(
             key = key,
             executor = query,
-            mapper = { it.toDexType() }
+            mapper = { it.toDexClass() }
         ).getOrNull()
 
         @JvmSynthetic
@@ -895,7 +886,7 @@ object DexKitCacheBridge {
         ): List<DexClass>? = getDirectInternalList(
             key = key,
             executor = query,
-            mapper = { it.toDexType() }
+            mapper = { it.toDexClass() }
         ).getOrNull()
 
         @JvmSynthetic
