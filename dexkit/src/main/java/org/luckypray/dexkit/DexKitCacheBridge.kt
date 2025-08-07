@@ -87,10 +87,10 @@ object DexKitCacheBridge {
     }
 
     class RecyclableBridge private constructor(
-        val appTag: String,
-        val path: String? = null,
-        val dexArray: Array<ByteArray>? = null,
-        val classLoader: ClassLoader? = null,
+        private val appTag: String,
+        private val path: String? = null,
+        private val dexArray: Array<ByteArray>? = null,
+        private val classLoader: ClassLoader? = null,
     ) : Closeable {
 
         companion object {
@@ -543,7 +543,7 @@ object DexKitCacheBridge {
         ): DexMethod = getInternal(
             key = null,
             buildQuery = { FindMethod().apply(query) },
-            executor =  { b, q -> b.findMethod(q).single() },
+            executor = { b, q -> b.findMethod(q).single() },
             mapper = { it.toDexMethod() },
         ).getOrThrow()
 
@@ -553,7 +553,7 @@ object DexKitCacheBridge {
         ): List<DexMethod> = getInternalList(
             key = null,
             buildQuery = { FindMethod().apply(query) },
-            executor =  { b, q -> b.findMethod(q) },
+            executor = { b, q -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
         ).getOrThrow()
 
@@ -563,7 +563,7 @@ object DexKitCacheBridge {
         ): DexClass = getInternal(
             key = null,
             buildQuery = { FindClass().apply(query) },
-            executor =  { b, q -> b.findClass(q).single() },
+            executor = { b, q -> b.findClass(q).single() },
             mapper = { it.toDexClass() },
         ).getOrThrow()
 
@@ -573,7 +573,7 @@ object DexKitCacheBridge {
         ): List<DexClass> = getInternalList(
             key = null,
             buildQuery = { FindClass().apply(query) },
-            executor =  { b, q -> b.findClass(q) },
+            executor = { b, q -> b.findClass(q) },
             mapper = { it.toDexClass() },
         ).getOrThrow()
 
@@ -583,7 +583,7 @@ object DexKitCacheBridge {
         ): DexField = getInternal(
             key = null,
             buildQuery = { FindField().apply(query) },
-            executor =  { b, q -> b.findField(q).single() },
+            executor = { b, q -> b.findField(q).single() },
             mapper = { it.toDexField() },
         ).getOrThrow()
 
@@ -593,73 +593,103 @@ object DexKitCacheBridge {
         ): List<DexField> = getInternalList(
             key = null,
             buildQuery = { FindField().apply(query) },
-            executor =  { b, q -> b.findField(q) },
+            executor = { b, q -> b.findField(q) },
             mapper = { it.toDexField() },
         ).getOrThrow()
 
         @JvmSynthetic
         fun getMethod(
             key: String,
+            query: (FindMethod.() -> Unit)
+        ): DexMethod = innerGetMethod(key, query)
+
+        private fun innerGetMethod(
+            key: String,
             query: (FindMethod.() -> Unit)? = null
         ): DexMethod = getInternal(
             key = key,
-            buildQuery = query?.let{ { FindMethod().apply(query) } },
-            executor =  { b, q: FindMethod -> b.findMethod(q).single() },
+            buildQuery = query?.let { { FindMethod().apply(query) } },
+            executor = { b, q: FindMethod -> b.findMethod(q).single() },
             mapper = { it.toDexMethod() },
         ).getOrThrow()
 
         @JvmSynthetic
         fun getMethods(
             key: String,
+            query: (FindMethod.() -> Unit)
+        ): List<DexMethod> = innerGetMethods(key, query)
+
+        private fun innerGetMethods(
+            key: String,
             query: (FindMethod.() -> Unit)? = null
         ): List<DexMethod> = getInternalList(
             key = key,
-            buildQuery = query?.let{ { FindMethod().apply(query) } },
-            executor =  { b, q: FindMethod -> b.findMethod(q) },
+            buildQuery = query?.let { { FindMethod().apply(query) } },
+            executor = { b, q: FindMethod -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
         ).getOrThrow()
 
         @JvmSynthetic
         fun getClass(
             key: String,
+            query: (FindClass.() -> Unit)
+        ): DexClass = innerGetClass(key, query)
+
+        private fun innerGetClass(
+            key: String,
             query: (FindClass.() -> Unit)? = null
         ): DexClass = getInternal(
             key = key,
-            buildQuery = query?.let{ { FindClass().apply(query) } },
-            executor =  { b, q: FindClass -> b.findClass(q).single() },
+            buildQuery = query?.let { { FindClass().apply(query) } },
+            executor = { b, q: FindClass -> b.findClass(q).single() },
             mapper = { it.toDexClass() },
         ).getOrThrow()
 
         @JvmSynthetic
         fun getClasses(
             key: String,
+            query: (FindClass.() -> Unit)
+        ): List<DexClass> = innerGetClasses(key, query)
+
+        private fun innerGetClasses(
+            key: String,
             query: (FindClass.() -> Unit)? = null
         ): List<DexClass> = getInternalList(
             key = key,
-            buildQuery = query?.let{ { FindClass().apply(query) } },
-            executor =  { b, q: FindClass -> b.findClass(q) },
+            buildQuery = query?.let { { FindClass().apply(query) } },
+            executor = { b, q: FindClass -> b.findClass(q) },
             mapper = { it.toDexClass() },
         ).getOrThrow()
 
         @JvmSynthetic
         fun getField(
             key: String,
+            query: (FindField.() -> Unit)
+        ): DexField = innerGetField(key, query)
+
+        private fun innerGetField(
+            key: String,
             query: (FindField.() -> Unit)? = null
         ): DexField = getInternal(
             key = key,
-            buildQuery = query?.let{ { FindField().apply(query) } },
-            executor =  { b, q: FindField -> b.findField(q).single() },
+            buildQuery = query?.let { { FindField().apply(query) } },
+            executor = { b, q: FindField -> b.findField(q).single() },
             mapper = { it.toDexField() },
         ).getOrThrow()
 
         @JvmSynthetic
         fun getFields(
             key: String,
+            query: (FindField.() -> Unit)
+        ): List<DexField> = innerGetFields(key, query)
+
+        private fun innerGetFields(
+            key: String,
             query: (FindField.() -> Unit)? = null
         ): List<DexField> = getInternalList(
             key = key,
-            buildQuery = query?.let{ { FindField().apply(query) } },
-            executor =  { b, q: FindField -> b.findField(q) },
+            buildQuery = query?.let { { FindField().apply(query) } },
+            executor = { b, q: FindField -> b.findField(q) },
             mapper = { it.toDexField() },
         ).getOrThrow()
 
@@ -669,7 +699,7 @@ object DexKitCacheBridge {
         ): DexMethod? = getInternal(
             key = null,
             buildQuery = { FindMethod().apply(query) },
-            executor =  { b, q -> b.findMethod(q).single() },
+            executor = { b, q -> b.findMethod(q).single() },
             mapper = { it.toDexMethod() },
         ).getOrNull()
 
@@ -679,7 +709,7 @@ object DexKitCacheBridge {
         ): List<DexMethod>? = getInternalList(
             key = null,
             buildQuery = { FindMethod().apply(query) },
-            executor =  { b, q -> b.findMethod(q) },
+            executor = { b, q -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
         ).getOrNull()
 
@@ -689,7 +719,7 @@ object DexKitCacheBridge {
         ): DexClass? = getInternal(
             key = null,
             buildQuery = { FindClass().apply(query) },
-            executor =  { b, q -> b.findClass(q).single() },
+            executor = { b, q -> b.findClass(q).single() },
             mapper = { it.toDexClass() },
         ).getOrNull()
 
@@ -699,7 +729,7 @@ object DexKitCacheBridge {
         ): List<DexClass>? = getInternalList(
             key = null,
             buildQuery = { FindClass().apply(query) },
-            executor =  { b, q -> b.findClass(q) },
+            executor = { b, q -> b.findClass(q) },
             mapper = { it.toDexClass() },
         ).getOrNull()
 
@@ -709,7 +739,7 @@ object DexKitCacheBridge {
         ): DexField? = getInternal(
             key = null,
             buildQuery = { FindField().apply(query) },
-            executor =  { b, q -> b.findField(q).single() },
+            executor = { b, q -> b.findField(q).single() },
             mapper = { it.toDexField() },
         ).getOrNull()
 
@@ -719,78 +749,113 @@ object DexKitCacheBridge {
         ): List<DexField>? = getInternalList(
             key = null,
             buildQuery = { FindField().apply(query) },
-            executor =  { b, q -> b.findField(q) },
+            executor = { b, q -> b.findField(q) },
             mapper = { it.toDexField() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getMethodOrNull(
             key: String,
+            query: (FindMethod.() -> Unit)
+        ): DexMethod? = innerGetMethodOrNull(key, query)
+
+        private fun innerGetMethodOrNull(
+            key: String,
             query: (FindMethod.() -> Unit)? = null
         ): DexMethod? = getInternal(
             key = key,
-            buildQuery = query?.let{ { FindMethod().apply(query) } },
-            executor =  { b, q: FindMethod -> b.findMethod(q).single() },
+            buildQuery = query?.let { { FindMethod().apply(query) } },
+            executor = { b, q: FindMethod -> b.findMethod(q).single() },
             mapper = { it.toDexMethod() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getMethodsOrNull(
             key: String,
+            query: (FindMethod.() -> Unit)
+        ): List<DexMethod>? = innerGetMethodsOrNull(key, query)
+
+        private fun innerGetMethodsOrNull(
+            key: String,
             query: (FindMethod.() -> Unit)? = null
         ): List<DexMethod>? = getInternalList(
             key = key,
-            buildQuery = query?.let{ { FindMethod().apply(query) } },
-            executor =  { b, q: FindMethod -> b.findMethod(q) },
+            buildQuery = query?.let { { FindMethod().apply(query) } },
+            executor = { b, q: FindMethod -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getClassOrNull(
             key: String,
+            query: (FindClass.() -> Unit)
+        ): DexClass? = innerGetClassOrNull(key, query)
+
+        private fun innerGetClassOrNull(
+            key: String,
             query: (FindClass.() -> Unit)? = null
         ): DexClass? = getInternal(
             key = key,
-            buildQuery = query?.let{ { FindClass().apply(query) } },
-            executor =  { b, q: FindClass -> b.findClass(q).single() },
+            buildQuery = query?.let { { FindClass().apply(query) } },
+            executor = { b, q: FindClass -> b.findClass(q).single() },
             mapper = { it.toDexClass() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getClassesOrNull(
             key: String,
+            query: (FindClass.() -> Unit)
+        ): List<DexClass>? = innerGetClassesOrNull(key, query)
+
+        private fun innerGetClassesOrNull(
+            key: String,
             query: (FindClass.() -> Unit)? = null
         ): List<DexClass>? = getInternalList(
             key = key,
-            buildQuery = query?.let{ { FindClass().apply(query) } },
-            executor =  { b, q: FindClass -> b.findClass(q) },
+            buildQuery = query?.let { { FindClass().apply(query) } },
+            executor = { b, q: FindClass -> b.findClass(q) },
             mapper = { it.toDexClass() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getFieldOrNull(
             key: String,
+            query: (FindField.() -> Unit)
+        ): DexField? = innerGetFieldOrNull(key, query)
+
+        private fun innerGetFieldOrNull(
+            key: String,
             query: (FindField.() -> Unit)? = null
         ): DexField? = getInternal(
             key = key,
-            buildQuery = query?.let{ { FindField().apply(query) } },
-            executor =  { b, q: FindField -> b.findField(q).single() },
+            buildQuery = query?.let { { FindField().apply(query) } },
+            executor = { b, q: FindField -> b.findField(q).single() },
             mapper = { it.toDexField() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getFieldsOrNull(
             key: String,
+            query: (FindField.() -> Unit)
+        ): List<DexField>? = innerGetFieldsOrNull(key, query)
+
+        private fun innerGetFieldsOrNull(
+            key: String,
             query: (FindField.() -> Unit)? = null
         ): List<DexField>? = getInternalList(
             key = key,
-            buildQuery = query?.let{ { FindField().apply(query) } },
-            executor =  { b, q: FindField -> b.findField(q) },
+            buildQuery = query?.let { { FindField().apply(query) } },
+            executor = { b, q: FindField -> b.findField(q) },
             mapper = { it.toDexField() },
         ).getOrNull()
 
         @JvmSynthetic
         fun getMethodDirect(
+            key: String,
+            query: DexKitBridge.() -> MethodDataList
+        ): DexMethod = innerGetMethodDirect(key, query)
+
+        private fun innerGetMethodDirect(
             key: String,
             query: (DexKitBridge.() -> MethodDataList)? = null
         ): DexMethod = getDirectInternal(
@@ -802,6 +867,11 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getMethodsDirect(
             key: String,
+            query: DexKitBridge.() -> MethodDataList
+        ): List<DexMethod> = innerGetMethodsDirect(key, query)
+
+        private fun innerGetMethodsDirect(
+            key: String,
             query: (DexKitBridge.() -> MethodDataList)? = null
         ): List<DexMethod> = getDirectInternalList(
             key = key,
@@ -811,6 +881,11 @@ object DexKitCacheBridge {
 
         @JvmSynthetic
         fun getClassDirect(
+            key: String,
+            query: DexKitBridge.() -> ClassDataList
+        ): DexClass = innerGetClassDirect(key, query)
+
+        private fun innerGetClassDirect(
             key: String,
             query: (DexKitBridge.() -> ClassDataList)? = null
         ): DexClass = getDirectInternal(
@@ -822,6 +897,11 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getClassesDirect(
             key: String,
+            query: DexKitBridge.() -> ClassDataList
+        ): List<DexClass> = innerGetClassesDirect(key, query)
+
+        private fun innerGetClassesDirect(
+            key: String,
             query: (DexKitBridge.() -> ClassDataList)? = null
         ): List<DexClass> = getDirectInternalList(
             key = key,
@@ -831,6 +911,11 @@ object DexKitCacheBridge {
 
         @JvmSynthetic
         fun getFieldDirect(
+            key: String,
+            query: DexKitBridge.() -> FieldDataList
+        ): DexField = innerGetFieldDirect(key, query)
+
+        private fun innerGetFieldDirect(
             key: String,
             query: (DexKitBridge.() -> FieldDataList)? = null
         ): DexField = getDirectInternal(
@@ -842,6 +927,11 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getFieldsDirect(
             key: String,
+            query: DexKitBridge.() -> FieldDataList
+        ): List<DexField> = innerGetFieldsDirect(key, query)
+
+        private fun innerGetFieldsDirect(
+            key: String,
             query: (DexKitBridge.() -> FieldDataList)? = null
         ): List<DexField> = getDirectInternalList(
             key = key,
@@ -851,6 +941,11 @@ object DexKitCacheBridge {
 
         @JvmSynthetic
         fun getMethodDirectOrNull(
+            key: String,
+            query: DexKitBridge.() -> MethodDataList
+        ): DexMethod? = innerGetMethodDirectOrNull(key, query)
+
+        private fun innerGetMethodDirectOrNull(
             key: String,
             query: (DexKitBridge.() -> MethodDataList)? = null
         ): DexMethod? = getDirectInternal(
@@ -862,6 +957,11 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getMethodsDirectOrNull(
             key: String,
+            query: DexKitBridge.() -> MethodDataList
+        ): List<DexMethod>? = innerGetMethodsDirectOrNull(key, query)
+
+        private fun innerGetMethodsDirectOrNull(
+            key: String,
             query: (DexKitBridge.() -> MethodDataList)? = null
         ): List<DexMethod>? = getDirectInternalList(
             key = key,
@@ -871,6 +971,11 @@ object DexKitCacheBridge {
 
         @JvmSynthetic
         fun getClassDirectOrNull(
+            key: String,
+            query: DexKitBridge.() -> ClassDataList
+        ): DexClass? = innerGetClassDirectOrNull(key, query)
+
+        private fun innerGetClassDirectOrNull(
             key: String,
             query: (DexKitBridge.() -> ClassDataList)? = null
         ): DexClass? = getDirectInternal(
@@ -882,6 +987,11 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getClassesDirectOrNull(
             key: String,
+            query: DexKitBridge.() -> ClassDataList
+        ): List<DexClass>? = innerGetClassesDirectOrNull(key, query)
+
+        private fun innerGetClassesDirectOrNull(
+            key: String,
             query: (DexKitBridge.() -> ClassDataList)? = null
         ): List<DexClass>? = getDirectInternalList(
             key = key,
@@ -892,6 +1002,11 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getFieldDirectOrNull(
             key: String,
+            query: DexKitBridge.() -> FieldDataList
+        ): DexField? = innerGetFieldDirectOrNull(key, query)
+
+        private fun innerGetFieldDirectOrNull(
+            key: String,
             query: (DexKitBridge.() -> FieldDataList)? = null
         ): DexField? = getDirectInternal(
             key = key,
@@ -901,6 +1016,11 @@ object DexKitCacheBridge {
 
         @JvmSynthetic
         fun getFieldsDirectOrNull(
+            key: String,
+            query: DexKitBridge.() -> FieldDataList
+        ): List<DexField>? = innerGetFieldsDirectOrNull(key, query)
+
+        private fun innerGetFieldsDirectOrNull(
             key: String,
             query: (DexKitBridge.() -> FieldDataList)? = null
         ): List<DexField>? = getDirectInternalList(
