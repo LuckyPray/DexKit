@@ -95,22 +95,22 @@ android {
     externalNativeBuild {
         cmake {
             path file("CMakeLists.txt")
-            version "3.18.1"
         }
     }
 
     buildFeatures {
         prefab true
     }
-}
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
-}
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 
-tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
-    kotlinOptions.languageVersion = "1.5"
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+        languageVersion = "1.5"
+    }
 }
 
 dependencies {

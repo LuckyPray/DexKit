@@ -1,0 +1,174 @@
+name: Build DexKit Native Libraries
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ '*' ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-native:
+    strategy:
+      matrix:
+        sys:
+          - { name: linux-musl,  os: ubuntu-latest,  shell: 'alpine.sh --root {0}'}
+          - { name: windows,     os: windows-latest, shell: bash}
+          - { name: macos,       os: macos-latest,   shell: bash}
+    defaults:
+      run:
+        shell: ${{ matrix.sys.shell }}
+    runs-on: ${{ matrix.sys.os }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup latest Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        if: ${{ matrix.sys.name == 'linux-musl' }}
+        with:
+          arch: x86_64
+          packages: >
+            build-base
+            cmake
+            ninja
+            git
+            musl-dev
+            libstdc++
+            g++
+            openjdk17-jdk
+            wget
+            unzip
+            zlib-dev
+
+      - name: Install Android SDK on Alpine
+        if: ${{ matrix.sys.name == 'linux-musl' }}
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk
+        run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /tmp/tools.zip
+          unzip -q /tmp/tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+          rm /tmp/tools.zip
+
+          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+          
+          yes | sdkmanager --licenses || true
+          sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
+              "platform-tools" \
+              "build-tools;33.0.2" \
+              "cmake;3.22.1" \
+              "ndk;26.1.10909125" \
+              "platforms;android-34"
+
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          version: 3.25.0
+
+      - name: Build musl PIC static libc (musl)
+        if: ${{ matrix.sys.name == 'linux-musl' }}
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk
+        run: |
+          git clone https://git.musl-libc.org/git/musl
+          cd musl
+          CFLAGS="-O2 -fPIC" ./configure --prefix=/opt/musl-pic
+          make
+          make install
+
+      - name: Run Gradle CMake build (musl)
+        if: ${{ matrix.sys.name == 'linux-musl' }}
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk
+          MUSL_PATH: /opt/musl-pic
+        run: |
+          chmod +x gradlew
+          ./gradlew :dexkit:cmakeBuild -PlinuxMuslBuild --console=plain
+
+      - name: Run Gradle CMake build (host)
+        if: ${{ matrix.sys.name != 'linux-musl' }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :dexkit:cmakeBuild :dexkit:jar :dexkit-android:assembleRelease --console=plain
+
+      - name: Collect native library
+        run: |
+          mkdir -p artifacts
+          if [ "${RUNNER_OS}" = "Linux" ]; then
+            cp dexkit/build/cmake/main/*/libdexkit.so artifacts/
+          elif [ "${RUNNER_OS}" = "macOS" ]; then
+            cp dexkit/build/cmake/main/*/libdexkit.dylib artifacts/
+            cp dexkit/build/libs/dexkit.jar artifacts/
+            cp dexkit-android/build/outputs/aar/dexkit-android-release.aar artifacts/
+          elif [ "${RUNNER_OS}" = "Windows" ]; then
+            cp dexkit/build/cmake/main/*/libdexkit.dll artifacts/
+            cp dexkit/build/libs/dexkit.jar artifacts/
+            cp dexkit-android/build/outputs/aar/dexkit-android-release.aar artifacts/
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dexkit-native-${{ matrix.sys.name }}
+          path: artifacts/
+
+  package-all:
+    needs: build-native
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all workflow artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: Prepare staging directory
+        run: |
+          rm -rf staging
+          mkdir -p staging/linux staging/macos staging/windows
+
+      - name: Copy Linux artifacts
+        run: |
+          cp downloaded-artifacts/dexkit-native-linux-musl/libdexkit.so staging/linux/
+
+      - name: Copy macOS artifacts
+        run: |
+          cp downloaded-artifacts/dexkit-native-macos/libdexkit.dylib staging/macos/
+
+      - name: Copy Windows artifacts
+        run: |
+          cp downloaded-artifacts/dexkit-native-windows/libdexkit.dll staging/windows/
+
+      - name: Copy dexkit.jar & AAR
+        run: |
+          cp downloaded-artifacts/dexkit-native-macos/dexkit.jar staging/
+          cp downloaded-artifacts/dexkit-native-macos/dexkit-android-release.aar staging/
+
+      - name: Delete individual platform artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: dexkit-native-*
+
+      - name: Upload combined ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: dexkit-all-platforms
+          path: |
+            staging/linux
+            staging/macos
+            staging/windows
+            staging/dexkit.jar
+            staging/dexkit-android-release.aar

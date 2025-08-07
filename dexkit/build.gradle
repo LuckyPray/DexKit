@@ -6,6 +6,8 @@ plugins {
     id("io.github.tomtzook.gradle-cmake") version "1.2.2"
 }
 
+def isLinux = System.getProperty('os.name').toLowerCase().contains('linux')
+
 cmake {
     targets {
         main {
@@ -22,6 +24,9 @@ cmake {
             cmakeArgs.add("-DCMAKE_BUILD_TYPE=Release")
             cmakeArgs.add("-DCMAKE_CXX_FLAGS_RELEASE=$configFlags")
             cmakeArgs.add("-DCMAKE_C_FLAGS_RELEASE=$configFlags")
+            if (project.hasProperty("linuxMuslBuild") && isLinux) {
+                cmakeArgs.add("-DUSE_MUSL_LIBC=ON")
+            }
         }
     }
 }
@@ -29,7 +34,6 @@ cmake {
 java {
     sourceCompatibility JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 tasks.withType(KotlinCompile).configureEach {
