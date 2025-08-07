@@ -37,6 +37,8 @@ target_include_directories(${PROJECT_NAME}_static
         third_party/parallel_hashmap
         third_party/flatbuffers/include
 )
+
+set_target_properties(${PROJECT_NAME}_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(${PROJECT_NAME}_static
         PUBLIC
         z
