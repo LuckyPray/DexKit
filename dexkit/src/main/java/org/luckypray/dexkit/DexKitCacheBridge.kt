@@ -7,6 +7,7 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.base.BaseFinder
+import org.luckypray.dexkit.result.BaseDataList
 import org.luckypray.dexkit.result.ClassDataList
 import org.luckypray.dexkit.result.FieldDataList
 import org.luckypray.dexkit.result.MethodDataList
@@ -68,7 +69,14 @@ object DexKitCacheBridge {
 
     @JvmStatic
     fun clearCache(appTag: String) {
-        lock.write { cache.clear(appTag) }
+        lock.write {
+            val prefix = "$appTag:"
+            cache.getAllKeys().forEach {
+                if (it.startsWith(prefix)) {
+                    cache.remove(it)
+                }
+            }
+        }
     }
 
     @JvmStatic
@@ -79,10 +87,10 @@ object DexKitCacheBridge {
     interface Cache {
         fun get(key: String, default: String?): String?
         fun put(key: String, value: String)
-        fun getList(key: String, default: List<String>?): List<String>?
-        fun putList(key: String, value: List<String>)
+//        fun getList(key: String, default: List<String>?): List<String>?
+//        fun putList(key: String, value: List<String>)
         fun remove(key: String)
-        fun clear(appTag: String)
+        fun getAllKeys(): Collection<String>
         fun clearAll()
     }
 
@@ -94,6 +102,9 @@ object DexKitCacheBridge {
     ) : Closeable {
 
         companion object {
+            private const val CACHE_NULL = "CACHE_NULL"
+            private const val EMPTY_LIST = "[]"
+
             @JvmSynthetic
             internal fun create(
                 appTag: String,
@@ -173,23 +184,39 @@ object DexKitCacheBridge {
 
         private fun <T : ISerializable> getCached(
             key: String,
-            loader: (() -> T)? = null
-        ): Result<T> {
-            fun <T> innerGet(key: String): T? {
+            allowNull: Boolean,
+            loader: (() -> T?)? = null,
+        ): Result<T?> {
+            fun <T> innerGet(key: String): Result<T?>? {
                 cache.get(key, null)?.let {
-                    return ISerializable.deserializeAs(it)
+                    val ret = if (it == CACHE_NULL) {
+                        null
+                    } else {
+                        ISerializable.deserializeAs(it)
+                    }
+                    return Result.success(ret)
                 }
                 return null
             }
 
-            lock.read { innerGet<T>(key)?.let { return Result.success(it) } }
-            loader ?: return Result.failure(NoSuchElementException("no found cache for key: $key"))
+            lock.read { innerGet<T>(key)?.let { return it } }
+
+            loader ?: return Result.failure(
+                NoSuchElementException("no found cache for key: $key")
+            )
 
             return lock.write {
-                innerGet<T>(key)?.let { return Result.success(it) }
+                innerGet<T>(key)?.let { return it }
+
                 runCatching {
                     loader().also {
-                        cache.put(key, it.serialize())
+                        it?.let {
+                            cache.put(key, it.serialize())
+                        } ?: run {
+                            if (allowNull) {
+                                cache.put(key, CACHE_NULL)
+                            }
+                        }
                     }
                 }
             }
@@ -199,21 +226,34 @@ object DexKitCacheBridge {
             key: String,
             loader: (() -> List<T>)? = null,
         ): Result<List<T>> {
-            fun <T> innerGet(key: String): List<T>? {
-                cache.getList(key, null)?.let {
-                    return it.map { ISerializable.deserializeAs(it) }
+            fun <T> innerGet(key: String): Result<List<T>>? {
+                cache.get(key, null)?.let {
+                    val ret: List<T> = if (it == EMPTY_LIST) {
+                        emptyList()
+                    } else {
+                        require(it.first() == '[' && it.last() == ']') {
+                            "not list cache: $it"
+                        }
+                        it.substring(1, it.length - 1)
+                            .split("#")
+                            .map { ISerializable.deserializeAs(it) }
+                    }
+                    return Result.success(ret)
                 }
                 return null
             }
 
-            lock.read { innerGet<T>(key)?.let { return Result.success(it) } }
+            lock.read { innerGet<T>(key)?.let { return it } }
             loader ?: return Result.failure(NoSuchElementException("no found cache for key: $key"))
 
             return lock.write {
-                innerGet<T>(key)?.let { return Result.success(it) }
+                innerGet<T>(key)?.let { return it }
                 runCatching {
-                    loader().also {
-                        cache.putList(key, it.map { it.serialize() })
+                    loader().also { list ->
+                        val value = list.joinToString("#", "[", "]") {
+                            it.serialize()
+                        }
+                        cache.put(key, value)
                     }
                 }
             }
@@ -221,16 +261,18 @@ object DexKitCacheBridge {
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternal(
             key: String?,
+            allowNull: Boolean,
             noinline buildQuery: (() -> Q)?,
-            noinline executor: (DexKitBridge, Q) -> D,
+            noinline executor: (DexKitBridge, Q) -> BaseDataList<D>,
             noinline mapper: (D) -> R
-        ): Result<R> {
+        ): Result<R?> {
             val query = buildQuery?.invoke()
             val spKey = "$appTag:${key ?: query!!.hashKey()}"
-            val loader: (() -> R)? = query?.let {
-                { mapper(executor(bridge, query)) }
+            val loader: (() -> R?)? = query?.let {
+                // TODO sure singleOrNull? maybe need check BaseDataList
+                { executor(bridge, query).singleOrNull()?.let(mapper) }
             }
-            return getCached(spKey, loader)
+            return getCached(spKey, allowNull, loader)
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalList(
@@ -249,14 +291,15 @@ object DexKitCacheBridge {
 
         private inline fun <D, R : ISerializable> getDirectInternal(
             key: String,
+            allowNull: Boolean,
             noinline executor: (DexKitBridge.() -> List<D>)?,
             noinline mapper: (D) -> R
-        ): Result<R> {
+        ): Result<R?> {
             val cacheKey = "$appTag:$key"
-            val loader: (() -> R)? = executor?.let {
-                { mapper(bridge.let(executor).single()) }
+            val loader: (() -> R?)? = executor?.let {
+                { bridge.let(executor).singleOrNull()?.let(mapper) }
             }
-            return getCached(cacheKey, loader)
+            return getCached(cacheKey, allowNull, loader)
         }
 
         private inline fun <D, R : ISerializable> getDirectInternalList(
@@ -364,30 +407,12 @@ object DexKitCacheBridge {
             query?.build(this)
         }
 
-        fun getMethodsOrNull(query: FindMethodBuilder): List<DexMethod>? = getMethodsOrNull {
-            query.build(this)
-        }
-
-        @JvmOverloads
-        fun getMethodsOrNull(key: String, query: FindMethodBuilder? = null): List<DexMethod>? = getMethodsOrNull(key) {
-            query?.build(this)
-        }
-
         fun getClassOrNull(query: FindClassBuilder): DexClass? = getClassOrNull {
             query.build(this)
         }
 
         @JvmOverloads
         fun getClassOrNull(key: String, query: FindClassBuilder? = null): DexClass? = getClassOrNull(key) {
-            query?.build(this)
-        }
-
-        fun getClassesOrNull(query: FindClassBuilder): List<DexClass>? = getClassesOrNull {
-            query.build(this)
-        }
-
-        @JvmOverloads
-        fun getClassesOrNull(key: String, query: FindClassBuilder? = null): List<DexClass>? = getClassesOrNull(key) {
             query?.build(this)
         }
 
@@ -400,86 +425,59 @@ object DexKitCacheBridge {
             query?.build(this)
         }
 
-        fun getFieldsOrNull(query: FindFieldBuilder): List<DexField>? = getFieldsOrNull {
-            query.build(this)
-        }
-
-        @JvmOverloads
-        fun getFieldsOrNull(key: String, query: FindFieldBuilder? = null): List<DexField>? = getFieldsOrNull(key) {
-            query?.build(this)
-        }
-
         @JvmOverloads
         fun getMethodDirect(
             key: String,
             query: BridgeMethodBuilder? = null
-        ): DexMethod = getMethodDirect(key, query?.toBridgeQuery())
+        ): DexMethod = innerGetMethodDirect(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getMethodsDirect(
             key: String,
             query: BridgeMethodBuilder? = null
-        ): List<DexMethod> = getMethodsDirect(key, query?.toBridgeQuery())
+        ): List<DexMethod> = innerGetMethodsDirect(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getClassDirect(
             key: String,
             query: BridgeClassBuilder? = null
-        ): DexClass = getClassDirect(key, query?.toBridgeQuery())
+        ): DexClass = innerGetClassDirect(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getClassesDirect(
             key: String,
             query: BridgeClassBuilder? = null
-        ): List<DexClass> = getClassesDirect(key, query?.toBridgeQuery())
+        ): List<DexClass> = innerGetClassesDirect(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getFieldDirect(
             key: String,
             query: BridgeFieldBuilder? = null
-        ): DexField = getFieldDirect(key, query?.toBridgeQuery())
+        ): DexField = innerGetFieldDirect(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getFieldsDirect(
             key: String,
             query: BridgeFieldBuilder? = null
-        ): List<DexField> = getFieldsDirect(key, query?.toBridgeQuery())
+        ): List<DexField> = innerGetFieldsDirect(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getMethodDirectOrNull(
             key: String,
             query: BridgeMethodBuilder? = null
-        ): DexMethod? = getMethodDirectOrNull(key, query?.toBridgeQuery())
-
-        @JvmOverloads
-        fun getMethodsDirectOrNull(
-            key: String,
-            query: BridgeMethodBuilder? = null
-        ): List<DexMethod>? = getMethodsDirectOrNull(key, query?.toBridgeQuery())
+        ): DexMethod? = innerGetMethodDirectOrNull(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getClassDirectOrNull(
             key: String,
             query: BridgeClassBuilder? = null
-        ): DexClass? = getClassDirectOrNull(key, query?.toBridgeQuery())
-
-        @JvmOverloads
-        fun getClassesDirectOrNull(
-            key: String,
-            query: BridgeClassBuilder? = null
-        ): List<DexClass>? = getClassesDirectOrNull(key, query?.toBridgeQuery())
+        ): DexClass? = innerGetClassDirectOrNull(key, query?.toBridgeQuery())
 
         @JvmOverloads
         fun getFieldDirectOrNull(
             key: String,
             query: BridgeFieldBuilder? = null
-        ): DexField? = getFieldDirectOrNull(key, query?.toBridgeQuery())
-
-        @JvmOverloads
-        fun getFieldsDirectOrNull(
-            key: String,
-            query: BridgeFieldBuilder? = null
-        ): List<DexField>? = getFieldsDirectOrNull(key, query?.toBridgeQuery())
+        ): DexField? = innerGetFieldDirectOrNull(key, query?.toBridgeQuery())
 
         // endregion
 
@@ -511,27 +509,15 @@ object DexKitCacheBridge {
 
         fun getMethodOrNull(finder: FindMethod): DexMethod? = getMethodOrNull { finder }
 
-        fun getMethodsOrNull(finder: FindMethod): List<DexMethod>? = getMethodsOrNull { finder }
-
         fun getClassOrNull(finder: FindClass): DexClass? = getClassOrNull { finder }
-
-        fun getClassesOrNull(finder: FindClass): List<DexClass>? = getClassesOrNull { finder }
 
         fun getFieldOrNull(finder: FindField): DexField? = getFieldOrNull { finder }
 
-        fun getFieldsOrNull(finder: FindField): List<DexField>? = getFieldsOrNull { finder }
-
         fun getMethodOrNull(key: String, finder: FindMethod): DexMethod? = getMethodOrNull(key) { finder }
-
-        fun getMethodsOrNull(key: String, finder: FindMethod): List<DexMethod>? = getMethodsOrNull(key) { finder }
 
         fun getClassOrNull(key: String, finder: FindClass): DexClass? = getClassOrNull(key) { finder }
 
-        fun getClassesOrNull(key: String, finder: FindClass): List<DexClass>? = getClassesOrNull(key) { finder }
-
         fun getFieldOrNull(key: String, finder: FindField): DexField? = getFieldOrNull(key) { finder }
-
-        fun getFieldsOrNull(key: String, finder: FindField): List<DexField>? = getFieldsOrNull(key) { finder }
 
         // endregion
 
@@ -542,10 +528,12 @@ object DexKitCacheBridge {
             query: FindMethod.() -> Unit
         ): DexMethod = getInternal(
             key = null,
+            allowNull = false,
             buildQuery = { FindMethod().apply(query) },
-            executor = { b, q -> b.findMethod(q).single() },
+            // TODO 是否需要 .single()
+            executor = { b, q -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getMethods(
@@ -562,10 +550,11 @@ object DexKitCacheBridge {
             query: FindClass.() -> Unit
         ): DexClass = getInternal(
             key = null,
+            allowNull = false,
             buildQuery = { FindClass().apply(query) },
-            executor = { b, q -> b.findClass(q).single() },
+            executor = { b, q -> b.findClass(q) },
             mapper = { it.toDexClass() },
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getClasses(
@@ -582,10 +571,11 @@ object DexKitCacheBridge {
             query: FindField.() -> Unit
         ): DexField = getInternal(
             key = null,
+            allowNull = false,
             buildQuery = { FindField().apply(query) },
-            executor = { b, q -> b.findField(q).single() },
+            executor = { b, q -> b.findField(q) },
             mapper = { it.toDexField() },
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getFields(
@@ -608,10 +598,11 @@ object DexKitCacheBridge {
             query: (FindMethod.() -> Unit)? = null
         ): DexMethod = getInternal(
             key = key,
+            allowNull = false,
             buildQuery = query?.let { { FindMethod().apply(query) } },
-            executor = { b, q: FindMethod -> b.findMethod(q).single() },
+            executor = { b, q: FindMethod -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getMethods(
@@ -640,10 +631,11 @@ object DexKitCacheBridge {
             query: (FindClass.() -> Unit)? = null
         ): DexClass = getInternal(
             key = key,
+            allowNull = false,
             buildQuery = query?.let { { FindClass().apply(query) } },
-            executor = { b, q: FindClass -> b.findClass(q).single() },
+            executor = { b, q: FindClass -> b.findClass(q) },
             mapper = { it.toDexClass() },
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getClasses(
@@ -672,10 +664,11 @@ object DexKitCacheBridge {
             query: (FindField.() -> Unit)? = null
         ): DexField = getInternal(
             key = key,
+            allowNull = false,
             buildQuery = query?.let { { FindField().apply(query) } },
-            executor = { b, q: FindField -> b.findField(q).single() },
+            executor = { b, q: FindField -> b.findField(q) },
             mapper = { it.toDexField() },
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getFields(
@@ -698,16 +691,7 @@ object DexKitCacheBridge {
             query: FindMethod.() -> Unit
         ): DexMethod? = getInternal(
             key = null,
-            buildQuery = { FindMethod().apply(query) },
-            executor = { b, q -> b.findMethod(q).single() },
-            mapper = { it.toDexMethod() },
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getMethodsOrNull(
-            query: FindMethod.() -> Unit
-        ): List<DexMethod>? = getInternalList(
-            key = null,
+            allowNull = true,
             buildQuery = { FindMethod().apply(query) },
             executor = { b, q -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
@@ -718,16 +702,7 @@ object DexKitCacheBridge {
             query: FindClass.() -> Unit
         ): DexClass? = getInternal(
             key = null,
-            buildQuery = { FindClass().apply(query) },
-            executor = { b, q -> b.findClass(q).single() },
-            mapper = { it.toDexClass() },
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getClassesOrNull(
-            query: FindClass.() -> Unit
-        ): List<DexClass>? = getInternalList(
-            key = null,
+            allowNull = true,
             buildQuery = { FindClass().apply(query) },
             executor = { b, q -> b.findClass(q) },
             mapper = { it.toDexClass() },
@@ -738,16 +713,7 @@ object DexKitCacheBridge {
             query: FindField.() -> Unit
         ): DexField? = getInternal(
             key = null,
-            buildQuery = { FindField().apply(query) },
-            executor = { b, q -> b.findField(q).single() },
-            mapper = { it.toDexField() },
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getFieldsOrNull(
-            query: FindField.() -> Unit
-        ): List<DexField>? = getInternalList(
-            key = null,
+            allowNull = true,
             buildQuery = { FindField().apply(query) },
             executor = { b, q -> b.findField(q) },
             mapper = { it.toDexField() },
@@ -764,22 +730,7 @@ object DexKitCacheBridge {
             query: (FindMethod.() -> Unit)? = null
         ): DexMethod? = getInternal(
             key = key,
-            buildQuery = query?.let { { FindMethod().apply(query) } },
-            executor = { b, q: FindMethod -> b.findMethod(q).single() },
-            mapper = { it.toDexMethod() },
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getMethodsOrNull(
-            key: String,
-            query: (FindMethod.() -> Unit)
-        ): List<DexMethod>? = innerGetMethodsOrNull(key, query)
-
-        private fun innerGetMethodsOrNull(
-            key: String,
-            query: (FindMethod.() -> Unit)? = null
-        ): List<DexMethod>? = getInternalList(
-            key = key,
+            allowNull = true,
             buildQuery = query?.let { { FindMethod().apply(query) } },
             executor = { b, q: FindMethod -> b.findMethod(q) },
             mapper = { it.toDexMethod() },
@@ -796,22 +747,7 @@ object DexKitCacheBridge {
             query: (FindClass.() -> Unit)? = null
         ): DexClass? = getInternal(
             key = key,
-            buildQuery = query?.let { { FindClass().apply(query) } },
-            executor = { b, q: FindClass -> b.findClass(q).single() },
-            mapper = { it.toDexClass() },
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getClassesOrNull(
-            key: String,
-            query: (FindClass.() -> Unit)
-        ): List<DexClass>? = innerGetClassesOrNull(key, query)
-
-        private fun innerGetClassesOrNull(
-            key: String,
-            query: (FindClass.() -> Unit)? = null
-        ): List<DexClass>? = getInternalList(
-            key = key,
+            allowNull = true,
             buildQuery = query?.let { { FindClass().apply(query) } },
             executor = { b, q: FindClass -> b.findClass(q) },
             mapper = { it.toDexClass() },
@@ -828,22 +764,7 @@ object DexKitCacheBridge {
             query: (FindField.() -> Unit)? = null
         ): DexField? = getInternal(
             key = key,
-            buildQuery = query?.let { { FindField().apply(query) } },
-            executor = { b, q: FindField -> b.findField(q).single() },
-            mapper = { it.toDexField() },
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getFieldsOrNull(
-            key: String,
-            query: (FindField.() -> Unit)
-        ): List<DexField>? = innerGetFieldsOrNull(key, query)
-
-        private fun innerGetFieldsOrNull(
-            key: String,
-            query: (FindField.() -> Unit)? = null
-        ): List<DexField>? = getInternalList(
-            key = key,
+            allowNull = true,
             buildQuery = query?.let { { FindField().apply(query) } },
             executor = { b, q: FindField -> b.findField(q) },
             mapper = { it.toDexField() },
@@ -860,9 +781,10 @@ object DexKitCacheBridge {
             query: (DexKitBridge.() -> MethodDataList)? = null
         ): DexMethod = getDirectInternal(
             key = key,
+            allowNull = false,
             executor = query,
             mapper = { it.toDexMethod() }
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getMethodsDirect(
@@ -890,9 +812,10 @@ object DexKitCacheBridge {
             query: (DexKitBridge.() -> ClassDataList)? = null
         ): DexClass = getDirectInternal(
             key = key,
+            allowNull = false,
             executor = query,
             mapper = { it.toDexClass() }
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getClassesDirect(
@@ -920,9 +843,10 @@ object DexKitCacheBridge {
             query: (DexKitBridge.() -> FieldDataList)? = null
         ): DexField = getDirectInternal(
             key = key,
+            allowNull = false,
             executor = query,
             mapper = { it.toDexField() }
-        ).getOrThrow()
+        ).getOrThrow()!!
 
         @JvmSynthetic
         fun getFieldsDirect(
@@ -950,21 +874,7 @@ object DexKitCacheBridge {
             query: (DexKitBridge.() -> MethodDataList)? = null
         ): DexMethod? = getDirectInternal(
             key = key,
-            executor = query,
-            mapper = { it.toDexMethod() }
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getMethodsDirectOrNull(
-            key: String,
-            query: DexKitBridge.() -> MethodDataList
-        ): List<DexMethod>? = innerGetMethodsDirectOrNull(key, query)
-
-        private fun innerGetMethodsDirectOrNull(
-            key: String,
-            query: (DexKitBridge.() -> MethodDataList)? = null
-        ): List<DexMethod>? = getDirectInternalList(
-            key = key,
+            allowNull = true,
             executor = query,
             mapper = { it.toDexMethod() }
         ).getOrNull()
@@ -980,21 +890,7 @@ object DexKitCacheBridge {
             query: (DexKitBridge.() -> ClassDataList)? = null
         ): DexClass? = getDirectInternal(
             key = key,
-            executor = query,
-            mapper = { it.toDexClass() }
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getClassesDirectOrNull(
-            key: String,
-            query: DexKitBridge.() -> ClassDataList
-        ): List<DexClass>? = innerGetClassesDirectOrNull(key, query)
-
-        private fun innerGetClassesDirectOrNull(
-            key: String,
-            query: (DexKitBridge.() -> ClassDataList)? = null
-        ): List<DexClass>? = getDirectInternalList(
-            key = key,
+            allowNull = true,
             executor = query,
             mapper = { it.toDexClass() }
         ).getOrNull()
@@ -1010,21 +906,7 @@ object DexKitCacheBridge {
             query: (DexKitBridge.() -> FieldDataList)? = null
         ): DexField? = getDirectInternal(
             key = key,
-            executor = query,
-            mapper = { it.toDexField() }
-        ).getOrNull()
-
-        @JvmSynthetic
-        fun getFieldsDirectOrNull(
-            key: String,
-            query: DexKitBridge.() -> FieldDataList
-        ): List<DexField>? = innerGetFieldsDirectOrNull(key, query)
-
-        private fun innerGetFieldsDirectOrNull(
-            key: String,
-            query: (DexKitBridge.() -> FieldDataList)? = null
-        ): List<DexField>? = getDirectInternalList(
-            key = key,
+            allowNull = true,
             executor = query,
             mapper = { it.toDexField() }
         ).getOrNull()
