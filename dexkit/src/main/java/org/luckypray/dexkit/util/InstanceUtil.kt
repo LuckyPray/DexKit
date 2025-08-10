@@ -22,23 +22,16 @@
 
 package org.luckypray.dexkit.util
 
-import org.luckypray.dexkit.util.DexSignUtil.getConstructorSign
-import org.luckypray.dexkit.util.DexSignUtil.getMethodSign
-import org.luckypray.dexkit.util.DexSignUtil.getTypeSign
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
-import java.lang.reflect.Array
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 object InstanceUtil {
 
-    private val constructorCache = WeakCache<Class<*>, kotlin.Array<Constructor<*>>>()
-    private val fieldsCache = WeakCache<Class<*>, kotlin.Array<Field>>()
-    private val methodsCache = WeakCache<Class<*>, kotlin.Array<Method>>()
-    private val signCache = WeakCache<Any, String>()
+    private val classCache = WeakCache<String, Class<*>>()
 
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader, dexClass: DexClass): Class<*> {
@@ -47,36 +40,88 @@ object InstanceUtil {
 
     @Throws(ClassNotFoundException::class)
     fun getClassInstance(classLoader: ClassLoader, typeName: String): Class<*> {
-        if (typeName.endsWith("[]")) {
-            val clazz = getClassInstance(classLoader, typeName.substring(0, typeName.length - 2))
-            return Array.newInstance(clazz, 0)::class.java
+        return classCache.get(typeName) {
+            var name = typeName
+            var arrayDepth = 0
+
+            while (name.endsWith("[]")) {
+                arrayDepth++
+                name = name.substring(0, name.length - 2)
+            }
+
+            val primitiveMap = mapOf(
+                "boolean" to Boolean::class.javaPrimitiveType,
+                "byte"    to Byte::class.javaPrimitiveType,
+                "char"    to Char::class.javaPrimitiveType,
+                "short"   to Short::class.javaPrimitiveType,
+                "int"     to Int::class.javaPrimitiveType,
+                "long"    to Long::class.javaPrimitiveType,
+                "float"   to Float::class.javaPrimitiveType,
+                "double"  to Double::class.javaPrimitiveType,
+                "void"    to Void.TYPE
+            )
+
+            val baseClass = primitiveMap[name] ?: classLoader.loadClass(name)
+
+            var clazz: Class<*> = baseClass
+            repeat(arrayDepth) {
+                clazz = java.lang.reflect.Array.newInstance(clazz, 0)::class.java
+            }
+            clazz
         }
-        return when (typeName) {
-            "boolean" -> Int::class.javaPrimitiveType
-            "byte" -> Byte::class.javaPrimitiveType
-            "char" -> Char::class.javaPrimitiveType
-            "short" -> Short::class.javaPrimitiveType
-            "int" -> Int::class.javaPrimitiveType
-            "long" -> Long::class.javaPrimitiveType
-            "float" -> Float::class.javaPrimitiveType
-            "double" -> Double::class.javaPrimitiveType
-            "void" -> Void.TYPE
-            else -> classLoader.loadClass(typeName)
-        }!!
     }
+
+    private fun tryLoadType(
+        classLoader: ClassLoader,
+        typeName: String
+    ): Class<*>? = runCatching {
+        getClassInstance(classLoader, typeName)
+    }.getOrNull()
+
+    private fun resolveParamTypesOrNull(
+        classLoader: ClassLoader,
+        paramTypeNames: List<String>
+    ): Array<Class<*>>? {
+        val out = ArrayList<Class<*>>(paramTypeNames.size)
+        for (n in paramTypeNames) {
+            val t = tryLoadType(classLoader, n) ?: return null
+            out += t
+        }
+        return out.toTypedArray()
+    }
+
+    private fun getDeclaredMethodOrNull(
+        clazz: Class<*>,
+        name: String,
+        paramTypes: Array<Class<*>>
+    ): Method? = runCatching {
+        clazz.getDeclaredMethod(name, *paramTypes).apply { isAccessible = true }
+    }.getOrNull()
+
+    private fun getDeclaredCtorOrNull(
+        clazz: Class<*>,
+        paramTypes: Array<Class<*>>
+    ): Constructor<*>? = runCatching {
+        clazz.getDeclaredConstructor(*paramTypes).apply { isAccessible = true }
+    }.getOrNull()
+
+    private fun getDeclaredFieldOrNull(
+        clazz: Class<*>,
+        name: String
+    ): Field? = runCatching {
+        clazz.getDeclaredField(name).apply { isAccessible = true }
+    }.getOrNull()
 
     @Throws(NoSuchFieldException::class)
     fun getFieldInstance(classLoader: ClassLoader, dexField: DexField): Field {
         try {
-            var clz = classLoader.loadClass(dexField.className)
+            var clz: Class<*> = getClassInstance(classLoader, dexField.className)
+            val type = tryLoadType(classLoader, dexField.typeName)
+                ?: throw NoSuchMethodException("Field $dexField not available: return type missing")
+
             do {
-                val declaredFields = fieldsCache.get(clz) { clz.declaredFields }
-                for (field in declaredFields) {
-                    if (dexField.name == field.name
-                        && dexField.typeSign == signCache.get(field) { getTypeSign(field.type) }) {
-                        field.isAccessible = true
-                        return field
-                    }
+                getDeclaredFieldOrNull(clz, dexField.name)?.let { f ->
+                    if (f.type == type) return f
                 }
             } while (clz.superclass.also { clz = it } != null)
             throw NoSuchFieldException("Field $dexField not found")
@@ -87,47 +132,34 @@ object InstanceUtil {
 
     @Throws(NoSuchMethodException::class)
     fun getConstructorInstance(classLoader: ClassLoader, dexMethod: DexMethod): Constructor<*> {
-        if (!dexMethod.isConstructor) {
-            throw IllegalArgumentException("$dexMethod not a constructor")
-        }
-        try {
-            var clz = classLoader.loadClass(dexMethod.className)
-            do {
-                val declaredConstructors = constructorCache.get(clz) { clz.declaredConstructors }
-                for (constructor in declaredConstructors) {
-                    if (dexMethod.methodSign == signCache.get(constructor) { getConstructorSign(constructor) }) {
-                        constructor.isAccessible = true
-                        return constructor
-                    }
-                }
-            } while (clz.superclass.also { clz = it } != null)
-            throw NoSuchMethodException("Constructor $dexMethod not found")
-        } catch (e: ClassNotFoundException) {
-            throw NoSuchMethodException("No such method: $dexMethod").initCause(e)
-        }
+        require(dexMethod.isConstructor) { "$dexMethod not a constructor" }
+
+        val paramTypes = resolveParamTypesOrNull(classLoader, dexMethod.paramTypeNames)
+            ?: throw NoSuchMethodException("Constructor $dexMethod not available: parameter type(s) missing")
+
+        var clz: Class<*> = getClassInstance(classLoader, dexMethod.className)
+        do {
+            getDeclaredCtorOrNull(clz, paramTypes)?.let { return it }
+        } while (clz.superclass.also { clz = it } != null)
+        throw NoSuchMethodException("Constructor $dexMethod not found")
     }
 
     @Throws(NoSuchMethodException::class)
     fun getMethodInstance(classLoader: ClassLoader, dexMethod: DexMethod): Method {
-        if (!dexMethod.isMethod) {
-            throw IllegalArgumentException("$dexMethod not a method")
-        }
-        try {
-            var clz = classLoader.loadClass(dexMethod.className)
-            do {
-                val declaredMethods = methodsCache.get(clz) { clz.declaredMethods }
-                for (method in declaredMethods) {
-                    if (method.name == dexMethod.name
-                        && dexMethod.methodSign == signCache.get(method) { getMethodSign(method) }) {
-                        method.isAccessible = true
-                        return method
-                    }
-                }
-            } while (clz.superclass.also { clz = it } != null)
-            throw NoSuchMethodException("Method $dexMethod not found")
-        } catch (e: ClassNotFoundException) {
-            throw NoSuchMethodException("No such method: $dexMethod").initCause(e)
-        }
+        require(dexMethod.isMethod) { "$dexMethod not a method" }
+
+        val paramTypes = resolveParamTypesOrNull(classLoader, dexMethod.paramTypeNames)
+            ?: throw NoSuchMethodException("Method $dexMethod not available: parameter type(s) missing")
+        val retType = tryLoadType(classLoader, dexMethod.returnTypeName)
+            ?: throw NoSuchMethodException("Method $dexMethod not available: return type missing")
+
+        var clz: Class<*> = getClassInstance(classLoader, dexMethod.className)
+        do {
+            getDeclaredMethodOrNull(clz, dexMethod.name, paramTypes)?.let { m ->
+                if (m.returnType == retType) return m
+            }
+        } while (clz.superclass.also { clz = it } != null)
+        throw NoSuchMethodException("Method $dexMethod not found")
     }
 
 }

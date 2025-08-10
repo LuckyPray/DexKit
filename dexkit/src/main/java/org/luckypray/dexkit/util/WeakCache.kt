@@ -26,9 +26,6 @@ import java.util.WeakHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.withLock
 
-/**
- * Only applicable to singleton objects as keys, otherwise concurrent situations are not thread-safe
- */
 internal class WeakCache<K : Any, V> : Iterable<Map.Entry<K, V>> {
 
     private val cache: MutableMap<K, V> = WeakHashMap()
@@ -41,12 +38,11 @@ internal class WeakCache<K : Any, V> : Iterable<Map.Entry<K, V>> {
     }
 
     fun get(key: K, block: () -> V): V {
-        return get(key) ?: run {
-            val value: V
-            synchronized(key) {
-                value = get(key) ?: put(key, block())
-            }
-            return value
+        lock.readLock().withLock {
+            cache[key]?.let { return it }
+        }
+        lock.writeLock().withLock {
+            return cache.getOrPut(key) { block() }
         }
     }
 
@@ -70,6 +66,7 @@ internal class WeakCache<K : Any, V> : Iterable<Map.Entry<K, V>> {
     }
 
     override fun iterator(): Iterator<Map.Entry<K, V>> {
-        return cache.iterator()
+        val snapshot = lock.readLock().withLock { ArrayList(cache.entries) }
+        return snapshot.iterator()
     }
 }
