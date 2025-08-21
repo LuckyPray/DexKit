@@ -228,6 +228,7 @@ void DexItem::InitBaseCache() {
             }
             methods.emplace_back(class_method_idx);
         }
+        std::sort(methods.begin(), methods.end());
     }
     auto method_idx = 0;
     for (auto &method_def: reader.MethodIds()) {
