@@ -9,7 +9,6 @@ import org.luckypray.dexkit.query.FindClass
 import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.base.BaseFinder
-import org.luckypray.dexkit.result.BaseDataList
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.ClassDataList
 import org.luckypray.dexkit.result.FieldData
@@ -1237,14 +1236,24 @@ object DexKitCacheBridge {
             key: String?,
             allowNull: Boolean,
             noinline buildQuery: (() -> Q)?,
-            noinline executor: (DexKitBridge, Q) -> BaseDataList<D>,
+            noinline executor: (DexKitBridge, Q) -> List<D>,
             noinline mapper: (D) -> R
         ): Result<R?> {
             val query = buildQuery?.invoke()
             // :s: -> single
             val spKey = "$appTag:s:${key ?: query!!.hashKey()}"
             val loader: (() -> R?)? = query?.let {
-                { executor(bridge, query).singleOrNull()?.let(mapper) }
+                {
+                    val list = executor(bridge, query)
+                    var ret: D? = list.firstOrNull()
+                    for (i in 1 until list.size) {
+                        if (ret != list[i]) {
+                            ret = null
+                            break
+                        }
+                    }
+                    ret?.let(mapper)
+                }
             }
             return getCached(spKey, allowNull, loader)
         }
@@ -1252,7 +1261,7 @@ object DexKitCacheBridge {
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalList(
             key: String?,
             noinline buildQuery: (() -> Q)?,
-            noinline executor: (DexKitBridge, Q) -> BaseDataList<D>,
+            noinline executor: (DexKitBridge, Q) -> List<D>,
             noinline mapper: (D) -> R
         ): Result<List<R>> {
             val query = buildQuery?.invoke()
@@ -1267,7 +1276,7 @@ object DexKitCacheBridge {
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalMap(
             key: String?,
             noinline buildQuery: (() -> Q)?,
-            noinline executor: (DexKitBridge, Q) -> Map<String, BaseDataList<D>>,
+            noinline executor: (DexKitBridge, Q) -> Map<String, List<D>>,
             noinline mapper: (D) -> R
         ): Result<Map<String, List<R>>> {
             val query = buildQuery?.invoke()
@@ -1295,7 +1304,7 @@ object DexKitCacheBridge {
 
         private inline fun <D, R : ISerializable> getDirectInternalList(
             key: String,
-            noinline executor: (DexKitBridge.() -> BaseDataList<D>)?,
+            noinline executor: (DexKitBridge.() -> List<D>)?,
             noinline mapper: (D) -> R
         ): Result<List<R>> {
             // :l: -> list
