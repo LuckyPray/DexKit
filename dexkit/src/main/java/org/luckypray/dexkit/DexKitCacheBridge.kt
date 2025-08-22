@@ -10,11 +10,8 @@ import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.base.BaseFinder
 import org.luckypray.dexkit.result.ClassData
-import org.luckypray.dexkit.result.ClassDataList
 import org.luckypray.dexkit.result.FieldData
-import org.luckypray.dexkit.result.FieldDataList
 import org.luckypray.dexkit.result.MethodData
-import org.luckypray.dexkit.result.MethodDataList
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
@@ -211,15 +208,15 @@ object DexKitCacheBridge {
         }
 
         fun interface BridgeMethodsBuilder {
-            fun build(b: DexKitBridge): MethodDataList
+            fun build(b: DexKitBridge): List<MethodData>
         }
 
         fun interface BridgeClassesBuilder {
-            fun build(b: DexKitBridge): ClassDataList
+            fun build(b: DexKitBridge): List<ClassData>
         }
 
         fun interface BridgeFieldsBuilder {
-            fun build(b: DexKitBridge): FieldDataList
+            fun build(b: DexKitBridge): List<FieldData>
         }
 
         // endregion
@@ -843,7 +840,7 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getMethodsDirect(
             key: String,
-            query: DexKitBridge.() -> MethodDataList
+            query: DexKitBridge.() -> List<MethodData>
         ): List<DexMethod> = innerGetMethodsDirect(key, query)
 
         @JvmSynthetic
@@ -855,7 +852,7 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getClassesDirect(
             key: String,
-            query: DexKitBridge.() -> ClassDataList
+            query: DexKitBridge.() -> List<ClassData>
         ): List<DexClass> = innerGetClassesDirect(key, query)
 
         @JvmSynthetic
@@ -867,7 +864,7 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getFieldsDirect(
             key: String,
-            query: DexKitBridge.() -> FieldDataList
+            query: DexKitBridge.() -> List<FieldData>
         ): List<DexField> = innerGetFieldsDirect(key, query)
 
         @JvmSynthetic
@@ -1020,7 +1017,7 @@ object DexKitCacheBridge {
 
         private fun innerGetMethodsDirect(
             key: String,
-            query: (DexKitBridge.() -> MethodDataList)? = null
+            query: (DexKitBridge.() -> List<MethodData>)? = null
         ): List<DexMethod> = getDirectInternalList(
             key = key,
             executor = query,
@@ -1039,7 +1036,7 @@ object DexKitCacheBridge {
 
         private fun innerGetClassesDirect(
             key: String,
-            query: (DexKitBridge.() -> ClassDataList)? = null
+            query: (DexKitBridge.() -> List<ClassData>)? = null
         ): List<DexClass> = getDirectInternalList(
             key = key,
             executor = query,
@@ -1058,7 +1055,7 @@ object DexKitCacheBridge {
 
         private fun innerGetFieldsDirect(
             key: String,
-            query: (DexKitBridge.() -> FieldDataList)? = null
+            query: (DexKitBridge.() -> List<FieldData>)? = null
         ): List<DexField> = getDirectInternalList(
             key = key,
             executor = query,
@@ -1123,13 +1120,13 @@ object DexKitCacheBridge {
         private fun BridgeFieldBuilder.toBridgeQuery(): (DexKitBridge) -> FieldData =
             this::build
 
-        private fun BridgeMethodsBuilder.toBridgeQuery(): (DexKitBridge) -> MethodDataList =
+        private fun BridgeMethodsBuilder.toBridgeQuery(): (DexKitBridge) -> List<MethodData> =
             this::build
 
-        private fun BridgeClassesBuilder.toBridgeQuery(): (DexKitBridge) -> ClassDataList =
+        private fun BridgeClassesBuilder.toBridgeQuery(): (DexKitBridge) -> List<ClassData> =
             this::build
 
-        private fun BridgeFieldsBuilder.toBridgeQuery(): (DexKitBridge) -> FieldDataList =
+        private fun BridgeFieldsBuilder.toBridgeQuery(): (DexKitBridge) -> List<FieldData> =
             this::build
 
         private fun <T : ISerializable> getCached(
