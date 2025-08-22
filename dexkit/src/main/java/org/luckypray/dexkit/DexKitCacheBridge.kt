@@ -10,8 +10,11 @@ import org.luckypray.dexkit.query.FindField
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.base.BaseFinder
 import org.luckypray.dexkit.result.BaseDataList
+import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.ClassDataList
+import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.FieldDataList
+import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.result.MethodDataList
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
@@ -197,14 +200,26 @@ object DexKitCacheBridge {
         }
 
         fun interface BridgeMethodBuilder {
-            fun build(b: DexKitBridge): MethodDataList
+            fun build(b: DexKitBridge): MethodData
         }
 
         fun interface BridgeClassBuilder {
-            fun build(b: DexKitBridge): ClassDataList
+            fun build(b: DexKitBridge): ClassData
         }
 
         fun interface BridgeFieldBuilder {
+            fun build(b: DexKitBridge): FieldData
+        }
+
+        fun interface BridgeMethodsBuilder {
+            fun build(b: DexKitBridge): MethodDataList
+        }
+
+        fun interface BridgeClassesBuilder {
+            fun build(b: DexKitBridge): ClassDataList
+        }
+
+        fun interface BridgeFieldsBuilder {
             fun build(b: DexKitBridge): FieldDataList
         }
 
@@ -387,7 +402,7 @@ object DexKitCacheBridge {
         @JvmOverloads
         fun getMethodsDirect(
             key: String,
-            query: BridgeMethodBuilder? = null
+            query: BridgeMethodsBuilder? = null
         ): List<DexMethod> = innerGetMethodsDirect(
             key = key,
             query = query?.toBridgeQuery()
@@ -405,7 +420,7 @@ object DexKitCacheBridge {
         @JvmOverloads
         fun getClassesDirect(
             key: String,
-            query: BridgeClassBuilder? = null
+            query: BridgeClassesBuilder? = null
         ): List<DexClass> = innerGetClassesDirect(
             key = key,
             query = query?.toBridgeQuery()
@@ -423,7 +438,7 @@ object DexKitCacheBridge {
         @JvmOverloads
         fun getFieldsDirect(
             key: String,
-            query: BridgeFieldBuilder? = null
+            query: BridgeFieldsBuilder? = null
         ): List<DexField> = innerGetFieldsDirect(
             key = key,
             query = query?.toBridgeQuery()
@@ -823,7 +838,7 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getMethodDirect(
             key: String,
-            query: DexKitBridge.() -> MethodDataList
+            query: DexKitBridge.() -> MethodData
         ): DexMethod = innerGetMethodDirect(key, query)
 
         @JvmSynthetic
@@ -835,7 +850,7 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getClassDirect(
             key: String,
-            query: DexKitBridge.() -> ClassDataList
+            query: DexKitBridge.() -> ClassData
         ): DexClass = innerGetClassDirect(key, query)
 
         @JvmSynthetic
@@ -847,7 +862,7 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getFieldDirect(
             key: String,
-            query: DexKitBridge.() -> FieldDataList
+            query: DexKitBridge.() -> FieldData
         ): DexField = innerGetFieldDirect(key, query)
 
         @JvmSynthetic
@@ -859,19 +874,19 @@ object DexKitCacheBridge {
         @JvmSynthetic
         fun getMethodDirectOrNull(
             key: String,
-            query: DexKitBridge.() -> MethodDataList
+            query: DexKitBridge.() -> MethodData?
         ): DexMethod? = innerGetMethodDirectOrNull(key, query)
 
         @JvmSynthetic
         fun getClassDirectOrNull(
             key: String,
-            query: DexKitBridge.() -> ClassDataList
+            query: DexKitBridge.() -> ClassData?
         ): DexClass? = innerGetClassDirectOrNull(key, query)
 
         @JvmSynthetic
         fun getFieldDirectOrNull(
             key: String,
-            query: DexKitBridge.() -> FieldDataList
+            query: DexKitBridge.() -> FieldData?
         ): DexField? = innerGetFieldDirectOrNull(key, query)
 
         // endregion
@@ -996,7 +1011,7 @@ object DexKitCacheBridge {
 
         private fun innerGetMethodDirect(
             key: String,
-            query: (DexKitBridge.() -> MethodDataList)? = null
+            query: (DexKitBridge.() -> MethodData)? = null
         ): DexMethod = getDirectInternal(
             key = key,
             allowNull = false,
@@ -1015,7 +1030,7 @@ object DexKitCacheBridge {
 
         private fun innerGetClassDirect(
             key: String,
-            query: (DexKitBridge.() -> ClassDataList)? = null
+            query: (DexKitBridge.() -> ClassData)? = null
         ): DexClass = getDirectInternal(
             key = key,
             allowNull = false,
@@ -1034,7 +1049,7 @@ object DexKitCacheBridge {
 
         private fun innerGetFieldDirect(
             key: String,
-            query: (DexKitBridge.() -> FieldDataList)? = null
+            query: (DexKitBridge.() -> FieldData)? = null
         ): DexField = getDirectInternal(
             key = key,
             allowNull = false,
@@ -1053,7 +1068,7 @@ object DexKitCacheBridge {
 
         private fun innerGetMethodDirectOrNull(
             key: String,
-            query: (DexKitBridge.() -> MethodDataList)? = null
+            query: (DexKitBridge.() -> MethodData?)? = null
         ): DexMethod? = getDirectInternal(
             key = key,
             allowNull = true,
@@ -1063,7 +1078,7 @@ object DexKitCacheBridge {
 
         private fun innerGetClassDirectOrNull(
             key: String,
-            query: (DexKitBridge.() -> ClassDataList)? = null
+            query: (DexKitBridge.() -> ClassData?)? = null
         ): DexClass? = getDirectInternal(
             key = key,
             allowNull = true,
@@ -1073,7 +1088,7 @@ object DexKitCacheBridge {
 
         private fun innerGetFieldDirectOrNull(
             key: String,
-            query: (DexKitBridge.() -> FieldDataList)? = null
+            query: (DexKitBridge.() -> FieldData?)? = null
         ): DexField? = getDirectInternal(
             key = key,
             allowNull = true,
@@ -1100,13 +1115,22 @@ object DexKitCacheBridge {
         private fun BatchFindClassUsingStringsBuilder.toQuery(): BatchFindClassUsingStrings =
             BatchFindClassUsingStrings().apply { this@toQuery.build(this) }
 
-        private fun BridgeMethodBuilder.toBridgeQuery(): (DexKitBridge) -> MethodDataList =
+        private fun BridgeMethodBuilder.toBridgeQuery(): (DexKitBridge) -> MethodData =
             this::build
 
-        private fun BridgeClassBuilder.toBridgeQuery(): (DexKitBridge) -> ClassDataList =
+        private fun BridgeClassBuilder.toBridgeQuery(): (DexKitBridge) -> ClassData =
             this::build
 
-        private fun BridgeFieldBuilder.toBridgeQuery(): (DexKitBridge) -> FieldDataList =
+        private fun BridgeFieldBuilder.toBridgeQuery(): (DexKitBridge) -> FieldData =
+            this::build
+
+        private fun BridgeMethodsBuilder.toBridgeQuery(): (DexKitBridge) -> MethodDataList =
+            this::build
+
+        private fun BridgeClassesBuilder.toBridgeQuery(): (DexKitBridge) -> ClassDataList =
+            this::build
+
+        private fun BridgeFieldsBuilder.toBridgeQuery(): (DexKitBridge) -> FieldDataList =
             this::build
 
         private fun <T : ISerializable> getCached(
@@ -1258,13 +1282,13 @@ object DexKitCacheBridge {
         private inline fun <D, R : ISerializable> getDirectInternal(
             key: String,
             allowNull: Boolean,
-            noinline executor: (DexKitBridge.() -> BaseDataList<D>)?,
+            noinline executor: (DexKitBridge.() -> D?)?,
             noinline mapper: (D) -> R
         ): Result<R?> {
             // :s: -> single
             val spKey = "$appTag:s:$key"
             val loader: (() -> R?)? = executor?.let {
-                { bridge.let(executor).singleOrNull()?.let(mapper) }
+                { bridge.let(executor)?.let(mapper) }
             }
             return getCached(spKey, allowNull, loader)
         }
