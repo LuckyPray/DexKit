@@ -31,10 +31,13 @@ object DexKitCacheBridge {
     private lateinit var cache: Cache
     private val scheduler: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(1) { r ->
         Thread(r, "DexKit-Reaper").apply { isDaemon = true }
+    }.apply {
+        removeOnCancelPolicy = true
     }
     private val pool = ConcurrentHashMap<String, RecyclableBridge>()
     private val lock = ReentrantReadWriteLock()
-    var timeout: Long = 5_000L
+    @JvmStatic
+    var idleTimeoutMillis: Long = 5_000L
 
     @JvmStatic
     fun init(cache: Cache) {
@@ -126,6 +129,7 @@ object DexKitCacheBridge {
 
         private val activeCalls = AtomicInteger(0)
         private var reaperFuture: ScheduledFuture<*>? = null
+        @Volatile
         private var _bridge: DexKitBridge? = null
 
         private fun createBridge(): DexKitBridge {
@@ -144,8 +148,16 @@ object DexKitCacheBridge {
 
         private fun endUse() {
             if (activeCalls.decrementAndGet() == 0) {
-                reaperFuture = scheduler.schedule(reaper, timeout, TimeUnit.MILLISECONDS)
+                reaperFuture = scheduler.schedule(reaper, idleTimeoutMillis, TimeUnit.MILLISECONDS)
             }
+        }
+
+        private inline fun <R> withBridge(block: (DexKitBridge) -> R): R = acquire {
+            var b = _bridge
+            if (b == null) synchronized(RecyclableBridge::class.java) {
+                b = _bridge ?: createBridge().also { _bridge = it }
+            }
+            block(b!!)
         }
 
         private inline fun <R> acquire(block: RecyclableBridge.() -> R): R {
@@ -484,7 +496,7 @@ object DexKitCacheBridge {
             key = key,
             allowNull = false,
             query = query?.toBridgeQuery()
-        )
+        )!!
 
         @JvmOverloads
         fun getClassDirect(
@@ -494,7 +506,7 @@ object DexKitCacheBridge {
             key = key,
             allowNull = false,
             query = query?.toBridgeQuery()
-        )
+        )!!
 
         @JvmOverloads
         fun getFieldDirect(
@@ -504,7 +516,7 @@ object DexKitCacheBridge {
             key = key,
             allowNull = false,
             query = query?.toBridgeQuery()
-        )
+        )!!
 
         @JvmOverloads
         fun getMethodsDirect(
@@ -968,7 +980,7 @@ object DexKitCacheBridge {
 
         // endregion
 
-        // region DLS need key
+        // region DSL need key
 
         @JvmSynthetic
         fun getMethod(
@@ -1120,7 +1132,7 @@ object DexKitCacheBridge {
             key = key,
             allowNull = false,
             query = query
-        )
+        )!!
 
         @JvmSynthetic
         fun getClassDirect(
@@ -1130,7 +1142,7 @@ object DexKitCacheBridge {
             key = key,
             allowNull = false,
             query = query
-        )
+        )!!
 
         @JvmSynthetic
         fun getFieldDirect(
@@ -1140,7 +1152,7 @@ object DexKitCacheBridge {
             key = key,
             allowNull = false,
             query = query
-        )
+        )!!
 
         @JvmSynthetic
         fun getMethodsDirect(
@@ -1340,34 +1352,34 @@ object DexKitCacheBridge {
             key: String,
             allowNull: Boolean,
             query: (DexKitBridge.() -> MethodData?)? = null
-        ): DexMethod = getDirectInternal(
+        ): DexMethod? = getDirectInternal(
             key = key,
             allowNull = allowNull,
             executor = query,
             mapper = { it.toDexMethod() }
-        ).getOrThrow()!!
+        ).getOrThrow()
 
         private fun innerGetClassDirect(
             key: String,
             allowNull: Boolean,
             query: (DexKitBridge.() -> ClassData?)? = null
-        ): DexClass = getDirectInternal(
+        ): DexClass? = getDirectInternal(
             key = key,
             allowNull = allowNull,
             executor = query,
             mapper = { it.toDexClass() }
-        ).getOrThrow()!!
+        ).getOrThrow()
 
         private fun innerGetFieldDirect(
             key: String,
             allowNull: Boolean,
             query: (DexKitBridge.() -> FieldData?)? = null
-        ): DexField = getDirectInternal(
+        ): DexField? = getDirectInternal(
             key = key,
             allowNull = allowNull,
             executor = query,
             mapper = { it.toDexField() }
-        ).getOrThrow()!!
+        ).getOrThrow()
 
         private fun innerGetMethodsDirect(
             key: String,
@@ -1538,12 +1550,14 @@ object DexKitCacheBridge {
             return lock.write {
                 innerGetMap<T>(key)?.let { return Result.success(it) }
                 runCatching {
+                    val oldKeys = cache.getList("$key:keys", null) ?: emptyList()
                     loader().also { map ->
                         val keys = mutableListOf<String>()
                         map.entries.forEach { (groupKey, value) ->
                             keys.add(groupKey)
                             cache.putList("$key:$groupKey", value.map { it.serialize() })
                         }
+                        (oldKeys - keys.toSet()).forEach { cache.remove("$key:$it") }
                         cache.putList("$key:keys", keys)
                     }
                 }
@@ -1562,18 +1576,28 @@ object DexKitCacheBridge {
             val spKey = "$appTag:s:${key ?: query!!.hashKey()}"
             val loader: (() -> R?)? = query?.let {
                 {
-                    val list = executor(bridge, query)
-                    var ret: D? = list.firstOrNull()
-                    for (i in 1 until list.size) {
-                        if (ret != list[i]) {
-                            ret = null
-                            break
+                    withBridge {
+                        val list = executor(it, query)
+                        var ret: D? = list.firstOrNull()
+                        for (i in 1 until list.size) {
+                            if (ret != list[i]) {
+                                ret = null
+                                break
+                            }
                         }
+                        ret?.let(mapper)
                     }
-                    ret?.let(mapper)
                 }
             }
             return getCached(spKey, allowNull, loader)
+        }
+
+        private fun spKeyOf(kind: String, key: String?, query: BaseFinder? = null): String {
+            if (key != null) return "$appTag:$kind:$key"
+            requireNotNull(query) {
+                "Either key or query must be provided for auto-generated cache key."
+            }
+            return "$appTag:$kind:${query.hashKey()}"
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalList(
@@ -1585,9 +1609,9 @@ object DexKitCacheBridge {
         ): Result<List<R>> {
             val query = buildQuery?.invoke()
             // :l: -> list
-            val spKey = "$appTag:l:${key ?: query!!.hashKey()}"
+            val spKey = spKeyOf("l", key, query)
             val loader: (() -> List<R>)? = query?.let {
-                { executor(bridge, query).map(mapper) }
+                { withBridge { executor(it, query).map(mapper) } }
             }
             return getCachedList(spKey, allowEmpty, loader)
         }
@@ -1600,9 +1624,9 @@ object DexKitCacheBridge {
         ): Result<Map<String, List<R>>> {
             val query = buildQuery?.invoke()
             // :b: -> batch find
-            val spKey = "$appTag:b:${key ?: query!!.hashKey()}"
+            val spKey = spKeyOf("b", key, query)
             val loader: (() -> Map<String, List<R>>)? = query?.let {
-                { executor(bridge, query).mapValues { it.value.map(mapper) } }
+                { withBridge { executor(it, query).mapValues { it.value.map(mapper) } } }
             }
             return getCachedMap(spKey, loader)
         }
@@ -1614,9 +1638,9 @@ object DexKitCacheBridge {
             noinline mapper: (D) -> R
         ): Result<R?> {
             // :s: -> single
-            val spKey = "$appTag:s:$key"
+            val spKey = spKeyOf("s", key)
             val loader: (() -> R?)? = executor?.let {
-                { bridge.let(executor)?.let(mapper) }
+                { withBridge { it.let(executor)?.let(mapper) } }
             }
             return getCached(spKey, allowNull, loader)
         }
@@ -1628,9 +1652,9 @@ object DexKitCacheBridge {
             noinline mapper: (D) -> R
         ): Result<List<R>> {
             // :l: -> list
-            val spKey = "$appTag:l:$key"
+            val spKey = spKeyOf("l", key)
             val loader: (() -> List<R>)? = executor?.let {
-                { bridge.let(executor).map(mapper) }
+                { withBridge { it.let(executor).map(mapper) } }
             }
             return getCachedList(spKey, allowEmpty, loader)
         }
