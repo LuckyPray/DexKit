@@ -221,12 +221,121 @@ object DexKitCacheBridge {
 
         // endregion
 
-        // region java SAM
+        // region java SAM auto gen key
 
-        fun getMethod(query: FindMethodBuilder): DexMethod = innerGetMethod(
+        fun getMethod(
+            query: FindMethodBuilder
+        ): DexMethod = innerGetMethod(
+            key = null,
+            allowNull = false,
+            query = query.toQuery()
+        )!!
+
+        fun getClass(
+            query: FindClassBuilder
+        ): DexClass = innerGetClass(
+            key = null,
+            allowNull = false,
+            query = query.toQuery()
+        )!!
+
+        fun getField(
+            query: FindFieldBuilder
+        ): DexField = innerGetField(
+            key = null,
+            allowNull = false,
+            query = query.toQuery()
+        )!!
+
+        fun getMethods(
+            query: FindMethodBuilder
+        ): List<DexMethod> = innerGetMethods(
+            key = null,
+            allowEmpty = false,
+            query = query.toQuery()
+        )
+
+        fun getClasses(
+            query: FindClassBuilder
+        ): List<DexClass> = innerGetClasses(
+            key = null,
+            allowEmpty = false,
+            query = query.toQuery()
+        )
+
+        fun getFields(
+            query: FindFieldBuilder
+        ): List<DexField> = innerGetFields(
+            key = null,
+            allowEmpty = false,
+            query = query.toQuery()
+        )
+
+        fun getBatchUsingStringsMethods(
+            query: BatchFindMethodUsingStringsBuilder
+        ): Map<String, List<DexMethod>> = innerGetBatchUsingStringsMethods(
             key = null,
             query = query.toQuery()
         )
+
+        fun getBatchUsingStringsClasses(
+            query: BatchFindClassUsingStringsBuilder
+        ): Map<String, List<DexClass>> = innerGetBatchUsingStringsClasses(
+            key = null,
+            query = query.toQuery()
+        )
+
+        fun getMethodOrNull(
+            query: FindMethodBuilder
+        ): DexMethod? = innerGetMethod(
+            key = null,
+            allowNull = true,
+            query = query.toQuery()
+        )
+
+        fun getClassOrNull(
+            query: FindClassBuilder
+        ): DexClass? = innerGetClass(
+            key = null,
+            allowNull = true,
+            query = query.toQuery()
+        )
+
+        fun getFieldOrNull(
+            query: FindFieldBuilder
+        ): DexField? = innerGetField(
+            key = null,
+            allowNull = true,
+            query = query.toQuery()
+        )
+
+        fun getMethodsOrEmpty(
+            query: FindMethodBuilder? = null
+        ): List<DexMethod> = innerGetMethods(
+            key = null,
+            allowEmpty = true,
+            query = query?.toQuery()
+        )
+
+        fun getClassesOrEmpty(
+            query: FindClassBuilder? = null
+        ): List<DexClass> = innerGetClasses(
+            key = null,
+            allowEmpty = true,
+            query = query?.toQuery()
+        )
+
+        fun getFieldsOrEmpty(
+            query: FindFieldBuilder? = null
+        ): List<DexField> = innerGetFields(
+            key = null,
+            allowEmpty = true,
+            query = query?.toQuery()
+        )
+
+        // endregion
+
+        // region java SAM need key
 
         @JvmOverloads
         fun getMethod(
@@ -234,29 +343,9 @@ object DexKitCacheBridge {
             query: FindMethodBuilder? = null
         ): DexMethod = innerGetMethod(
             key = key,
+            allowNull = false,
             query = query?.toQuery()
-        )
-
-        fun getMethods(
-            query: FindMethodBuilder
-        ): List<DexMethod> = innerGetMethods(
-            key = null,
-            query = query.toQuery()
-        )
-
-        @JvmOverloads
-        fun getMethods(
-            key: String,
-            query: FindMethodBuilder? = null
-        ): List<DexMethod> = innerGetMethods(
-            key = key,
-            query = query?.toQuery()
-        )
-
-        fun getClass(query: FindClassBuilder): DexClass = innerGetClass(
-            key = null,
-            query = query.toQuery()
-        )
+        )!!
 
         @JvmOverloads
         fun getClass(
@@ -264,12 +353,28 @@ object DexKitCacheBridge {
             query: FindClassBuilder? = null
         ): DexClass = innerGetClass(
             key = key,
+            allowNull = false,
             query = query?.toQuery()
-        )
+        )!!
 
-        fun getClasses(query: FindClassBuilder): List<DexClass> = innerGetClasses(
-            key = null,
-            query = query.toQuery()
+        @JvmOverloads
+        fun getField(
+            key: String,
+            query: FindFieldBuilder? = null
+        ): DexField = innerGetField(
+            key = key,
+            allowNull = false,
+            query = query?.toQuery()
+        )!!
+
+        @JvmOverloads
+        fun getMethods(
+            key: String,
+            query: FindMethodBuilder? = null
+        ): List<DexMethod> = innerGetMethods(
+            key = key,
+            allowEmpty = false,
+            query = query?.toQuery()
         )
 
         @JvmOverloads
@@ -278,26 +383,8 @@ object DexKitCacheBridge {
             query: FindClassBuilder? = null
         ): List<DexClass> = innerGetClasses(
             key = key,
+            allowEmpty = false,
             query = query?.toQuery()
-        )
-
-        fun getField(query: FindFieldBuilder): DexField = innerGetField(
-            key = null,
-            query = query.toQuery()
-        )
-
-        @JvmOverloads
-        fun getField(
-            key: String,
-            query: FindFieldBuilder? = null
-        ): DexField = innerGetField(
-            key = key,
-            query = query?.toQuery()
-        )
-
-        fun getFields(query: FindFieldBuilder): List<DexField> = innerGetFields(
-            key = null,
-            query = query.toQuery()
         )
 
         @JvmOverloads
@@ -306,14 +393,8 @@ object DexKitCacheBridge {
             query: FindFieldBuilder? = null
         ): List<DexField> = innerGetFields(
             key = key,
+            allowEmpty = false,
             query = query?.toQuery()
-        )
-
-        fun getBatchUsingStringsMethods(
-            query: BatchFindMethodUsingStringsBuilder
-        ): Map<String, List<DexMethod>> = innerGetBatchUsingStringsMethods(
-            key = null,
-            query = query.toQuery()
         )
 
         @JvmOverloads
@@ -325,13 +406,6 @@ object DexKitCacheBridge {
             query = query?.toQuery()
         )
 
-        fun getBatchUsingStringsClasses(
-            query: BatchFindClassUsingStringsBuilder
-        ): Map<String, List<DexClass>> = innerGetBatchUsingStringsClasses(
-            key = null,
-            query = query.toQuery()
-        )
-
         @JvmOverloads
         fun getBatchUsingStringsClasses(
             key: String,
@@ -341,50 +415,66 @@ object DexKitCacheBridge {
             query = query?.toQuery()
         )
 
-        fun getMethodOrNull(
-            query: FindMethodBuilder
-        ): DexMethod? = innerGetMethodOrNull(
-            key = null,
-            query = query.toQuery()
-        )
-
         @JvmOverloads
         fun getMethodOrNull(
             key: String,
             query: FindMethodBuilder? = null
-        ): DexMethod? = innerGetMethodOrNull(
+        ): DexMethod? = innerGetMethod(
             key = key,
+            allowNull = true,
             query = query?.toQuery()
-        )
-
-        fun getClassOrNull(
-            query: FindClassBuilder
-        ): DexClass? = innerGetClassOrNull(
-            key = null,
-            query = query.toQuery()
         )
 
         @JvmOverloads
         fun getClassOrNull(
             key: String,
             query: FindClassBuilder? = null
-        ): DexClass? = innerGetClassOrNull(
+        ): DexClass? = innerGetClass(
             key = key,
+            allowNull = true,
             query = query?.toQuery()
         )
-
-        fun getFieldOrNull(
-            query: FindFieldBuilder
-        ): DexField? = innerGetFieldOrNull(null, query.toQuery())
 
         @JvmOverloads
         fun getFieldOrNull(
             key: String,
             query: FindFieldBuilder? = null
-        ): DexField? = innerGetFieldOrNull(
+        ): DexField? = innerGetField(
             key = key,
+            allowNull = true,
             query = query?.toQuery()
         )
+
+        fun getMethodsOrEmpty(
+            key: String,
+            query: FindMethodBuilder? = null
+        ): List<DexMethod> = innerGetMethods(
+            key = key,
+            allowEmpty = true,
+            query = query?.toQuery()
+        )
+
+        fun getClassesOrEmpty(
+            key: String,
+            query: FindClassBuilder? = null
+        ): List<DexClass> = innerGetClasses(
+            key = key,
+            allowEmpty = true,
+            query = query?.toQuery()
+        )
+
+        fun getFieldsOrEmpty(
+            key: String,
+            query: FindFieldBuilder? = null
+        ): List<DexField> = innerGetFields(
+            key = key,
+            allowEmpty = true,
+            query = query?.toQuery()
+        )
+
+        // endregion
+
+        // region SAM direct
 
         @JvmOverloads
         fun getMethodDirect(
@@ -392,15 +482,7 @@ object DexKitCacheBridge {
             query: BridgeMethodBuilder? = null
         ): DexMethod = innerGetMethodDirect(
             key = key,
-            query = query?.toBridgeQuery()
-        )
-
-        @JvmOverloads
-        fun getMethodsDirect(
-            key: String,
-            query: BridgeMethodsBuilder? = null
-        ): List<DexMethod> = innerGetMethodsDirect(
-            key = key,
+            allowNull = false,
             query = query?.toBridgeQuery()
         )
 
@@ -410,15 +492,7 @@ object DexKitCacheBridge {
             query: BridgeClassBuilder? = null
         ): DexClass = innerGetClassDirect(
             key = key,
-            query = query?.toBridgeQuery()
-        )
-
-        @JvmOverloads
-        fun getClassesDirect(
-            key: String,
-            query: BridgeClassesBuilder? = null
-        ): List<DexClass> = innerGetClassesDirect(
-            key = key,
+            allowNull = false,
             query = query?.toBridgeQuery()
         )
 
@@ -428,6 +502,27 @@ object DexKitCacheBridge {
             query: BridgeFieldBuilder? = null
         ): DexField = innerGetFieldDirect(
             key = key,
+            allowNull = false,
+            query = query?.toBridgeQuery()
+        )
+
+        @JvmOverloads
+        fun getMethodsDirect(
+            key: String,
+            query: BridgeMethodsBuilder? = null
+        ): List<DexMethod> = innerGetMethodsDirect(
+            key = key,
+            allowEmpty = false,
+            query = query?.toBridgeQuery()
+        )
+
+        @JvmOverloads
+        fun getClassesDirect(
+            key: String,
+            query: BridgeClassesBuilder? = null
+        ): List<DexClass> = innerGetClassesDirect(
+            key = key,
+            allowEmpty = false,
             query = query?.toBridgeQuery()
         )
 
@@ -437,6 +532,7 @@ object DexKitCacheBridge {
             query: BridgeFieldsBuilder? = null
         ): List<DexField> = innerGetFieldsDirect(
             key = key,
+            allowEmpty = false,
             query = query?.toBridgeQuery()
         )
 
@@ -444,8 +540,9 @@ object DexKitCacheBridge {
         fun getMethodDirectOrNull(
             key: String,
             query: BridgeMethodBuilder? = null
-        ): DexMethod? = innerGetMethodDirectOrNull(
+        ): DexMethod? = innerGetMethodDirect(
             key = key,
+            allowNull = true,
             query = query?.toBridgeQuery()
         )
 
@@ -453,8 +550,9 @@ object DexKitCacheBridge {
         fun getClassDirectOrNull(
             key: String,
             query: BridgeClassBuilder? = null
-        ): DexClass? = innerGetClassDirectOrNull(
+        ): DexClass? = innerGetClassDirect(
             key = key,
+            allowNull = true,
             query = query?.toBridgeQuery()
         )
 
@@ -462,33 +560,75 @@ object DexKitCacheBridge {
         fun getFieldDirectOrNull(
             key: String,
             query: BridgeFieldBuilder? = null
-        ): DexField? = innerGetFieldDirectOrNull(
+        ): DexField? = innerGetFieldDirect(
             key = key,
+            allowNull = true,
+            query = query?.toBridgeQuery()
+        )
+
+        @JvmOverloads
+        fun getMethodsDirectOrEmpty(
+            key: String,
+            query: BridgeMethodsBuilder? = null
+        ): List<DexMethod> = innerGetMethodsDirect(
+            key = key,
+            allowEmpty = true,
+            query = query?.toBridgeQuery()
+        )
+
+        @JvmOverloads
+        fun getClassesDirectOrEmpty(
+            key: String,
+            query: BridgeClassesBuilder? = null
+        ): List<DexClass> = innerGetClassesDirect(
+            key = key,
+            allowEmpty = true,
+            query = query?.toBridgeQuery()
+        )
+
+        @JvmOverloads
+        fun getFieldsDirectOrEmpty(
+            key: String,
+            query: BridgeFieldsBuilder? = null
+        ): List<DexField> = innerGetFieldsDirect(
+            key = key,
+            allowEmpty = true,
             query = query?.toBridgeQuery()
         )
 
         // endregion
 
-        // region java overloads
+        // region java overloads auto gen key
 
         fun getMethod(
             finder: FindMethod
         ): DexMethod = innerGetMethod(
             key = null,
+            allowNull = false,
             query = finder
-        )
-
-        fun getMethods(
-            finder: FindMethod
-        ): List<DexMethod> = innerGetMethods(
-            key = null,
-            query = finder
-        )
+        )!!
 
         fun getClass(
             finder: FindClass
         ): DexClass = innerGetClass(
             key = null,
+            allowNull = false,
+            query = finder
+        )!!
+
+        fun getField(
+            finder: FindField
+        ): DexField = innerGetField(
+            key = null,
+            allowNull = false,
+            query = finder
+        )!!
+
+        fun getMethods(
+            finder: FindMethod
+        ): List<DexMethod> = innerGetMethods(
+            key = null,
+            allowEmpty = false,
             query = finder
         )
 
@@ -496,13 +636,7 @@ object DexKitCacheBridge {
             finder: FindClass
         ): List<DexClass> = innerGetClasses(
             key = null,
-            query = finder
-        )
-
-        fun getField(
-            finder: FindField
-        ): DexField = innerGetField(
-            key = null,
+            allowEmpty = false,
             query = finder
         )
 
@@ -510,6 +644,7 @@ object DexKitCacheBridge {
             finder: FindField
         ): List<DexField> = innerGetFields(
             key = null,
+            allowEmpty = false,
             query = finder
         )
 
@@ -527,27 +662,91 @@ object DexKitCacheBridge {
             query = finder
         )
 
+        fun getMethodOrNull(
+            finder: FindMethod
+        ): DexMethod? = innerGetMethod(
+            key = null,
+            allowNull = true,
+            query = finder
+        )
+
+        fun getClassOrNull(
+            finder: FindClass
+        ): DexClass? = innerGetClass(
+            key = null,
+            allowNull = true,
+            query = finder,
+        )
+
+        fun getFieldOrNull(
+            finder: FindField
+        ): DexField? = innerGetField(
+            key = null,
+            allowNull = true,
+            query = finder,
+        )
+
+        fun getMethodsOrEmpty(
+            finder: FindMethod
+        ): List<DexMethod> = innerGetMethods(
+            key = null,
+            allowEmpty = true,
+            query = finder
+        )
+
+        fun getClassesOrEmpty(
+            finder: FindClass
+        ): List<DexClass> = innerGetClasses(
+            key = null,
+            allowEmpty = true,
+            query = finder
+        )
+
+        fun getFieldsOrEmpty(
+            finder: FindField
+        ): List<DexField> = innerGetFields(
+            key = null,
+            allowEmpty = true,
+            query = finder
+        )
+
+        // endregion
+
+        // region java overloads need key
+
         fun getMethod(
             key: String,
             finder: FindMethod
         ): DexMethod = innerGetMethod(
             key = key,
+            allowNull = false,
             query = finder
-        )
-
-        fun getMethods(
-            key: String,
-            finder: FindMethod
-        ): List<DexMethod> = innerGetMethods(
-            key = key,
-            query = finder
-        )
+        )!!
 
         fun getClass(
             key: String,
             finder: FindClass
         ): DexClass = innerGetClass(
             key = key,
+            allowNull = false,
+            query = finder
+        )!!
+
+        fun getField(
+            key: String,
+            finder: FindField
+        ): DexField = innerGetField(
+            key = key,
+            allowNull = false,
+            query = finder
+        )!!
+
+        fun getMethods(
+            key: String,
+            finder: FindMethod
+        ): List<DexMethod> = innerGetMethods(
+            key = key,
+            allowEmpty = false,
             query = finder
         )
 
@@ -556,14 +755,7 @@ object DexKitCacheBridge {
             finder: FindClass
         ): List<DexClass> = innerGetClasses(
             key = key,
-            query = finder
-        )
-
-        fun getField(
-            key: String,
-            finder: FindField
-        ): DexField = innerGetField(
-            key = key,
+            allowEmpty = false,
             query = finder
         )
 
@@ -572,6 +764,7 @@ object DexKitCacheBridge {
             finder: FindField
         ): List<DexField> = innerGetFields(
             key = key,
+            allowEmpty = false,
             query = finder
         )
 
@@ -592,47 +785,56 @@ object DexKitCacheBridge {
         )
 
         fun getMethodOrNull(
-            finder: FindMethod
-        ): DexMethod? = innerGetMethodOrNull(
-            key = null,
-            query = finder,
-        )
-
-        fun getClassOrNull(
-            finder: FindClass
-        ): DexClass? = innerGetClassOrNull(
-            key = null,
-            query = finder,
-        )
-
-        fun getFieldOrNull(
-            finder: FindField
-        ): DexField? = innerGetFieldOrNull(
-            key = null,
-            query = finder,
-        )
-
-        fun getMethodOrNull(
             key: String,
             finder: FindMethod
-        ): DexMethod? = innerGetMethodOrNull(
+        ): DexMethod? = innerGetMethod(
             key = key,
+            allowNull = true,
             query = finder
         )
 
         fun getClassOrNull(
             key: String,
             finder: FindClass
-        ): DexClass? = innerGetClassOrNull(
+        ): DexClass? = innerGetClass(
             key = key,
+            allowNull = true,
             query = finder
         )
 
         fun getFieldOrNull(
             key: String,
             finder: FindField
-        ): DexField? = innerGetFieldOrNull(
+        ): DexField? = innerGetField(
             key = key,
+            allowNull = true,
+            query = finder
+        )
+
+        fun getMethodsOrEmpty(
+            key: String,
+            finder: FindMethod
+        ): List<DexMethod> = innerGetMethods(
+            key = key,
+            allowEmpty = true,
+            query = finder
+        )
+
+        fun getClassesOrEmpty(
+            key: String,
+            finder: FindClass
+        ): List<DexClass> = innerGetClasses(
+            key = key,
+            allowEmpty = true,
+            query = finder
+        )
+
+        fun getFieldsOrEmpty(
+            key: String,
+            finder: FindField
+        ): List<DexField> = innerGetFields(
+            key = key,
+            allowEmpty = true,
             query = finder
         )
 
@@ -645,23 +847,35 @@ object DexKitCacheBridge {
             query: FindMethod.() -> Unit
         ): DexMethod = innerGetMethod(
             key = null,
+            allowNull = false,
             query = FindMethod().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getMethods(
-            query: FindMethod.() -> Unit
-        ): List<DexMethod> = innerGetMethods(
-            key = null,
-            query = FindMethod().apply(query)
-        )
+        )!!
 
         @JvmSynthetic
         fun getClass(
             query: FindClass.() -> Unit
         ): DexClass = innerGetClass(
             key = null,
+            allowNull = false,
             query = FindClass().apply(query)
+        )!!
+
+        @JvmSynthetic
+        fun getField(
+            query: FindField.() -> Unit
+        ): DexField = innerGetField(
+            key = null,
+            allowNull = false,
+            query = FindField().apply(query)
+        )!!
+
+        @JvmSynthetic
+        fun getMethods(
+            query: FindMethod.() -> Unit
+        ): List<DexMethod> = innerGetMethods(
+            key = null,
+            allowEmpty = false,
+            query = FindMethod().apply(query)
         )
 
         @JvmSynthetic
@@ -669,15 +883,8 @@ object DexKitCacheBridge {
             query: FindClass.() -> Unit
         ): List<DexClass> = innerGetClasses(
             key = null,
+            allowEmpty = false,
             query = FindClass().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getField(
-            query: FindField.() -> Unit
-        ): DexField = innerGetField(
-            key = null,
-            query = FindField().apply(query)
         )
 
         @JvmSynthetic
@@ -685,6 +892,7 @@ object DexKitCacheBridge {
             query: FindField.() -> Unit
         ): List<DexField> = innerGetFields(
             key = null,
+            allowEmpty = false,
             query = FindField().apply(query)
         )
 
@@ -702,6 +910,60 @@ object DexKitCacheBridge {
         ): Map<String, List<DexClass>> = innerGetBatchUsingStringsClasses(
             key = null,
             query = BatchFindClassUsingStrings().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getMethodOrNull(
+            query: FindMethod.() -> Unit
+        ): DexMethod? = innerGetMethod(
+            key = null,
+            allowNull = true,
+            query = FindMethod().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getClassOrNull(
+            query: FindClass.() -> Unit
+        ): DexClass? = innerGetClass(
+            key = null,
+            allowNull = true,
+            query = FindClass().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getFieldOrNull(
+            query: FindField.() -> Unit
+        ): DexField? = innerGetField(
+            key = null,
+            allowNull = true,
+            query = FindField().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getMethodsOrEmpty(
+            query: FindMethod.() -> Unit
+        ): List<DexMethod> = innerGetMethods(
+            key = null,
+            allowEmpty = true,
+            query = FindMethod().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getClassesOrEmpty(
+            query: FindClass.() -> Unit
+        ): List<DexClass> = innerGetClasses(
+            key = null,
+            allowEmpty = true,
+            query = FindClass().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getFieldsOrEmpty(
+            query: FindField.() -> Unit
+        ): List<DexField> = innerGetFields(
+            key = null,
+            allowEmpty = true,
+            query = FindField().apply(query)
         )
 
         // endregion
@@ -714,17 +976,9 @@ object DexKitCacheBridge {
             query: (FindMethod.() -> Unit)
         ): DexMethod = innerGetMethod(
             key = key,
+            allowNull = false,
             query = FindMethod().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getMethods(
-            key: String,
-            query: (FindMethod.() -> Unit)
-        ): List<DexMethod> = innerGetMethods(
-            key = key,
-            query = FindMethod().apply(query)
-        )
+        )!!
 
         @JvmSynthetic
         fun getClass(
@@ -732,7 +986,28 @@ object DexKitCacheBridge {
             query: (FindClass.() -> Unit)
         ): DexClass = innerGetClass(
             key = key,
+            allowNull = false,
             query = FindClass().apply(query)
+        )!!
+
+        @JvmSynthetic
+        fun getField(
+            key: String,
+            query: (FindField.() -> Unit)
+        ): DexField = innerGetField(
+            key = key,
+            allowNull = false,
+            query = FindField().apply(query)
+        )!!
+
+        @JvmSynthetic
+        fun getMethods(
+            key: String,
+            query: (FindMethod.() -> Unit)
+        ): List<DexMethod> = innerGetMethods(
+            key = key,
+            allowEmpty = false,
+            query = FindMethod().apply(query)
         )
 
         @JvmSynthetic
@@ -741,16 +1016,8 @@ object DexKitCacheBridge {
             query: (FindClass.() -> Unit)
         ): List<DexClass> = innerGetClasses(
             key = key,
+            allowEmpty = false,
             query = FindClass().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getField(
-            key: String,
-            query: (FindField.() -> Unit)
-        ): DexField = innerGetField(
-            key = key,
-            query = FindField().apply(query)
         )
 
         @JvmSynthetic
@@ -759,6 +1026,7 @@ object DexKitCacheBridge {
             query: (FindField.() -> Unit)
         ): List<DexField> = innerGetFields(
             key = key,
+            allowEmpty = false,
             query = FindField().apply(query)
         )
 
@@ -782,34 +1050,11 @@ object DexKitCacheBridge {
 
         @JvmSynthetic
         fun getMethodOrNull(
-            query: FindMethod.() -> Unit
-        ): DexMethod? = innerGetMethodOrNull(
-            key = null,
-            query = FindMethod().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getClassOrNull(
-            query: FindClass.() -> Unit
-        ): DexClass? = innerGetClassOrNull(
-            key = null,
-            query = FindClass().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getFieldOrNull(
-            query: FindField.() -> Unit
-        ): DexField? = innerGetFieldOrNull(
-            key = null,
-            query = FindField().apply(query)
-        )
-
-        @JvmSynthetic
-        fun getMethodOrNull(
             key: String,
             query: (FindMethod.() -> Unit)
-        ): DexMethod? = innerGetMethodOrNull(
+        ): DexMethod? = innerGetMethod(
             key = key,
+            allowNull = true,
             query = FindMethod().apply(query)
         )
 
@@ -817,8 +1062,9 @@ object DexKitCacheBridge {
         fun getClassOrNull(
             key: String,
             query: (FindClass.() -> Unit)
-        ): DexClass? = innerGetClassOrNull(
+        ): DexClass? = innerGetClass(
             key = key,
+            allowNull = true,
             query = FindClass().apply(query)
         )
 
@@ -826,130 +1072,248 @@ object DexKitCacheBridge {
         fun getFieldOrNull(
             key: String,
             query: (FindField.() -> Unit)
-        ): DexField? = innerGetFieldOrNull(
+        ): DexField? = innerGetField(
             key = key,
+            allowNull = true,
             query = FindField().apply(query)
         )
+
+        @JvmSynthetic
+        fun getMethodsOrEmpty(
+            key: String,
+            query: (FindMethod.() -> Unit)
+        ): List<DexMethod> = innerGetMethods(
+            key = key,
+            allowEmpty = true,
+            query = FindMethod().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getClassesOrEmpty(
+            key: String,
+            query: (FindClass.() -> Unit)
+        ): List<DexClass> = innerGetClasses(
+            key = key,
+            allowEmpty = true,
+            query = FindClass().apply(query)
+        )
+
+        @JvmSynthetic
+        fun getFieldsOrEmpty(
+            key: String,
+            query: (FindField.() -> Unit)
+        ): List<DexField> = innerGetFields(
+            key = key,
+            allowEmpty = true,
+            query = FindField().apply(query)
+        )
+
+        // endregion
+
+        // region DSL direct
 
         @JvmSynthetic
         fun getMethodDirect(
             key: String,
             query: DexKitBridge.() -> MethodData
-        ): DexMethod = innerGetMethodDirect(key, query)
-
-        @JvmSynthetic
-        fun getMethodsDirect(
-            key: String,
-            query: DexKitBridge.() -> List<MethodData>
-        ): List<DexMethod> = innerGetMethodsDirect(key, query)
+        ): DexMethod = innerGetMethodDirect(
+            key = key,
+            allowNull = false,
+            query = query
+        )
 
         @JvmSynthetic
         fun getClassDirect(
             key: String,
             query: DexKitBridge.() -> ClassData
-        ): DexClass = innerGetClassDirect(key, query)
-
-        @JvmSynthetic
-        fun getClassesDirect(
-            key: String,
-            query: DexKitBridge.() -> List<ClassData>
-        ): List<DexClass> = innerGetClassesDirect(key, query)
+        ): DexClass = innerGetClassDirect(
+            key = key,
+            allowNull = false,
+            query = query
+        )
 
         @JvmSynthetic
         fun getFieldDirect(
             key: String,
             query: DexKitBridge.() -> FieldData
-        ): DexField = innerGetFieldDirect(key, query)
+        ): DexField = innerGetFieldDirect(
+            key = key,
+            allowNull = false,
+            query = query
+        )
+
+        @JvmSynthetic
+        fun getMethodsDirect(
+            key: String,
+            query: DexKitBridge.() -> List<MethodData>
+        ): List<DexMethod> = innerGetMethodsDirect(
+            key = key,
+            allowEmpty = false,
+            query = query
+        )
+
+        @JvmSynthetic
+        fun getClassesDirect(
+            key: String,
+            query: DexKitBridge.() -> List<ClassData>
+        ): List<DexClass> = innerGetClassesDirect(
+            key = key,
+            allowEmpty = false,
+            query = query
+        )
 
         @JvmSynthetic
         fun getFieldsDirect(
             key: String,
             query: DexKitBridge.() -> List<FieldData>
-        ): List<DexField> = innerGetFieldsDirect(key, query)
+        ): List<DexField> = innerGetFieldsDirect(
+            key = key,
+            allowEmpty = false,
+            query = query
+        )
 
         @JvmSynthetic
         fun getMethodDirectOrNull(
             key: String,
             query: DexKitBridge.() -> MethodData?
-        ): DexMethod? = innerGetMethodDirectOrNull(key, query)
+        ): DexMethod? = innerGetMethodDirect(
+            key = key,
+            allowNull = true,
+            query = query
+        )
 
         @JvmSynthetic
         fun getClassDirectOrNull(
             key: String,
             query: DexKitBridge.() -> ClassData?
-        ): DexClass? = innerGetClassDirectOrNull(key, query)
+        ): DexClass? = innerGetClassDirect(
+            key = key,
+            allowNull = true,
+            query = query
+        )
 
         @JvmSynthetic
         fun getFieldDirectOrNull(
             key: String,
             query: DexKitBridge.() -> FieldData?
-        ): DexField? = innerGetFieldDirectOrNull(key, query)
+        ): DexField? = innerGetFieldDirect(
+            key = key,
+            allowNull = true,
+            query = query
+        )
+
+        @JvmSynthetic
+        fun getMethodsDirectOrEmpty(
+            key: String,
+            query: DexKitBridge.() -> List<MethodData>
+        ): List<DexMethod> = innerGetMethodsDirect(
+            key = key,
+            allowEmpty = true,
+            query = query
+        )
+
+        @JvmSynthetic
+        fun getClassesDirectOrEmpty(
+            key: String,
+            query: DexKitBridge.() -> List<ClassData>
+        ): List<DexClass> = innerGetClassesDirect(
+            key = key,
+            allowEmpty = true,
+            query = query
+        )
+
+        @JvmSynthetic
+        fun getFieldsDirectOrEmpty(
+            key: String,
+            query: DexKitBridge.() -> List<FieldData>
+        ): List<DexField> = innerGetFieldsDirect(
+            key = key,
+            allowEmpty = true,
+            query = query
+        )
 
         // endregion
 
         // region inner methods
 
         private fun innerGetMethod(
-            key: String?,
+            key: String? = null,
+            allowNull: Boolean,
             query: FindMethod? = null
-        ): DexMethod = getInternal(
-            key = key,
-            allowNull = false,
-            buildQuery = query?.let { { query } },
-            executor = { b, q: FindMethod -> b.findMethod(q) },
-            mapper = { it.toDexMethod() },
-        ).getOrThrow()!!
+        ): DexMethod? {
+            val buildQuery = query?.let { { query } }
+
+            return getInternal(
+                key = key,
+                allowNull = allowNull,
+                buildQuery = buildQuery,
+                executor = { b, q -> b.findMethod(q) },
+                mapper   = { it.toDexMethod() }
+            ).getOrThrow()
+        }
 
         private fun innerGetMethods(
-            key: String?,
+            key: String? = null,
+            allowEmpty: Boolean,
             query: FindMethod? = null
-        ): List<DexMethod> = getInternalList(
-            key = key,
-            buildQuery = query?.let { { query } },
-            executor = { b, q: FindMethod -> b.findMethod(q) },
-            mapper = { it.toDexMethod() },
-        ).getOrThrow()
+        ): List<DexMethod> {
+            val buildQuery = query?.let { { query } }
+
+            return getInternalList(
+                key = key,
+                allowEmpty = allowEmpty,
+                buildQuery = buildQuery,
+                executor = { b, q -> b.findMethod(q) },
+                mapper   = { it.toDexMethod() }
+            ).getOrThrow()
+        }
 
         private fun innerGetClass(
-            key: String?,
+            key: String? = null,
+            allowNull: Boolean,
             query: FindClass? = null
-        ): DexClass = getInternal(
+        ): DexClass? = getInternal(
             key = key,
-            allowNull = false,
+            allowNull = allowNull,
             buildQuery = query?.let { { query } },
             executor = { b, q: FindClass -> b.findClass(q) },
-            mapper = { it.toDexClass() },
-        ).getOrThrow()!!
+            mapper = { it.toDexClass() }
+        ).getOrThrow()
 
         private fun innerGetClasses(
-            key: String?,
+            key: String? = null,
+            allowEmpty: Boolean,
             query: FindClass? = null
         ): List<DexClass> = getInternalList(
             key = key,
+            allowEmpty = allowEmpty,
             buildQuery = query?.let { { query } },
             executor = { b, q: FindClass -> b.findClass(q) },
-            mapper = { it.toDexClass() },
+            mapper = { it.toDexClass() }
         ).getOrThrow()
 
         private fun innerGetField(
-            key: String?,
+            key: String? = null,
+            allowNull: Boolean,
             query: FindField? = null
-        ): DexField = getInternal(
+        ): DexField? = getInternal(
             key = key,
-            allowNull = false,
+            allowNull = allowNull,
             buildQuery = query?.let { { query } },
             executor = { b, q: FindField -> b.findField(q) },
-            mapper = { it.toDexField() },
-        ).getOrThrow()!!
+            mapper = { it.toDexField() }
+        ).getOrThrow()
 
         private fun innerGetFields(
-            key: String?,
+            key: String? = null,
+            allowEmpty: Boolean,
             query: FindField? = null
         ): List<DexField> = getInternalList(
             key = key,
+            allowEmpty = allowEmpty,
             buildQuery = query?.let { { query } },
             executor = { b, q: FindField -> b.findField(q) },
-            mapper = { it.toDexField() },
+            mapper = { it.toDexField() }
         ).getOrThrow()
 
         private fun innerGetBatchUsingStringsClasses(
@@ -972,125 +1336,71 @@ object DexKitCacheBridge {
             mapper = { it.toDexMethod() }
         ).getOrThrow()
 
-        private fun innerGetMethodOrNull(
-            key: String?,
-            query: FindMethod? = null
-        ): DexMethod? = getInternal(
-            key = key,
-            allowNull = true,
-            buildQuery = query?.let { { query } },
-            executor = { b, q: FindMethod -> b.findMethod(q) },
-            mapper = { it.toDexMethod() },
-        ).getOrNull()
-
-        private fun innerGetClassOrNull(
-            key: String?,
-            query: FindClass? = null
-        ): DexClass? = getInternal(
-            key = key,
-            allowNull = true,
-            buildQuery = query?.let { { query } },
-            executor = { b, q: FindClass -> b.findClass(q) },
-            mapper = { it.toDexClass() },
-        ).getOrNull()
-
-        private fun innerGetFieldOrNull(
-            key: String?,
-            query: FindField? = null
-        ): DexField? = getInternal(
-            key = key,
-            allowNull = true,
-            buildQuery = query?.let { { query } },
-            executor = { b, q: FindField -> b.findField(q) },
-            mapper = { it.toDexField() },
-        ).getOrNull()
-
         private fun innerGetMethodDirect(
             key: String,
-            query: (DexKitBridge.() -> MethodData)? = null
+            allowNull: Boolean,
+            query: (DexKitBridge.() -> MethodData?)? = null
         ): DexMethod = getDirectInternal(
             key = key,
-            allowNull = false,
+            allowNull = allowNull,
             executor = query,
             mapper = { it.toDexMethod() }
+        ).getOrThrow()!!
+
+        private fun innerGetClassDirect(
+            key: String,
+            allowNull: Boolean,
+            query: (DexKitBridge.() -> ClassData?)? = null
+        ): DexClass = getDirectInternal(
+            key = key,
+            allowNull = allowNull,
+            executor = query,
+            mapper = { it.toDexClass() }
+        ).getOrThrow()!!
+
+        private fun innerGetFieldDirect(
+            key: String,
+            allowNull: Boolean,
+            query: (DexKitBridge.() -> FieldData?)? = null
+        ): DexField = getDirectInternal(
+            key = key,
+            allowNull = allowNull,
+            executor = query,
+            mapper = { it.toDexField() }
         ).getOrThrow()!!
 
         private fun innerGetMethodsDirect(
             key: String,
+            allowEmpty: Boolean,
             query: (DexKitBridge.() -> List<MethodData>)? = null
         ): List<DexMethod> = getDirectInternalList(
             key = key,
+            allowEmpty = allowEmpty,
             executor = query,
             mapper = { it.toDexMethod() }
         ).getOrThrow()
 
-        private fun innerGetClassDirect(
-            key: String,
-            query: (DexKitBridge.() -> ClassData)? = null
-        ): DexClass = getDirectInternal(
-            key = key,
-            allowNull = false,
-            executor = query,
-            mapper = { it.toDexClass() }
-        ).getOrThrow()!!
-
         private fun innerGetClassesDirect(
             key: String,
+            allowEmpty: Boolean,
             query: (DexKitBridge.() -> List<ClassData>)? = null
         ): List<DexClass> = getDirectInternalList(
             key = key,
             executor = query,
+            allowEmpty = allowEmpty,
             mapper = { it.toDexClass() }
         ).getOrThrow()
 
-        private fun innerGetFieldDirect(
-            key: String,
-            query: (DexKitBridge.() -> FieldData)? = null
-        ): DexField = getDirectInternal(
-            key = key,
-            allowNull = false,
-            executor = query,
-            mapper = { it.toDexField() }
-        ).getOrThrow()!!
-
         private fun innerGetFieldsDirect(
             key: String,
+            allowEmpty: Boolean,
             query: (DexKitBridge.() -> List<FieldData>)? = null
         ): List<DexField> = getDirectInternalList(
             key = key,
             executor = query,
+            allowEmpty = allowEmpty,
             mapper = { it.toDexField() }
         ).getOrThrow()
-
-        private fun innerGetMethodDirectOrNull(
-            key: String,
-            query: (DexKitBridge.() -> MethodData?)? = null
-        ): DexMethod? = getDirectInternal(
-            key = key,
-            allowNull = true,
-            executor = query,
-            mapper = { it.toDexMethod() }
-        ).getOrNull()
-
-        private fun innerGetClassDirectOrNull(
-            key: String,
-            query: (DexKitBridge.() -> ClassData?)? = null
-        ): DexClass? = getDirectInternal(
-            key = key,
-            allowNull = true,
-            executor = query,
-            mapper = { it.toDexClass() }
-        ).getOrNull()
-
-        private fun innerGetFieldDirectOrNull(
-            key: String,
-            query: (DexKitBridge.() -> FieldData?)? = null
-        ): DexField? = getDirectInternal(
-            key = key,
-            allowNull = true,
-            executor = query,
-            mapper = { it.toDexField() }
-        ).getOrNull()
 
         // endregion
 
@@ -1157,13 +1467,14 @@ object DexKitCacheBridge {
 
                 runCatching {
                     loader().also {
-                        it?.let {
-                            cache.put(key, it.serialize())
-                        } ?: run {
-                            if (allowNull) {
-                                cache.put(key, CACHE_NULL)
-                            }
+                        if (it == null && !allowNull) {
+                            return Result.failure(
+                                IllegalStateException(
+                                    "query returned null for key: $key but null not allowed"
+                                )
+                            )
                         }
+                        cache.put(key, it?.serialize() ?: CACHE_NULL)
                     }
                 }
             }
@@ -1171,6 +1482,7 @@ object DexKitCacheBridge {
 
         private fun <T : ISerializable> getCachedList(
             key: String,
+            allowEmpty: Boolean,
             loader: (() -> List<T>)? = null,
         ): Result<List<T>> {
             fun <T : ISerializable> innerGet(key: String): List<T>? {
@@ -1181,13 +1493,22 @@ object DexKitCacheBridge {
             }
 
             lock.read { innerGet<T>(key)?.let { return Result.success(it) } }
-            loader ?: return Result.failure(NoSuchElementException("no found cache for key: $key"))
+            loader ?: return Result.failure(
+                NoSuchElementException("no found cache for key: $key")
+            )
 
             return lock.write {
                 innerGet<T>(key)?.let { return Result.success(it) }
                 runCatching {
                     loader().also {
-                        cache.putList(key, it.map { it.serialize() })
+                        if (it.isEmpty() && !allowEmpty) {
+                            return Result.failure(
+                                IllegalStateException(
+                                    "query returned empty for key: $key but empty not allowed"
+                                )
+                            )
+                        }
+                        cache.putList(key, it.map(ISerializable::serialize))
                     }
                 }
             }
@@ -1257,6 +1578,7 @@ object DexKitCacheBridge {
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalList(
             key: String?,
+            allowEmpty: Boolean,
             noinline buildQuery: (() -> Q)?,
             noinline executor: (DexKitBridge, Q) -> List<D>,
             noinline mapper: (D) -> R
@@ -1267,7 +1589,7 @@ object DexKitCacheBridge {
             val loader: (() -> List<R>)? = query?.let {
                 { executor(bridge, query).map(mapper) }
             }
-            return getCachedList(spKey, loader)
+            return getCachedList(spKey, allowEmpty, loader)
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalMap(
@@ -1301,6 +1623,7 @@ object DexKitCacheBridge {
 
         private inline fun <D, R : ISerializable> getDirectInternalList(
             key: String,
+            allowEmpty: Boolean,
             noinline executor: (DexKitBridge.() -> List<D>)?,
             noinline mapper: (D) -> R
         ): Result<List<R>> {
@@ -1309,7 +1632,7 @@ object DexKitCacheBridge {
             val loader: (() -> List<R>)? = executor?.let {
                 { bridge.let(executor).map(mapper) }
             }
-            return getCachedList(spKey, loader)
+            return getCachedList(spKey, allowEmpty, loader)
         }
 
         // endregion
