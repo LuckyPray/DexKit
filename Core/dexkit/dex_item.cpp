@@ -52,7 +52,7 @@ void DexItem::InitBaseCache() {
         ReadULeb128(&str_ptr);
         *strings_it++ = reinterpret_cast<const char *>(str_ptr);
     }
-    if (strings[0].empty()) {
+    if (!strings.empty() && strings[0].empty()) {
         empty_string_id = 0;
     }
 
