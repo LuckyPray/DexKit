@@ -1531,7 +1531,7 @@ object DexKitCacheBridge {
             loader: (() -> Map<String, List<T>>)? = null,
         ): Result<Map<String, List<T>>> {
             fun <T : ISerializable> innerGetMap(key: String): Map<String, List<T>>? {
-                cache.getList("${key}:keys", null)?.let { keys ->
+                cache.getList("$key:keys", null)?.let { keys ->
                     val map = mutableMapOf<String, List<T>>()
                     keys.forEach { groupKey ->
                         val dataList = cache.getList("$key:$groupKey", null)
@@ -1564,6 +1564,14 @@ object DexKitCacheBridge {
             }
         }
 
+        private fun spKeyOf(kind: String, key: String?, query: BaseFinder? = null): String {
+            if (key != null) return "$appTag:$kind:$key"
+            requireNotNull(query) {
+                "Either key or query must be provided for auto-generated cache key."
+            }
+            return "$appTag:$kind:${query.hashKey()}"
+        }
+
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternal(
             key: String?,
             allowNull: Boolean,
@@ -1573,7 +1581,7 @@ object DexKitCacheBridge {
         ): Result<R?> {
             val query = buildQuery?.invoke()
             // :s: -> single
-            val spKey = "$appTag:s:${key ?: query!!.hashKey()}"
+            val spKey = spKeyOf("s", key, query)
             val loader: (() -> R?)? = query?.let {
                 {
                     withBridge {
@@ -1590,14 +1598,6 @@ object DexKitCacheBridge {
                 }
             }
             return getCached(spKey, allowNull, loader)
-        }
-
-        private fun spKeyOf(kind: String, key: String?, query: BaseFinder? = null): String {
-            if (key != null) return "$appTag:$kind:$key"
-            requireNotNull(query) {
-                "Either key or query must be provided for auto-generated cache key."
-            }
-            return "$appTag:$kind:${query.hashKey()}"
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalList(

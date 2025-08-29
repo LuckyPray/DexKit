@@ -214,7 +214,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             for (auto image: dex_images) {
                 auto header = reinterpret_cast<const struct dex::Header *>(image);
                 auto mmap = dexkit::MemMap(header->file_size);
-                memcpy(mmap.addr(), image, header->file_size);
+                memcpy((void *) mmap.data(), image, header->file_size);
                 images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
             }
             auto ret = dexkit->AddImage(std::move(images));
@@ -245,7 +245,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
         auto *dex_byte_ptr = env->GetByteArrayElements(dex_byte, nullptr);
         if (!dex_byte_ptr) continue;
         auto mmap = dexkit::MemMap(dex_byte_length);
-        memcpy(mmap.addr(), dex_byte_ptr, dex_byte_length);
+        memcpy((void *) mmap.data(), dex_byte_ptr, dex_byte_length);
         images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
         env->ReleaseByteArrayElements(dex_byte, dex_byte_ptr, 0);
     }
