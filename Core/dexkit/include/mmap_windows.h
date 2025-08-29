@@ -11,6 +11,8 @@
  * UnmapViewOfFile:   http://msdn.microsoft.com/en-us/library/aa366882(VS.85).aspx
  */
 
+#pragma once
+
 #include <io.h>
 #include <windows.h>
 #include <sys/types.h>

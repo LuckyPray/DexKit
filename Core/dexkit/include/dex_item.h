@@ -36,7 +36,7 @@
 #include "acdat/Builder.h"
 #include "ThreadVariable.h"
 #include "ThreadPool.h"
-#include "file_helper.h"
+#include "mmap.h"
 #include "package_trie.h"
 #include "dexkit.h"
 #include "analyze.h"

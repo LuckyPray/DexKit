@@ -26,7 +26,7 @@
 #include <atomic>
 
 #include "flatbuffers/flatbuffers.h"
-#include "file_helper.h"
+#include "zip_archive.h"
 #include "dexkit_error.h"
 #include "dex_item.h"
 #include "package_trie.h"
