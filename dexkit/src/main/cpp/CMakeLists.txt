@@ -26,6 +26,7 @@ if (WIN32)
         target_link_options(${PROJECT_NAME} PRIVATE
                 -static-libstdc++
                 -static-libgcc
+                -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive
         )
     endif()
 elseif (UNIX AND NOT APPLE)
