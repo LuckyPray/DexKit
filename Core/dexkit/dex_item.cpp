@@ -31,7 +31,7 @@ inline void PushEncodeNumber(dex::InstructionFormat op_format, uint8_t op, const
 DexItem::DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit) :
         _image(std::make_unique<MemMap>(data, size)),
         dexkit(dexkit),
-        reader(_image->addr(), _image->len()),
+        reader(_image->data(), _image->len()),
         dex_id(id) {
     InitBaseCache();
 }
@@ -39,7 +39,7 @@ DexItem::DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit) :
 DexItem::DexItem(uint32_t id, std::unique_ptr<MemMap> mmap, DexKit *dexkit) :
         _image(std::move(mmap)),
         dexkit(dexkit),
-        reader(_image->addr(), _image->len()),
+        reader(_image->data(), _image->len()),
         dex_id(id) {
     InitBaseCache();
 }

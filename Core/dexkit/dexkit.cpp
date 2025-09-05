@@ -20,11 +20,12 @@
 
 #include "include/dexkit.h"
 
+#include "zip_archive.h"
 #include "ThreadPool.h"
 #include "schema/querys_generated.h"
 #include "schema/results_generated.h"
 
-#define WRITE_FILE_BLOCK_SIZE 1024 * 1024
+#define WRITE_FILE_BLOCK_SIZE (1024 * 1024)
 
 namespace dexkit {
 
@@ -88,9 +89,9 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
     if (!map.ok()) {
         return Error::FILE_NOT_FOUND;
     }
-    auto zip_file = ZipFile::Open(map);
+    auto zip_file = ZipArchive::Open(map);
     if (!zip_file) return Error::OPEN_ZIP_FILE_FAILED;
-    std::vector<std::pair<int, ZipLocalFile *>> dex_pairs;
+    std::vector<std::pair<int, const Entry *>> dex_pairs;
     for (int idx = 1;; ++idx) {
         auto entry_name = "classes" + (idx == 1 ? std::string() : std::to_string(idx)) + ".dex";
         auto entry = zip_file->Find(entry_name);
@@ -105,8 +106,8 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
     {
         ThreadPool pool(unzip_thread_num == 0 ? _thread_num : unzip_thread_num);
         for (auto &dex_pair: dex_pairs) {
-            pool.enqueue([this, &dex_pair, old_size]() {
-                auto dex_image = dex_pair.second->uncompress();
+            pool.enqueue([this, &dex_pair, old_size, &zip_file]() {
+                auto dex_image = zip_file->GetUncompressData(*dex_pair.second);
                 auto ptr = std::make_unique<MemMap>(std::move(dex_image));
                 if (!ptr->ok()) {
                     return;
@@ -137,7 +138,7 @@ Error DexKit::ExportDexFile(std::string_view path) {
         int offset = 0;
         while (offset < len) {
             int size = std::min(WRITE_FILE_BLOCK_SIZE, len - offset);
-            size_t write_size = fwrite(image->addr() + offset, 1, size, fp);
+            size_t write_size = fwrite(image->data() + offset, 1, size, fp);
             if (write_size != size) {
                 fclose(fp);
                 return Error::WRITE_FILE_INCOMPLETE;
