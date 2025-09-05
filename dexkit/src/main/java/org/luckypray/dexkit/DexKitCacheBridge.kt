@@ -29,7 +29,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-@DexKitExperimentalApi
 object DexKitCacheBridge {
     private lateinit var cache: Cache
     private val scheduler: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(1) { r ->
