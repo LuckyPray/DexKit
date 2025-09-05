@@ -152,7 +152,20 @@ object DexKitCacheBridge {
             }
         }
 
-        private inline fun <R> withBridge(block: (DexKitBridge) -> R): R = acquire {
+        fun interface BridgeFunction {
+            fun apply(bridge: DexKitBridge)
+        }
+
+        fun withBridge(action: BridgeFunction) {
+            acquireBridge { b -> action.apply(b) }
+        }
+
+        @JvmSynthetic
+        fun withBridge(action: (DexKitBridge) -> Unit) {
+            acquireBridge { b -> action(b) }
+        }
+
+        private inline fun <R> acquireBridge(block: (DexKitBridge) -> R): R = acquire {
             var b = _bridge
             if (b == null) synchronized(RecyclableBridge::class.java) {
                 b = _bridge ?: createBridge().also { _bridge = it }
@@ -169,7 +182,7 @@ object DexKitCacheBridge {
             }
         }
 
-        val bridge: DexKitBridge
+        private val bridge: DexKitBridge
             get() = acquire {
                 _bridge ?: createBridge().also { _bridge = it }
             }
@@ -1584,7 +1597,7 @@ object DexKitCacheBridge {
             val spKey = spKeyOf("s", key, query)
             val loader: (() -> R?)? = query?.let {
                 {
-                    withBridge {
+                    acquireBridge {
                         val list = executor(it, query)
                         var ret: D? = list.firstOrNull()
                         for (i in 1 until list.size) {
@@ -1611,7 +1624,7 @@ object DexKitCacheBridge {
             // :l: -> list
             val spKey = spKeyOf("l", key, query)
             val loader: (() -> List<R>)? = query?.let {
-                { withBridge { executor(it, query).map(mapper) } }
+                { acquireBridge { executor(it, query).map(mapper) } }
             }
             return getCachedList(spKey, allowEmpty, loader)
         }
@@ -1626,7 +1639,7 @@ object DexKitCacheBridge {
             // :b: -> batch find
             val spKey = spKeyOf("b", key, query)
             val loader: (() -> Map<String, List<R>>)? = query?.let {
-                { withBridge { executor(it, query).mapValues { it.value.map(mapper) } } }
+                { acquireBridge { executor(it, query).mapValues { it.value.map(mapper) } } }
             }
             return getCachedMap(spKey, loader)
         }
@@ -1640,7 +1653,7 @@ object DexKitCacheBridge {
             // :s: -> single
             val spKey = spKeyOf("s", key)
             val loader: (() -> R?)? = executor?.let {
-                { withBridge { it.let(executor)?.let(mapper) } }
+                { acquireBridge { it.let(executor)?.let(mapper) } }
             }
             return getCached(spKey, allowNull, loader)
         }
@@ -1654,7 +1667,7 @@ object DexKitCacheBridge {
             // :l: -> list
             val spKey = spKeyOf("l", key)
             val loader: (() -> List<R>)? = executor?.let {
-                { withBridge { it.let(executor).map(mapper) } }
+                { acquireBridge { it.let(executor).map(mapper) } }
             }
             return getCachedList(spKey, allowEmpty, loader)
         }
