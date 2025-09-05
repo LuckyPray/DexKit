@@ -17,10 +17,13 @@ import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import org.luckypray.dexkit.wrap.ISerializable
 import java.io.Closeable
+import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -31,11 +34,42 @@ object DexKitCacheBridge {
     private lateinit var cache: Cache
     private val scheduler: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(1) { r ->
         Thread(r, "DexKit-Reaper").apply { isDaemon = true }
-    }.apply {
-        removeOnCancelPolicy = true
-    }
-    private val pool = ConcurrentHashMap<String, RecyclableBridge>()
+    }.apply { removeOnCancelPolicy = true }
     private val lock = ReentrantReadWriteLock()
+    private val strongPool = ConcurrentHashMap<String, RecyclableBridge>()
+    private val weakPool = ConcurrentHashMap<String, KeyedWeakReference>()
+    private val refQueue = ReferenceQueue<RecyclableBridge>()
+
+    private class KeyedWeakReference(
+        val key: String,
+        referent: RecyclableBridge,
+        q: ReferenceQueue<RecyclableBridge>
+    ) : WeakReference<RecyclableBridge>(referent, q)
+
+    private fun reapCleared() {
+        while (true) {
+            val ref = refQueue.poll() ?: break
+            val keyed = ref as? KeyedWeakReference ?: continue
+            weakPool.remove(keyed.key, keyed)
+        }
+    }
+
+    private fun tryPromoteFromWeakPool(appTag: String): RecyclableBridge? {
+        reapCleared()
+
+        val ref = weakPool[appTag] ?: return null
+        val candidate = ref.get()
+        if (candidate == null) {
+            weakPool.remove(appTag, ref)
+            return null
+        }
+
+        if (candidate.isRetired()) return null
+
+        val prev = strongPool.putIfAbsent(appTag, candidate)
+        return prev ?: candidate
+    }
+
     @JvmStatic
     var idleTimeoutMillis: Long = 5_000L
 
@@ -47,27 +81,30 @@ object DexKitCacheBridge {
     @JvmStatic
     fun create(appTag: String, path: String): RecyclableBridge {
         require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-        pool[appTag]?.let { return it }
+        strongPool[appTag]?.let { return it }
+        tryPromoteFromWeakPool(appTag)?.let { return it }
         val newBridge = RecyclableBridge.create(appTag, path)
-        val prev = pool.putIfAbsent(appTag, newBridge)
+        val prev = strongPool.putIfAbsent(appTag, newBridge)
         return prev ?: newBridge
     }
 
     @JvmStatic
     fun create(appTag: String, dexArray: Array<ByteArray>): RecyclableBridge {
         require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-        pool[appTag]?.let { return it }
+        strongPool[appTag]?.let { return it }
+        tryPromoteFromWeakPool(appTag)?.let { return it }
         val newBridge = RecyclableBridge.create(appTag, dexArray)
-        val prev = pool.putIfAbsent(appTag, newBridge)
+        val prev = strongPool.putIfAbsent(appTag, newBridge)
         return prev ?: newBridge
     }
 
     @JvmStatic
     fun create(appTag: String, classLoader: ClassLoader): RecyclableBridge {
         require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-        pool[appTag]?.let { return it }
+        strongPool[appTag]?.let { return it }
+        tryPromoteFromWeakPool(appTag)?.let { return it }
         val newBridge = RecyclableBridge.create(appTag, classLoader)
-        val prev = pool.putIfAbsent(appTag, newBridge)
+        val prev = strongPool.putIfAbsent(appTag, newBridge)
         return prev ?: newBridge
     }
 
@@ -127,6 +164,9 @@ object DexKitCacheBridge {
             ): RecyclableBridge = RecyclableBridge(appTag, null, null, classLoader)
         }
 
+        private val retired = AtomicBoolean(false)
+        fun isRetired(): Boolean = retired.get()
+
         private val activeCalls = AtomicInteger(0)
         private var reaperFuture: ScheduledFuture<*>? = null
         @Volatile
@@ -152,19 +192,6 @@ object DexKitCacheBridge {
             }
         }
 
-        fun interface BridgeFunction {
-            fun apply(bridge: DexKitBridge)
-        }
-
-        fun withBridge(action: BridgeFunction) {
-            acquireBridge { b -> action.apply(b) }
-        }
-
-        @JvmSynthetic
-        fun withBridge(action: (DexKitBridge) -> Unit) {
-            acquireBridge { b -> action(b) }
-        }
-
         private inline fun <R> acquireBridge(block: (DexKitBridge) -> R): R = acquire {
             var b = _bridge
             if (b == null) synchronized(this) {
@@ -182,20 +209,52 @@ object DexKitCacheBridge {
             }
         }
 
-        private val bridge: DexKitBridge
-            get() = acquire {
-                _bridge ?: createBridge().also { _bridge = it }
-            }
-
-        override fun close() {
+        @JvmSynthetic
+        internal fun closeForRetire() {
             reaperFuture?.cancel(false)
             activeCalls.set(0)
             _bridge?.close()
             _bridge = null
         }
 
+        @JvmSynthetic
+        internal fun retireBridgeToWeakPool(appTag: String, bridge: RecyclableBridge) {
+            val removed = strongPool.remove(appTag, bridge)
+            bridge.closeForRetire()
+
+            reapCleared()
+            if (removed && !bridge.isRetired()) {
+                weakPool[appTag] = KeyedWeakReference(appTag, bridge, refQueue)
+            }
+        }
+
         private val reaper = Runnable {
-            close()
+            retireBridgeToWeakPool(appTag, this@RecyclableBridge)
+        }
+
+        override fun close() {
+            if (!retired.getAndSet(true)) {
+                strongPool.remove(appTag, this)
+                weakPool.remove(appTag)
+
+                reaperFuture?.cancel(false)
+                activeCalls.set(0)
+                _bridge?.close()
+                _bridge = null
+            }
+        }
+
+        fun interface BridgeFunction {
+            fun apply(bridge: DexKitBridge)
+        }
+
+        fun withBridge(action: BridgeFunction) {
+            acquireBridge { b -> action.apply(b) }
+        }
+
+        @JvmSynthetic
+        fun withBridge(action: (DexKitBridge) -> Unit) {
+            acquireBridge { b -> action(b) }
         }
 
         // region fun interface
