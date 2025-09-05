@@ -167,7 +167,7 @@ object DexKitCacheBridge {
 
         private inline fun <R> acquireBridge(block: (DexKitBridge) -> R): R = acquire {
             var b = _bridge
-            if (b == null) synchronized(RecyclableBridge::class.java) {
+            if (b == null) synchronized(this) {
                 b = _bridge ?: createBridge().also { _bridge = it }
             }
             block(b!!)
@@ -1469,39 +1469,44 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             loader: (() -> T?)? = null,
         ): Result<T?> {
-            fun <T : ISerializable> innerGet(key: String): Result<T?>? {
-                cache.get(key, null)?.let {
-                    val ret = if (it == CACHE_NULL) {
-                        null
-                    } else {
-                        ISerializable.deserializeAs<T>(it)
+            fun <U : ISerializable> innerGet(key: String, allowNull: Boolean): Result<U?>? {
+                cache.get(key, null)?.let { raw ->
+                    val v: U? = if (raw == CACHE_NULL) null else ISerializable.deserializeAs(raw)
+                    if (v == null && !allowNull) {
+                        return Result.failure(IllegalStateException(
+                            "cached null for key: $key but null not allowed"
+                        ))
                     }
-                    return Result.success(ret)
+                    return Result.success(v)
                 }
                 return null
             }
 
-            lock.read { innerGet<T>(key)?.let { return it } }
+            lock.read { innerGet<T>(key, allowNull)?.let { return it } }
 
             loader ?: return Result.failure(
                 NoSuchElementException("no found cache for key: $key")
             )
 
-            return lock.write {
-                innerGet<T>(key)?.let { return it }
+            val loaded = runCatching { loader() }
 
-                runCatching {
-                    loader().also {
-                        if (it == null && !allowNull) {
-                            return Result.failure(
+            return lock.write {
+                innerGet<T>(key, allowNull)?.let { return it }
+                loaded.fold(
+                    onSuccess = { v ->
+                        if (v == null && !allowNull) {
+                            Result.failure(
                                 IllegalStateException(
                                     "query returned null for key: $key but null not allowed"
                                 )
                             )
+                        } else {
+                            cache.put(key, v?.serialize() ?: CACHE_NULL)
+                            Result.success(v)
                         }
-                        cache.put(key, it?.serialize() ?: CACHE_NULL)
-                    }
-                }
+                    },
+                    onFailure = { Result.failure(it) }
+                )
             }
         }
 
@@ -1510,32 +1515,43 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             loader: (() -> List<T>)? = null,
         ): Result<List<T>> {
-            fun <T : ISerializable> innerGet(key: String): List<T>? {
-                cache.getList(key, null)?.let {
-                    return it.map { ISerializable.deserializeAs(it) }
+            fun <U : ISerializable> innerGet(key: String, allowEmpty: Boolean): Result<List<U>>? {
+                cache.getList(key, null)?.let { rawList ->
+                    val list = rawList.map { ISerializable.deserializeAs<U>(it) }
+                    if (list.isEmpty() && !allowEmpty) {
+                        return Result.failure(IllegalStateException(
+                            "cached empty for key: $key but empty not allowed"
+                        ))
+                    }
+                    return Result.success(list)
                 }
                 return null
             }
 
-            lock.read { innerGet<T>(key)?.let { return Result.success(it) } }
+            lock.read { innerGet<T>(key, allowEmpty)?.let { return it } }
             loader ?: return Result.failure(
                 NoSuchElementException("no found cache for key: $key")
             )
 
+            val loaded = runCatching { loader() }
+
             return lock.write {
-                innerGet<T>(key)?.let { return Result.success(it) }
-                runCatching {
-                    loader().also {
-                        if (it.isEmpty() && !allowEmpty) {
-                            return Result.failure(
+                innerGet<T>(key, allowEmpty)?.let { return it }
+                loaded.fold(
+                    onSuccess = { list ->
+                        if (list.isEmpty() && !allowEmpty) {
+                            Result.failure(
                                 IllegalStateException(
                                     "query returned empty for key: $key but empty not allowed"
                                 )
                             )
+                        } else {
+                            cache.putList(key, list.map(ISerializable::serialize))
+                            Result.success(list)
                         }
-                        cache.putList(key, it.map(ISerializable::serialize))
-                    }
-                }
+                    },
+                    onFailure = { Result.failure(it) }
+                )
             }
         }
 
@@ -1543,12 +1559,12 @@ object DexKitCacheBridge {
             key: String,
             loader: (() -> Map<String, List<T>>)? = null,
         ): Result<Map<String, List<T>>> {
-            fun <T : ISerializable> innerGetMap(key: String): Map<String, List<T>>? {
+            fun <U : ISerializable> innerGetMap(key: String): Map<String, List<U>>? {
                 cache.getList("$key:keys", null)?.let { keys ->
-                    val map = mutableMapOf<String, List<T>>()
+                    val map = mutableMapOf<String, List<U>>()
                     keys.forEach { groupKey ->
                         val dataList = cache.getList("$key:$groupKey", null)
-                            ?.map { ISerializable.deserializeAs<T>(it) }
+                            ?.map { ISerializable.deserializeAs<U>(it) }
                             ?: emptyList()
                         map.put(groupKey, dataList)
                     }
@@ -1560,11 +1576,13 @@ object DexKitCacheBridge {
             lock.read { innerGetMap<T>(key)?.let { return Result.success(it) } }
             loader ?: return Result.failure(NoSuchElementException("no found cache for key: $key"))
 
+            val loaded = runCatching { loader() }
+
             return lock.write {
                 innerGetMap<T>(key)?.let { return Result.success(it) }
-                runCatching {
-                    val oldKeys = cache.getList("$key:keys", null) ?: emptyList()
-                    loader().also { map ->
+                loaded.fold(
+                    onSuccess = { map ->
+                        val oldKeys = cache.getList("$key:keys", null) ?: emptyList()
                         val keys = mutableListOf<String>()
                         map.entries.forEach { (groupKey, value) ->
                             keys.add(groupKey)
@@ -1572,8 +1590,10 @@ object DexKitCacheBridge {
                         }
                         (oldKeys - keys.toSet()).forEach { cache.remove("$key:$it") }
                         cache.putList("$key:keys", keys)
-                    }
-                }
+                        Result.success(map)
+                    },
+                    onFailure = { Result.failure(it) }
+                )
             }
         }
 
