@@ -1,9 +1,8 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.android.library")
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    id("com.vanniktech.maven.publish") version "0.34.0"
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.dokka")
     id("signing")
@@ -158,7 +157,7 @@ mavenPublishing {
             url = "https://github.com/LuckyPray/DexKit.git"
         }
     }
-    publishToMavenCentral(SonatypeHost.S01)
+    publishToMavenCentral(true)
     signAllPublications()
 }
 
