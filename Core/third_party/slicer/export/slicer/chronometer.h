@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+* Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ class Chronometer {
 
 public:
     // elapsed time is in milliseconds
-    explicit Chronometer(double &elapsed, bool cumulative = false) :
-            elapsed_(elapsed), cumulative_(cumulative) {
+    explicit Chronometer(double& elapsed, bool cumulative = false) :
+                elapsed_(elapsed), cumulative_(cumulative) {
         start_time_ = Clock::now();
     }
 
@@ -41,14 +41,13 @@ public:
         }
     }
 
-    Chronometer(const Chronometer &) = delete;
-
-    Chronometer &operator=(const Chronometer &) = delete;
+    Chronometer(const Chronometer&) = delete;
+    Chronometer& operator=(const Chronometer&) = delete;
 
 private:
-    double &elapsed_;
+    double& elapsed_;
     Clock::time_point start_time_;
     bool cumulative_;
 };
 
-} // namespace export
+} // namespace slicer

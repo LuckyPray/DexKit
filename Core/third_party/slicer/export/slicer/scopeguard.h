@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <utility>
+
 namespace slicer {
 
 // A simple and lightweight scope guard and macro
@@ -31,26 +33,27 @@ namespace slicer {
 // "file" will be closed at the end of the enclosing scope,
 //  regardless of how the scope is exited
 //
-class ScopeGuardHelper {
+class ScopeGuardHelper
+{
     template<class T>
-    class ScopeGuard {
+    class ScopeGuard
+    {
     public:
         explicit ScopeGuard(T closure) :
-                closure_(std::move(closure)) {
+            closure_(std::move(closure))
+        {
         }
 
-        ~ScopeGuard() {
+        ~ScopeGuard()
+        {
             closure_();
         }
 
         // move constructor only
-        ScopeGuard(ScopeGuard &&) noexcept = default;
-
-        ScopeGuard(const ScopeGuard &) = delete;
-
-        ScopeGuard &operator=(const ScopeGuard &) = delete;
-
-        ScopeGuard &operator=(ScopeGuard &&) = delete;
+        ScopeGuard(ScopeGuard&&) = default;
+        ScopeGuard(const ScopeGuard&) = delete;
+        ScopeGuard& operator=(const ScopeGuard&) = delete;
+        ScopeGuard& operator=(ScopeGuard&&) = delete;
 
     private:
         T closure_;
@@ -58,7 +61,8 @@ class ScopeGuardHelper {
 
 public:
     template<class T>
-    ScopeGuard<T> operator<<(T closure) {
+    ScopeGuard<T> operator<<(T closure)
+    {
         return ScopeGuard<T>(std::move(closure));
     }
 };
@@ -70,4 +74,4 @@ public:
 #define SLICER_SCOPE_EXIT \
     auto SLICER_SG_ANONYMOUS(_scope_guard_) = slicer::ScopeGuardHelper() << [&]()
 
-} // namespace export
+} // namespace slicer

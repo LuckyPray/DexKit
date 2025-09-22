@@ -17,9 +17,9 @@
 #pragma once
 
 #if defined(__clang__)
-#if __has_feature(cxx_rtti)
-#define RTTI_ENABLED 1
-#endif
+  #if __has_feature(cxx_rtti)
+    #define RTTI_ENABLED 1
+  #endif
 #endif
 
 #include "common.h"
@@ -29,9 +29,9 @@
 #include "dex_ir.h"
 #include "intrusive_list.h"
 
-#include <cassert>
-#include <cstdio>
-#include <cstdlib>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -43,7 +43,7 @@
 
 namespace lir {
 
-template<class T>
+template <class T>
 using own = std::unique_ptr<T>;
 
 constexpr dex::u4 kInvalidOffset = dex::u4(-1);
@@ -66,6 +66,7 @@ struct String;
 struct Type;
 struct Field;
 struct Method;
+struct MethodHandle;
 struct Proto;
 struct DbgInfoHeader;
 struct LineNumber;
@@ -73,60 +74,39 @@ struct DbgInfoAnnotation;
 
 // Code IR visitor interface
 class Visitor {
-public:
-    Visitor() = default;
+ public:
+  Visitor() = default;
+  virtual ~Visitor() = default;
 
-    virtual ~Visitor() = default;
+  Visitor(const Visitor&) = delete;
+  Visitor& operator=(const Visitor&) = delete;
 
-    Visitor(const Visitor &) = delete;
+  // instructions
+  virtual bool Visit(Bytecode* bytecode) { return false; }
+  virtual bool Visit(PackedSwitchPayload* packed_switch) { return false; }
+  virtual bool Visit(SparseSwitchPayload* sparse_switch) { return false; }
+  virtual bool Visit(ArrayData* array_data) { return false; }
+  virtual bool Visit(Label* label) { return false; }
+  virtual bool Visit(DbgInfoHeader* dbg_header) { return false; }
+  virtual bool Visit(DbgInfoAnnotation* dbg_annotation) { return false; }
+  virtual bool Visit(TryBlockBegin* try_begin) { return false; }
+  virtual bool Visit(TryBlockEnd* try_end) { return false; }
 
-    Visitor &operator=(const Visitor &) = delete;
-
-    // instructions
-    virtual bool Visit(Bytecode *bytecode) { return false; }
-
-    virtual bool Visit(PackedSwitchPayload *packed_switch) { return false; }
-
-    virtual bool Visit(SparseSwitchPayload *sparse_switch) { return false; }
-
-    virtual bool Visit(ArrayData *array_data) { return false; }
-
-    virtual bool Visit(Label *label) { return false; }
-
-    virtual bool Visit(DbgInfoHeader *dbg_header) { return false; }
-
-    virtual bool Visit(DbgInfoAnnotation *dbg_annotation) { return false; }
-
-    virtual bool Visit(TryBlockBegin *try_begin) { return false; }
-
-    virtual bool Visit(TryBlockEnd *try_end) { return false; }
-
-    // operands
-    virtual bool Visit(CodeLocation *location) { return false; }
-
-    virtual bool Visit(Const32 *const32) { return false; }
-
-    virtual bool Visit(Const64 *const64) { return false; }
-
-    virtual bool Visit(VReg *vreg) { return false; }
-
-    virtual bool Visit(VRegPair *vreg_pair) { return false; }
-
-    virtual bool Visit(VRegList *vreg_list) { return false; }
-
-    virtual bool Visit(VRegRange *vreg_range) { return false; }
-
-    virtual bool Visit(String *string) { return false; }
-
-    virtual bool Visit(Type *type) { return false; }
-
-    virtual bool Visit(Field *field) { return false; }
-
-    virtual bool Visit(Method *method) { return false; }
-
-    virtual bool Visit(Proto *proto) { return false; }
-
-    virtual bool Visit(LineNumber *line) { return false; }
+  // operands
+  virtual bool Visit(CodeLocation* location) { return false; }
+  virtual bool Visit(Const32* const32) { return false; }
+  virtual bool Visit(Const64* const64) { return false; }
+  virtual bool Visit(VReg* vreg) { return false; }
+  virtual bool Visit(VRegPair* vreg_pair) { return false; }
+  virtual bool Visit(VRegList* vreg_list) { return false; }
+  virtual bool Visit(VRegRange* vreg_range) { return false; }
+  virtual bool Visit(String* string) { return false; }
+  virtual bool Visit(Type* type) { return false; }
+  virtual bool Visit(Field* field) { return false; }
+  virtual bool Visit(Method* method) { return false; }
+  virtual bool Visit(Proto* proto) { return false; }
+  virtual bool Visit(LineNumber* line) { return false; }
+  virtual bool Visit(MethodHandle* mh) { return false; }
 };
 
 // The root of the polymorphic code IR nodes hierarchy
@@ -137,138 +117,145 @@ public:
 //   (notable exception: instruction nodes can't be reused)
 //
 struct Node {
-    Node() = default;
+  Node() = default;
+  virtual ~Node() = default;
 
-    virtual ~Node() = default;
+  Node(const Node&) = delete;
+  Node& operator=(const Node&) = delete;
 
-    Node(const Node &) = delete;
-
-    Node &operator=(const Node &) = delete;
-
-    virtual bool Accept(Visitor *visitor) { return false; }
+  virtual bool Accept(Visitor* visitor) { return false; }
 };
 
-struct Operand : public Node {
-};
+struct Operand : public Node {};
 
 struct Const32 : public Operand {
-    union {
-        dex::s4 s4_value;
-        dex::u4 u4_value;
-        float float_value;
-    } u{};
+  union {
+    dex::s4 s4_value;
+    dex::u4 u4_value;
+    float float_value;
+  } u;
 
-    explicit Const32(dex::u4 value) { u.u4_value = value; }
+  explicit Const32(dex::u4 value) { u.u4_value = value; }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct Const64 : public Operand {
-    union {
-        dex::s8 s8_value;
-        dex::u8 u8_value;
-        double double_value;
-    } u{};
+  union {
+    dex::s8 s8_value;
+    dex::u8 u8_value;
+    double double_value;
+  } u;
 
-    explicit Const64(dex::u8 value) { u.u8_value = value; }
+  explicit Const64(dex::u8 value) { u.u8_value = value; }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct VReg : public Operand {
-    dex::u4 reg;
+  dex::u4 reg;
 
-    explicit VReg(dex::u4 reg) : reg(reg) {}
+  explicit VReg(dex::u4 reg) : reg(reg) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct VRegPair : public Operand {
-    dex::u4 base_reg;
+  dex::u4 base_reg;
 
-    explicit VRegPair(dex::u4 base_reg) : base_reg(base_reg) {}
+  explicit VRegPair(dex::u4 base_reg) : base_reg(base_reg) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct VRegList : public Operand {
-    std::vector<dex::u4> registers;
+  std::vector<dex::u4> registers;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct VRegRange : public Operand {
-    dex::u4 base_reg;
-    int count;
+  dex::u4 base_reg;
+  int count;
 
-    VRegRange(dex::u4 base_reg, int count) : base_reg(base_reg), count(count) {}
+  VRegRange(dex::u4 base_reg, int count) : base_reg(base_reg), count(count) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct IndexedOperand : public Operand {
-    dex::u4 index;
+  dex::u4 index;
 
-    explicit IndexedOperand(dex::u4 index) : index(index) {}
+  explicit IndexedOperand(dex::u4 index) : index(index) {}
 };
 
 struct String : public IndexedOperand {
-    ir::String *ir_string;
+  ir::String* ir_string;
 
-    String(ir::String *ir_string, dex::u4 index) : IndexedOperand(index), ir_string(ir_string) {}
+  String(ir::String* ir_string, dex::u4 index) : IndexedOperand(index), ir_string(ir_string) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct Type : public IndexedOperand {
-    ir::Type *ir_type;
+  ir::Type* ir_type;
 
-    Type(ir::Type *ir_type, dex::u4 index) : IndexedOperand(index), ir_type(ir_type) {}
+  Type(ir::Type* ir_type, dex::u4 index) : IndexedOperand(index), ir_type(ir_type) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct Field : public IndexedOperand {
-    ir::FieldDecl *ir_field;
+  ir::FieldDecl* ir_field;
 
-    Field(ir::FieldDecl *ir_field, dex::u4 index) : IndexedOperand(index), ir_field(ir_field) {}
+  Field(ir::FieldDecl* ir_field, dex::u4 index) : IndexedOperand(index), ir_field(ir_field) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct Method : public IndexedOperand {
-    ir::MethodDecl *ir_method;
+  ir::MethodDecl* ir_method;
 
-    Method(ir::MethodDecl *ir_method, dex::u4 index) : IndexedOperand(index), ir_method(ir_method) {
-        SLICER_CHECK(ir_method != nullptr);
-    }
+  Method(ir::MethodDecl* ir_method, dex::u4 index) : IndexedOperand(index), ir_method(ir_method) {
+    SLICER_CHECK_NE(ir_method, nullptr);
+  }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
+};
+
+struct MethodHandle : public IndexedOperand {
+  ir::MethodHandle* ir_method_handle;
+
+  MethodHandle(ir::MethodHandle* ir_method_handle, dex::u4 index) : IndexedOperand(index), ir_method_handle(ir_method_handle) {
+    SLICER_CHECK_NE(ir_method_handle, nullptr);
+  }
+
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct Proto : public IndexedOperand {
-    ir::Proto *ir_proto;
+  ir::Proto* ir_proto;
 
-    Proto(ir::Proto *ir_proto, dex::u4 index) : IndexedOperand(index), ir_proto(ir_proto) {}
+  Proto(ir::Proto* ir_proto, dex::u4 index) : IndexedOperand(index), ir_proto(ir_proto) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct CodeLocation : public Operand {
-    Label *label;
+  Label* label;
 
-    explicit CodeLocation(Label *label) : label(label) {}
+  explicit CodeLocation(Label* label) : label(label) {}
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 // Code IR is a linked list of Instructions
 struct Instruction : public Node {
-    // absolute offset from the start of the method
-    dex::u4 offset = 0;
+  // absolute offset from the start of the method
+  dex::u4 offset = 0;
 
-    Instruction *prev = nullptr;
-    Instruction *next = nullptr;
+  Instruction* prev = nullptr;
+  Instruction* next = nullptr;
 };
 
 using InstructionsList = slicer::IntrusiveList<Instruction>;
@@ -276,258 +263,252 @@ using InstructionsList = slicer::IntrusiveList<Instruction>;
 namespace detail {
 
 template<class T>
-inline T *CastOperand(Operand *op) {
+inline T* CastOperand(Operand* op) {
 #ifdef RTTI_ENABLED
-    T *operand = dynamic_cast<T *>(op);
-    SLICER_CHECK(operand != nullptr);
-    return operand;
+  T* operand = dynamic_cast<T*>(op);
+  SLICER_CHECK_NE(operand, nullptr);
+  return operand;
 #else
-    SLICER_CHECK(op != nullptr);
-    struct CastVisitor : public Visitor {
-      T* converted = nullptr;
-      bool Visit(T* val) override {
-        converted = val;
-        return true;
-      }
-    };
-    CastVisitor cv;
-    op->Accept(&cv);
-    SLICER_CHECK(cv.converted != nullptr);
-    return cv.converted;
+  SLICER_CHECK_NE(op, nullptr);
+  struct CastVisitor : public Visitor {
+    T* converted = nullptr;
+    bool Visit(T* val) override {
+      converted = val;
+      return true;
+    }
+  };
+  CastVisitor cv;
+  op->Accept(&cv);
+  SLICER_CHECK_NE(cv.converted, nullptr);
+  return cv.converted;
 #endif
 }
 
 // Special-case for IndexedOperand.
 template<>
-inline IndexedOperand *CastOperand<IndexedOperand>(Operand *op) {
+inline IndexedOperand* CastOperand<IndexedOperand>(Operand* op) {
 #ifdef RTTI_ENABLED
-    auto *operand = dynamic_cast<IndexedOperand *>(op);
-    SLICER_CHECK(operand != nullptr);
-    return operand;
+  IndexedOperand* operand = dynamic_cast<IndexedOperand*>(op);
+  SLICER_CHECK_NE(operand, nullptr);
+  return operand;
 #else
-    SLICER_CHECK(op != nullptr);
-    struct CastVisitor : public Visitor {
-      IndexedOperand* converted = nullptr;
-      bool Visit(String* val) override {
-        converted = val;
-        return true;
-      }
-      bool Visit(Type* val) override {
-        converted = val;
-        return true;
-      }
-      bool Visit(Field* val) override {
-        converted = val;
-        return true;
-      }
-      bool Visit(Method* val) override {
-        converted = val;
-        return true;
-      }
-    };
-    CastVisitor cv;
-    op->Accept(&cv);
-    SLICER_CHECK(cv.converted != nullptr);
-    return cv.converted;
+  SLICER_CHECK_NE(op, nullptr);
+  struct CastVisitor : public Visitor {
+    IndexedOperand* converted = nullptr;
+    bool Visit(String* val) override {
+      converted = val;
+      return true;
+    }
+    bool Visit(Type* val) override {
+      converted = val;
+      return true;
+    }
+    bool Visit(Field* val) override {
+      converted = val;
+      return true;
+    }
+    bool Visit(Method* val) override {
+      converted = val;
+      return true;
+    }
+    bool Visit(MethodHandle* val) override {
+      converted = val;
+      return true;
+    }
+    bool Visit(Proto* val) override {
+      converted = val;
+      return true;
+    }
+  };
+  CastVisitor cv;
+  op->Accept(&cv);
+  SLICER_CHECK_NE(cv.converted, nullptr);
+  return cv.converted;
 #endif
 }
 
 }  // namespace detail
 
 struct Bytecode : public Instruction {
-    dex::Opcode opcode = dex::OP_NOP;
-    std::vector<Operand *> operands;
+  dex::Opcode opcode = dex::OP_NOP;
+  std::vector<Operand*> operands;
 
-    template<class T>
-    T *CastOperand(int index) const {
-        return detail::CastOperand<T>(operands[index]);
-    }
+  template<class T>
+  T* CastOperand(int index) const {
+    return detail::CastOperand<T>(operands[index]);
+  }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct PackedSwitchPayload : public Instruction {
-    dex::s4 first_key = 0;
-    std::vector<Label *> targets;
+  dex::s4 first_key = 0;
+  std::vector<Label*> targets;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct SparseSwitchPayload : public Instruction {
-    struct SwitchCase {
-        dex::s4 key = 0;
-        Label *target = nullptr;
-    };
+  struct SwitchCase {
+    dex::s4 key = 0;
+    Label* target = nullptr;
+  };
 
-    std::vector<SwitchCase> switch_cases;
+  std::vector<SwitchCase> switch_cases;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct ArrayData : public Instruction {
-    slicer::MemView data;
+  slicer::MemView data;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct Label : public Instruction {
-    int id = 0;
-    int refCount = 0;
-    bool aligned = false;
+  int id = 0;
+  int refCount = 0;
+  bool aligned = false;
 
-    explicit Label(dex::u4 offset) { this->offset = offset; }
+  explicit Label(dex::u4 offset) { this->offset = offset; }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct TryBlockBegin : public Instruction {
-    int id = 0;
+  int id = 0;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct CatchHandler {
-    ir::Type *ir_type = nullptr;
-    Label *label = nullptr;
+  ir::Type* ir_type = nullptr;
+  Label* label = nullptr;
 };
 
 struct TryBlockEnd : public Instruction {
-    TryBlockBegin *try_begin = nullptr;
-    std::vector<CatchHandler> handlers;
-    Label *catch_all = nullptr;
+  TryBlockBegin* try_begin = nullptr;
+  std::vector<CatchHandler> handlers;
+  Label* catch_all = nullptr;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct DbgInfoHeader : public Instruction {
-    std::vector<ir::String *> param_names;
+  std::vector<ir::String*> param_names;
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct LineNumber : public Operand {
-    int line = 0;
+  int line = 0;
 
-    explicit LineNumber(int line) : line(line) {
-        SLICER_WEAK_CHECK(line > 0);
-    }
+  explicit LineNumber(int line) : line(line) {
+    SLICER_WEAK_CHECK(line >= 0);
+  }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 struct DbgInfoAnnotation : public Instruction {
-    dex::u1 dbg_opcode = 0;
-    std::vector<Operand *> operands;
+  dex::u1 dbg_opcode = 0;
+  std::vector<Operand*> operands;
 
-    explicit DbgInfoAnnotation(dex::u1 dbg_opcode) : dbg_opcode(dbg_opcode) {}
+  explicit DbgInfoAnnotation(dex::u1 dbg_opcode) : dbg_opcode(dbg_opcode) {}
 
-    template<class T>
-    T *CastOperand(int index) const {
-        return detail::CastOperand<T>(operands[index]);
-    }
+  template<class T>
+  T* CastOperand(int index) const {
+    return detail::CastOperand<T>(operands[index]);
+  }
 
-    bool Accept(Visitor *visitor) override { return visitor->Visit(this); }
+  virtual bool Accept(Visitor* visitor) override { return visitor->Visit(this); }
 };
 
 // Code IR container and manipulation interface
 struct CodeIr {
-    // linked list of the method's instructions
-    InstructionsList instructions;
+  // linked list of the method's instructions
+  InstructionsList instructions;
 
-    ir::EncodedMethod *ir_method = nullptr;
-    std::shared_ptr<ir::DexFile> dex_ir;
+  ir::EncodedMethod* ir_method = nullptr;
+  std::shared_ptr<ir::DexFile> dex_ir;
 
-public:
-    CodeIr(ir::EncodedMethod *ir_method, std::shared_ptr<ir::DexFile> dex_ir)
-            : ir_method(ir_method), dex_ir(std::move(dex_ir)) {
-        Disassemble();
+ public:
+  CodeIr(ir::EncodedMethod* ir_method, std::shared_ptr<ir::DexFile> dex_ir)
+      : ir_method(ir_method), dex_ir(dex_ir) {
+    Disassemble();
+  }
+
+  // No copy/move semantics
+  CodeIr(const CodeIr&) = delete;
+  CodeIr& operator=(const CodeIr&) = delete;
+
+  void Assemble();
+
+  void Accept(Visitor* visitor) {
+    for (auto instr : instructions) {
+      instr->Accept(visitor);
     }
+  }
 
-    // No copy/move semantics
-    CodeIr(const CodeIr &) = delete;
+  template <class T, class... Args>
+  T* Alloc(Args&&... args) {
+    auto p = new T(std::forward<Args>(args)...);
+    nodes_.push_back(own<T>(p));
+    return p;
+  }
 
-    CodeIr &operator=(const CodeIr &) = delete;
+ private:
+  void Disassemble();
+  void DisassembleBytecode(const ir::Code* ir_code);
+  void DisassembleTryBlocks(const ir::Code* ir_code);
+  void DisassembleDebugInfo(const ir::DebugInfo* ir_debug_info);
 
-    void Assemble();
+  void FixupSwitches();
+  void FixupPackedSwitch(PackedSwitchPayload* instr, dex::u4 base_offset, const dex::u2* ptr);
+  void FixupSparseSwitch(SparseSwitchPayload* instr, dex::u4 base_offset, const dex::u2* ptr);
 
-    void Accept(Visitor *visitor) {
-        for (auto instr: instructions) {
-            instr->Accept(visitor);
-        }
-    }
+  SparseSwitchPayload* DecodeSparseSwitch(const dex::u2* /*ptr*/, dex::u4 offset);
+  PackedSwitchPayload* DecodePackedSwitch(const dex::u2* /*ptr*/, dex::u4 offset);
+  ArrayData* DecodeArrayData(const dex::u2* ptr, dex::u4 offset);
+  Bytecode* DecodeBytecode(const dex::u2* ptr, dex::u4 offset);
 
-    template<class T, class... Args>
-    T *Alloc(Args &&... args) {
-        auto p = new T(std::forward<Args>(args)...);
-        nodes_.push_back(own<T>(p));
-        return p;
-    }
+  IndexedOperand* GetIndexedOperand(dex::InstructionIndexType index_type, dex::u4 index);
+  IndexedOperand* GetSecondIndexedOperand(dex::InstructionIndexType index_type, dex::u4 index);
 
-private:
-    void Disassemble();
+  Type* GetType(dex::u4 index);
+  String* GetString(dex::u4 index);
+  Label* GetLabel(dex::u4 offset);
 
-    void DisassembleBytecode(const ir::Code *ir_code);
+  Operand* GetRegA(const dex::Instruction& dex_instr);
+  Operand* GetRegB(const dex::Instruction& dex_instr);
+  Operand* GetRegC(const dex::Instruction& dex_instr);
 
-    void DisassembleTryBlocks(const ir::Code *ir_code);
+ private:
+  // the "master index" of all the LIR owned nodes
+  std::vector<own<Node>> nodes_;
 
-    void DisassembleDebugInfo(const ir::DebugInfo *ir_debug_info);
+  // data structures for fixing up switch payloads
+  struct PackedSwitchFixup {
+    PackedSwitchPayload* instr = nullptr;
+    dex::u4 base_offset = kInvalidOffset;
+  };
 
-    void FixupSwitches();
+  struct SparseSwitchFixup {
+    SparseSwitchPayload* instr = nullptr;
+    dex::u4 base_offset = kInvalidOffset;
+  };
 
-    void FixupPackedSwitch(PackedSwitchPayload *instr, dex::u4 base_offset, const dex::u2 *ptr);
+  // used during bytecode raising
+  std::map<dex::u4, Label*> labels_;
+  std::map<dex::u4, PackedSwitchFixup> packed_switches_;
+  std::map<dex::u4, SparseSwitchFixup> sparse_switches_;
 
-    void FixupSparseSwitch(SparseSwitchPayload *instr, dex::u4 base_offset, const dex::u2 *ptr);
-
-    SparseSwitchPayload *DecodeSparseSwitch(const dex::u2 * /*ptr*/, dex::u4 offset);
-
-    PackedSwitchPayload *DecodePackedSwitch(const dex::u2 * /*ptr*/, dex::u4 offset);
-
-    ArrayData *DecodeArrayData(const dex::u2 *ptr, dex::u4 offset);
-
-    Bytecode *DecodeBytecode(const dex::u2 *ptr, dex::u4 offset);
-
-    IndexedOperand *GetIndexedOperand(dex::InstructionIndexType index_type, dex::u4 index);
-
-    IndexedOperand *GetSecondIndexedOperand(dex::InstructionIndexType index_type, dex::u4 index);
-
-    Type *GetType(dex::u4 index);
-
-    String *GetString(dex::u4 index);
-
-    Label *GetLabel(dex::u4 offset);
-
-    Operand *GetRegA(const dex::Instruction &dex_instr);
-
-    Operand *GetRegB(const dex::Instruction &dex_instr);
-
-    Operand *GetRegC(const dex::Instruction &dex_instr);
-
-private:
-    // the "master index" of all the LIR owned nodes
-    std::vector<own<Node>> nodes_;
-
-    // data structures for fixing up switch payloads
-    struct PackedSwitchFixup {
-        PackedSwitchPayload *instr = nullptr;
-        dex::u4 base_offset = kInvalidOffset;
-    };
-
-    struct SparseSwitchFixup {
-        SparseSwitchPayload *instr = nullptr;
-        dex::u4 base_offset = kInvalidOffset;
-    };
-
-    // used during bytecode raising
-    std::map<dex::u4, Label *> labels_;
-    std::map<dex::u4, PackedSwitchFixup> packed_switches_;
-    std::map<dex::u4, SparseSwitchFixup> sparse_switches_;
-
-    // extra instructions/annotations created during raising
-    // (intended to be merged in with the main instruction
-    //  list at end of the IR raising phase)
-    std::vector<TryBlockBegin *> try_begins_;
-    std::vector<TryBlockEnd *> try_ends_;
-    std::vector<Instruction *> dbg_annotations_;
+  // extra instructions/annotations created during raising
+  // (intended to be merged in with the main instruction
+  //  list at end of the IR raising phase)
+  std::vector<TryBlockBegin*> try_begins_;
+  std::vector<TryBlockEnd*> try_ends_;
+  std::vector<Instruction*> dbg_annotations_;
 };
 
 }  // namespace lir

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+* Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,6 @@ namespace dex {
 // for the same code point as equivalent, except that only a real '\0'
 // byte is considered the string terminator. The return value is as
 // for strcmp().
-int Utf8Cmp(const char *s1, const char *s2);
+int Utf8Cmp(const char* s1, const char* s2);
 
 }  // namespace dex

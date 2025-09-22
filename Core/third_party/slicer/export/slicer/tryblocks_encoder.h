@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+* Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,22 +27,21 @@ namespace lir {
 // Generates try/catch blocks from code IR
 class TryBlocksEncoder : public Visitor {
 private:
-    bool Visit(TryBlockEnd *try_end) override;
+    virtual bool Visit(TryBlockEnd* try_end) override;
 
 public:
-    explicit TryBlocksEncoder(const InstructionsList &instructions)
-            : instructions_(instructions) {
+    explicit TryBlocksEncoder(const InstructionsList& instructions)
+      : instructions_(instructions) {
     }
 
-    ~TryBlocksEncoder() override = default;
+    ~TryBlocksEncoder() = default;
 
-    void Encode(ir::Code *ir_code, std::shared_ptr<ir::DexFile> dex_ir);
+    void Encode(ir::Code* ir_code, std::shared_ptr<ir::DexFile> dex_ir);
 
 private:
     slicer::Buffer handlers_;
     slicer::Buffer tries_;
-    const InstructionsList &instructions_;
+    const InstructionsList& instructions_;
 };
 
 } // namespace lir
-

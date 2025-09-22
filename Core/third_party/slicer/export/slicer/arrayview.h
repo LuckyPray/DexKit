@@ -18,40 +18,37 @@
 
 #include "common.h"
 
-#include <cstdlib>
+#include <stdlib.h>
 
 namespace slicer {
 
 // A shallow array view
-template<class T>
+template <class T>
 class ArrayView {
 public:
     ArrayView() = default;
 
-    ArrayView(const ArrayView &) = default;
+    ArrayView(const ArrayView&) = default;
+    ArrayView& operator=(const ArrayView&) = default;
 
-    ArrayView &operator=(const ArrayView &) = default;
+    ArrayView(T* ptr, size_t count) : begin_(ptr), end_(ptr + count) {}
 
-    ArrayView(T *ptr, size_t count) : begin_(ptr), end_(ptr + count) {}
+    T* begin() const { return begin_; }
+    T* end() const { return end_; }
 
-    T *begin() const { return begin_; }
+    T* data() const { return begin_; }
 
-    T *end() const { return end_; }
-
-    T *data() const { return begin_; }
-
-    T &operator[](size_t i) const {
-        SLICER_CHECK(i < size());
+    T& operator[](size_t i) const {
+        SLICER_CHECK_LT(i, size());
         return *(begin_ + i);
     }
 
-    [[nodiscard]] size_t size() const { return end_ - begin_; }
-
-    [[nodiscard]] bool empty() const { return begin_ == end_; }
+    size_t size() const { return end_ - begin_; }
+    bool empty() const { return begin_ == end_; }
 
 private:
-    T *begin_ = nullptr;
-    T *end_ = nullptr;
+    T* begin_ = nullptr;
+    T* end_ = nullptr;
 };
 
-} // namespace export
+} // namespace slicer

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+* Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,28 +29,26 @@ namespace lir {
 // Generates debug info from code IR
 class DebugInfoEncoder : public Visitor {
 private:
-    bool Visit(DbgInfoHeader *dbg_header) override;
-
-    bool Visit(DbgInfoAnnotation *dbg_annotation) override;
+    virtual bool Visit(DbgInfoHeader* dbg_header) override;
+    virtual bool Visit(DbgInfoAnnotation* dbg_annotation) override;
 
 public:
-    explicit DebugInfoEncoder(const InstructionsList &instructions)
-            : instructions_(instructions) {
+    explicit DebugInfoEncoder(const InstructionsList& instructions)
+      : instructions_(instructions) {
     }
 
-    ~DebugInfoEncoder() override = default;
+    ~DebugInfoEncoder() = default;
 
-    void Encode(ir::EncodedMethod *ir_method, std::shared_ptr<ir::DexFile> dex_ir);
+    void Encode(ir::EncodedMethod* ir_method, std::shared_ptr<ir::DexFile> dex_ir);
 
 private:
-    std::vector<ir::String *> *param_names_ = nullptr;
+    std::vector<ir::String*>* param_names_ = nullptr;
     dex::u4 line_start_ = 0;
     dex::u4 last_line_ = 0;
     dex::u4 last_address_ = 0;
-    ir::String *source_file_ = nullptr;
+    ir::String* source_file_ = nullptr;
     slicer::Buffer dbginfo_;
-    const InstructionsList &instructions_;
+    const InstructionsList& instructions_;
 };
 
 } // namespace lir
-
