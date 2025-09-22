@@ -31,7 +31,11 @@ inline void PushEncodeNumber(dex::InstructionFormat op_format, uint8_t op, const
 DexItem::DexItem(uint32_t id, std::shared_ptr<MemMap> mmap, uint32_t header_off, DexKit *dexkit) :
         _image(std::move(mmap)),
         dexkit(dexkit),
-        reader(_image->data(), _image->len(), header_off),
+        // NOTE: the size passed here is just (mapped_length - header_off).
+        // It is NOT the actual logical DEX size. Reader::ValidateHeader()
+        // will parse the header and correct the size using header->file_size/
+        // container_size. Do not rely on this initial size for bounds checks.
+        reader(_image->data() + header_off, _image->len() - header_off),
         dex_id(id) {
     InitBaseCache();
 }
