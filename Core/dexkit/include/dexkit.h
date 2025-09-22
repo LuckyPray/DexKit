@@ -51,7 +51,7 @@ public:
     Error AddImage(std::unique_ptr<MemMap> dex_image);
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
     Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
-    Error ExportDexFile(std::string_view path);
+    [[nodiscard]] Error ExportDexFile(std::string_view path) const;
     [[nodiscard]] int GetDexNum() const;
 
     std::unique_ptr<flatbuffers::FlatBufferBuilder> FindClass(const schema::FindClass *query);
@@ -89,6 +89,7 @@ private:
     std::shared_mutex _put_class_mutex;
     std::atomic<uint32_t> dex_cnt = 0;
     uint32_t _thread_num = std::thread::hardware_concurrency();
+    std::vector<std::shared_ptr<MemMap>> images;
     std::vector<std::unique_ptr<DexItem>> dex_items;
     phmap::flat_hash_map<std::string_view, std::pair<uint16_t /*dex_id*/, uint32_t /*type_idx*/>> class_declare_dex_map;
 

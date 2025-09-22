@@ -48,8 +48,7 @@ class DexKit;
 class DexItem {
 public:
 
-    explicit DexItem(uint32_t id, uint8_t *data, size_t size, DexKit *dexkit);
-    explicit DexItem(uint32_t id, std::unique_ptr<MemMap> mmap, DexKit *dexkit);
+    explicit DexItem(uint32_t id, std::shared_ptr<MemMap> mmap, uint32_t header_off, DexKit *dexkit);
     ~DexItem() = default;
     DexItem(DexItem &&) = default;
     DexItem &operator=(DexItem &&) = default;
@@ -241,7 +240,7 @@ private:
 
 private:
     DexKit *dexkit;
-    std::unique_ptr<MemMap> _image;
+    std::shared_ptr<MemMap> _image;
     dex::Reader reader;
 
     uint32_t dex_cross_flag = 0;

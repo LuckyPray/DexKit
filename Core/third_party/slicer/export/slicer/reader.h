@@ -36,7 +36,7 @@ namespace dex {
 //
 class Reader {
  public:
-  Reader(const dex::u1* image, size_t size);
+  Reader(const dex::u1* image, size_t size, dex::u4 header_off = 0);
   ~Reader() = default;
 
   // No copy/move semantics
@@ -109,7 +109,7 @@ class Reader {
   template <class T>
   const T* ptr(int offset) const {
     SLICER_CHECK_GE(offset, 0 && offset + sizeof(T) <= size_);
-    return reinterpret_cast<const T*>(image_ + offset);
+    return reinterpret_cast<const T*>(image_ + header_off_ + offset);
   }
 
   // Convert a data section file pointer (absolute offset) to an in-memory pointer
@@ -117,7 +117,7 @@ class Reader {
   template <class T>
   const T* dataPtr(int offset) const {
     SLICER_CHECK_GE(offset, header_->data_off && offset + sizeof(T) <= size_);
-    return reinterpret_cast<const T*>(image_ + offset);
+    return reinterpret_cast<const T*>(image_ + header_off_ + offset);
   }
 
   // Map an indexed section to an ArrayView<T>
@@ -141,6 +141,7 @@ class Reader {
 
   // .dex image header
   const dex::Header* header_;
+  dex::u4 header_off_;
 
   // .dex IR associated with the reader
   std::shared_ptr<ir::DexFile> dex_ir_;

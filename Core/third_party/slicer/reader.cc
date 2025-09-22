@@ -27,7 +27,7 @@
 
 namespace dex {
 
-Reader::Reader(const dex::u1* image, size_t size) : image_(image), size_(size) {
+Reader::Reader(const dex::u1* image, size_t size, dex::u4 header_off) : image_(image), size_(size), header_off_(header_off) {
   // init the header reference
   header_ = ptr<dex::Header>(0);
   ValidateHeader();
