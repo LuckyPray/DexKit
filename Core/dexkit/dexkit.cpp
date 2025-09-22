@@ -52,6 +52,7 @@ Error DexKit::InitFullCache() {
 }
 
 static inline std::vector<uint32_t> ParseLogicalDexOffsets(const std::shared_ptr<MemMap> &image) {
+    if (!image) return {};
     std::vector<uint32_t> offs;
     const uint8_t *base = image->data();
     const size_t n = image->len();
@@ -71,8 +72,8 @@ static inline std::vector<uint32_t> ParseLogicalDexOffsets(const std::shared_ptr
 
 Error DexKit::AddDex(uint8_t *data, size_t size) {
     std::lock_guard lock(_mutex);
-    images.emplace_back(std::make_shared<MemMap>(data, size));
-    auto image = images.back();
+    auto image = std::make_shared<MemMap>(data, size);
+    images.emplace_back(image);
     for (auto off : ParseLogicalDexOffsets(image)) {
         dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, image, off, this));
     }
@@ -81,8 +82,8 @@ Error DexKit::AddDex(uint8_t *data, size_t size) {
 
 Error DexKit::AddImage(std::unique_ptr<MemMap> dex_image) {
     std::lock_guard lock(_mutex);
-    images.emplace_back(std::move(dex_image));
-    auto image = images.back();
+    std::shared_ptr<MemMap> image = std::move(dex_image);
+    images.emplace_back(image);
     for (auto off : ParseLogicalDexOffsets(image)) {
         dex_items.emplace_back(std::make_unique<DexItem>(dex_cnt++, image, off, this));
     }
@@ -95,16 +96,17 @@ Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
     const auto new_size = old_size + dex_images.size();
     images.resize(new_size);
     std::vector<std::pair<std::shared_ptr<MemMap>, uint32_t>> add_items;
-    for (auto i = old_size; i < new_size; i++) {
-        images[i] = std::move(dex_images[i]);
+    for (size_t i = old_size, j = 0; i < new_size; i++, j++) {
+        images[i] = std::move(dex_images[j]);
         for (auto off : ParseLogicalDexOffsets(images[i])) {
             add_items.emplace_back(images[i], off);
         }
     }
-    dex_items.resize(dex_items.size() + add_items.size());
+    const auto old_item_size = dex_items.size();
+    dex_items.resize(old_item_size + add_items.size());
     {
         ThreadPool pool(_thread_num);
-        auto index = old_size;
+        auto index = old_item_size;
         for (auto &[image, offset]: add_items) {
             pool.enqueue([this, &image, index, offset]() {
                 dex_items[index] = std::make_unique<DexItem>(index, std::move(image), offset, this);
@@ -155,10 +157,11 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
             add_items.emplace_back(images[i], off);
         }
     }
-    dex_items.resize(dex_items.size() + add_items.size());
+    const auto old_item_size = dex_items.size();
+    dex_items.resize(old_item_size + add_items.size());
     {
         ThreadPool pool(_thread_num);
-        auto index = old_size;
+        auto index = old_item_size;
         for (auto &[image, offset]: add_items) {
             pool.enqueue([this, &image, index, offset]() {
                 dex_items[index] = std::make_unique<DexItem>(index, std::move(image), offset, this);
