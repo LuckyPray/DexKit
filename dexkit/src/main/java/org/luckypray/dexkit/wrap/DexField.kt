@@ -92,11 +92,12 @@ class DexField: ISerializable {
      * 从 [ClassLoader] 获取字段对应的 [Field]
      *
      * @param classLoader class loader / 类加载器
+     * @param isStatic If null, native auto check / 如果为 null，native 自动判断
      * @return [Field]
      */
     @Throws(NoSuchFieldException::class)
-    fun getFieldInstance(classLoader: ClassLoader): Field {
-        return InstanceUtil.getFieldInstance(classLoader, this)
+    fun getFieldInstance(classLoader: ClassLoader, isStatic: Boolean? = null): Field {
+        return InstanceUtil.getFieldInstance(classLoader, this, isStatic)
     }
 
     override fun toString(): String {

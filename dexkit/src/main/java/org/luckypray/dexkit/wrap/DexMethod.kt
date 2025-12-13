@@ -149,11 +149,13 @@ class DexMethod: ISerializable {
      * 从 [ClassLoader] 加载方法
      *
      * @param classLoader class loader / 类加载器
+     * @param isStatic If null, native auto check / 如果为 null，native 自动判断
      * @return [Method]
      */
+    @JvmOverloads
     @Throws(NoSuchMethodException::class)
-    fun getMethodInstance(classLoader: ClassLoader): Method {
-        return InstanceUtil.getMethodInstance(classLoader, this)
+    fun getMethodInstance(classLoader: ClassLoader, isStatic: Boolean? = null): Method {
+        return InstanceUtil.getMethodInstance(classLoader, this, isStatic)
     }
 
     override fun toString(): String {

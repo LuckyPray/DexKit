@@ -293,7 +293,9 @@ class MethodData private constructor(
      * @return [Constructor]
      */
     @Throws(NoSuchMethodException::class)
-    fun getConstructorInstance(classLoader: ClassLoader) = dexMethod.getConstructorInstance(classLoader)
+    fun getConstructorInstance(classLoader: ClassLoader): Constructor<*> {
+        return dexMethod.getConstructorInstance(classLoader)
+    }
 
     /**
      * Load method from [ClassLoader]
@@ -304,7 +306,9 @@ class MethodData private constructor(
      * @return [Method]
      */
     @Throws(NoSuchMethodException::class)
-    fun getMethodInstance(classLoader: ClassLoader) = dexMethod.getMethodInstance(classLoader)
+    fun getMethodInstance(classLoader: ClassLoader): Method {
+        return dexMethod.getMethodInstance(classLoader, Modifier.isStatic(modifiers))
+    }
 
     /**
      * Convert to [DexMethod]

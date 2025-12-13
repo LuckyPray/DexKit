@@ -178,7 +178,7 @@ class FieldData private constructor(
      */
     @Throws(NoSuchFieldException::class)
     fun getFieldInstance(classLoader: ClassLoader): Field {
-        return dexField.getFieldInstance(classLoader)
+        return dexField.getFieldInstance(classLoader, Modifier.isStatic(modifiers))
     }
 
     /**
