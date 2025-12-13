@@ -129,8 +129,7 @@ void init(JNIEnv *env) {
     element_field = env->GetFieldID(dex_path_list, "dexElements",
                                     "[Ldalvik/system/DexPathList$Element;");
     auto element = env->FindClass("dalvik/system/DexPathList$Element");
-    dex_file_field =
-            env->GetFieldID(element, "dexFile", "Ldalvik/system/DexFile;");
+    dex_file_field = env->GetFieldID(element, "dexFile", "Ldalvik/system/DexFile;");
     auto dex_file = env->FindClass("dalvik/system/DexFile");
     cookie_field = env->GetFieldID(dex_file, "mCookie", "Ljava/lang/Object;");
     file_name_field = env->GetFieldID(dex_file, "mFileName", "Ljava/lang/String;");
@@ -721,6 +720,103 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeFieldPutMethods(JNIEnv *env, jclass
     jbyteArray ret = nullptr;
     checkAndSetFlatBufferResult(env, result, ret);
     return ret;
+}
+
+jboolean UnboxBoolean(JNIEnv *env, jobject booleanObj) {
+    static jmethodID booleanValueMID = [env]() -> auto {
+        jclass booleanClass = env->FindClass("java/lang/Boolean");
+        auto mid = env->GetMethodID(booleanClass, "booleanValue", "()Z");
+        env->DeleteLocalRef(booleanClass);
+        return mid;
+    }();
+    return env->CallBooleanMethod(booleanObj, booleanValueMID);
+}
+
+DEXKIT_JNI jobject
+Java_org_luckypray_dexkit_util_NativeReflect_getReflectedField(JNIEnv* env, jclass clazz,
+                                                                jclass declaringClass,
+                                                                jstring name,
+                                                                jstring jniSig,
+                                                               jobject booleanObj) {
+    const char* cname = env->GetStringUTFChars(name, nullptr);
+    const char* csig = env->GetStringUTFChars(jniSig, nullptr);
+    std::optional<jboolean> isStatic;
+    jfieldID fid = nullptr;
+    if (booleanObj != nullptr) {
+        isStatic = UnboxBoolean(env, booleanObj);
+        fid = *isStatic
+              ? env->GetStaticFieldID(declaringClass, cname, csig)
+              : env->GetFieldID(declaringClass, cname, csig);
+        if (fid == nullptr) {
+            env->ExceptionClear();
+        }
+    }
+    if (!isStatic.has_value()) {
+        fid = env->GetFieldID(declaringClass, cname, csig);
+        if (fid != nullptr) {
+            isStatic = false;
+        } else {
+            env->ExceptionClear();
+        }
+    }
+    if (!isStatic.has_value()) {
+        fid = env->GetStaticFieldID(declaringClass, cname, csig);
+        if (fid != nullptr) {
+            isStatic = true;
+        } else {
+            env->ExceptionClear();
+        }
+    }
+    env->ReleaseStringUTFChars(name, cname);
+    env->ReleaseStringUTFChars(jniSig, csig);
+    if (fid == nullptr) {
+        return nullptr;
+    }
+    return env->ToReflectedField(declaringClass, fid, *isStatic);
+}
+
+DEXKIT_JNI jobject
+Java_org_luckypray_dexkit_util_NativeReflect_getReflectedMethod(JNIEnv* env, jclass clazz,
+                                                                jclass declaringClass,
+                                                                jstring name,
+                                                                jstring jniSig,
+                                                                jobject booleanObj) {
+    const char* cname = env->GetStringUTFChars(name, nullptr);
+    const char* csig = env->GetStringUTFChars(jniSig, nullptr);
+
+    std::optional<jboolean> isStatic;
+    jmethodID mid = nullptr;
+    if (booleanObj != nullptr) {
+        isStatic = UnboxBoolean(env, booleanObj);
+        mid = *isStatic
+              ? env->GetStaticMethodID(declaringClass, cname, csig)
+              : env->GetMethodID(declaringClass, cname, csig);
+        if (mid == nullptr) {
+            env->ExceptionClear();
+        }
+    }
+    if (!isStatic.has_value()) {
+        mid = env->GetMethodID(declaringClass, cname, csig);
+        if (mid != nullptr) {
+            isStatic = false;
+        } else {
+            env->ExceptionClear();
+        }
+    }
+    if (!isStatic.has_value()) {
+        mid = env->GetStaticMethodID(declaringClass, cname, csig);
+        if (mid != nullptr) {
+            isStatic = true;
+        } else {
+            env->ExceptionClear();
+        }
+    }
+    env->ReleaseStringUTFChars(name, cname);
+    env->ReleaseStringUTFChars(jniSig, csig);
+    if (mid == nullptr) {
+        return nullptr;
+    }
+    return env->ToReflectedMethod(declaringClass, mid, *isStatic);
 }
 
 }

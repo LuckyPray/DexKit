@@ -90,75 +90,47 @@ object InstanceUtil {
         return out.toTypedArray()
     }
 
-    private fun getDeclaredMethodOrNull(
-        clazz: Class<*>,
-        name: String,
-        paramTypes: Array<Class<*>>
-    ): Method? = runCatching {
-        clazz.getDeclaredMethod(name, *paramTypes).apply { isAccessible = true }
-    }.getOrNull()
-
-    private fun getDeclaredCtorOrNull(
-        clazz: Class<*>,
-        paramTypes: Array<Class<*>>
-    ): Constructor<*>? = runCatching {
-        clazz.getDeclaredConstructor(*paramTypes).apply { isAccessible = true }
-    }.getOrNull()
-
-    private fun getDeclaredFieldOrNull(
-        clazz: Class<*>,
-        name: String
-    ): Field? = runCatching {
-        clazz.getDeclaredField(name).apply { isAccessible = true }
-    }.getOrNull()
-
+    @JvmOverloads
     @Throws(NoSuchFieldException::class)
-    fun getFieldInstance(classLoader: ClassLoader, dexField: DexField): Field {
-        try {
-            var clz: Class<*> = getClassInstance(classLoader, dexField.className)
-            val type = tryLoadType(classLoader, dexField.typeName)
-                ?: throw NoSuchMethodException("Field $dexField not available: return type missing")
+    fun getFieldInstance(classLoader: ClassLoader, dexField: DexField, isStatic: Boolean? = null): Field {
+        tryLoadType(classLoader, dexField.typeName)
+            ?: throw NoSuchMethodException("Field $dexField not available: return type missing")
 
-            do {
-                getDeclaredFieldOrNull(clz, dexField.name)?.let { f ->
-                    if (f.type == type) return f
-                }
-            } while (clz.superclass.also { clz = it } != null)
-            throw NoSuchFieldException("Field $dexField not found")
-        } catch (e: ClassNotFoundException) {
-            throw NoSuchFieldException("No such field: $dexField").initCause(e)
+        val clz: Class<*> = getClassInstance(classLoader, dexField.className)
+        NativeReflect.getReflectedField(clz, dexField.name, dexField.typeSign, isStatic)?.let {
+            return it.apply { isAccessible = true }
         }
+        throw NoSuchFieldException("Field $dexField not found")
     }
 
     @Throws(NoSuchMethodException::class)
     fun getConstructorInstance(classLoader: ClassLoader, dexMethod: DexMethod): Constructor<*> {
         require(dexMethod.isConstructor) { "$dexMethod not a constructor" }
 
-        val paramTypes = resolveParamTypesOrNull(classLoader, dexMethod.paramTypeNames)
+        resolveParamTypesOrNull(classLoader, dexMethod.paramTypeNames)
             ?: throw NoSuchMethodException("Constructor $dexMethod not available: parameter type(s) missing")
 
-        var clz: Class<*> = getClassInstance(classLoader, dexMethod.className)
-        do {
-            getDeclaredCtorOrNull(clz, paramTypes)?.let { return it }
-        } while (clz.superclass.also { clz = it } != null)
+        val clz: Class<*> = getClassInstance(classLoader, dexMethod.className)
+        NativeReflect.getReflectedMethod(clz, dexMethod.name, dexMethod.methodSign, false)?.let {
+            return (it as Constructor<*>).apply { isAccessible = true }
+        }
         throw NoSuchMethodException("Constructor $dexMethod not found")
     }
 
+    @JvmOverloads
     @Throws(NoSuchMethodException::class)
-    fun getMethodInstance(classLoader: ClassLoader, dexMethod: DexMethod): Method {
+    fun getMethodInstance(classLoader: ClassLoader, dexMethod: DexMethod, isStatic: Boolean? = null): Method {
         require(dexMethod.isMethod) { "$dexMethod not a method" }
 
-        val paramTypes = resolveParamTypesOrNull(classLoader, dexMethod.paramTypeNames)
+        resolveParamTypesOrNull(classLoader, dexMethod.paramTypeNames)
             ?: throw NoSuchMethodException("Method $dexMethod not available: parameter type(s) missing")
-        val retType = tryLoadType(classLoader, dexMethod.returnTypeName)
+        tryLoadType(classLoader, dexMethod.returnTypeName)
             ?: throw NoSuchMethodException("Method $dexMethod not available: return type missing")
 
-        var clz: Class<*> = getClassInstance(classLoader, dexMethod.className)
-        do {
-            getDeclaredMethodOrNull(clz, dexMethod.name, paramTypes)?.let { m ->
-                if (m.returnType == retType) return m
-            }
-        } while (clz.superclass.also { clz = it } != null)
+        val clz: Class<*> = getClassInstance(classLoader, dexMethod.className)
+        NativeReflect.getReflectedMethod(clz, dexMethod.name, dexMethod.methodSign, isStatic)?.let {
+            return (it as Method).apply { isAccessible = true }
+        }
         throw NoSuchMethodException("Method $dexMethod not found")
     }
 
