@@ -20,6 +20,7 @@
 
 #include <jni.h>
 #include "dexkit.h"
+#include "jni_helper.h"
 
 #define TAG "DexKit"
 #define DEXKIT_JNI JNIEXPORT JNICALL
@@ -196,13 +197,13 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
         if (dex_images.empty()) {
             auto file_name_obj = (jstring) env->GetObjectField(java_dex_file, file_name_field);
             if (!file_name_obj) continue;
-            auto file_name = env->GetStringUTFChars(file_name_obj, nullptr);
+            auto file_name = ScopedUtfChars(env, file_name_obj);
             if (has_compact) {
-                LOGD("contains compact dex, use path load: %s", file_name);
+                LOGD("contains compact dex, use path load: %s", file_name.c_str());
             } else {
-                LOGD("images is empty, use path load: %s", file_name);
+                LOGD("images is empty, use path load: %s", file_name.c_str());
             }
-            auto ret = dexkit->AddZipPath(file_name);
+            auto ret = dexkit->AddZipPath(file_name.c_str());
             if (ret != Error::SUCCESS) {
                 throwException(env, ret);
                 delete dexkit;
@@ -264,17 +265,15 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass claz
     if (!apk_path) {
         return 0;
     }
-    const char *cStr = env->GetStringUTFChars(apk_path, nullptr);
-    LOGI("apkPath -> %s", cStr);
-    std::string filePathStr(cStr);
+    auto cpath = ScopedUtfChars(env, apk_path);
+    LOGI("apkPath -> %s", cpath.c_str());
     auto dexkit = new dexkit::DexKit();
-    auto ret = dexkit->AddZipPath(filePathStr);
+    auto ret = dexkit->AddZipPath(cpath.c_str());
     if (ret != Error::SUCCESS) {
         throwException(env, ret);
         delete dexkit;
         return 0;
     }
-    env->ReleaseStringUTFChars(apk_path, cStr);
     return (jlong) dexkit;
 }
 
@@ -334,13 +333,11 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeExportDexFile(JNIEnv *env,
         return;
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
-    const char *outDir = env->GetStringUTFChars(out_dir, nullptr);
-    std::string outDirStr(outDir);
-    auto ret = dexkit->ExportDexFile(outDirStr);
+    auto cdir = ScopedUtfChars(env, out_dir);
+    auto ret = dexkit->ExportDexFile(cdir.c_str());
     if (ret != Error::SUCCESS) {
         throwException(env, ret);
     }
-    env->ReleaseStringUTFChars(out_dir, outDir);
 }
 
 DEXKIT_JNI jbyteArray
@@ -444,11 +441,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetClassData(JNIEnv *env, jclass cl
         return {};
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
-    auto dex_descriptor_str = env->GetStringUTFChars(dex_descriptor, nullptr);
-    auto result = dexkit->GetClassData(dex_descriptor_str);
+    auto cdesc = ScopedUtfChars(env, dex_descriptor);
+    auto result = dexkit->GetClassData(cdesc.c_str());
     jbyteArray ret = nullptr;
     checkAndSetFlatBufferResult(env, result, ret);
-    env->ReleaseStringUTFChars(dex_descriptor, dex_descriptor_str);
     return ret;
 }
 
@@ -460,8 +456,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodData(JNIEnv *env, jclass c
         return {};
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
-    auto dex_descriptor_str = env->GetStringUTFChars(dex_descriptor, nullptr);
-    auto result = dexkit->GetMethodData(dex_descriptor_str);
+    auto cdesc = ScopedUtfChars(env, dex_descriptor);
+    auto result = dexkit->GetMethodData(cdesc.c_str());
     jbyteArray ret = nullptr;
     checkAndSetFlatBufferResult(env, result, ret);
     return ret;
@@ -475,8 +471,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetFieldData(JNIEnv *env, jclass cl
         return {};
     }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
-    auto dex_descriptor_str = env->GetStringUTFChars(dex_descriptor, nullptr);
-    auto result = dexkit->GetFieldData(dex_descriptor_str);
+    auto cdesc = ScopedUtfChars(env, dex_descriptor);
+    auto result = dexkit->GetFieldData(cdesc.c_str());
     jbyteArray ret = nullptr;
     checkAndSetFlatBufferResult(env, result, ret);
     return ret;
@@ -734,21 +730,30 @@ jboolean UnboxBoolean(JNIEnv *env, jobject booleanObj) {
 
 DEXKIT_JNI jobject
 Java_org_luckypray_dexkit_util_NativeReflect_getReflectedField(JNIEnv* env, jclass clazz,
-                                                                jclass declaringClass,
-                                                                jstring name,
-                                                                jstring jniSig,
+                                                               jclass declaringClass,
+                                                               jstring name,
+                                                               jstring jniSig,
                                                                jobject booleanObj) {
-    const char* cname = env->GetStringUTFChars(name, nullptr);
-    const char* csig = env->GetStringUTFChars(jniSig, nullptr);
+    static jclass noSuchFieldErrorCls = [env]() -> auto {
+        auto cls = env->FindClass("java/lang/NoSuchFieldError");
+        auto ret = (jclass) env->NewGlobalRef(cls);
+        env->DeleteLocalRef(cls);
+        return ret;
+    }();
+
+    auto cname = ScopedUtfChars(env, name);
+    auto csig = ScopedUtfChars(env, jniSig);
     std::optional<jboolean> isStatic;
     jfieldID fid = nullptr;
+
     if (booleanObj != nullptr) {
         isStatic = UnboxBoolean(env, booleanObj);
+        LOGD("UnboxBoolean isStatic: %d, cname: %s, csig: %s\n", *isStatic, cname.c_str(), csig.c_str());
         fid = *isStatic
               ? env->GetStaticFieldID(declaringClass, cname, csig)
               : env->GetFieldID(declaringClass, cname, csig);
         if (fid == nullptr) {
-            env->ExceptionClear();
+            return nullptr;
         }
     }
     if (!isStatic.has_value()) {
@@ -756,6 +761,11 @@ Java_org_luckypray_dexkit_util_NativeReflect_getReflectedField(JNIEnv* env, jcla
         if (fid != nullptr) {
             isStatic = false;
         } else {
+            jthrowable exception = env->ExceptionOccurred();
+            if (!env->IsInstanceOf(exception, noSuchFieldErrorCls)) {
+                env->DeleteLocalRef(exception);
+                return nullptr;
+            }
             env->ExceptionClear();
         }
     }
@@ -764,11 +774,14 @@ Java_org_luckypray_dexkit_util_NativeReflect_getReflectedField(JNIEnv* env, jcla
         if (fid != nullptr) {
             isStatic = true;
         } else {
+            jthrowable exception = env->ExceptionOccurred();
+            if (!env->IsInstanceOf(exception, noSuchFieldErrorCls)) {
+                env->DeleteLocalRef(exception);
+                return nullptr;
+            }
             env->ExceptionClear();
         }
     }
-    env->ReleaseStringUTFChars(name, cname);
-    env->ReleaseStringUTFChars(jniSig, csig);
     if (fid == nullptr) {
         return nullptr;
     }
@@ -781,9 +794,15 @@ Java_org_luckypray_dexkit_util_NativeReflect_getReflectedMethod(JNIEnv* env, jcl
                                                                 jstring name,
                                                                 jstring jniSig,
                                                                 jobject booleanObj) {
-    const char* cname = env->GetStringUTFChars(name, nullptr);
-    const char* csig = env->GetStringUTFChars(jniSig, nullptr);
+    static jclass noSuchMethodErrorCls = [env]() -> auto {
+        auto cls = env->FindClass("java/lang/NoSuchMethodError");
+        auto ret = (jclass) env->NewGlobalRef(cls);
+        env->DeleteLocalRef(cls);
+        return ret;
+    }();
 
+    auto cname = ScopedUtfChars(env, name);
+    auto csig = ScopedUtfChars(env, jniSig);
     std::optional<jboolean> isStatic;
     jmethodID mid = nullptr;
     if (booleanObj != nullptr) {
@@ -800,6 +819,11 @@ Java_org_luckypray_dexkit_util_NativeReflect_getReflectedMethod(JNIEnv* env, jcl
         if (mid != nullptr) {
             isStatic = false;
         } else {
+            jthrowable exception = env->ExceptionOccurred();
+            if (!env->IsInstanceOf(exception, noSuchMethodErrorCls)) {
+                env->DeleteLocalRef(exception);
+                return nullptr;
+            }
             env->ExceptionClear();
         }
     }
@@ -808,11 +832,14 @@ Java_org_luckypray_dexkit_util_NativeReflect_getReflectedMethod(JNIEnv* env, jcl
         if (mid != nullptr) {
             isStatic = true;
         } else {
+            jthrowable exception = env->ExceptionOccurred();
+            if (!env->IsInstanceOf(exception, noSuchMethodErrorCls)) {
+                env->DeleteLocalRef(exception);
+                return nullptr;
+            }
             env->ExceptionClear();
         }
     }
-    env->ReleaseStringUTFChars(name, cname);
-    env->ReleaseStringUTFChars(jniSig, csig);
     if (mid == nullptr) {
         return nullptr;
     }
