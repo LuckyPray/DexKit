@@ -552,6 +552,11 @@ class DexKitBridge : Closeable {
     }
 
     @kotlin.internal.InlineOnly
+    internal inline fun getMethodUsingNumbers(encodeId: Long): List<Number> {
+        return nativeGetMethodUsingNumbers(safeToken, encodeId).toList()
+    }
+
+    @kotlin.internal.InlineOnly
     internal inline fun getMethodUsingFields(encodeId: Long): List<UsingFieldData> {
         val res = nativeGetMethodUsingFields(safeToken, encodeId)
         val holder = InnerUsingFieldMetaArrayHolder.getRootAsUsingFieldMetaArrayHolder(ByteBuffer.wrap(res))
@@ -720,6 +725,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetMethodUsingStrings(nativePtr: Long, encodeId: Long): Array<String>
+
+        @JvmStatic
+        private external fun nativeGetMethodUsingNumbers(nativePtr: Long, encodeId: Long): Array<Number>
 
         @JvmStatic
         private external fun nativeGetMethodUsingFields(nativePtr: Long, encodeId: Long): ByteArray

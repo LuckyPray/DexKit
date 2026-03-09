@@ -77,6 +77,43 @@ void checkAndSetFlatBufferResult(JNIEnv *env, std::unique_ptr<flatbuffers::FlatB
     ptr->Release();
 }
 
+jobject BoxNumber(JNIEnv *env, const dexkit::EncodeNumber &number) {
+    switch (number.type) {
+        case dexkit::BYTE: {
+            static jclass cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Byte")));
+            static jmethodID mid = env->GetStaticMethodID(cls, "valueOf", "(B)Ljava/lang/Byte;");
+            return env->CallStaticObjectMethod(cls, mid, static_cast<jbyte>(number.value.L8));
+        }
+        case dexkit::SHORT: {
+            static jclass cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Short")));
+            static jmethodID mid = env->GetStaticMethodID(cls, "valueOf", "(S)Ljava/lang/Short;");
+            return env->CallStaticObjectMethod(cls, mid, static_cast<jshort>(number.value.L16));
+        }
+        case dexkit::INT: {
+            static jclass cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Integer")));
+            static jmethodID mid = env->GetStaticMethodID(cls, "valueOf", "(I)Ljava/lang/Integer;");
+            return env->CallStaticObjectMethod(cls, mid, static_cast<jint>(number.value.L32.int_value));
+        }
+        case dexkit::LONG: {
+            static jclass cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Long")));
+            static jmethodID mid = env->GetStaticMethodID(cls, "valueOf", "(J)Ljava/lang/Long;");
+            return env->CallStaticObjectMethod(cls, mid, static_cast<jlong>(number.value.L64.long_value));
+        }
+        case dexkit::FLOAT: {
+            static jclass cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Float")));
+            static jmethodID mid = env->GetStaticMethodID(cls, "valueOf", "(F)Ljava/lang/Float;");
+            return env->CallStaticObjectMethod(cls, mid, static_cast<jfloat>(number.value.L32.float_value));
+        }
+        case dexkit::DOUBLE: {
+            static jclass cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Double")));
+            static jmethodID mid = env->GetStaticMethodID(cls, "valueOf", "(D)Ljava/lang/Double;");
+            return env->CallStaticObjectMethod(cls, mid, static_cast<jdouble>(number.value.L64.double_value));
+        }
+        default:
+            return nullptr;
+    }
+}
+
 extern "C" {
 
 #ifdef __ANDROID__
@@ -662,8 +699,8 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetInvokeMethods(JNIEnv *env, jclas
 
 DEXKIT_JNI jobjectArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingStrings(JNIEnv *env, jclass clazz,
-                                                                   jlong native_ptr,
-                                                                   jlong encode_method_id) {
+                                                                    jlong native_ptr,
+                                                                    jlong encode_method_id) {
     if (!native_ptr) {
         return {};
     }
@@ -676,9 +713,27 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingStrings(JNIEnv *env, 
     return ret;
 }
 
+DEXKIT_JNI jobjectArray
+Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingNumbers(JNIEnv *env, jclass clazz,
+                                                                    jlong native_ptr,
+                                                                    jlong encode_method_id) {
+    if (!native_ptr) {
+        return {};
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    auto result = dexkit->GetUsingNumbers(encode_method_id);
+    jobjectArray ret = env->NewObjectArray(result.size(), env->FindClass("java/lang/Number"), nullptr);
+    for (int i = 0; i < result.size(); ++i) {
+        auto number = BoxNumber(env, result[i]);
+        env->SetObjectArrayElement(ret, i, number);
+        env->DeleteLocalRef(number);
+    }
+    return ret;
+}
+
 DEXKIT_JNI jbyteArray
 Java_org_luckypray_dexkit_DexKitBridge_nativeGetMethodUsingFields(JNIEnv *env, jclass clazz,
-                                                                   jlong native_ptr,
+                                                                    jlong native_ptr,
                                                                    jlong encode_method_id) {
     if (!native_ptr) {
         return {};

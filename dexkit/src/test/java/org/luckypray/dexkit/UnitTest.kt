@@ -275,4 +275,16 @@ class UnitTest {
         }.single()
         assert(cls.className == "org.luckypray.dexkit.demo.PlayActivity")
     }
+
+    @Test
+    fun testGetMethodUsingNumbers() {
+        val res = bridge.getMethodData("Lorg/luckypray/dexkit/demo/PlayActivity;->onCreate(Landroid/os/Bundle;)V")
+        assert(res != null)
+        val numbers = res!!.usingNumbers
+        assert(numbers.any { it.toLong() == -1L })
+        assert(numbers.any { it.toLong() == 0L })
+        assert(numbers.any { it.toLong() == 114514L })
+        assert(numbers.any { kotlin.math.abs(it.toDouble() - 0.01) < 1e-6 })
+        assert(numbers.any { kotlin.math.abs(it.toDouble() - 0.987) < 1e-6 })
+    }
 }

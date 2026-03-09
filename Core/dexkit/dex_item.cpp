@@ -933,6 +933,10 @@ std::vector<std::string_view> DexItem::GetUsingStrings(uint32_t method_idx) {
     return using_strings;
 }
 
+std::vector<EncodeNumber> DexItem::GetUsingNumbers(uint32_t method_idx) {
+    return GetUsingNumbersFromCode(method_idx);
+}
+
 std::vector<UsingFieldBean> DexItem::GetUsingFields(uint32_t method_idx) {
     auto &method_using_fields = this->method_using_field_ids[method_idx];
     std::vector<UsingFieldBean> using_fields;

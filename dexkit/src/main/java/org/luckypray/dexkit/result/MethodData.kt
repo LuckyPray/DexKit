@@ -250,6 +250,15 @@ class MethodData private constructor(
     }
 
     /**
+     * Get method using numbers
+     * ----------------
+     * 获取该方法使用的数字列表
+     */
+    val usingNumbers by lazy {
+        bridge.getMethodUsingNumbers(getEncodeId(dexId, id))
+    }
+
+    /**
      * Get method using fields
      * ----------------
      * 获取该方法使用的字段列表
