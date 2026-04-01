@@ -92,6 +92,7 @@ object DexKitCacheBridge {
     private val weakPool = ConcurrentHashMap<String, KeyedWeakReference>()
     private val refQueue = ReferenceQueue<RecyclableBridge>()
     private val listeners = CopyOnWriteArraySet<Listener>()
+    private val hexDigits = "0123456789ABCDEF".toCharArray()
 
     private class KeyedWeakReference(
         val key: String,
@@ -105,6 +106,34 @@ object DexKitCacheBridge {
             val keyed = ref as? KeyedWeakReference ?: continue
             weakPool.remove(keyed.key, keyed)
         }
+    }
+
+    private fun isUnreserved(ch: Char): Boolean {
+        return ch in 'a'..'z' ||
+            ch in 'A'..'Z' ||
+            ch in '0'..'9' ||
+            ch == '-' || ch == '_' || ch == '.' || ch == '~'
+    }
+
+    private fun encodeSegment(raw: String): String {
+        val bytes = raw.toByteArray(Charsets.UTF_8)
+        val out = StringBuilder(bytes.size)
+        for (byte in bytes) {
+            val value = byte.toInt() and 0xFF
+            val ch = value.toChar()
+            if (isUnreserved(ch)) {
+                out.append(ch)
+            } else {
+                out.append('%')
+                out.append(hexDigits[value ushr 4])
+                out.append(hexDigits[value and 0x0F])
+            }
+        }
+        return out.toString()
+    }
+
+    private fun cachePrefixOf(appTag: String): String {
+        return "dkcb:${encodeSegment(appTag)}"
     }
 
     private fun tryPromoteFromWeakPool(appTag: String): RecyclableBridge? {
@@ -205,7 +234,7 @@ object DexKitCacheBridge {
     @JvmStatic
     fun clearCache(appTag: String) {
         lock.write {
-            val prefix = "$appTag:"
+            val prefix = "${cachePrefixOf(appTag)}:"
             cache.getAllKeys().forEach {
                 if (it.startsWith(prefix)) {
                     cache.remove(it)
@@ -1970,13 +1999,13 @@ object DexKitCacheBridge {
             ensureUsable()
 
             fun <U : ISerializable> innerGetMap(cacheKey: String): Map<String, List<U>>? {
-                cache.getList("$cacheKey:keys", null)?.let { keys ->
+                cache.getList(mapGroupsKey(cacheKey), null)?.let { keys ->
                     val map = mutableMapOf<String, List<U>>()
                     keys.forEach { groupKey ->
-                        val dataList = cache.getList("$cacheKey:$groupKey", null)
+                        val dataList = cache.getList(mapGroupKey(cacheKey, groupKey), null)
                             ?.map { ISerializable.deserializeAs<U>(it) }
                             ?: emptyList()
-                        map.put(groupKey, dataList)
+                        map[groupKey] = dataList
                     }
                     return map
                 }
@@ -2020,15 +2049,20 @@ object DexKitCacheBridge {
                     source = ResultSource.QUERY,
                     result = loaded.fold(
                         onSuccess = { map ->
-                            val oldKeys = cache.getList("$cacheKey:keys", null) ?: emptyList()
+                            val oldKeys = cache.getList(mapGroupsKey(cacheKey), null) ?: emptyList()
                             val keys = mutableListOf<String>()
                             if (cachePolicy.cacheSuccess) {
                                 map.entries.forEach { (groupKey, value) ->
                                     keys.add(groupKey)
-                                    cache.putList("$cacheKey:$groupKey", value.map { it.serialize() })
+                                    cache.putList(
+                                        mapGroupKey(cacheKey, groupKey),
+                                        value.map { it.serialize() }
+                                    )
                                 }
-                                (oldKeys - keys.toSet()).forEach { cache.remove("$cacheKey:$it") }
-                                cache.putList("$cacheKey:keys", keys)
+                                (oldKeys - keys.toSet()).forEach {
+                                    cache.remove(mapGroupKey(cacheKey, it))
+                                }
+                                cache.putList(mapGroupsKey(cacheKey), keys)
                             }
                             Result.success(map)
                         },
@@ -2039,12 +2073,21 @@ object DexKitCacheBridge {
             }
         }
 
+        private fun mapGroupsKey(cacheKey: String): String = "$cacheKey:meta:groups"
+
+        private fun mapGroupKey(cacheKey: String, groupKey: String): String {
+            return "$cacheKey:group:${encodeSegment(groupKey)}"
+        }
+
         private fun spKeyOf(kind: String, key: String?, query: BaseFinder? = null): String {
-            if (key != null) return "$appTag:$kind:$key"
+            val prefix = "${cachePrefixOf(appTag)}:$kind"
+            if (key != null) {
+                return "$prefix:user:${encodeSegment(key)}"
+            }
             requireNotNull(query) {
                 "Either key or query must be provided for auto-generated cache key."
             }
-            return "$appTag:$kind:${query.hashKey()}"
+            return "$prefix:auto:${encodeSegment(query.hashKey())}"
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalSingle(
