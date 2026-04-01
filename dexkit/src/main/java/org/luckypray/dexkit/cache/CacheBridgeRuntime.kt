@@ -1,11 +1,34 @@
-package org.luckypray.dexkit
+/*
+ * DexKit - An high-performance runtime parsing library for dex
+ * implemented in C++
+ * Copyright (C) 2022-2023 LuckyPray
+ * https://github.com/LuckyPray/DexKit
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see
+ * <https://www.gnu.org/licenses/>.
+ * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
+ */
+package org.luckypray.dexkit.cache
 
+import org.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.DexKitCacheBridge
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-internal class DexKitCacheBridgeRuntime(
+internal class CacheBridgeRuntime(
     private val appTag: String,
     private val bridgeHolder: DexKitCacheBridge.RecyclableBridge,
     private val scheduler: ScheduledThreadPoolExecutor,
@@ -97,10 +120,10 @@ internal class DexKitCacheBridgeRuntime(
                 if (generation != token) return@schedule
                 reaperFuture = null
                 if (releaseRequested) return@schedule
-                val removed = DexKitCacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
+                val removed = CacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
                 if (!removed || isDestroyed()) return@schedule
                 val result = releaseBridgeLocked()
-                DexKitCacheBridgeRegistry.putWeak(appTag, bridgeHolder)
+                CacheBridgeRegistry.putWeak(appTag, bridgeHolder)
                 result
             }
             if (released) {
@@ -111,9 +134,9 @@ internal class DexKitCacheBridgeRuntime(
 
     private fun moveToWeakPoolLocked() {
         if (!isDestroyed()) {
-            DexKitCacheBridgeRegistry.moveToWeak(appTag, bridgeHolder)
+            CacheBridgeRegistry.moveToWeak(appTag, bridgeHolder)
         } else {
-            DexKitCacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
+            CacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
         }
     }
 
@@ -149,8 +172,8 @@ internal class DexKitCacheBridgeRuntime(
                     released = releaseBridgeLocked()
                 }
             }
-            DexKitCacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
-            DexKitCacheBridgeRegistry.removeWeak(appTag)
+            CacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
+            CacheBridgeRegistry.removeWeak(appTag)
             if (released) {
                 notifyBridgeReleased()
             }

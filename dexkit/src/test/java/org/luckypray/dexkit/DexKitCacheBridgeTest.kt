@@ -7,6 +7,7 @@ import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.luckypray.dexkit.cache.CacheBridgeKeys
 import org.luckypray.dexkit.exceptions.NoResultException
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
@@ -365,8 +366,8 @@ class DexKitCacheBridgeTest {
             assertActivities(queryActivities())
             successes.clear()
 
-            val cacheKey = DexKitCacheBridgeKeys.cacheKeyOf(appTag, "b", key)
-            val brokenGroupKey = DexKitCacheBridgeKeys.mapGroupKey(cacheKey, "play")
+            val cacheKey = CacheBridgeKeys.cacheKeyOf(appTag, "b", key)
+            val brokenGroupKey = CacheBridgeKeys.mapGroupKey(cacheKey, "play")
             cache.remove(brokenGroupKey)
 
             val repaired = queryActivities()

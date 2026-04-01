@@ -1,5 +1,27 @@
-package org.luckypray.dexkit
+/*
+ * DexKit - An high-performance runtime parsing library for dex
+ * implemented in C++
+ * Copyright (C) 2022-2023 LuckyPray
+ * https://github.com/LuckyPray/DexKit
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see
+ * <https://www.gnu.org/licenses/>.
+ * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
+ */
+package org.luckypray.dexkit.cache
 
+import org.luckypray.dexkit.DexKitCacheBridge
 import org.luckypray.dexkit.exceptions.NoResultException
 import org.luckypray.dexkit.exceptions.NonUniqueResultException
 import org.luckypray.dexkit.wrap.ISerializable
@@ -7,7 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-internal object DexKitCacheBridgeStore {
+internal object CacheBridgeStore {
     private const val CACHE_NO_RESULT = "CACHE_NO_RESULT"
     private const val CACHE_NON_UNIQUE = "CACHE_NON_UNIQUE"
 
@@ -228,7 +250,7 @@ internal object DexKitCacheBridgeStore {
         ensureUsable()
 
         fun <U : ISerializable> innerGetMap(cacheKey: String): Map<String, List<U>>? {
-            val keys = cache.getStringList(DexKitCacheBridgeKeys.mapGroupsKey(cacheKey), null)
+            val keys = cache.getStringList(CacheBridgeKeys.mapGroupsKey(cacheKey), null)
                 ?: return null
 
             val uniqueKeys = LinkedHashSet<String>(keys.size)
@@ -238,7 +260,7 @@ internal object DexKitCacheBridgeStore {
                     return null
                 }
                 val rawList = cache.getStringList(
-                    DexKitCacheBridgeKeys.mapGroupKey(cacheKey, groupKey),
+                    CacheBridgeKeys.mapGroupKey(cacheKey, groupKey),
                     null
                 ) ?: return null
                 val dataList = runCatching {
@@ -279,7 +301,7 @@ internal object DexKitCacheBridgeStore {
                 result = loaded.fold(
                     onSuccess = { map ->
                         val oldKeys = cache.getStringList(
-                            DexKitCacheBridgeKeys.mapGroupsKey(cacheKey),
+                            CacheBridgeKeys.mapGroupsKey(cacheKey),
                             null
                         ) ?: emptyList()
                         val keys = mutableListOf<String>()
@@ -287,14 +309,14 @@ internal object DexKitCacheBridgeStore {
                             map.entries.forEach { (groupKey, value) ->
                                 keys.add(groupKey)
                                 cache.putStringList(
-                                    DexKitCacheBridgeKeys.mapGroupKey(cacheKey, groupKey),
+                                    CacheBridgeKeys.mapGroupKey(cacheKey, groupKey),
                                     value.map { it.serialize() }
                                 )
                             }
                             (oldKeys - keys.toSet()).forEach {
-                                cache.remove(DexKitCacheBridgeKeys.mapGroupKey(cacheKey, it))
+                                cache.remove(CacheBridgeKeys.mapGroupKey(cacheKey, it))
                             }
-                            cache.putStringList(DexKitCacheBridgeKeys.mapGroupsKey(cacheKey), keys)
+                            cache.putStringList(CacheBridgeKeys.mapGroupsKey(cacheKey), keys)
                         }
                         Result.success(map)
                     },

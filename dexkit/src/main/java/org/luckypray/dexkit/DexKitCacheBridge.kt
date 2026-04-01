@@ -1,7 +1,32 @@
+/*
+ * DexKit - An high-performance runtime parsing library for dex
+ * implemented in C++
+ * Copyright (C) 2022-2023 LuckyPray
+ * https://github.com/LuckyPray/DexKit
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see
+ * <https://www.gnu.org/licenses/>.
+ * <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
+ */
 @file:Suppress("MemberVisibilityCanBePrivate", "unused", "NOTHING_TO_INLINE")
 
 package org.luckypray.dexkit
 
+import org.luckypray.dexkit.cache.CacheBridgeKeys
+import org.luckypray.dexkit.cache.CacheBridgeRegistry
+import org.luckypray.dexkit.cache.CacheBridgeRuntime
+import org.luckypray.dexkit.cache.CacheBridgeStore
 import org.luckypray.dexkit.exceptions.NoResultException
 import org.luckypray.dexkit.exceptions.NonUniqueResultException
 import org.luckypray.dexkit.query.BatchFindClassUsingStrings
@@ -123,7 +148,7 @@ object DexKitCacheBridge {
     @JvmStatic
     fun create(appTag: String, path: String): RecyclableBridge {
         cache
-        return DexKitCacheBridgeRegistry.obtainBridge(appTag) {
+        return CacheBridgeRegistry.obtainBridge(appTag) {
             RecyclableBridge.create(appTag, path)
         }
     }
@@ -131,7 +156,7 @@ object DexKitCacheBridge {
     @JvmStatic
     fun create(appTag: String, dexArray: Array<ByteArray>): RecyclableBridge {
         cache
-        return DexKitCacheBridgeRegistry.obtainBridge(appTag) {
+        return CacheBridgeRegistry.obtainBridge(appTag) {
             RecyclableBridge.create(appTag, dexArray)
         }
     }
@@ -139,7 +164,7 @@ object DexKitCacheBridge {
     @JvmStatic
     fun create(appTag: String, classLoader: ClassLoader): RecyclableBridge {
         cache
-        return DexKitCacheBridgeRegistry.obtainBridge(appTag) {
+        return CacheBridgeRegistry.obtainBridge(appTag) {
             RecyclableBridge.create(appTag, classLoader)
         }
     }
@@ -147,7 +172,7 @@ object DexKitCacheBridge {
     @JvmStatic
     fun clearCache(appTag: String) {
         cacheLock.write {
-            val prefix = "${DexKitCacheBridgeKeys.cachePrefixOf(appTag)}:"
+            val prefix = "${CacheBridgeKeys.cachePrefixOf(appTag)}:"
             cache.getAllKeys().forEach {
                 if (it.startsWith(prefix)) {
                     cache.remove(it)
@@ -199,7 +224,7 @@ object DexKitCacheBridge {
         }
 
         private val runtime by lazy(LazyThreadSafetyMode.NONE) {
-            DexKitCacheBridgeRuntime(
+            CacheBridgeRuntime(
                 appTag = appTag,
                 bridgeHolder = this,
                 scheduler = reaperScheduler,
@@ -1362,9 +1387,9 @@ object DexKitCacheBridge {
                 queryKind = QueryKind.METHOD_SINGLE,
                 key = key,
                 mode = if (allowNull) {
-                    DexKitCacheBridgeStore.SingleResolveMode.NULLABLE
+                    CacheBridgeStore.SingleResolveMode.NULLABLE
                 } else {
-                    DexKitCacheBridgeStore.SingleResolveMode.REQUIRED
+                    CacheBridgeStore.SingleResolveMode.REQUIRED
                 },
                 buildQuery = buildQuery,
                 executor = { b, q -> b.findMethod(q) },
@@ -1397,9 +1422,9 @@ object DexKitCacheBridge {
             queryKind = QueryKind.CLASS_SINGLE,
             key = key,
             mode = if (allowNull) {
-                DexKitCacheBridgeStore.SingleResolveMode.NULLABLE
+                CacheBridgeStore.SingleResolveMode.NULLABLE
             } else {
-                DexKitCacheBridgeStore.SingleResolveMode.REQUIRED
+                CacheBridgeStore.SingleResolveMode.REQUIRED
             },
             buildQuery = query?.let { { query } },
             executor = { b, q: FindClass -> b.findClass(q) },
@@ -1427,9 +1452,9 @@ object DexKitCacheBridge {
             queryKind = QueryKind.FIELD_SINGLE,
             key = key,
             mode = if (allowNull) {
-                DexKitCacheBridgeStore.SingleResolveMode.NULLABLE
+                CacheBridgeStore.SingleResolveMode.NULLABLE
             } else {
-                DexKitCacheBridgeStore.SingleResolveMode.REQUIRED
+                CacheBridgeStore.SingleResolveMode.REQUIRED
             },
             buildQuery = query?.let { { query } },
             executor = { b, q: FindField -> b.findField(q) },
@@ -1479,9 +1504,9 @@ object DexKitCacheBridge {
             queryKind = QueryKind.METHOD_SINGLE,
             key = key,
             mode = if (allowNull) {
-                DexKitCacheBridgeStore.SingleResolveMode.NULLABLE
+                CacheBridgeStore.SingleResolveMode.NULLABLE
             } else {
-                DexKitCacheBridgeStore.SingleResolveMode.REQUIRED
+                CacheBridgeStore.SingleResolveMode.REQUIRED
             },
             executor = query,
             mapper = { it.toDexMethod() }
@@ -1495,9 +1520,9 @@ object DexKitCacheBridge {
             queryKind = QueryKind.CLASS_SINGLE,
             key = key,
             mode = if (allowNull) {
-                DexKitCacheBridgeStore.SingleResolveMode.NULLABLE
+                CacheBridgeStore.SingleResolveMode.NULLABLE
             } else {
-                DexKitCacheBridgeStore.SingleResolveMode.REQUIRED
+                CacheBridgeStore.SingleResolveMode.REQUIRED
             },
             executor = query,
             mapper = { it.toDexClass() }
@@ -1511,9 +1536,9 @@ object DexKitCacheBridge {
             queryKind = QueryKind.FIELD_SINGLE,
             key = key,
             mode = if (allowNull) {
-                DexKitCacheBridgeStore.SingleResolveMode.NULLABLE
+                CacheBridgeStore.SingleResolveMode.NULLABLE
             } else {
-                DexKitCacheBridgeStore.SingleResolveMode.REQUIRED
+                CacheBridgeStore.SingleResolveMode.REQUIRED
             },
             executor = query,
             mapper = { it.toDexField() }
@@ -1595,7 +1620,7 @@ object DexKitCacheBridge {
         private inline fun <T> observeLoad(
             queryKind: QueryKind,
             key: String?,
-            loadResult: DexKitCacheBridgeStore.LoadResult<T>,
+            loadResult: CacheBridgeStore.LoadResult<T>,
             countOf: (T) -> Int
         ): Result<T> {
             return notifyQueryResult(
@@ -1610,28 +1635,28 @@ object DexKitCacheBridge {
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalSingle(
             queryKind: QueryKind,
             key: String?,
-            mode: DexKitCacheBridgeStore.SingleResolveMode,
+            mode: CacheBridgeStore.SingleResolveMode,
             noinline buildQuery: (() -> Q)?,
             noinline executor: (DexKitBridge, Q) -> List<D>,
             noinline mapper: (D) -> R
         ): Result<R?> {
             val query = buildQuery?.invoke()
             // :s: -> single
-            val spKey = DexKitCacheBridgeKeys.cacheKeyOf(appTag, "s", key, query)
-            val loader: (() -> DexKitCacheBridgeStore.SingleOutcome<R>)? = query?.let {
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "s", key, query)
+            val loader: (() -> CacheBridgeStore.SingleOutcome<R>)? = query?.let {
                 {
                     acquireBridge {
                         val list = executor(it, query)
                         val ret = list.firstOrNull()
-                            ?: return@acquireBridge DexKitCacheBridgeStore.SingleOutcome.NoResult()
+                            ?: return@acquireBridge CacheBridgeStore.SingleOutcome.NoResult()
                         for (i in 1 until list.size) {
                             if (ret != list[i]) {
-                                return@acquireBridge DexKitCacheBridgeStore.SingleOutcome.NonUnique(
+                                return@acquireBridge CacheBridgeStore.SingleOutcome.NonUnique(
                                     NonUniqueResultException(list.size)
                                 )
                             }
                         }
-                        DexKitCacheBridgeStore.SingleOutcome.Value(mapper(ret))
+                        CacheBridgeStore.SingleOutcome.Value(mapper(ret))
                     }
                 }
             }
@@ -1639,13 +1664,13 @@ object DexKitCacheBridge {
             return observeLoad(
                 queryKind = queryKind,
                 key = key,
-                loadResult = DexKitCacheBridgeStore.getCachedSingle(
+                loadResult = CacheBridgeStore.getCachedSingle(
                     cache = cache,
                     lock = cacheLock,
                     cachePolicy = cachePolicy,
                     cacheKey = spKey,
                     mode = mode,
-                    canCacheFailure = DexKitCacheBridgeStore.shouldCacheFailure(
+                    canCacheFailure = CacheBridgeStore.shouldCacheFailure(
                         cachePolicy = cachePolicy,
                         stableQueryIdentity = stableQueryIdentity
                     ),
@@ -1666,14 +1691,14 @@ object DexKitCacheBridge {
         ): Result<List<R>> {
             val query = buildQuery?.invoke()
             // :l: -> list
-            val spKey = DexKitCacheBridgeKeys.cacheKeyOf(appTag, "l", key, query)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "l", key, query)
             val loader: (() -> List<R>)? = query?.let {
                 { acquireBridge { executor(it, query).map(mapper) } }
             }
             return observeLoad(
                 queryKind = queryKind,
                 key = key,
-                loadResult = DexKitCacheBridgeStore.getCachedList(
+                loadResult = CacheBridgeStore.getCachedList(
                     cache = cache,
                     lock = cacheLock,
                     cachePolicy = cachePolicy,
@@ -1695,14 +1720,14 @@ object DexKitCacheBridge {
         ): Result<Map<String, List<R>>> {
             val query = buildQuery?.invoke()
             // :b: -> batch find
-            val spKey = DexKitCacheBridgeKeys.cacheKeyOf(appTag, "b", key, query)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "b", key, query)
             val loader: (() -> Map<String, List<R>>)? = query?.let {
                 { acquireBridge { executor(it, query).mapValues { it.value.map(mapper) } } }
             }
             return observeLoad(
                 queryKind = queryKind,
                 key = key,
-                loadResult = DexKitCacheBridgeStore.getCachedMap(
+                loadResult = CacheBridgeStore.getCachedMap(
                     cache = cache,
                     lock = cacheLock,
                     cachePolicy = cachePolicy,
@@ -1717,37 +1742,37 @@ object DexKitCacheBridge {
         private inline fun <D, R : ISerializable> getDirectInternalSingle(
             queryKind: QueryKind,
             key: String,
-            mode: DexKitCacheBridgeStore.SingleResolveMode,
+            mode: CacheBridgeStore.SingleResolveMode,
             noinline executor: (DexKitBridge.() -> D?)?,
             noinline mapper: (D) -> R
         ): Result<R?> {
             // :s: -> single
-            val spKey = DexKitCacheBridgeKeys.cacheKeyOf(appTag, "s", key)
-            val loader: (() -> DexKitCacheBridgeStore.SingleOutcome<R>)? = executor?.let {
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "s", key)
+            val loader: (() -> CacheBridgeStore.SingleOutcome<R>)? = executor?.let {
                 {
                     try {
                         acquireBridge {
                             val value = it.let(executor)
-                                ?: return@acquireBridge DexKitCacheBridgeStore.SingleOutcome.NoResult()
-                            DexKitCacheBridgeStore.SingleOutcome.Value(mapper(value))
+                                ?: return@acquireBridge CacheBridgeStore.SingleOutcome.NoResult()
+                            CacheBridgeStore.SingleOutcome.Value(mapper(value))
                         }
                     } catch (e: NoResultException) {
-                        DexKitCacheBridgeStore.SingleOutcome.NoResult(e)
+                        CacheBridgeStore.SingleOutcome.NoResult(e)
                     } catch (e: NonUniqueResultException) {
-                        DexKitCacheBridgeStore.SingleOutcome.NonUnique(e)
+                        CacheBridgeStore.SingleOutcome.NonUnique(e)
                     }
                 }
             }
             return observeLoad(
                 queryKind = queryKind,
                 key = key,
-                loadResult = DexKitCacheBridgeStore.getCachedSingle(
+                loadResult = CacheBridgeStore.getCachedSingle(
                     cache = cache,
                     lock = cacheLock,
                     cachePolicy = cachePolicy,
                     cacheKey = spKey,
                     mode = mode,
-                    canCacheFailure = DexKitCacheBridgeStore.shouldCacheFailure(
+                    canCacheFailure = CacheBridgeStore.shouldCacheFailure(
                         cachePolicy = cachePolicy,
                         stableQueryIdentity = false
                     ),
@@ -1766,14 +1791,14 @@ object DexKitCacheBridge {
             noinline mapper: (D) -> R
         ): Result<List<R>> {
             // :l: -> list
-            val spKey = DexKitCacheBridgeKeys.cacheKeyOf(appTag, "l", key)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "l", key)
             val loader: (() -> List<R>)? = executor?.let {
                 { acquireBridge { it.let(executor).map(mapper) } }
             }
             return observeLoad(
                 queryKind = queryKind,
                 key = key,
-                loadResult = DexKitCacheBridgeStore.getCachedList(
+                loadResult = CacheBridgeStore.getCachedList(
                     cache = cache,
                     lock = cacheLock,
                     cachePolicy = cachePolicy,
