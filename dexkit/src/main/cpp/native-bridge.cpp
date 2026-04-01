@@ -320,6 +320,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeRelease(JNIEnv *env, jclass clazz,
     if (!native_ptr) {
         return;
     }
+    LOGI("dexkit native release");
     delete reinterpret_cast<dexkit::DexKit *>(native_ptr);
 }
 

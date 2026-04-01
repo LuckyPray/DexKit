@@ -24,7 +24,6 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -63,10 +62,36 @@ object DexKitCacheBridge {
             return null
         }
 
-        if (candidate.isRetired()) return null
+        if (candidate.isRetired()) {
+            weakPool.remove(appTag, ref)
+            return null
+        }
 
         val prev = strongPool.putIfAbsent(appTag, candidate)
-        return prev ?: candidate
+        if (prev == null) return candidate
+        if (!prev.isRetired()) return prev
+        strongPool.remove(appTag, prev)
+        return null
+    }
+
+    private fun obtainBridge(
+        appTag: String,
+        factory: () -> RecyclableBridge
+    ): RecyclableBridge {
+        require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
+        while (true) {
+            strongPool[appTag]?.let { bridge ->
+                if (!bridge.isRetired()) return bridge
+                strongPool.remove(appTag, bridge)
+            }
+            tryPromoteFromWeakPool(appTag)?.let { return it }
+
+            val newBridge = factory()
+            val prev = strongPool.putIfAbsent(appTag, newBridge)
+            if (prev == null) return newBridge
+            if (!prev.isRetired()) return prev
+            strongPool.remove(appTag, prev)
+        }
     }
 
     @JvmStatic
@@ -79,32 +104,23 @@ object DexKitCacheBridge {
 
     @JvmStatic
     fun create(appTag: String, path: String): RecyclableBridge {
-        require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-        strongPool[appTag]?.let { return it }
-        tryPromoteFromWeakPool(appTag)?.let { return it }
-        val newBridge = RecyclableBridge.create(appTag, path)
-        val prev = strongPool.putIfAbsent(appTag, newBridge)
-        return prev ?: newBridge
+        return obtainBridge(appTag) {
+            RecyclableBridge.create(appTag, path)
+        }
     }
 
     @JvmStatic
     fun create(appTag: String, dexArray: Array<ByteArray>): RecyclableBridge {
-        require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-        strongPool[appTag]?.let { return it }
-        tryPromoteFromWeakPool(appTag)?.let { return it }
-        val newBridge = RecyclableBridge.create(appTag, dexArray)
-        val prev = strongPool.putIfAbsent(appTag, newBridge)
-        return prev ?: newBridge
+        return obtainBridge(appTag) {
+            RecyclableBridge.create(appTag, dexArray)
+        }
     }
 
     @JvmStatic
     fun create(appTag: String, classLoader: ClassLoader): RecyclableBridge {
-        require(::cache.isInitialized) { "Wrapper must be init(cache) first" }
-        strongPool[appTag]?.let { return it }
-        tryPromoteFromWeakPool(appTag)?.let { return it }
-        val newBridge = RecyclableBridge.create(appTag, classLoader)
-        val prev = strongPool.putIfAbsent(appTag, newBridge)
-        return prev ?: newBridge
+        return obtainBridge(appTag) {
+            RecyclableBridge.create(appTag, classLoader)
+        }
     }
 
     @JvmStatic
@@ -166,7 +182,10 @@ object DexKitCacheBridge {
         private val retired = AtomicBoolean(false)
         fun isRetired(): Boolean = retired.get()
 
-        private val activeCalls = AtomicInteger(0)
+        private val lifecycleLock = Any()
+        private var activeCalls = 0
+        private var generation = 0L
+        private var releaseRequested = false
         private var reaperFuture: ScheduledFuture<*>? = null
         @Volatile
         private var _bridge: DexKitBridge? = null
@@ -180,23 +199,44 @@ object DexKitCacheBridge {
             }
         }
 
+        private fun ensureUsable() {
+            check(!isRetired()) { "RecyclableBridge is destroyed" }
+        }
+
         private fun beginUse() {
-            reaperFuture?.cancel(false)
-            activeCalls.incrementAndGet()
+            synchronized(lifecycleLock) {
+                ensureUsable()
+                generation++
+                reaperFuture?.cancel(false)
+                reaperFuture = null
+                activeCalls++
+            }
         }
 
         private fun endUse() {
-            if (activeCalls.decrementAndGet() == 0) {
-                reaperFuture = scheduler.schedule(reaper, idleTimeoutMillis, TimeUnit.MILLISECONDS)
+            synchronized(lifecycleLock) {
+                check(activeCalls > 0) { "activeCalls underflow" }
+                activeCalls--
+                if (activeCalls != 0) return
+                if (isRetired()) {
+                    releaseBridgeLocked()
+                    return
+                }
+                if (releaseRequested) {
+                    releaseRequested = false
+                    releaseBridgeLocked()
+                    moveToWeakPoolLocked()
+                    return
+                }
+                scheduleRetireLocked()
             }
         }
 
         private inline fun <R> acquireBridge(block: (DexKitBridge) -> R): R = acquire {
-            var b = _bridge
-            if (b == null) synchronized(this) {
-                b = _bridge ?: createBridge().also { _bridge = it }
+            val b = synchronized(lifecycleLock) {
+                _bridge ?: createBridge().also { _bridge = it }
             }
-            block(b!!)
+            block(b)
         }
 
         private inline fun <R> acquire(block: RecyclableBridge.() -> R): R {
@@ -208,38 +248,67 @@ object DexKitCacheBridge {
             }
         }
 
-        @JvmSynthetic
-        internal fun closeForRetire() {
-            reaperFuture?.cancel(false)
-            activeCalls.set(0)
+        private fun releaseBridgeLocked() {
             _bridge?.close()
             _bridge = null
         }
 
-        @JvmSynthetic
-        internal fun retireBridgeToWeakPool(appTag: String, bridge: RecyclableBridge) {
-            val removed = strongPool.remove(appTag, bridge)
-            bridge.closeForRetire()
+        private fun scheduleRetireLocked() {
+            val token = generation
+            val bridge = this
+            reaperFuture = scheduler.schedule({
+                synchronized(lifecycleLock) {
+                    if (isRetired()) return@schedule
+                    if (activeCalls != 0) return@schedule
+                    if (generation != token) return@schedule
+                    reaperFuture = null
+                    if (releaseRequested) return@schedule
+                    val removed = strongPool.remove(appTag, bridge)
+                    if (!removed || isRetired()) return@schedule
+                    releaseBridgeLocked()
+                    reapCleared()
+                    weakPool[appTag] = KeyedWeakReference(appTag, bridge, refQueue)
+                }
+            }, idleTimeoutMillis, TimeUnit.MILLISECONDS)
+        }
 
+        private fun moveToWeakPoolLocked() {
+            strongPool.remove(appTag, this)
             reapCleared()
-            if (removed && !bridge.isRetired()) {
-                weakPool[appTag] = KeyedWeakReference(appTag, bridge, refQueue)
+            if (!isRetired()) {
+                weakPool[appTag] = KeyedWeakReference(appTag, this, refQueue)
             }
         }
 
-        private val reaper = Runnable {
-            retireBridgeToWeakPool(appTag, this@RecyclableBridge)
+        override fun close() {
+            synchronized(lifecycleLock) {
+                ensureUsable()
+                generation++
+                reaperFuture?.cancel(false)
+                reaperFuture = null
+                if (activeCalls == 0) {
+                    releaseRequested = false
+                    releaseBridgeLocked()
+                    moveToWeakPoolLocked()
+                } else {
+                    releaseRequested = true
+                }
+            }
         }
 
-        override fun close() {
-            if (!retired.getAndSet(true)) {
+        fun destroy() {
+            if (retired.compareAndSet(false, true)) {
+                synchronized(lifecycleLock) {
+                    generation++
+                    releaseRequested = false
+                    reaperFuture?.cancel(false)
+                    reaperFuture = null
+                    if (activeCalls == 0) {
+                        releaseBridgeLocked()
+                    }
+                }
                 strongPool.remove(appTag, this)
                 weakPool.remove(appTag)
-
-                reaperFuture?.cancel(false)
-                activeCalls.set(0)
-                _bridge?.close()
-                _bridge = null
             }
         }
 
@@ -1527,6 +1596,8 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             loader: (() -> T?)? = null,
         ): Result<T?> {
+            ensureUsable()
+
             fun <U : ISerializable> innerGet(key: String, allowNull: Boolean): Result<U?>? {
                 cache.get(key, null)?.let { raw ->
                     val v: U? = if (raw == CACHE_NULL) null else ISerializable.deserializeAs(raw)
@@ -1573,6 +1644,8 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             loader: (() -> List<T>)? = null,
         ): Result<List<T>> {
+            ensureUsable()
+
             fun <U : ISerializable> innerGet(key: String, allowEmpty: Boolean): Result<List<U>>? {
                 cache.getList(key, null)?.let { rawList ->
                     val list = rawList.map { ISerializable.deserializeAs<U>(it) }
@@ -1617,6 +1690,8 @@ object DexKitCacheBridge {
             key: String,
             loader: (() -> Map<String, List<T>>)? = null,
         ): Result<Map<String, List<T>>> {
+            ensureUsable()
+
             fun <U : ISerializable> innerGetMap(key: String): Map<String, List<U>>? {
                 cache.getList("$key:keys", null)?.let { keys ->
                     val map = mutableMapOf<String, List<U>>()
