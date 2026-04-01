@@ -393,27 +393,27 @@ object DexKitCacheBridge {
         )
 
         fun getMethodsOrEmpty(
-            query: FindMethodBuilder? = null
+            query: FindMethodBuilder
         ): List<DexMethod> = innerGetMethods(
             key = null,
             allowEmpty = true,
-            query = query?.toQuery()
+            query = query.toQuery()
         )
 
         fun getClassesOrEmpty(
-            query: FindClassBuilder? = null
+            query: FindClassBuilder
         ): List<DexClass> = innerGetClasses(
             key = null,
             allowEmpty = true,
-            query = query?.toQuery()
+            query = query.toQuery()
         )
 
         fun getFieldsOrEmpty(
-            query: FindFieldBuilder? = null
+            query: FindFieldBuilder
         ): List<DexField> = innerGetFields(
             key = null,
             allowEmpty = true,
-            query = query?.toQuery()
+            query = query.toQuery()
         )
 
         // endregion
