@@ -22,6 +22,7 @@ import java.io.Closeable
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -42,6 +43,46 @@ object DexKitCacheBridge {
         ALL,
     }
 
+    enum class QueryKind {
+        METHOD_SINGLE,
+        CLASS_SINGLE,
+        FIELD_SINGLE,
+        METHOD_LIST,
+        CLASS_LIST,
+        FIELD_LIST,
+        METHOD_BATCH,
+        CLASS_BATCH,
+    }
+
+    enum class ResultSource {
+        CACHE,
+        QUERY,
+    }
+
+    data class QuerySuccessInfo(
+        val appTag: String,
+        val queryKind: QueryKind,
+        val key: String?,
+        val source: ResultSource,
+        val resultCount: Int,
+    )
+
+    data class QueryFailureInfo(
+        val appTag: String,
+        val queryKind: QueryKind,
+        val key: String?,
+        val source: ResultSource,
+        val error: Throwable,
+    )
+
+    open class Listener {
+        open fun onQuerySuccess(info: QuerySuccessInfo) {}
+        open fun onQueryFailure(info: QueryFailureInfo) {}
+        open fun onBridgeCreated(appTag: String) {}
+        open fun onBridgeReleased(appTag: String) {}
+        open fun onBridgeDestroyed(appTag: String) {}
+    }
+
     private lateinit var cache: Cache
     private val scheduler: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(1) { r ->
         Thread(r, "DexKit-Reaper").apply { isDaemon = true }
@@ -50,6 +91,7 @@ object DexKitCacheBridge {
     private val strongPool = ConcurrentHashMap<String, RecyclableBridge>()
     private val weakPool = ConcurrentHashMap<String, KeyedWeakReference>()
     private val refQueue = ReferenceQueue<RecyclableBridge>()
+    private val listeners = CopyOnWriteArraySet<Listener>()
 
     private class KeyedWeakReference(
         val key: String,
@@ -116,6 +158,27 @@ object DexKitCacheBridge {
     @JvmStatic
     fun init(cache: Cache) {
         this.cache = cache
+    }
+
+    @JvmStatic
+    fun addListener(listener: Listener) {
+        listeners.add(listener)
+    }
+
+    @JvmStatic
+    fun removeListener(listener: Listener) {
+        listeners.remove(listener)
+    }
+
+    @JvmStatic
+    fun clearListeners() {
+        listeners.clear()
+    }
+
+    private inline fun notifyListeners(block: Listener.() -> Unit) {
+        listeners.forEach { listener ->
+            runCatching { listener.block() }
+        }
     }
 
     @JvmStatic
@@ -220,6 +283,44 @@ object DexKitCacheBridge {
             check(!isRetired()) { "RecyclableBridge is destroyed" }
         }
 
+        private inline fun <T> observeResult(
+            queryKind: QueryKind,
+            key: String?,
+            source: ResultSource,
+            result: Result<T>,
+            countOf: (T) -> Int
+        ): Result<T> {
+            result.fold(
+                onSuccess = { value ->
+                    notifyListeners {
+                        onQuerySuccess(
+                            QuerySuccessInfo(
+                                appTag = appTag,
+                                queryKind = queryKind,
+                                key = key,
+                                source = source,
+                                resultCount = countOf(value),
+                            )
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    notifyListeners {
+                        onQueryFailure(
+                            QueryFailureInfo(
+                                appTag = appTag,
+                                queryKind = queryKind,
+                                key = key,
+                                source = source,
+                                error = error,
+                            )
+                        )
+                    }
+                }
+            )
+            return result
+        }
+
         private fun beginUse() {
             synchronized(lifecycleLock) {
                 ensureUsable()
@@ -231,27 +332,36 @@ object DexKitCacheBridge {
         }
 
         private fun endUse() {
+            var released = false
             synchronized(lifecycleLock) {
                 check(activeCalls > 0) { "activeCalls underflow" }
                 activeCalls--
                 if (activeCalls != 0) return
                 if (isRetired()) {
-                    releaseBridgeLocked()
-                    return
-                }
-                if (releaseRequested) {
+                    released = releaseBridgeLocked()
+                } else if (releaseRequested) {
                     releaseRequested = false
-                    releaseBridgeLocked()
+                    released = releaseBridgeLocked()
                     moveToWeakPoolLocked()
-                    return
+                } else {
+                    scheduleRetireLocked()
                 }
-                scheduleRetireLocked()
+            }
+            if (released) {
+                notifyListeners { onBridgeReleased(appTag) }
             }
         }
 
         private inline fun <R> acquireBridge(block: (DexKitBridge) -> R): R = acquire {
+            var created = false
             val b = synchronized(lifecycleLock) {
-                _bridge ?: createBridge().also { _bridge = it }
+                _bridge ?: createBridge().also {
+                    _bridge = it
+                    created = true
+                }
+            }
+            if (created) {
+                notifyListeners { onBridgeCreated(appTag) }
             }
             block(b)
         }
@@ -259,22 +369,24 @@ object DexKitCacheBridge {
         private inline fun <R> acquire(block: RecyclableBridge.() -> R): R {
             beginUse()
             return try {
-                block()
+                this.block()
             } finally {
                 endUse()
             }
         }
 
-        private fun releaseBridgeLocked() {
-            _bridge?.close()
+        private fun releaseBridgeLocked(): Boolean {
+            val bridge = _bridge ?: return false
+            bridge.close()
             _bridge = null
+            return true
         }
 
         private fun scheduleRetireLocked() {
             val token = generation
             val bridge = this
             reaperFuture = scheduler.schedule({
-                synchronized(lifecycleLock) {
+                val released = synchronized(lifecycleLock) {
                     if (isRetired()) return@schedule
                     if (activeCalls != 0) return@schedule
                     if (generation != token) return@schedule
@@ -282,9 +394,13 @@ object DexKitCacheBridge {
                     if (releaseRequested) return@schedule
                     val removed = strongPool.remove(appTag, bridge)
                     if (!removed || isRetired()) return@schedule
-                    releaseBridgeLocked()
+                    val result = releaseBridgeLocked()
                     reapCleared()
                     weakPool[appTag] = KeyedWeakReference(appTag, bridge, refQueue)
+                    result
+                }
+                if (released) {
+                    notifyListeners { onBridgeReleased(appTag) }
                 }
             }, idleTimeoutMillis, TimeUnit.MILLISECONDS)
         }
@@ -298,6 +414,7 @@ object DexKitCacheBridge {
         }
 
         override fun close() {
+            var released = false
             synchronized(lifecycleLock) {
                 ensureUsable()
                 generation++
@@ -305,27 +422,35 @@ object DexKitCacheBridge {
                 reaperFuture = null
                 if (activeCalls == 0) {
                     releaseRequested = false
-                    releaseBridgeLocked()
+                    released = releaseBridgeLocked()
                     moveToWeakPoolLocked()
                 } else {
                     releaseRequested = true
                 }
             }
+            if (released) {
+                notifyListeners { onBridgeReleased(appTag) }
+            }
         }
 
         fun destroy() {
             if (retired.compareAndSet(false, true)) {
+                var released = false
                 synchronized(lifecycleLock) {
                     generation++
                     releaseRequested = false
                     reaperFuture?.cancel(false)
                     reaperFuture = null
                     if (activeCalls == 0) {
-                        releaseBridgeLocked()
+                        released = releaseBridgeLocked()
                     }
                 }
                 strongPool.remove(appTag, this)
                 weakPool.remove(appTag)
+                if (released) {
+                    notifyListeners { onBridgeReleased(appTag) }
+                }
+                notifyListeners { onBridgeDestroyed(appTag) }
             }
         }
 
@@ -1413,6 +1538,7 @@ object DexKitCacheBridge {
             val buildQuery = query?.let { { query } }
 
             return getInternalSingle(
+                queryKind = QueryKind.METHOD_SINGLE,
                 key = key,
                 mode = if (allowNull) SingleResolveMode.NULLABLE else SingleResolveMode.REQUIRED,
                 buildQuery = buildQuery,
@@ -1429,6 +1555,7 @@ object DexKitCacheBridge {
             val buildQuery = query?.let { { query } }
 
             return getInternalList(
+                queryKind = QueryKind.METHOD_LIST,
                 key = key,
                 allowEmpty = allowEmpty,
                 buildQuery = buildQuery,
@@ -1442,6 +1569,7 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             query: FindClass? = null
         ): DexClass? = getInternalSingle(
+            queryKind = QueryKind.CLASS_SINGLE,
             key = key,
             mode = if (allowNull) SingleResolveMode.NULLABLE else SingleResolveMode.REQUIRED,
             buildQuery = query?.let { { query } },
@@ -1454,6 +1582,7 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             query: FindClass? = null
         ): List<DexClass> = getInternalList(
+            queryKind = QueryKind.CLASS_LIST,
             key = key,
             allowEmpty = allowEmpty,
             buildQuery = query?.let { { query } },
@@ -1466,6 +1595,7 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             query: FindField? = null
         ): DexField? = getInternalSingle(
+            queryKind = QueryKind.FIELD_SINGLE,
             key = key,
             mode = if (allowNull) SingleResolveMode.NULLABLE else SingleResolveMode.REQUIRED,
             buildQuery = query?.let { { query } },
@@ -1478,6 +1608,7 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             query: FindField? = null
         ): List<DexField> = getInternalList(
+            queryKind = QueryKind.FIELD_LIST,
             key = key,
             allowEmpty = allowEmpty,
             buildQuery = query?.let { { query } },
@@ -1489,6 +1620,7 @@ object DexKitCacheBridge {
             key: String?,
             query: BatchFindClassUsingStrings? = null
         ): Map<String, List<DexClass>> = getInternalMap(
+            queryKind = QueryKind.CLASS_BATCH,
             key = key,
             buildQuery = query?.let { { query } },
             executor = { b, q: BatchFindClassUsingStrings -> b.batchFindClassUsingStrings(q) },
@@ -1499,6 +1631,7 @@ object DexKitCacheBridge {
             key: String?,
             query: BatchFindMethodUsingStrings? = null
         ): Map<String, List<DexMethod>> = getInternalMap(
+            queryKind = QueryKind.METHOD_BATCH,
             key = key,
             buildQuery = query?.let { { query } },
             executor = { b, q: BatchFindMethodUsingStrings -> b.batchFindMethodUsingStrings(q) },
@@ -1510,6 +1643,7 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             query: (DexKitBridge.() -> MethodData?)? = null
         ): DexMethod? = getDirectInternalSingle(
+            queryKind = QueryKind.METHOD_SINGLE,
             key = key,
             mode = if (allowNull) SingleResolveMode.NULLABLE else SingleResolveMode.REQUIRED,
             executor = query,
@@ -1521,6 +1655,7 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             query: (DexKitBridge.() -> ClassData?)? = null
         ): DexClass? = getDirectInternalSingle(
+            queryKind = QueryKind.CLASS_SINGLE,
             key = key,
             mode = if (allowNull) SingleResolveMode.NULLABLE else SingleResolveMode.REQUIRED,
             executor = query,
@@ -1532,6 +1667,7 @@ object DexKitCacheBridge {
             allowNull: Boolean,
             query: (DexKitBridge.() -> FieldData?)? = null
         ): DexField? = getDirectInternalSingle(
+            queryKind = QueryKind.FIELD_SINGLE,
             key = key,
             mode = if (allowNull) SingleResolveMode.NULLABLE else SingleResolveMode.REQUIRED,
             executor = query,
@@ -1543,6 +1679,7 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             query: (DexKitBridge.() -> List<MethodData>)? = null
         ): List<DexMethod> = getDirectInternalList(
+            queryKind = QueryKind.METHOD_LIST,
             key = key,
             allowEmpty = allowEmpty,
             executor = query,
@@ -1554,6 +1691,7 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             query: (DexKitBridge.() -> List<ClassData>)? = null
         ): List<DexClass> = getDirectInternalList(
+            queryKind = QueryKind.CLASS_LIST,
             key = key,
             executor = query,
             allowEmpty = allowEmpty,
@@ -1565,6 +1703,7 @@ object DexKitCacheBridge {
             allowEmpty: Boolean,
             query: (DexKitBridge.() -> List<FieldData>)? = null
         ): List<DexField> = getDirectInternalList(
+            queryKind = QueryKind.FIELD_LIST,
             key = key,
             executor = query,
             allowEmpty = allowEmpty,
@@ -1661,71 +1800,103 @@ object DexKitCacheBridge {
         }
 
         private fun <T : ISerializable> getCachedSingle(
-            key: String,
+            queryKind: QueryKind,
+            key: String?,
+            cacheKey: String,
             mode: SingleResolveMode,
             canCacheFailure: Boolean,
             loader: (() -> SingleOutcome<T>)? = null,
         ): Result<T?> {
             ensureUsable()
 
-            fun <U : ISerializable> innerGet(key: String): SingleOutcome<U>? {
-                cache.get(key, null)?.let { raw ->
+            fun <U : ISerializable> innerGet(cacheKey: String): SingleOutcome<U>? {
+                cache.get(cacheKey, null)?.let { raw ->
                     return parseSingleOutcome(raw)
                 }
                 return null
             }
 
-            lock.read { innerGet<T>(key)?.let { return resolveSingleOutcome(it, mode) } }
+            lock.read {
+                innerGet<T>(cacheKey)?.let {
+                    return observeResult(
+                        queryKind = queryKind,
+                        key = key,
+                        source = ResultSource.CACHE,
+                        result = resolveSingleOutcome(it, mode),
+                        countOf = { value -> if (value == null) 0 else 1 }
+                    )
+                }
+            }
 
-            loader ?: return Result.failure(
-                NoSuchElementException("no found cache for key: $key")
+            loader ?: return observeResult(
+                queryKind = queryKind,
+                key = key,
+                source = ResultSource.CACHE,
+                result = Result.failure(NoSuchElementException("no found cache for key: $cacheKey")),
+                countOf = { value: T? -> if (value == null) 0 else 1 }
             )
 
             val loaded = runCatching { loader() }
 
             return lock.write {
-                innerGet<T>(key)?.let { return resolveSingleOutcome(it, mode) }
-                loaded.fold(
-                    onSuccess = { outcome ->
-                        when (outcome) {
-                            is SingleOutcome.Value -> {
-                                if (cachePolicy.cacheSuccess) {
-                                    cache.put(key, outcome.value.serialize())
+                innerGet<T>(cacheKey)?.let {
+                    return observeResult(
+                        queryKind = queryKind,
+                        key = key,
+                        source = ResultSource.CACHE,
+                        result = resolveSingleOutcome(it, mode),
+                        countOf = { value -> if (value == null) 0 else 1 }
+                    )
+                }
+                observeResult(
+                    queryKind = queryKind,
+                    key = key,
+                    source = ResultSource.QUERY,
+                    result = loaded.fold(
+                        onSuccess = { outcome ->
+                            when (outcome) {
+                                is SingleOutcome.Value -> {
+                                    if (cachePolicy.cacheSuccess) {
+                                        cache.put(cacheKey, outcome.value.serialize())
+                                    }
                                 }
-                            }
 
-                            is SingleOutcome.NoResult -> {
-                                if (canCacheFailure) {
-                                    cache.put(key, CACHE_NO_RESULT)
+                                is SingleOutcome.NoResult -> {
+                                    if (canCacheFailure) {
+                                        cache.put(cacheKey, CACHE_NO_RESULT)
+                                    }
                                 }
-                            }
 
-                            is SingleOutcome.NonUnique -> {
-                                if (canCacheFailure) {
-                                    cache.put(key, CACHE_NON_UNIQUE)
+                                is SingleOutcome.NonUnique -> {
+                                    if (canCacheFailure) {
+                                        cache.put(cacheKey, CACHE_NON_UNIQUE)
+                                    }
                                 }
                             }
-                        }
-                        resolveSingleOutcome(outcome, mode)
-                    },
-                    onFailure = { Result.failure(it) }
+                            resolveSingleOutcome(outcome, mode)
+                        },
+                        onFailure = { Result.failure(it) }
+                    ),
+                    countOf = { value -> if (value == null) 0 else 1 }
                 )
             }
         }
 
         private fun <T : ISerializable> getCachedList(
-            key: String,
+            queryKind: QueryKind,
+            key: String?,
+            cacheKey: String,
             allowEmpty: Boolean,
             loader: (() -> List<T>)? = null,
         ): Result<List<T>> {
             ensureUsable()
 
-            fun <U : ISerializable> innerGet(key: String, allowEmpty: Boolean): Result<List<U>>? {
-                cache.getList(key, null)?.let { rawList ->
+            fun <U : ISerializable> innerGet(cacheKey: String, allowEmpty: Boolean): Result<List<U>>? {
+                cache.getList(cacheKey, null)?.let { rawList ->
                     val list = rawList.map { ISerializable.deserializeAs<U>(it) }
                     if (list.isEmpty() && !allowEmpty) {
                         return Result.failure(IllegalStateException(
-                            "cached empty for key: $key but empty not allowed"
+                            "cached empty for key: $cacheKey but empty not allowed"
                         ))
                     }
                     return Result.success(list)
@@ -1733,46 +1904,76 @@ object DexKitCacheBridge {
                 return null
             }
 
-            lock.read { innerGet<T>(key, allowEmpty)?.let { return it } }
-            loader ?: return Result.failure(
-                NoSuchElementException("no found cache for key: $key")
+            lock.read {
+                innerGet<T>(cacheKey, allowEmpty)?.let {
+                    return observeResult(
+                        queryKind = queryKind,
+                        key = key,
+                        source = ResultSource.CACHE,
+                        result = it,
+                        countOf = { list -> list.size }
+                    )
+                }
+            }
+            loader ?: return observeResult(
+                queryKind = queryKind,
+                key = key,
+                source = ResultSource.CACHE,
+                result = Result.failure(NoSuchElementException("no found cache for key: $cacheKey")),
+                countOf = { list: List<T> -> list.size }
             )
 
             val loaded = runCatching { loader() }
 
             return lock.write {
-                innerGet<T>(key, allowEmpty)?.let { return it }
-                loaded.fold(
-                    onSuccess = { list ->
-                        if (list.isEmpty() && !allowEmpty) {
-                            Result.failure(
-                                IllegalStateException(
-                                    "query returned empty for key: $key but empty not allowed"
+                innerGet<T>(cacheKey, allowEmpty)?.let {
+                    return observeResult(
+                        queryKind = queryKind,
+                        key = key,
+                        source = ResultSource.CACHE,
+                        result = it,
+                        countOf = { list -> list.size }
+                    )
+                }
+                observeResult(
+                    queryKind = queryKind,
+                    key = key,
+                    source = ResultSource.QUERY,
+                    result = loaded.fold(
+                        onSuccess = { list ->
+                            if (list.isEmpty() && !allowEmpty) {
+                                Result.failure(
+                                    IllegalStateException(
+                                        "query returned empty for key: $cacheKey but empty not allowed"
+                                    )
                                 )
-                            )
-                        } else {
-                            if (cachePolicy.cacheSuccess) {
-                                cache.putList(key, list.map(ISerializable::serialize))
+                            } else {
+                                if (cachePolicy.cacheSuccess) {
+                                    cache.putList(cacheKey, list.map(ISerializable::serialize))
+                                }
+                                Result.success(list)
                             }
-                            Result.success(list)
-                        }
-                    },
-                    onFailure = { Result.failure(it) }
+                        },
+                        onFailure = { Result.failure(it) }
+                    ),
+                    countOf = { list -> list.size }
                 )
             }
         }
 
         private fun <T : ISerializable> getCachedMap(
-            key: String,
+            queryKind: QueryKind,
+            key: String?,
+            cacheKey: String,
             loader: (() -> Map<String, List<T>>)? = null,
         ): Result<Map<String, List<T>>> {
             ensureUsable()
 
-            fun <U : ISerializable> innerGetMap(key: String): Map<String, List<U>>? {
-                cache.getList("$key:keys", null)?.let { keys ->
+            fun <U : ISerializable> innerGetMap(cacheKey: String): Map<String, List<U>>? {
+                cache.getList("$cacheKey:keys", null)?.let { keys ->
                     val map = mutableMapOf<String, List<U>>()
                     keys.forEach { groupKey ->
-                        val dataList = cache.getList("$key:$groupKey", null)
+                        val dataList = cache.getList("$cacheKey:$groupKey", null)
                             ?.map { ISerializable.deserializeAs<U>(it) }
                             ?: emptyList()
                         map.put(groupKey, dataList)
@@ -1782,28 +1983,58 @@ object DexKitCacheBridge {
                 return null
             }
 
-            lock.read { innerGetMap<T>(key)?.let { return Result.success(it) } }
-            loader ?: return Result.failure(NoSuchElementException("no found cache for key: $key"))
+            lock.read {
+                innerGetMap<T>(cacheKey)?.let {
+                    return observeResult(
+                        queryKind = queryKind,
+                        key = key,
+                        source = ResultSource.CACHE,
+                        result = Result.success(it),
+                        countOf = { map -> map.values.sumOf { it.size } }
+                    )
+                }
+            }
+            loader ?: return observeResult(
+                queryKind = queryKind,
+                key = key,
+                source = ResultSource.CACHE,
+                result = Result.failure(NoSuchElementException("no found cache for key: $cacheKey")),
+                countOf = { map: Map<String, List<T>> -> map.values.sumOf { it.size } }
+            )
 
             val loaded = runCatching { loader() }
 
             return lock.write {
-                innerGetMap<T>(key)?.let { return Result.success(it) }
-                loaded.fold(
-                    onSuccess = { map ->
-                        val oldKeys = cache.getList("$key:keys", null) ?: emptyList()
-                        val keys = mutableListOf<String>()
-                        if (cachePolicy.cacheSuccess) {
-                            map.entries.forEach { (groupKey, value) ->
-                                keys.add(groupKey)
-                                cache.putList("$key:$groupKey", value.map { it.serialize() })
+                innerGetMap<T>(cacheKey)?.let {
+                    return observeResult(
+                        queryKind = queryKind,
+                        key = key,
+                        source = ResultSource.CACHE,
+                        result = Result.success(it),
+                        countOf = { map -> map.values.sumOf { it.size } }
+                    )
+                }
+                observeResult(
+                    queryKind = queryKind,
+                    key = key,
+                    source = ResultSource.QUERY,
+                    result = loaded.fold(
+                        onSuccess = { map ->
+                            val oldKeys = cache.getList("$cacheKey:keys", null) ?: emptyList()
+                            val keys = mutableListOf<String>()
+                            if (cachePolicy.cacheSuccess) {
+                                map.entries.forEach { (groupKey, value) ->
+                                    keys.add(groupKey)
+                                    cache.putList("$cacheKey:$groupKey", value.map { it.serialize() })
+                                }
+                                (oldKeys - keys.toSet()).forEach { cache.remove("$cacheKey:$it") }
+                                cache.putList("$cacheKey:keys", keys)
                             }
-                            (oldKeys - keys.toSet()).forEach { cache.remove("$key:$it") }
-                            cache.putList("$key:keys", keys)
-                        }
-                        Result.success(map)
-                    },
-                    onFailure = { Result.failure(it) }
+                            Result.success(map)
+                        },
+                        onFailure = { Result.failure(it) }
+                    ),
+                    countOf = { map -> map.values.sumOf { it.size } }
                 )
             }
         }
@@ -1817,6 +2048,7 @@ object DexKitCacheBridge {
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalSingle(
+            queryKind: QueryKind,
             key: String?,
             mode: SingleResolveMode,
             noinline buildQuery: (() -> Q)?,
@@ -1845,7 +2077,9 @@ object DexKitCacheBridge {
             }
             val stableQueryIdentity = key == null && query != null
             return getCachedSingle(
-                key = spKey,
+                queryKind = queryKind,
+                key = key,
+                cacheKey = spKey,
                 mode = mode,
                 canCacheFailure = shouldCacheFailure(stableQueryIdentity),
                 loader = loader
@@ -1853,6 +2087,7 @@ object DexKitCacheBridge {
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalList(
+            queryKind: QueryKind,
             key: String?,
             allowEmpty: Boolean,
             noinline buildQuery: (() -> Q)?,
@@ -1865,10 +2100,17 @@ object DexKitCacheBridge {
             val loader: (() -> List<R>)? = query?.let {
                 { acquireBridge { executor(it, query).map(mapper) } }
             }
-            return getCachedList(spKey, allowEmpty, loader)
+            return getCachedList(
+                queryKind = queryKind,
+                key = key,
+                cacheKey = spKey,
+                allowEmpty = allowEmpty,
+                loader = loader
+            )
         }
 
         private inline fun <Q : BaseFinder, D, R : ISerializable> getInternalMap(
+            queryKind: QueryKind,
             key: String?,
             noinline buildQuery: (() -> Q)?,
             noinline executor: (DexKitBridge, Q) -> Map<String, List<D>>,
@@ -1880,10 +2122,16 @@ object DexKitCacheBridge {
             val loader: (() -> Map<String, List<R>>)? = query?.let {
                 { acquireBridge { executor(it, query).mapValues { it.value.map(mapper) } } }
             }
-            return getCachedMap(spKey, loader)
+            return getCachedMap(
+                queryKind = queryKind,
+                key = key,
+                cacheKey = spKey,
+                loader = loader
+            )
         }
 
         private inline fun <D, R : ISerializable> getDirectInternalSingle(
+            queryKind: QueryKind,
             key: String,
             mode: SingleResolveMode,
             noinline executor: (DexKitBridge.() -> D?)?,
@@ -1907,7 +2155,9 @@ object DexKitCacheBridge {
                 }
             }
             return getCachedSingle(
-                key = spKey,
+                queryKind = queryKind,
+                key = key,
+                cacheKey = spKey,
                 mode = mode,
                 canCacheFailure = shouldCacheFailure(stableQueryIdentity = false),
                 loader = loader
@@ -1915,6 +2165,7 @@ object DexKitCacheBridge {
         }
 
         private inline fun <D, R : ISerializable> getDirectInternalList(
+            queryKind: QueryKind,
             key: String,
             allowEmpty: Boolean,
             noinline executor: (DexKitBridge.() -> List<D>)?,
@@ -1925,7 +2176,13 @@ object DexKitCacheBridge {
             val loader: (() -> List<R>)? = executor?.let {
                 { acquireBridge { it.let(executor).map(mapper) } }
             }
-            return getCachedList(spKey, allowEmpty, loader)
+            return getCachedList(
+                queryKind = queryKind,
+                key = key,
+                cacheKey = spKey,
+                allowEmpty = allowEmpty,
+                loader = loader
+            )
         }
 
         // endregion
