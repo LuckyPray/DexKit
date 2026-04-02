@@ -621,6 +621,15 @@ class DexKitBridge : Closeable {
          */
         @JvmStatic
         fun create(loader: ClassLoader, useMemoryDexFile: Boolean): DexKitBridge {
+            val baseDexClz = try {
+                Class.forName("dalvik.system.BaseDexClassLoader")
+            } catch (_: ClassNotFoundException) {
+                error("This method requires Android runtime")
+            }
+
+            if (!baseDexClz.isInstance(loader)) {
+                error("classLoader must be a BaseDexClassLoader (e.g. PathClassLoader/DexClassLoader)")
+            }
             return DexKitBridge(loader, useMemoryDexFile)
         }
 

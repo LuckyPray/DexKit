@@ -201,6 +201,14 @@ class ClassData private constructor(
         return interfaces.map { InstanceUtil.getClassInstance(classLoader, it.name) }
     }
 
+    @Deprecated(
+        message = "please use toDexClass",
+        replaceWith = ReplaceWith("toDexClass()")
+    )
+    fun toDexType(): DexClass {
+        return dexClass
+    }
+
     /**
      * Convert to [DexClass]
      * ----------------
@@ -208,7 +216,7 @@ class ClassData private constructor(
      *
      * @return [DexClass]
      */
-    fun toDexType(): DexClass {
+    fun toDexClass(): DexClass {
         return dexClass
     }
 
