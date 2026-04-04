@@ -18,7 +18,6 @@
 
 #include "slicer/common.h"
 
-#include <sstream>
 #include <cstdlib>
 #include <zlib.h>
 
@@ -63,7 +62,7 @@ static const char* PrimitiveTypeName(char type_char) {
 // example, "Ljava/lang/String;" becomes "java.lang.String", and
 // "[I" becomes "int[]".
 std::string DescriptorToDecl(const char* descriptor) {
-  std::stringstream ss;
+  std::string ss;
 
   int array_dimensions = 0;
   while (*descriptor == '[') {
@@ -74,20 +73,20 @@ std::string DescriptorToDecl(const char* descriptor) {
   if (*descriptor == 'L') {
     for (++descriptor; *descriptor != ';'; ++descriptor) {
       SLICER_CHECK_NE(*descriptor, '\0');
-      ss << (*descriptor == '/' ? '.' : *descriptor);
+      ss += (*descriptor == '/' ? '.' : *descriptor);
     }
   } else {
-    ss << PrimitiveTypeName(*descriptor);
+    ss += PrimitiveTypeName(*descriptor);
   }
 
   SLICER_CHECK_EQ(descriptor[1], '\0');
 
   // add the array brackets
   for (int i = 0; i < array_dimensions; ++i) {
-    ss << "[]";
+    ss += "[]";
   }
 
-  return ss.str();
+  return ss;
 }
 
 // Converts a type descriptor to a single "shorty" char

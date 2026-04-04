@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <string>
 
@@ -61,8 +62,9 @@ void _weakCheckFailed(const char* expr, int line, const char* file);
 #define SLICER_WEAK_CHECK(expr) do { if(!(expr)) slicer::_weakCheckFailed(#expr, __LINE__, __FILE__); } while(false)
 
 // Report a fatal condition with a printf-formatted message
-void _fatal(const std::string& msg) __attribute__((noreturn));
-#define SLICER_FATAL(msg) slicer::_fatal(msg)
+void _fatal(const char *format, ...) __attribute__((noreturn));
+#define SLICER_FATAL(format, ...) slicer::_fatal("\nSLICER_FATAL: " format "\n\n", ##__VA_ARGS__)
+
 
 // Annotation customization point for extra validation / state.
 #ifdef NDEBUG

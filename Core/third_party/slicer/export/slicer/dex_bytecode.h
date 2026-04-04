@@ -190,10 +190,10 @@ size_t GetWidthFromBytecode(const u2* bytecode);
 // Decode a .dex bytecode
 Instruction DecodeInstruction(const u2* bytecode);
 
-// Writes a hex formatted opcode to an output stream.
-std::ostream& operator<<(std::ostream& os, Opcode opcode);
-
-// Writes name of format to an outputstream.
-std::ostream& operator<<(std::ostream& os, InstructionFormat format);
+//// Writes a hex formatted opcode to an output stream.
+//std::ostream& operator<<(std::ostream& os, Opcode opcode);
+//
+//// Writes name of format to an outputstream.
+//std::ostream& operator<<(std::ostream& os, InstructionFormat format);
 
 }  // namespace dex

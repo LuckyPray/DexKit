@@ -27,7 +27,6 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <sstream>
 #include <vector>
 
 namespace lir {
@@ -601,9 +600,7 @@ Bytecode* CodeIr::DecodeBytecode(const dex::u2* ptr, dex::u4 offset) {
           break;
 
         default: {
-          std::stringstream ss;
-          ss << "Unexpected opcode: " << dex_instr.opcode;
-          SLICER_FATAL(ss.str());
+          SLICER_FATAL("Unexpected opcode: 0x%02x", dex_instr.opcode);
         }
       }
       break;
@@ -614,9 +611,7 @@ Bytecode* CodeIr::DecodeBytecode(const dex::u2* ptr, dex::u4 offset) {
       break;
 
     default: {
-      std::stringstream ss;
-      ss << "Unexpected bytecode format " << format << " for opcode " << dex_instr.opcode;
-      SLICER_FATAL(ss.str());
+      SLICER_FATAL("Unexpected bytecode format 0x%02x (op=0x%02x)", format, dex_instr.opcode);
     }
   }
 
@@ -646,10 +641,7 @@ IndexedOperand* CodeIr::GetIndexedOperand(dex::InstructionIndexType index_type,
       return Alloc<MethodHandle>(dex_ir->method_handles_map[index], index);
 
     default:
-      std::stringstream ss;
-      ss << "Unexpected index type 0x";
-      ss << std::hex << std::setfill('0') << std::setw(2) << index_type;
-      SLICER_FATAL(ss.str());
+      SLICER_FATAL("Unexpected index type 0x%02x", index_type);
   }
 }
 

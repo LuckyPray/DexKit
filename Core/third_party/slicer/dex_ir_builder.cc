@@ -16,7 +16,6 @@
 
 #include "slicer/dex_ir_builder.h"
 
-#include <sstream>
 #include <string.h>
 
 namespace ir {
@@ -133,14 +132,14 @@ TypeList* Builder::GetTypeList(const std::vector<Type*>& types) {
 
 // Helper for GetProto()
 static std::string CreateShorty(Type* return_type, TypeList* param_types) {
-  std::stringstream ss;
-  ss << dex::DescriptorToShorty(return_type->descriptor->c_str());
+  std::string ss;
+  ss += dex::DescriptorToShorty(return_type->descriptor->c_str());
   if (param_types != nullptr) {
     for (auto param_type : param_types->types) {
-      ss << dex::DescriptorToShorty(param_type->descriptor->c_str());
+      ss += dex::DescriptorToShorty(param_type->descriptor->c_str());
     }
   }
-  return ss.str();
+  return ss;
 }
 
 Proto* Builder::GetProto(Type* return_type, TypeList* param_types) {

@@ -20,7 +20,6 @@
 
 #include <array>
 #include <iomanip>
-#include <sstream>
 
 namespace dex {
 
@@ -305,32 +304,30 @@ Instruction DecodeInstruction(const u2* bytecode) {
       return dec;
   }
 
-  std::stringstream ss;
-  ss << "Can't decode unexpected format " << format << " for " << opcode;
-  SLICER_FATAL(ss.str());
+  SLICER_FATAL("Can't decode unexpected format 0x%02x (op=0x%02x)", format, opcode);
 }
 
 static inline std::string HexByte(int value) {
-  std::stringstream ss;
-  ss << "0x" << std::setw(2) << std::setfill('0') << std::hex << value;
-  return ss.str();
+  char buf[32];
+  std::snprintf(buf, sizeof(buf), "0x%02x", static_cast<unsigned int>(value));
+  return {buf};
 }
 
-std::ostream& operator<<(std::ostream& os, Opcode opcode) {
-  return os << "[" << HexByte(opcode) << "] " << gOpcodeNames[opcode];
-}
-
-std::ostream& operator<<(std::ostream& os, InstructionFormat format) {
-  switch (format) {
-  #define EMIT_INSTRUCTION_FORMAT_NAME(name) \
-    case InstructionFormat::k##name: return os << #name;
-  #include "export/slicer/dex_instruction_list.h"
-  DEX_INSTRUCTION_FORMAT_LIST(EMIT_INSTRUCTION_FORMAT_NAME)
-  #undef EMIT_INSTRUCTION_FORMAT_NAME
-  #undef DEX_INSTRUCTION_FORMAT_LIST
-  #undef DEX_INSTRUCTION_LIST
-  }
-  return os << "[" << HexByte(format) << "] " << "Unknown";
-}
+//std::ostream& operator<<(std::ostream& os, Opcode opcode) {
+//  return os << "[" << HexByte(opcode) << "] " << gOpcodeNames[opcode];
+//}
+//
+//std::ostream& operator<<(std::ostream& os, InstructionFormat format) {
+//  switch (format) {
+//  #define EMIT_INSTRUCTION_FORMAT_NAME(name) \
+//    case InstructionFormat::k##name: return os << #name;
+//  #include "export/slicer/dex_instruction_list.h"
+//  DEX_INSTRUCTION_FORMAT_LIST(EMIT_INSTRUCTION_FORMAT_NAME)
+//  #undef EMIT_INSTRUCTION_FORMAT_NAME
+//  #undef DEX_INSTRUCTION_FORMAT_LIST
+//  #undef DEX_INSTRUCTION_LIST
+//  }
+//  return os << "[" << HexByte(format) << "] " << "Unknown";
+//}
 
 }  // namespace dex

@@ -20,7 +20,6 @@
 #include "slicer/chronometer.h"
 
 #include <assert.h>
-#include <sstream>
 #include <iomanip>
 
 namespace lir {
@@ -465,17 +464,13 @@ bool BytecodeEncoder::Visit(Bytecode* bytecode) {
         } break;
 
         default: {
-          std::stringstream ss;
-          ss << "Unexpected fmt21h opcode: " << opcode;
-          SLICER_FATAL(ss.str());
+          SLICER_FATAL("Unexpected fmt21h opcode: 0x%02x", opcode);
         }
       }
       break;
 
     default: {
-      std::stringstream ss;
-      ss << "Unexpected format: " << format;
-      SLICER_FATAL(ss.str());
+      SLICER_FATAL("Unexpected format: 0x%02x", opcode);
     }
   }
 
