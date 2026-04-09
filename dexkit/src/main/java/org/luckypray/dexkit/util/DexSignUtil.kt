@@ -70,7 +70,7 @@ object DexSignUtil {
      *     getTypeName("[I") -> "int[]"
      *
      * @param typeSign type sign / 类型签名
-     * @return simple name / 类名
+     * @return type name / 类型名
      */
     @JvmStatic
     fun getTypeName(typeSign: String): String {
@@ -97,7 +97,7 @@ object DexSignUtil {
      *     getTypeName(int[][].class) -> "int[][]"
      *
      * @param clazz class / 类
-     * @return simple name / 类名
+     * @return type name / 类型名
      */
     @JvmStatic
     fun getTypeName(clazz: Class<*>): String {
@@ -265,7 +265,7 @@ object DexSignUtil {
     /**
      * Convert class to class descriptor.
      * ----------------
-     * 转换方法为方法描述符。
+     * 转换类为类描述符。
      *
      *     getClassDescriptor(String.class) -> "Ljava/lang/String;"
      *
@@ -300,7 +300,7 @@ object DexSignUtil {
     /**
      * Convert method to method descriptor.
      * ----------------
-     * 转换构造方法为方法描述符。
+     * 转换方法为方法描述符。
      *
      *     getMethodDescriptor(String.class.getMethod("length")) -> "Ljava/lang/String;->length()I"
      *

@@ -168,7 +168,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     descriptor("Lorg/luckypray/dexkit/demo/MainActivity;->mText:Ljava/lang/String;")
      *
      * @param descriptor field descriptor / 字段描述符
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun descriptor(descriptor: String) = also {
         val dexField = DexField(descriptor)
@@ -185,7 +185,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     name(StringMatcher().value("mText"))
      *
      * @param name field name / 字段名称
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun name(name: StringMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -202,7 +202,7 @@ class UsingFieldMatcher : BaseMatcher {
      * @param name field name / 字段名称
      * @param matchType match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     @JvmOverloads
     fun name(
@@ -222,7 +222,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     modifiers(AccessFlagsMatcher().flags(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL))
      *
      * @param modifiers modifiers matcher / 修饰符匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -238,7 +238,7 @@ class UsingFieldMatcher : BaseMatcher {
      *
      * @param modifiers modifiers / 修饰符
      * @param matchType match type / 匹配关系
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     @JvmOverloads
     fun modifiers(
@@ -257,7 +257,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     declaredClass(ClassMatcher().className("org.luckypray.dexkit.demo.MainActivity"))
      *
      * @param declaredClass declared class matcher / 声明类匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun declaredClass(declaredClass: ClassMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -269,10 +269,10 @@ class UsingFieldMatcher : BaseMatcher {
      * ----------------
      * 字段声明类匹配器。
      *
-     *     fieldDeclaredClass(MainActivity::class.java)
+     *     declaredClass(MainActivity::class.java)
      *
      * @param clazz declared class / 声明类
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun declaredClass(clazz: Class<*>) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -289,7 +289,7 @@ class UsingFieldMatcher : BaseMatcher {
      * @param className declared class name / 声明类名称
      * @param matchType match type / 匹配关系
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     @JvmOverloads
     fun declaredClass(
@@ -309,7 +309,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     type(ClassMatcher().className("java.lang.String"))
      *
      * @param type type matcher / 类型匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun type(type: ClassMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -322,7 +322,7 @@ class UsingFieldMatcher : BaseMatcher {
      * 字段类型类匹配器。
      *
      * @param clazz type class / 类型类
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun type(clazz: Class<*>) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -339,7 +339,7 @@ class UsingFieldMatcher : BaseMatcher {
      * @param typeName type name / 类型名称
      * @param matchType match type / 字符串匹配类型
      * @param ignoreCase ignore case / 忽略大小写
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     @JvmOverloads
     fun type(
@@ -359,7 +359,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     annotations(AnnotationsMatcher().count(1))
      *
      * @param annotations annotations matcher / 注解匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun annotations(annotations: AnnotationsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -374,7 +374,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     addAnnotation(AnnotationMatcher().type("org.luckypray.dexkit.demo.annotations.Router"))
      *
      * @param annotation annotation matcher / 注解匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun addAnnotation(annotation: AnnotationMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -387,7 +387,7 @@ class UsingFieldMatcher : BaseMatcher {
      * 字段注解数量。
      *
      * @param count annotation count / 注解数量
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun annotationCount(count: Int) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -402,7 +402,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     annotationCount(IntRange(1, 2))
      *
      * @param range annotation count range / 注解数量范围
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun annotationCount(range: IntRange) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -417,7 +417,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     annotationCount(1..2)
      *
      * @param range annotation count range / 注解数量范围
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun annotationCount(range: kotlin.ranges.IntRange) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -433,7 +433,7 @@ class UsingFieldMatcher : BaseMatcher {
      *
      * @param min min annotation count / 最小注解数量
      * @param max max annotation count / 最大注解数量
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun annotationCount(min: Int = 0, max: Int = Int.MAX_VALUE) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -448,7 +448,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     readMethods(MethodsMatcher().add(MethodMatcher().name("getText")))
      *
      * @param readMethods methods matcher / 方法匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun readMethods(readMethods: MethodsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -463,7 +463,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     addReadMethods(MethodMatcher().name("getText"))
      *
      * @param readMethod method matcher / 方法匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun addReadMethods(readMethod: MethodMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -471,14 +471,14 @@ class UsingFieldMatcher : BaseMatcher {
     }
 
     /**
-     * Read this field value's methods matcher.
+     * Add read this field value's method matcher.
      * ----------------
-     * 读取该字段值的方法匹配器。
+     * 添加读取该字段值的方法匹配器。
      *
      *     addReadMethods("Landroid/widget/TextView;->getText()Ljava/lang/CharSequence;")
      *
      * @param methodDescriptor method descriptor / 方法描述符
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun addReadMethods(methodDescriptor: String) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -493,7 +493,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     writeMethods(MethodsMatcher().add(MethodMatcher().name("setText")))
      *
      * @param putMethods methods matcher / 方法匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun writeMethods(putMethods: MethodsMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -508,7 +508,7 @@ class UsingFieldMatcher : BaseMatcher {
      *     addWriteMethod(MethodMatcher().name("setText"))
      *
      * @param putMethod method matcher / 方法匹配器
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun addWriteMethod(putMethod: MethodMatcher) = also {
         this.matcher = matcher ?: FieldMatcher()
@@ -516,14 +516,14 @@ class UsingFieldMatcher : BaseMatcher {
     }
 
     /**
-     * Write this field value's methods matcher.
+     * Add write this field value's method matcher.
      * ----------------
-     * 写入该字段值的方法匹配器。
+     * 添加写入该字段值的方法匹配器。
      *
      *     addWriteMethod("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V")
      *
      * @param methodDescriptor method descriptor / 方法描述符
-     * @return [FieldMatcher]
+     * @return [UsingFieldMatcher]
      */
     fun addWriteMethod(methodDescriptor: String) = also {
         this.matcher = matcher ?: FieldMatcher()

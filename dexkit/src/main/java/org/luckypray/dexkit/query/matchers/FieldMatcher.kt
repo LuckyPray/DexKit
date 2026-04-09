@@ -446,7 +446,7 @@ class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
      * ----------------
      * 添加读取该字段值的方法匹配器。
      *
-     *     addReadMethod(MethodMatcher().name("getText"))
+     *     addReadMethod("Landroid/widget/TextView;->getText()Ljava/lang/CharSequence;")
      *
      * @param methodDescriptor method descriptor / 方法描述符
      * @return [FieldMatcher]
@@ -486,9 +486,9 @@ class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Write this field value's methods matcher.
+     * Add write this field value's method matcher.
      * ----------------
-     * 写入该字段值的方法匹配器。
+     * 添加写入该字段值的方法匹配器。
      *
      *     addWriteMethod("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V")
      *
