@@ -95,6 +95,7 @@ class DexField: ISerializable {
      * @param isStatic If null, native auto check / 如果为 null，native 自动判断
      * @return [Field]
      */
+    @JvmOverloads
     @Throws(NoSuchFieldException::class)
     fun getFieldInstance(classLoader: ClassLoader, isStatic: Boolean? = null): Field {
         return InstanceUtil.getFieldInstance(classLoader, this, isStatic)
