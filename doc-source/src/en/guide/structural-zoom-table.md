@@ -186,6 +186,9 @@
 | fields       | [FieldsMatcher](#fieldsmatcher)                   | List of fields in the class                                   |
 | methods      | [MethodsMatcher](#methodsmatcher)                 | List of methods in the class                                  |
 | usingStrings | Collection&lt;[StringMatcher](#stringmatcher)&gt; | List of strings used in the class                             |
+| allOf        | Collection&lt;[ClassMatcher](#classmatcher)&gt;   | Child class matchers that must all match                      |
+| anyOf        | Collection&lt;[ClassMatcher](#classmatcher)&gt;   | Child class matchers where at least one must match            |
+| noneOf       | Collection&lt;[ClassMatcher](#classmatcher)&gt;   | Child class matchers that must not match                      |
 
 ### InterfacesMatcher
 
@@ -206,6 +209,9 @@
 | annotations   | [AnnotationsMatcher](#annotationsmatcher) | List of annotations for the field  |
 | readMethods   | [MethodsMatcher](#methodsmatcher)         | List of methods to read the field  |
 | writeMethods  | [MethodsMatcher](#methodsmatcher)         | List of methods to write the field |
+| allOf         | Collection&lt;[FieldMatcher](#fieldmatcher)&gt; | Child field matchers that must all match |
+| anyOf         | Collection&lt;[FieldMatcher](#fieldmatcher)&gt; | Child field matchers where at least one must match |
+| noneOf        | Collection&lt;[FieldMatcher](#fieldmatcher)&gt; | Child field matchers that must not match |
 
 ### FieldsMatcher
 
@@ -232,6 +238,14 @@
 | usingNumbers  | Collection&lt;Number&gt;                                  | List of numbers used in the method    |
 | invokeMethods | [MethodsMatcher](#methodsmatcher)                         | List of methods invoked by the method |
 | callerMethods | [MethodsMatcher](#methodsmatcher)                         | List of methods that call the method  |
+| allOf         | Collection&lt;[MethodMatcher](#methodmatcher)&gt;         | Child method matchers that must all match |
+| anyOf         | Collection&lt;[MethodMatcher](#methodmatcher)&gt;         | Child method matchers where at least one must match |
+| noneOf        | Collection&lt;[MethodMatcher](#methodmatcher)&gt;         | Child method matchers that must not match |
+
+::: tip
+`not { ... }` is DSL syntax sugar rather than a standalone field; it is converted into adding one
+child matcher to `noneOf`. `allOf`, `anyOf`, and `noneOf` can be nested recursively.
+:::
 
 ### MethodsMatcher
 

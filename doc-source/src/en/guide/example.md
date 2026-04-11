@@ -220,6 +220,66 @@ org.luckypray.dexkit.demo.PlayActivity
 In `DexKit`, any logical relationship can be used as a query condition
 :::
 
+## Composite Matcher Syntax Sugar
+
+`ClassMatcher`, `FieldMatcher`, and `MethodMatcher` now support composite
+conditions:
+
+- `allOf { ... }`: all child conditions must match
+- `anyOf { ... }`: at least one child condition must match
+- `noneOf { ... }`: all child conditions must not match
+- `not { ... }`: a single negated condition, equivalent to adding one child matcher to `noneOf`
+
+Inside the same `matcher {}` block, regular field conditions and these composite blocks still form
+an implicit `AND`.
+
+```kotlin
+private fun findOnCreateWithCompositeMatcher(bridge: DexKitBridge) {
+    val method = bridge.findMethod {
+        matcher {
+            declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+
+            anyOf {
+                match { name = "onCreate" }
+                match { usingStrings("onClick") }
+            }
+
+            not {
+                usingStrings("rollDice: ")
+            }
+        }
+    }.single()
+
+    println(method.descriptor)
+}
+```
+
+This example mainly demonstrates one layer of syntax sugar:
+
+1. `anyOf { match { ... } }` expresses an OR across multiple `MethodMatcher` children.
+
+When Java cannot use the Kotlin DSL closures, you can build the same logic with the chaining API:
+
+```java
+MethodMatcher matcher = MethodMatcher.create()
+        .declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+        .anyOf(
+                MethodMatcher.create().name("onCreate"),
+                MethodMatcher.create().usingStrings(
+                        List.of("onClick"),
+                        StringMatchType.Contains,
+                        false
+                )
+        )
+        .not(
+                MethodMatcher.create().usingStrings(
+                        List.of("rollDice: "),
+                        StringMatchType.Contains,
+                        false
+                )
+        );
+```
+
 ## Fuzzy Parameter Matching
 
 If we need to find a method with an obfuscated parameter, we can use `null` to replace it,

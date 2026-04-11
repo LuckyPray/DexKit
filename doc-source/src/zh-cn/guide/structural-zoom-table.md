@@ -185,6 +185,9 @@
 | fields       | [FieldsMatcher](#fieldsmatcher)                   | 类的字段列表                          |
 | methods      | [MethodsMatcher](#methodsmatcher)                 | 类的方法列表                          |
 | usingStrings | Collection&lt;[StringMatcher](#stringmatcher)&gt; | 类中使用的字符串列表                      |
+| allOf        | Collection&lt;[ClassMatcher](#classmatcher)&gt;   | 必须全部匹配的子类匹配器                    |
+| anyOf        | Collection&lt;[ClassMatcher](#classmatcher)&gt;   | 至少匹配一个的子类匹配器                    |
+| noneOf       | Collection&lt;[ClassMatcher](#classmatcher)&gt;   | 必须全部不匹配的子类匹配器                   |
 
 ### InterfacesMatcher
 
@@ -205,6 +208,9 @@
 | annotations   | [AnnotationsMatcher](#annotationsmatcher) | 字段的注解      |
 | readMethods   | [MethodsMatcher](#methodsmatcher)         | 读取该字段的方法列表 |
 | writeMethods  | [MethodsMatcher](#methodsmatcher)         | 设置该字段的方法列表 |
+| allOf         | Collection&lt;[FieldMatcher](#fieldmatcher)&gt; | 必须全部匹配的子字段匹配器 |
+| anyOf         | Collection&lt;[FieldMatcher](#fieldmatcher)&gt; | 至少匹配一个的子字段匹配器 |
+| noneOf        | Collection&lt;[FieldMatcher](#fieldmatcher)&gt; | 必须全部不匹配的子字段匹配器 |
 
 ### FieldsMatcher
 
@@ -231,6 +237,14 @@
 | usingNumbers  | Collection&lt;Number&gt;                                  | 方法中使用的数字列表       |
 | invokeMethods | [MethodsMatcher](#methodsmatcher)                         | 方法中调用的方法列表       |
 | callerMethods | [MethodsMatcher](#methodsmatcher)                         | 调用了该方法的方法列表      |
+| allOf         | Collection&lt;[MethodMatcher](#methodmatcher)&gt;         | 必须全部匹配的子方法匹配器 |
+| anyOf         | Collection&lt;[MethodMatcher](#methodmatcher)&gt;         | 至少匹配一个的子方法匹配器 |
+| noneOf        | Collection&lt;[MethodMatcher](#methodmatcher)&gt;         | 必须全部不匹配的子方法匹配器 |
+
+::: tip
+`not { ... }` 是 DSL 语法糖，不是独立字段；它会被转换为向 `noneOf` 添加一个子匹配器。
+`allOf`、`anyOf`、`noneOf` 可以继续递归嵌套。
+:::
 
 ### MethodsMatcher
 

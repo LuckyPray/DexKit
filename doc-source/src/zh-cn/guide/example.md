@@ -216,6 +216,64 @@ org.luckypray.dexkit.demo.PlayActivity
 在 `DexKit` 中，一切符合逻辑的关系都可以作为查询条件
 :::
 
+## 逻辑组合语法糖
+
+`ClassMatcher`、`FieldMatcher`、`MethodMatcher` 现在都支持组合条件：
+
+- `allOf { ... }`：子条件必须全部成立
+- `anyOf { ... }`：子条件满足任意一个即可
+- `noneOf { ... }`：子条件必须全部不成立
+- `not { ... }`：单个否定条件，等价于向 `noneOf` 添加一个子匹配器
+
+在同一个 `matcher {}` 中，原有的普通字段条件与这些组合块之间仍然是隐式 `AND` 关系。
+
+```kotlin
+private fun findOnCreateWithCompositeMatcher(bridge: DexKitBridge) {
+    val method = bridge.findMethod {
+        matcher {
+            declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+
+            anyOf {
+                match { name = "onCreate" }
+                match { usingStrings("onClick") }
+            }
+
+            not {
+                usingStrings("rollDice: ")
+            }
+        }
+    }.single()
+
+    println(method.descriptor)
+}
+```
+
+上面的例子主要体现的是一层语法糖：
+
+1. `anyOf { match { ... } }` 用于表达多个 `MethodMatcher` 的或关系。
+
+Java 中不支持 Kotlin DSL 闭包时，可以直接使用链式 API：
+
+```java
+MethodMatcher matcher = MethodMatcher.create()
+        .declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+        .anyOf(
+                MethodMatcher.create().name("onCreate"),
+                MethodMatcher.create().usingStrings(
+                        List.of("onClick"),
+                        StringMatchType.Contains,
+                        false
+                )
+        )
+        .not(
+                MethodMatcher.create().usingStrings(
+                        List.of("rollDice: "),
+                        StringMatchType.Contains,
+                        false
+                )
+        );
+```
+
 ## 模糊参数匹配
 
 如果我们需要寻找的方法中存在一个被混淆的参数，我们可以使用 `null` 来替代，这样它就能匹配任意类型的参数。
