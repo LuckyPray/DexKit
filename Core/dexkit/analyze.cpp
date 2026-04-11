@@ -33,10 +33,7 @@ template<typename T>
 bool HasCompositeVector(const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers);
 
 bool HasCompositeInternal(const schema::StringMatcher *matcher) {
-    if (!matcher) return false;
-    return HasEntries(matcher->all_of())
-           || HasEntries(matcher->any_of())
-           || HasEntries(matcher->none_of());
+    return false;
 }
 
 bool HasCompositeInternal(const schema::ClassMatcher *matcher);

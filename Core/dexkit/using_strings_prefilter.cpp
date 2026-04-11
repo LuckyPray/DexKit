@@ -74,14 +74,6 @@ bool HasNonEmptyVector(const T *vector) {
     return vector != nullptr && vector->size() > 0;
 }
 
-bool HasLogicalGroups(const schema::StringMatcher *matcher) {
-    return matcher != nullptr && (
-            HasNonEmptyVector(matcher->all_of())
-            || HasNonEmptyVector(matcher->any_of())
-            || HasNonEmptyVector(matcher->none_of())
-    );
-}
-
 const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *
 GetUsingStringsMatchers(const schema::MethodMatcher *matcher) {
     return matcher == nullptr ? nullptr : matcher->using_strings();
@@ -131,7 +123,7 @@ uint64_t TryAddPrefilterAtomBit(
         UsingStringsPrefilterPlan &plan,
         const schema::StringMatcher *matcher
 ) {
-    if (matcher == nullptr || matcher->value() == nullptr || HasLogicalGroups(matcher)) {
+    if (matcher == nullptr || matcher->value() == nullptr) {
         return 0;
     }
 

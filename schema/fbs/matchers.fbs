@@ -8,9 +8,6 @@ table StringMatcher {
     value: string;
     match_type: StringMatchType;
     ignore_case: bool;
-    all_of: [StringMatcher];
-    any_of: [StringMatcher];
-    none_of: [StringMatcher];
 }
 
 table AccessFlagsMatcher {

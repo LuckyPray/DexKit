@@ -294,10 +294,7 @@ struct StringMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_VALUE = 4,
     VT_MATCH_TYPE = 6,
-    VT_IGNORE_CASE = 8,
-    VT_ALL_OF = 10,
-    VT_ANY_OF = 12,
-    VT_NONE_OF = 14
+    VT_IGNORE_CASE = 8
   };
   const ::flatbuffers::String *value() const {
     return GetPointer<const ::flatbuffers::String *>(VT_VALUE);
@@ -308,30 +305,12 @@ struct StringMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool ignore_case() const {
     return GetField<uint8_t>(VT_IGNORE_CASE, 0) != 0;
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *all_of() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_ALL_OF);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *any_of() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_ANY_OF);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *none_of() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_NONE_OF);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_VALUE) &&
            verifier.VerifyString(value()) &&
            VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyField<uint8_t>(verifier, VT_IGNORE_CASE, 1) &&
-           VerifyOffset(verifier, VT_ALL_OF) &&
-           verifier.VerifyVector(all_of()) &&
-           verifier.VerifyVectorOfTables(all_of()) &&
-           VerifyOffset(verifier, VT_ANY_OF) &&
-           verifier.VerifyVector(any_of()) &&
-           verifier.VerifyVectorOfTables(any_of()) &&
-           VerifyOffset(verifier, VT_NONE_OF) &&
-           verifier.VerifyVector(none_of()) &&
-           verifier.VerifyVectorOfTables(none_of()) &&
            verifier.EndTable();
   }
 };
@@ -349,15 +328,6 @@ struct StringMatcherBuilder {
   void add_ignore_case(bool ignore_case) {
     fbb_.AddElement<uint8_t>(StringMatcher::VT_IGNORE_CASE, static_cast<uint8_t>(ignore_case), 0);
   }
-  void add_all_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> all_of) {
-    fbb_.AddOffset(StringMatcher::VT_ALL_OF, all_of);
-  }
-  void add_any_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> any_of) {
-    fbb_.AddOffset(StringMatcher::VT_ANY_OF, any_of);
-  }
-  void add_none_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> none_of) {
-    fbb_.AddOffset(StringMatcher::VT_NONE_OF, none_of);
-  }
   explicit StringMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -373,14 +343,8 @@ inline ::flatbuffers::Offset<StringMatcher> CreateStringMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> value = 0,
     dexkit::schema::StringMatchType match_type = dexkit::schema::StringMatchType::Contains,
-    bool ignore_case = false,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> all_of = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> any_of = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> none_of = 0) {
+    bool ignore_case = false) {
   StringMatcherBuilder builder_(_fbb);
-  builder_.add_none_of(none_of);
-  builder_.add_any_of(any_of);
-  builder_.add_all_of(all_of);
   builder_.add_value(value);
   builder_.add_ignore_case(ignore_case);
   builder_.add_match_type(match_type);
@@ -396,22 +360,13 @@ inline ::flatbuffers::Offset<StringMatcher> CreateStringMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *value = nullptr,
     dexkit::schema::StringMatchType match_type = dexkit::schema::StringMatchType::Contains,
-    bool ignore_case = false,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *all_of = nullptr,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *any_of = nullptr,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *none_of = nullptr) {
+    bool ignore_case = false) {
   auto value__ = value ? _fbb.CreateString(value) : 0;
-  auto all_of__ = all_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*all_of) : 0;
-  auto any_of__ = any_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*any_of) : 0;
-  auto none_of__ = none_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*none_of) : 0;
   return dexkit::schema::CreateStringMatcher(
       _fbb,
       value__,
       match_type,
-      ignore_case,
-      all_of__,
-      any_of__,
-      none_of__);
+      ignore_case);
 }
 
 struct AccessFlagsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

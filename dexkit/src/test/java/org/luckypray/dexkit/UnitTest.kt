@@ -444,27 +444,6 @@ class UnitTest {
     }
 
     @Test
-    fun testCompositeStringMatcherWithinUsingStrings() {
-        val res = bridge.findMethod {
-            matcher {
-                declaredClass("org.luckypray.dexkit.demo.PlayActivity")
-                name = "onCreate"
-                usingStrings {
-                    add {
-                        allOf {
-                            match("Play", StringMatchType.StartsWith)
-                            match("Activity", StringMatchType.EndsWith)
-                        }
-                    }
-                }
-            }
-        }
-        println(res)
-        assert(res.size == 1)
-        assert(res.first().descriptor == "Lorg/luckypray/dexkit/demo/PlayActivity;->onCreate(Landroid/os/Bundle;)V")
-    }
-
-    @Test
     fun testGetClassData() {
         val res = bridge.getClassData("Lorg/luckypray/dexkit/demo/MainActivity;")
         assert(res != null)
