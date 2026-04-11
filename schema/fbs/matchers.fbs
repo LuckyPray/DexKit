@@ -8,6 +8,9 @@ table StringMatcher {
     value: string;
     match_type: StringMatchType;
     ignore_case: bool;
+    all_of: [StringMatcher];
+    any_of: [StringMatcher];
+    none_of: [StringMatcher];
 }
 
 table AccessFlagsMatcher {
@@ -116,6 +119,9 @@ table MethodMatcher {
     invoking_methods: MethodsMatcher;
     method_callers: MethodsMatcher;
     proto_shorty: string;
+    all_of: [MethodMatcher];
+    any_of: [MethodMatcher];
+    none_of: [MethodMatcher];
 }
 
 table MethodsMatcher {
@@ -138,6 +144,9 @@ table FieldMatcher {
     annotations: AnnotationsMatcher;
     get_methods: MethodsMatcher;
     put_methods: MethodsMatcher;
+    all_of: [FieldMatcher];
+    any_of: [FieldMatcher];
+    none_of: [FieldMatcher];
 }
 
 table FieldsMatcher {
@@ -156,6 +165,9 @@ table ClassMatcher {
     fields: FieldsMatcher;
     methods: MethodsMatcher;
     using_strings: [StringMatcher];
+    all_of: [ClassMatcher];
+    any_of: [ClassMatcher];
+    none_of: [ClassMatcher];
 }
 
 table BatchUsingStringsMatcher {

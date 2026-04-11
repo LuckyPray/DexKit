@@ -19,6 +19,7 @@
 // <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
 
 #include "dex_item.h"
+#include "internal/using_strings_prefilter.h"
 
 namespace dexkit {
 
@@ -179,6 +180,7 @@ DexItem::FindClass(
         QueryContext &query_context
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    auto *prefilter_plan = internal::GetClassUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     std::vector<uint32_t> find_result;
     auto try_match_class = [&](uint32_t i) {
@@ -189,6 +191,7 @@ DexItem::FindClass(
             if (query->exclude_packages() && (hit & 1)) return false;
             if (query->search_packages() && !(hit >> 1)) return false;
         }
+        if (prefilter_plan && !MayMatchClassUsingStringsPrefilter(class_def.class_idx, *prefilter_plan)) return false;
         if (!IsClassMatched(class_def.class_idx, query->matcher())) return false;
         find_result.emplace_back(class_def.class_idx);
         return true;
@@ -219,6 +222,7 @@ DexItem::FindMethod(
         QueryContext &query_context
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    auto *prefilter_plan = internal::GetMethodUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     std::vector<uint32_t> find_result;
     auto try_match_method = [&](uint32_t method_idx) {
@@ -231,6 +235,7 @@ DexItem::FindMethod(
             if (query->search_packages() && !(hit >> 1)) return false;
         }
         if (query->in_methods() && !in_method_set.contains(method_idx)) return false;
+        if (prefilter_plan && !MayMatchMethodUsingStringsPrefilter(method_idx, *prefilter_plan)) return false;
         if (!IsMethodMatched(method_idx, query->matcher())) return false;
         find_result.emplace_back(method_idx);
         return true;
@@ -301,6 +306,7 @@ DexItem::FindClass(
         QueryContext &query_context
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    auto *prefilter_plan = internal::GetClassUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     if (query->in_classes() && !in_class_set.contains(type_idx)) {
         return {};
@@ -311,6 +317,10 @@ DexItem::FindClass(
         auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
         if (query->exclude_packages() && (hit & 1)) return {};
         if (query->search_packages() && !(hit >> 1)) return {};
+    }
+
+    if (prefilter_plan && !MayMatchClassUsingStringsPrefilter(type_idx, *prefilter_plan)) {
+        return {};
     }
 
     if (IsClassMatched(type_idx, query->matcher())) {
@@ -338,6 +348,7 @@ DexItem::FindMethod(
         QueryContext &query_context
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    auto *prefilter_plan = internal::GetMethodUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     if (query->in_classes() && !in_class_set.contains(type_idx)) {
         return {};
@@ -352,6 +363,7 @@ DexItem::FindMethod(
             if (query->exclude_packages() && (hit & 1)) return false;
             if (query->search_packages() && !(hit >> 1)) return false;
         }
+        if (prefilter_plan && !MayMatchMethodUsingStringsPrefilter(method_idx, *prefilter_plan)) return false;
         if (!IsMethodMatched(method_idx, query->matcher())) return false;
         find_result.emplace_back(method_idx);
         return true;

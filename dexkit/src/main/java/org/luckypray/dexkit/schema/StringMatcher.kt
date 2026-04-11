@@ -67,6 +67,45 @@ internal class `-StringMatcher` : Table() {
             false
         }
     }
+    fun allOf(j: Int) : `-StringMatcher`? = allOf(`-StringMatcher`(), j)
+    fun allOf(obj: `-StringMatcher`, j: Int) : `-StringMatcher`? {
+        val o = __offset(10)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val allOfLength : Int
+        get() {
+            val o = __offset(10); return if (o != 0) __vector_len(o) else 0
+        }
+    fun anyOf(j: Int) : `-StringMatcher`? = anyOf(`-StringMatcher`(), j)
+    fun anyOf(obj: `-StringMatcher`, j: Int) : `-StringMatcher`? {
+        val o = __offset(12)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val anyOfLength : Int
+        get() {
+            val o = __offset(12); return if (o != 0) __vector_len(o) else 0
+        }
+    fun noneOf(j: Int) : `-StringMatcher`? = noneOf(`-StringMatcher`(), j)
+    fun noneOf(obj: `-StringMatcher`, j: Int) : `-StringMatcher`? {
+        val o = __offset(14)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val noneOfLength : Int
+        get() {
+            val o = __offset(14); return if (o != 0) __vector_len(o) else 0
+        }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsStringMatcher(_bb: ByteBuffer): `-StringMatcher` = getRootAsStringMatcher(_bb, `-StringMatcher`())
@@ -74,17 +113,47 @@ internal class `-StringMatcher` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createStringMatcher(builder: FlatBufferBuilder, valueOffset: Int, matchType: Byte, ignoreCase: Boolean) : Int {
-            builder.startTable(3)
+        fun createStringMatcher(builder: FlatBufferBuilder, valueOffset: Int, matchType: Byte, ignoreCase: Boolean, allOfOffset: Int, anyOfOffset: Int, noneOfOffset: Int) : Int {
+            builder.startTable(6)
+            addNoneOf(builder, noneOfOffset)
+            addAnyOf(builder, anyOfOffset)
+            addAllOf(builder, allOfOffset)
             addValue(builder, valueOffset)
             addIgnoreCase(builder, ignoreCase)
             addMatchType(builder, matchType)
             return endStringMatcher(builder)
         }
-        fun startStringMatcher(builder: FlatBufferBuilder) = builder.startTable(3)
+        fun startStringMatcher(builder: FlatBufferBuilder) = builder.startTable(6)
         fun addValue(builder: FlatBufferBuilder, value: Int) = builder.addOffset(0, value, 0)
         fun addMatchType(builder: FlatBufferBuilder, matchType: Byte) = builder.addByte(1, matchType, 0)
         fun addIgnoreCase(builder: FlatBufferBuilder, ignoreCase: Boolean) = builder.addBoolean(2, ignoreCase, false)
+        fun addAllOf(builder: FlatBufferBuilder, allOf: Int) = builder.addOffset(3, allOf, 0)
+        fun createAllOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startAllOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addAnyOf(builder: FlatBufferBuilder, anyOf: Int) = builder.addOffset(4, anyOf, 0)
+        fun createAnyOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startAnyOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addNoneOf(builder: FlatBufferBuilder, noneOf: Int) = builder.addOffset(5, noneOf, 0)
+        fun createNoneOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startNoneOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endStringMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

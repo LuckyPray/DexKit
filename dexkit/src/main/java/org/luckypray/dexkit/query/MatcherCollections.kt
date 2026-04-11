@@ -25,7 +25,9 @@ package org.luckypray.dexkit.query
 
 import org.luckypray.dexkit.query.base.QueryComponent
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.query.matchers.FieldMatcher
+import org.luckypray.dexkit.query.matchers.MethodMatcher
 import org.luckypray.dexkit.query.matchers.StringMatchersGroup
 import org.luckypray.dexkit.query.matchers.UsingFieldMatcher
 import org.luckypray.dexkit.query.matchers.base.NumberEncodeValueMatcher
@@ -55,6 +57,84 @@ class StringMatcherList : ArrayList<StringMatcher>, QueryComponent {
         ignoreCase: Boolean = false
     ) = also {
         add(StringMatcher(usingString, matchType, ignoreCase))
+    }
+
+    /**
+     * Add [StringMatcher].
+     * ----------------
+     * 添加 [StringMatcher]。
+     */
+    fun match(matcher: StringMatcher) = also {
+        add(matcher)
+    }
+
+    /**
+     * Add using string matcher.
+     * ----------------
+     * 添加字符串匹配器。
+     */
+    @JvmOverloads
+    fun match(
+        usingString: String,
+        matchType: StringMatchType = StringMatchType.Contains,
+        ignoreCase: Boolean = false
+    ) = also {
+        add(StringMatcher(usingString, matchType, ignoreCase))
+    }
+
+    /**
+     * Add [StringMatcher].
+     * ----------------
+     * 添加 [StringMatcher]。
+     */
+    @JvmSynthetic
+    fun add(init: StringMatcher.() -> Unit) = also {
+        add(StringMatcher().apply(init))
+    }
+
+    /**
+     * Add [StringMatcher].
+     * ----------------
+     * 添加 [StringMatcher]。
+     */
+    @JvmSynthetic
+    fun match(init: StringMatcher.() -> Unit) = also {
+        add(StringMatcher().apply(init))
+    }
+}
+
+class ClassMatcherList : ArrayList<ClassMatcher>, QueryComponent {
+    constructor(): super()
+    constructor(initialCapacity: Int): super(initialCapacity)
+    constructor(elements: Collection<ClassMatcher>): super(elements)
+
+    /**
+     * Add [ClassMatcher].
+     * ----------------
+     * 添加 [ClassMatcher]。
+     */
+    fun match(matcher: ClassMatcher) = also {
+        add(matcher)
+    }
+
+    /**
+     * Add [ClassMatcher].
+     * ----------------
+     * 添加 [ClassMatcher]。
+     */
+    @JvmSynthetic
+    fun add(init: ClassMatcher.() -> Unit) = also {
+        add(ClassMatcher().apply(init))
+    }
+
+    /**
+     * Add [ClassMatcher].
+     * ----------------
+     * 添加 [ClassMatcher]。
+     */
+    @JvmSynthetic
+    fun match(init: ClassMatcher.() -> Unit) = also {
+        add(ClassMatcher().apply(init))
     }
 }
 
@@ -125,6 +205,60 @@ class FieldMatcherList : ArrayList<FieldMatcher>, QueryComponent {
     @JvmSynthetic
     fun add(init: FieldMatcher.() -> Unit) = also {
         add(FieldMatcher().apply(init))
+    }
+
+    /**
+     * Add [FieldMatcher].
+     * ----------------
+     * 添加 [FieldMatcher]。
+     */
+    fun match(matcher: FieldMatcher) = also {
+        add(matcher)
+    }
+
+    /**
+     * Add [FieldMatcher].
+     * ----------------
+     * 添加 [FieldMatcher]。
+     */
+    @JvmSynthetic
+    fun match(init: FieldMatcher.() -> Unit) = also {
+        add(FieldMatcher().apply(init))
+    }
+}
+
+class MethodMatcherList : ArrayList<MethodMatcher>, QueryComponent {
+    constructor(): super()
+    constructor(initialCapacity: Int): super(initialCapacity)
+    constructor(elements: Collection<MethodMatcher>): super(elements)
+
+    /**
+     * Add [MethodMatcher].
+     * ----------------
+     * 添加 [MethodMatcher]。
+     */
+    fun match(matcher: MethodMatcher) = also {
+        add(matcher)
+    }
+
+    /**
+     * Add [MethodMatcher].
+     * ----------------
+     * 添加 [MethodMatcher]。
+     */
+    @JvmSynthetic
+    fun add(init: MethodMatcher.() -> Unit) = also {
+        add(MethodMatcher().apply(init))
+    }
+
+    /**
+     * Add [MethodMatcher].
+     * ----------------
+     * 添加 [MethodMatcher]。
+     */
+    @JvmSynthetic
+    fun match(init: MethodMatcher.() -> Unit) = also {
+        add(MethodMatcher().apply(init))
     }
 }
 

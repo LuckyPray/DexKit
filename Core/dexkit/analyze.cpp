@@ -22,6 +22,256 @@
 
 namespace dexkit {
 
+namespace {
+
+template<typename T>
+bool HasEntries(const T *vector) {
+    return vector != nullptr && vector->size() > 0;
+}
+
+template<typename T>
+bool HasCompositeVector(const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers);
+
+bool HasCompositeInternal(const schema::StringMatcher *matcher) {
+    if (!matcher) return false;
+    return HasEntries(matcher->all_of())
+           || HasEntries(matcher->any_of())
+           || HasEntries(matcher->none_of());
+}
+
+bool HasCompositeInternal(const schema::ClassMatcher *matcher);
+bool HasCompositeInternal(const schema::FieldMatcher *matcher);
+bool HasCompositeInternal(const schema::MethodMatcher *matcher);
+bool HasCompositeInternal(const schema::AnnotationEncodeArrayMatcher *matcher);
+bool HasCompositeInternal(const schema::AnnotationElementMatcher *matcher);
+bool HasCompositeInternal(const schema::AnnotationElementsMatcher *matcher);
+bool HasCompositeInternal(const schema::AnnotationMatcher *matcher);
+bool HasCompositeInternal(const schema::AnnotationsMatcher *matcher);
+bool HasCompositeInternal(const schema::InterfacesMatcher *matcher);
+bool HasCompositeInternal(const schema::FieldsMatcher *matcher);
+bool HasCompositeInternal(const schema::MethodsMatcher *matcher);
+bool HasCompositeInternal(const schema::ParameterMatcher *matcher);
+bool HasCompositeInternal(const schema::ParametersMatcher *matcher);
+bool HasCompositeInternal(const schema::UsingFieldMatcher *matcher);
+
+template<typename T>
+bool HasCompositeVector(const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers) {
+    if (!matchers) return false;
+    for (int i = 0; i < matchers->size(); ++i) {
+        if (HasCompositeInternal(matchers->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void MergeAnalyzeRet(AnalyzeRet &target, const AnalyzeRet &source) {
+    target.need_flags |= source.need_flags;
+    target.declare_class.insert(target.declare_class.end(), source.declare_class.begin(), source.declare_class.end());
+}
+
+template<typename T>
+static void MergeAnalyzeVector(
+        AnalyzeRet &target,
+        const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers,
+        int dex_depth
+) {
+    if (!matchers) return;
+    for (int i = 0; i < matchers->size(); ++i) {
+        MergeAnalyzeRet(target, Analyze(matchers->Get(i), dex_depth));
+    }
+}
+
+bool HasCompositeInternal(const schema::ClassMatcher *matcher) {
+    if (!matcher) return false;
+    return HasEntries(matcher->all_of())
+           || HasEntries(matcher->any_of())
+           || HasEntries(matcher->none_of())
+           || HasCompositeInternal(matcher->smali_source())
+           || HasCompositeInternal(matcher->class_name())
+           || HasCompositeInternal(matcher->super_class())
+           || HasCompositeInternal(matcher->interfaces())
+           || HasCompositeInternal(matcher->annotations())
+           || HasCompositeInternal(matcher->fields())
+           || HasCompositeInternal(matcher->methods())
+           || HasCompositeVector(matcher->using_strings());
+}
+
+bool HasCompositeInternal(const schema::FieldMatcher *matcher) {
+    if (!matcher) return false;
+    return HasEntries(matcher->all_of())
+           || HasEntries(matcher->any_of())
+           || HasEntries(matcher->none_of())
+           || HasCompositeInternal(matcher->field_name())
+           || HasCompositeInternal(matcher->declaring_class())
+           || HasCompositeInternal(matcher->type_class())
+           || HasCompositeInternal(matcher->annotations())
+           || HasCompositeInternal(matcher->get_methods())
+           || HasCompositeInternal(matcher->put_methods());
+}
+
+bool HasCompositeInternal(const schema::MethodMatcher *matcher) {
+    if (!matcher) return false;
+    return HasEntries(matcher->all_of())
+           || HasEntries(matcher->any_of())
+           || HasEntries(matcher->none_of())
+           || HasCompositeInternal(matcher->method_name())
+           || HasCompositeInternal(matcher->declaring_class())
+           || HasCompositeInternal(matcher->return_type())
+           || HasCompositeInternal(matcher->parameters())
+           || HasCompositeInternal(matcher->annotations())
+           || HasCompositeVector(matcher->using_strings())
+           || HasCompositeVector(matcher->using_fields())
+           || HasCompositeInternal(matcher->invoking_methods())
+           || HasCompositeInternal(matcher->method_callers());
+}
+
+bool HasCompositeInternal(const schema::AnnotationEncodeArrayMatcher *matcher) {
+    if (!matcher || !matcher->values()) return false;
+    for (int i = 0; i < matcher->values()->size(); ++i) {
+        switch (matcher->values_type()->Get(i)) {
+            case schema::AnnotationEncodeValueMatcher::StringMatcher:
+                if (HasCompositeInternal(matcher->values()->GetAs<schema::StringMatcher>(i))) return true;
+                break;
+            case schema::AnnotationEncodeValueMatcher::ClassMatcher:
+                if (HasCompositeInternal(matcher->values()->GetAs<schema::ClassMatcher>(i))) return true;
+                break;
+            case schema::AnnotationEncodeValueMatcher::MethodMatcher:
+                if (HasCompositeInternal(matcher->values()->GetAs<schema::MethodMatcher>(i))) return true;
+                break;
+            case schema::AnnotationEncodeValueMatcher::FieldMatcher:
+                if (HasCompositeInternal(matcher->values()->GetAs<schema::FieldMatcher>(i))) return true;
+                break;
+            case schema::AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher:
+                if (HasCompositeInternal(matcher->values()->GetAs<schema::AnnotationEncodeArrayMatcher>(i))) return true;
+                break;
+            case schema::AnnotationEncodeValueMatcher::AnnotationMatcher:
+                if (HasCompositeInternal(matcher->values()->GetAs<schema::AnnotationMatcher>(i))) return true;
+                break;
+            default:
+                break;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::AnnotationElementMatcher *matcher) {
+    if (!matcher) return false;
+    if (HasCompositeInternal(matcher->name())) return true;
+    switch (matcher->value_type()) {
+        case schema::AnnotationEncodeValueMatcher::StringMatcher:
+            return HasCompositeInternal(matcher->value_as_StringMatcher());
+        case schema::AnnotationEncodeValueMatcher::ClassMatcher:
+            return HasCompositeInternal(matcher->value_as_ClassMatcher());
+        case schema::AnnotationEncodeValueMatcher::MethodMatcher:
+            return HasCompositeInternal(matcher->value_as_MethodMatcher());
+        case schema::AnnotationEncodeValueMatcher::FieldMatcher:
+            return HasCompositeInternal(matcher->value_as_FieldMatcher());
+        case schema::AnnotationEncodeValueMatcher::AnnotationEncodeArrayMatcher:
+            return HasCompositeInternal(matcher->value_as_AnnotationEncodeArrayMatcher());
+        case schema::AnnotationEncodeValueMatcher::AnnotationMatcher:
+            return HasCompositeInternal(matcher->value_as_AnnotationMatcher());
+        default:
+            return false;
+    }
+}
+
+bool HasCompositeInternal(const schema::AnnotationElementsMatcher *matcher) {
+    if (!matcher || !matcher->elements()) return false;
+    for (int i = 0; i < matcher->elements()->size(); ++i) {
+        if (HasCompositeInternal(matcher->elements()->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::AnnotationMatcher *matcher) {
+    if (!matcher) return false;
+    return HasCompositeInternal(matcher->type())
+           || HasCompositeInternal(matcher->elements())
+           || HasCompositeVector(matcher->using_strings());
+}
+
+bool HasCompositeInternal(const schema::AnnotationsMatcher *matcher) {
+    if (!matcher || !matcher->annotations()) return false;
+    for (int i = 0; i < matcher->annotations()->size(); ++i) {
+        if (HasCompositeInternal(matcher->annotations()->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::InterfacesMatcher *matcher) {
+    if (!matcher || !matcher->interfaces()) return false;
+    for (int i = 0; i < matcher->interfaces()->size(); ++i) {
+        if (HasCompositeInternal(matcher->interfaces()->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::FieldsMatcher *matcher) {
+    if (!matcher || !matcher->fields()) return false;
+    for (int i = 0; i < matcher->fields()->size(); ++i) {
+        if (HasCompositeInternal(matcher->fields()->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::MethodsMatcher *matcher) {
+    if (!matcher || !matcher->methods()) return false;
+    for (int i = 0; i < matcher->methods()->size(); ++i) {
+        if (HasCompositeInternal(matcher->methods()->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::ParameterMatcher *matcher) {
+    if (!matcher) return false;
+    return HasCompositeInternal(matcher->parameter_type())
+           || HasCompositeInternal(matcher->annotations());
+}
+
+bool HasCompositeInternal(const schema::ParametersMatcher *matcher) {
+    if (!matcher || !matcher->parameters()) return false;
+    for (int i = 0; i < matcher->parameters()->size(); ++i) {
+        if (HasCompositeInternal(matcher->parameters()->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HasCompositeInternal(const schema::UsingFieldMatcher *matcher) {
+    if (!matcher) return false;
+    return HasCompositeInternal(matcher->field());
+}
+
+} // namespace
+
+bool HasComposite(const schema::StringMatcher *matcher) {
+    return HasCompositeInternal(matcher);
+}
+
+bool HasComposite(const schema::ClassMatcher *matcher) {
+    return HasCompositeInternal(matcher);
+}
+
+bool HasComposite(const schema::FieldMatcher *matcher) {
+    return HasCompositeInternal(matcher);
+}
+
+bool HasComposite(const schema::MethodMatcher *matcher) {
+    return HasCompositeInternal(matcher);
+}
+
 AnalyzeRet Analyze(const schema::ClassMatcher *matcher, int dex_depth) {
     if (!matcher) return {};
     AnalyzeRet ret{};
@@ -65,6 +315,9 @@ AnalyzeRet Analyze(const schema::ClassMatcher *matcher, int dex_depth) {
     if (matcher->using_strings()) {
         ret.need_flags |= kUsingString;
     }
+    MergeAnalyzeVector(ret, matcher->all_of(), dex_depth);
+    MergeAnalyzeVector(ret, matcher->any_of(), dex_depth);
+    MergeAnalyzeVector(ret, matcher->none_of(), dex_depth);
     return ret;
 }
 
@@ -110,6 +363,9 @@ AnalyzeRet Analyze(const schema::FieldMatcher *matcher, int dex_depth) {
             ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
         }
     }
+    MergeAnalyzeVector(ret, matcher->all_of(), dex_depth);
+    MergeAnalyzeVector(ret, matcher->any_of(), dex_depth);
+    MergeAnalyzeVector(ret, matcher->none_of(), dex_depth);
     return ret;
 }
 
@@ -175,6 +431,9 @@ AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth) {
     if (matcher->op_codes()) {
         ret.need_flags |= kOpSequence;
     }
+    MergeAnalyzeVector(ret, matcher->all_of(), dex_depth);
+    MergeAnalyzeVector(ret, matcher->any_of(), dex_depth);
+    MergeAnalyzeVector(ret, matcher->none_of(), dex_depth);
     return ret;
 }
 

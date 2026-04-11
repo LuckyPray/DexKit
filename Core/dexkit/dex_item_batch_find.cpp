@@ -21,6 +21,35 @@
 
 namespace dexkit {
 
+namespace {
+
+template<typename MatchFunc>
+bool MatchUsingStringGroup(
+        const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *matchers,
+        const std::vector<std::string_view> &using_strings,
+        MatchFunc &&match_func
+) {
+    if (matchers == nullptr) {
+        return true;
+    }
+    for (int i = 0; i < matchers->size(); ++i) {
+        auto string_matcher = matchers->Get(i);
+        bool matched = false;
+        for (auto str: using_strings) {
+            if (match_func(str, string_matcher)) {
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            return false;
+        }
+    }
+    return true;
+}
+
+} // namespace
+
 std::vector<BatchFindClassItemBean>
 DexItem::BatchFindClassUsingStrings(
         const schema::BatchFindClassUsingStrings *query,
@@ -41,6 +70,26 @@ DexItem::BatchFindClassUsingStrings(
             auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
             if (query->exclude_packages() && (hit & 1)) continue;
             if (query->search_packages() && !(hit >> 1)) continue;
+        }
+
+        if (keywords_map.empty()) {
+            std::vector<std::string_view> using_strings;
+            for (auto method_idx: class_method_ids[type_idx]) {
+                auto &method_using_strings = method_using_string_ids[method_idx];
+                using_strings.reserve(using_strings.size() + method_using_strings.size());
+                for (auto string_idx: method_using_strings) {
+                    using_strings.emplace_back(this->strings[string_idx]);
+                }
+            }
+            for (int i = 0; i < query->matchers()->size(); ++i) {
+                auto matcher = query->matchers()->Get(i);
+                if (MatchUsingStringGroup(matcher->using_strings(), using_strings, [this](std::string_view str, const schema::StringMatcher *string_matcher) {
+                    return this->IsStringMatched(str, string_matcher);
+                })) {
+                    find_result[matcher->union_key()->string_view()].emplace_back(type_idx);
+                }
+            }
+            continue;
         }
 
         auto using_empty_string_count = 0;
@@ -127,6 +176,24 @@ DexItem::BatchFindMethodUsingStrings(
             if (query->in_methods() && in_method_set.contains(method_idx)) continue;
             auto code = this->method_codes[method_idx];
             if (code == nullptr) continue;
+
+            if (keywords_map.empty()) {
+                std::vector<std::string_view> using_strings;
+                auto &using_string_ids = method_using_string_ids[method_idx];
+                using_strings.reserve(using_string_ids.size());
+                for (auto string_idx: using_string_ids) {
+                    using_strings.emplace_back(this->strings[string_idx]);
+                }
+                for (int i = 0; i < query->matchers()->size(); ++i) {
+                    auto matcher = query->matchers()->Get(i);
+                    if (MatchUsingStringGroup(matcher->using_strings(), using_strings, [this](std::string_view str, const schema::StringMatcher *string_matcher) {
+                        return this->IsStringMatched(str, string_matcher);
+                    })) {
+                        find_result[matcher->union_key()->string_view()].emplace_back(method_idx);
+                    }
+                }
+                continue;
+            }
 
             auto using_empty_string_count = 0;
             std::set<std::string_view> search_set;

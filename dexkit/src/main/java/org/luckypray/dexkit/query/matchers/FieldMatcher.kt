@@ -25,6 +25,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerFieldMatcher
+import org.luckypray.dexkit.query.FieldMatcherList
 import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
 import org.luckypray.dexkit.query.enums.MatchType
@@ -50,6 +51,12 @@ class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
     var getMethodsMatcher: MethodsMatcher? = null
         private set
     var putMethodsMatcher: MethodsMatcher? = null
+        private set
+    var allOfMatchers: MutableList<FieldMatcher>? = null
+        private set
+    var anyOfMatchers: MutableList<FieldMatcher>? = null
+        private set
+    var noneOfMatchers: MutableList<FieldMatcher>? = null
         private set
 
     constructor()
@@ -500,6 +507,99 @@ class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
         this.putMethodsMatcher!!.add(MethodMatcher(methodDescriptor))
     }
 
+    /**
+     * Add child matchers that must all match.
+     * ----------------
+     * 添加需要全部匹配的子匹配器。
+     */
+    fun allOf(matchers: Collection<FieldMatcher>) = also {
+        this.allOfMatchers = matchers.takeIf { it.isNotEmpty() }?.toMutableList()
+    }
+
+    /**
+     * Add child matchers that must all match.
+     * ----------------
+     * 添加需要全部匹配的子匹配器。
+     */
+    fun allOf(vararg matchers: FieldMatcher) = also {
+        allOf(matchers.asList())
+    }
+
+    /**
+     * Add one child matcher that must also match.
+     * ----------------
+     * 添加一个也必须匹配的子匹配器。
+     */
+    fun addAllOf(matcher: FieldMatcher) = also {
+        allOfMatchers = allOfMatchers ?: mutableListOf()
+        allOfMatchers!!.add(matcher)
+    }
+
+    /**
+     * Add child matchers where at least one must match.
+     * ----------------
+     * 添加至少需要匹配一个的子匹配器。
+     */
+    fun anyOf(matchers: Collection<FieldMatcher>) = also {
+        this.anyOfMatchers = matchers.takeIf { it.isNotEmpty() }?.toMutableList()
+    }
+
+    /**
+     * Add child matchers where at least one must match.
+     * ----------------
+     * 添加至少需要匹配一个的子匹配器。
+     */
+    fun anyOf(vararg matchers: FieldMatcher) = also {
+        anyOf(matchers.asList())
+    }
+
+    /**
+     * Add one child matcher where at least one must match.
+     * ----------------
+     * 添加一个属于 anyOf 的子匹配器。
+     */
+    fun addAnyOf(matcher: FieldMatcher) = also {
+        anyOfMatchers = anyOfMatchers ?: mutableListOf()
+        anyOfMatchers!!.add(matcher)
+    }
+
+    /**
+     * Add child matchers that must not match.
+     * ----------------
+     * 添加不能匹配的子匹配器。
+     */
+    fun noneOf(matchers: Collection<FieldMatcher>) = also {
+        this.noneOfMatchers = matchers.takeIf { it.isNotEmpty() }?.toMutableList()
+    }
+
+    /**
+     * Add child matchers that must not match.
+     * ----------------
+     * 添加不能匹配的子匹配器。
+     */
+    fun noneOf(vararg matchers: FieldMatcher) = also {
+        noneOf(matchers.asList())
+    }
+
+    /**
+     * Add one child matcher that must not match.
+     * ----------------
+     * 添加一个不能匹配的子匹配器。
+     */
+    fun addNoneOf(matcher: FieldMatcher) = also {
+        noneOfMatchers = noneOfMatchers ?: mutableListOf()
+        noneOfMatchers!!.add(matcher)
+    }
+
+    /**
+     * Add a negated child matcher.
+     * ----------------
+     * 添加一个取反的子匹配器。
+     */
+    fun not(matcher: FieldMatcher) = also {
+        addNoneOf(matcher)
+    }
+
     // region DSL
 
     /**
@@ -566,6 +666,62 @@ class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
         addWriteMethod(MethodMatcher().apply(init))
     }
 
+    /**
+     * @see allOf
+     */
+    @JvmSynthetic
+    fun allOf(init: FieldMatcherList.() -> Unit) = also {
+        allOf(FieldMatcherList().apply(init))
+    }
+
+    /**
+     * @see addAllOf
+     */
+    @JvmSynthetic
+    fun addAllOf(init: FieldMatcher.() -> Unit) = also {
+        addAllOf(FieldMatcher().apply(init))
+    }
+
+    /**
+     * @see anyOf
+     */
+    @JvmSynthetic
+    fun anyOf(init: FieldMatcherList.() -> Unit) = also {
+        anyOf(FieldMatcherList().apply(init))
+    }
+
+    /**
+     * @see addAnyOf
+     */
+    @JvmSynthetic
+    fun addAnyOf(init: FieldMatcher.() -> Unit) = also {
+        addAnyOf(FieldMatcher().apply(init))
+    }
+
+    /**
+     * @see noneOf
+     */
+    @JvmSynthetic
+    fun noneOf(init: FieldMatcherList.() -> Unit) = also {
+        noneOf(FieldMatcherList().apply(init))
+    }
+
+    /**
+     * @see addNoneOf
+     */
+    @JvmSynthetic
+    fun addNoneOf(init: FieldMatcher.() -> Unit) = also {
+        addNoneOf(FieldMatcher().apply(init))
+    }
+
+    /**
+     * @see not
+     */
+    @JvmSynthetic
+    fun not(init: FieldMatcher.() -> Unit) = also {
+        not(FieldMatcher().apply(init))
+    }
+
     // endregion
 
     companion object {
@@ -591,7 +747,13 @@ class FieldMatcher : BaseMatcher, IAnnotationEncodeValue {
             typeMatcher?.build(fbb) ?: 0,
             annotationsMatcher?.build(fbb) ?: 0,
             getMethodsMatcher?.build(fbb) ?: 0,
-            putMethodsMatcher?.build(fbb) ?: 0
+            putMethodsMatcher?.build(fbb) ?: 0,
+            allOfMatchers?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            anyOfMatchers?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            noneOfMatchers?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0
         )
         fbb.finish(root)
         return root

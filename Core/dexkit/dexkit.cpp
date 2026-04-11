@@ -75,6 +75,26 @@ static std::string NormalizeDeclaredClassLookupName(std::string_view class_name)
     return NameToDescriptor(class_name);
 }
 
+static bool HasCompositeBatchUsingStringsMatchers(
+        const flatbuffers::Vector<flatbuffers::Offset<schema::BatchUsingStringsMatcher>> *matchers
+) {
+    if (matchers == nullptr) {
+        return false;
+    }
+    for (int i = 0; i < matchers->size(); ++i) {
+        auto using_strings = matchers->Get(i)->using_strings();
+        if (using_strings == nullptr) {
+            continue;
+        }
+        for (int j = 0; j < using_strings->size(); ++j) {
+            if (HasComposite(using_strings->Get(j))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 DexKit::QueryExecutionGuard::~QueryExecutionGuard() {
     if (owner_ != nullptr) {
         owner_->LeaveQueryExecution();
@@ -533,6 +553,10 @@ DexKit::FindClass(const schema::FindClass *query) {
         }
     }
     auto analyze_ret = Analyze(query->matcher(), 1);
+    auto has_composite_matcher = HasComposite(query->matcher());
+    if (has_composite_matcher) {
+        analyze_ret.declare_class.clear();
+    }
     auto execution_guard = EnterQueryExecution(analyze_ret.need_flags);
 
     trie::PackageTrie packageTrie;
@@ -544,7 +568,7 @@ DexKit::FindClass(const schema::FindClass *query) {
 
     // fast search declared class
     DexItem *fast_search_dex = nullptr;
-    if (query->matcher()) {
+    if (query->matcher() && !has_composite_matcher) {
         auto class_name = query->matcher()->class_name();
         if (class_name && class_name->match_type() == schema::StringMatchType::Equal && !class_name->ignore_case()) {
             auto declared_class_name = NormalizeDeclaredClassLookupName(class_name->value()->string_view());
@@ -566,7 +590,7 @@ DexKit::FindClass(const schema::FindClass *query) {
         for (auto &dex_item: dex_items) {
             if (find_first && executor->ShouldSkipTask()) break;
             auto &class_set = dex_class_map[dex_item->GetDexId()];
-            if (dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
+            if (has_composite_matcher || dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
                 auto res = dex_item->FindClass(query, class_set, packageTrie, *executor, BATCH_SIZE / 2, query_context);
                 for (auto &f: res) {
                     futures.emplace_back(std::move(f));
@@ -637,6 +661,10 @@ DexKit::FindMethod(const schema::FindMethod *query) {
         }
     }
     auto analyze_ret = Analyze(query->matcher(), 1);
+    auto has_composite_matcher = HasComposite(query->matcher());
+    if (has_composite_matcher) {
+        analyze_ret.declare_class.clear();
+    }
     auto execution_guard = EnterQueryExecution(analyze_ret.need_flags);
 
     trie::PackageTrie packageTrie;
@@ -648,7 +676,7 @@ DexKit::FindMethod(const schema::FindMethod *query) {
 
     // fast search declared class
     DexItem *fast_search_dex = nullptr;
-    if (query->matcher()) {
+    if (query->matcher() && !has_composite_matcher) {
         auto declaring_class = query->matcher()->declaring_class();
         if (declaring_class) {
             auto class_name = declaring_class->class_name();
@@ -675,7 +703,7 @@ DexKit::FindMethod(const schema::FindMethod *query) {
             if (find_first && executor->ShouldSkipTask()) break;
             auto &class_set = dex_class_map[dex_item->GetDexId()];
             auto &method_set = dex_method_map[dex_item->GetDexId()];
-            if (dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
+            if (has_composite_matcher || dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
                 auto res = dex_item->FindMethod(query, class_set, method_set, packageTrie, *executor, BATCH_SIZE, query_context);
                 for (auto &f: res) {
                     futures.emplace_back(std::move(f));
@@ -751,6 +779,10 @@ DexKit::FindField(const schema::FindField *query) {
         }
     }
     auto analyze_ret = Analyze(query->matcher(), 1);
+    auto has_composite_matcher = HasComposite(query->matcher());
+    if (has_composite_matcher) {
+        analyze_ret.declare_class.clear();
+    }
     auto execution_guard = EnterQueryExecution(analyze_ret.need_flags);
 
     trie::PackageTrie packageTrie;
@@ -762,7 +794,7 @@ DexKit::FindField(const schema::FindField *query) {
 
     // fast search declared class
     DexItem *fast_search_dex = nullptr;
-    if (query->matcher()) {
+    if (query->matcher() && !has_composite_matcher) {
         auto declaring_class = query->matcher()->declaring_class();
         if (declaring_class) {
             auto class_name = declaring_class->class_name();
@@ -789,7 +821,7 @@ DexKit::FindField(const schema::FindField *query) {
             if (find_first && executor->ShouldSkipTask()) break;
             auto &class_set = dex_class_map[dex_item->GetDexId()];
             auto &field_set = dex_field_map[dex_item->GetDexId()];
-            if (dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
+            if (has_composite_matcher || dex_item->CheckAllTypeNamesDeclared(analyze_ret.declare_class)) {
                 auto res = dex_item->FindField(query, class_set, field_set, packageTrie, *executor, BATCH_SIZE, query_context);
                 for (auto &f: res) {
                     futures.emplace_back(std::move(f));
@@ -867,9 +899,15 @@ DexKit::BatchFindClassUsingStrings(const schema::BatchFindClassUsingStrings *que
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
-    auto keywords_map = BuildBatchFindKeywordsMap(query->matchers(), keywords, match_type_map);
+    std::map<std::string_view, std::set<std::string_view>> keywords_map;
+    auto has_composite_matchers = HasCompositeBatchUsingStringsMatchers(query->matchers());
+    if (!has_composite_matchers) {
+        keywords_map = BuildBatchFindKeywordsMap(query->matchers(), keywords, match_type_map);
+    }
     acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
-    acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+    if (!has_composite_matchers) {
+        acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+    }
 
     std::map<std::string_view, std::vector<ClassBean>> find_result_map;
     // init find_result_map keys
@@ -963,9 +1001,15 @@ DexKit::BatchFindMethodUsingStrings(const schema::BatchFindMethodUsingStrings *q
     // build keywords trie
     std::vector<std::pair<std::string_view, bool>> keywords;
     phmap::flat_hash_map<std::string_view, schema::StringMatchType> match_type_map;
-    auto keywords_map = BuildBatchFindKeywordsMap(query->matchers(), keywords, match_type_map);
+    std::map<std::string_view, std::set<std::string_view>> keywords_map;
+    auto has_composite_matchers = HasCompositeBatchUsingStringsMatchers(query->matchers());
+    if (!has_composite_matchers) {
+        keywords_map = BuildBatchFindKeywordsMap(query->matchers(), keywords, match_type_map);
+    }
     acdat::AhoCorasickDoubleArrayTrie<std::string_view> acTrie;
-    acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+    if (!has_composite_matchers) {
+        acdat::Builder<std::string_view>().Build(keywords, &acTrie);
+    }
 
     std::map<std::string_view, std::vector<MethodBean>> find_result_map;
     // init find_result_map keys
@@ -1689,6 +1733,7 @@ DexKit::BuildBatchFindKeywordsMap(
         std::vector<std::pair<std::string_view, bool>> &keywords,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
 ) {
+    DEXKIT_CHECK(!HasCompositeBatchUsingStringsMatchers(matchers));
     std::map<std::string_view, std::set<std::string_view>> keywords_map;
     for (int i = 0; i < matchers->size(); ++i) {
         auto matcher = matchers->Get(i);

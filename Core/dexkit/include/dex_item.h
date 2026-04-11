@@ -47,6 +47,10 @@ namespace dexkit {
 
 class DexKit;
 
+namespace internal {
+struct UsingStringsPrefilterPlan;
+}
+
 class DexItem {
 public:
 
@@ -264,6 +268,8 @@ private:
     bool IsFieldAnnotationMatched(uint32_t field_idx, const schema::AnnotationsMatcher *matcher);
     bool IsFieldGetMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
     bool IsFieldPutMethodsMatched(uint32_t field_idx, const schema::MethodsMatcher *matcher);
+    bool MayMatchMethodUsingStringsPrefilter(uint32_t method_idx, internal::UsingStringsPrefilterPlan &plan);
+    bool MayMatchClassUsingStringsPrefilter(uint32_t type_idx, internal::UsingStringsPrefilterPlan &plan);
 
 private:
     friend class DexKit;

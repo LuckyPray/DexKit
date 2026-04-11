@@ -25,6 +25,7 @@ package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
 import org.luckypray.dexkit.InnerClassMatcher
+import org.luckypray.dexkit.query.ClassMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
 import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.base.IAnnotationEncodeValue
@@ -54,6 +55,12 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
     var methodsMatcher: MethodsMatcher? = null
         private set
     var usingStringsMatcher: MutableList<StringMatcher>? = null
+        private set
+    var allOfMatchers: MutableList<ClassMatcher>? = null
+        private set
+    var anyOfMatchers: MutableList<ClassMatcher>? = null
+        private set
+    var noneOfMatchers: MutableList<ClassMatcher>? = null
         private set
 
     constructor()
@@ -879,6 +886,99 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
         usingStringsMatcher!!.add(StringMatcher(usingString, StringMatchType.Equals, false))
     }
 
+    /**
+     * Add child matchers that must all match.
+     * ----------------
+     * 添加需要全部匹配的子匹配器。
+     */
+    fun allOf(matchers: Collection<ClassMatcher>) = also {
+        this.allOfMatchers = matchers.takeIf { it.isNotEmpty() }?.toMutableList()
+    }
+
+    /**
+     * Add child matchers that must all match.
+     * ----------------
+     * 添加需要全部匹配的子匹配器。
+     */
+    fun allOf(vararg matchers: ClassMatcher) = also {
+        allOf(matchers.asList())
+    }
+
+    /**
+     * Add one child matcher that must also match.
+     * ----------------
+     * 添加一个也必须匹配的子匹配器。
+     */
+    fun addAllOf(matcher: ClassMatcher) = also {
+        allOfMatchers = allOfMatchers ?: mutableListOf()
+        allOfMatchers!!.add(matcher)
+    }
+
+    /**
+     * Add child matchers where at least one must match.
+     * ----------------
+     * 添加至少需要匹配一个的子匹配器。
+     */
+    fun anyOf(matchers: Collection<ClassMatcher>) = also {
+        this.anyOfMatchers = matchers.takeIf { it.isNotEmpty() }?.toMutableList()
+    }
+
+    /**
+     * Add child matchers where at least one must match.
+     * ----------------
+     * 添加至少需要匹配一个的子匹配器。
+     */
+    fun anyOf(vararg matchers: ClassMatcher) = also {
+        anyOf(matchers.asList())
+    }
+
+    /**
+     * Add one child matcher where at least one must match.
+     * ----------------
+     * 添加一个属于 anyOf 的子匹配器。
+     */
+    fun addAnyOf(matcher: ClassMatcher) = also {
+        anyOfMatchers = anyOfMatchers ?: mutableListOf()
+        anyOfMatchers!!.add(matcher)
+    }
+
+    /**
+     * Add child matchers that must not match.
+     * ----------------
+     * 添加不能匹配的子匹配器。
+     */
+    fun noneOf(matchers: Collection<ClassMatcher>) = also {
+        this.noneOfMatchers = matchers.takeIf { it.isNotEmpty() }?.toMutableList()
+    }
+
+    /**
+     * Add child matchers that must not match.
+     * ----------------
+     * 添加不能匹配的子匹配器。
+     */
+    fun noneOf(vararg matchers: ClassMatcher) = also {
+        noneOf(matchers.asList())
+    }
+
+    /**
+     * Add one child matcher that must not match.
+     * ----------------
+     * 添加一个不能匹配的子匹配器。
+     */
+    fun addNoneOf(matcher: ClassMatcher) = also {
+        noneOfMatchers = noneOfMatchers ?: mutableListOf()
+        noneOfMatchers!!.add(matcher)
+    }
+
+    /**
+     * Add a negated child matcher.
+     * ----------------
+     * 添加一个取反的子匹配器。
+     */
+    fun not(matcher: ClassMatcher) = also {
+        addNoneOf(matcher)
+    }
+
     // region DSL
 
     /**
@@ -961,6 +1061,62 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
         usingStrings(StringMatcherList().apply(init))
     }
 
+    /**
+     * @see allOf
+     */
+    @JvmSynthetic
+    fun allOf(init: ClassMatcherList.() -> Unit) = also {
+        allOf(ClassMatcherList().apply(init))
+    }
+
+    /**
+     * @see addAllOf
+     */
+    @JvmSynthetic
+    fun addAllOf(init: ClassMatcher.() -> Unit) = also {
+        addAllOf(ClassMatcher().apply(init))
+    }
+
+    /**
+     * @see anyOf
+     */
+    @JvmSynthetic
+    fun anyOf(init: ClassMatcherList.() -> Unit) = also {
+        anyOf(ClassMatcherList().apply(init))
+    }
+
+    /**
+     * @see addAnyOf
+     */
+    @JvmSynthetic
+    fun addAnyOf(init: ClassMatcher.() -> Unit) = also {
+        addAnyOf(ClassMatcher().apply(init))
+    }
+
+    /**
+     * @see noneOf
+     */
+    @JvmSynthetic
+    fun noneOf(init: ClassMatcherList.() -> Unit) = also {
+        noneOf(ClassMatcherList().apply(init))
+    }
+
+    /**
+     * @see addNoneOf
+     */
+    @JvmSynthetic
+    fun addNoneOf(init: ClassMatcher.() -> Unit) = also {
+        addNoneOf(ClassMatcher().apply(init))
+    }
+
+    /**
+     * @see not
+     */
+    @JvmSynthetic
+    fun not(init: ClassMatcher.() -> Unit) = also {
+        not(ClassMatcher().apply(init))
+    }
+
     // endregion
 
     companion object {
@@ -989,6 +1145,12 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
             fieldsMatcher?.build(fbb) ?: 0,
             methodsMatcher?.build(fbb) ?: 0,
             usingStringsMatcher?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            allOfMatchers?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            anyOfMatchers?.map { it.build(fbb) }?.toIntArray()
+                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+            noneOfMatchers?.map { it.build(fbb) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0
         )
         fbb.finish(root)

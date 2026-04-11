@@ -91,6 +91,45 @@ internal class `-FieldMatcher` : Table() {
             null
         }
     }
+    fun allOf(j: Int) : `-FieldMatcher`? = allOf(`-FieldMatcher`(), j)
+    fun allOf(obj: `-FieldMatcher`, j: Int) : `-FieldMatcher`? {
+        val o = __offset(18)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val allOfLength : Int
+        get() {
+            val o = __offset(18); return if (o != 0) __vector_len(o) else 0
+        }
+    fun anyOf(j: Int) : `-FieldMatcher`? = anyOf(`-FieldMatcher`(), j)
+    fun anyOf(obj: `-FieldMatcher`, j: Int) : `-FieldMatcher`? {
+        val o = __offset(20)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val anyOfLength : Int
+        get() {
+            val o = __offset(20); return if (o != 0) __vector_len(o) else 0
+        }
+    fun noneOf(j: Int) : `-FieldMatcher`? = noneOf(`-FieldMatcher`(), j)
+    fun noneOf(obj: `-FieldMatcher`, j: Int) : `-FieldMatcher`? {
+        val o = __offset(22)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val noneOfLength : Int
+        get() {
+            val o = __offset(22); return if (o != 0) __vector_len(o) else 0
+        }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsFieldMatcher(_bb: ByteBuffer): `-FieldMatcher` = getRootAsFieldMatcher(_bb, `-FieldMatcher`())
@@ -98,8 +137,11 @@ internal class `-FieldMatcher` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldMatcher(builder: FlatBufferBuilder, fieldNameOffset: Int, accessFlagsOffset: Int, declaringClassOffset: Int, typeClassOffset: Int, annotationsOffset: Int, getMethodsOffset: Int, putMethodsOffset: Int) : Int {
-            builder.startTable(7)
+        fun createFieldMatcher(builder: FlatBufferBuilder, fieldNameOffset: Int, accessFlagsOffset: Int, declaringClassOffset: Int, typeClassOffset: Int, annotationsOffset: Int, getMethodsOffset: Int, putMethodsOffset: Int, allOfOffset: Int, anyOfOffset: Int, noneOfOffset: Int) : Int {
+            builder.startTable(10)
+            addNoneOf(builder, noneOfOffset)
+            addAnyOf(builder, anyOfOffset)
+            addAllOf(builder, allOfOffset)
             addPutMethods(builder, putMethodsOffset)
             addGetMethods(builder, getMethodsOffset)
             addAnnotations(builder, annotationsOffset)
@@ -109,7 +151,7 @@ internal class `-FieldMatcher` : Table() {
             addFieldName(builder, fieldNameOffset)
             return endFieldMatcher(builder)
         }
-        fun startFieldMatcher(builder: FlatBufferBuilder) = builder.startTable(7)
+        fun startFieldMatcher(builder: FlatBufferBuilder) = builder.startTable(10)
         fun addFieldName(builder: FlatBufferBuilder, fieldName: Int) = builder.addOffset(0, fieldName, 0)
         fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(1, accessFlags, 0)
         fun addDeclaringClass(builder: FlatBufferBuilder, declaringClass: Int) = builder.addOffset(2, declaringClass, 0)
@@ -117,6 +159,33 @@ internal class `-FieldMatcher` : Table() {
         fun addAnnotations(builder: FlatBufferBuilder, annotations: Int) = builder.addOffset(4, annotations, 0)
         fun addGetMethods(builder: FlatBufferBuilder, getMethods: Int) = builder.addOffset(5, getMethods, 0)
         fun addPutMethods(builder: FlatBufferBuilder, putMethods: Int) = builder.addOffset(6, putMethods, 0)
+        fun addAllOf(builder: FlatBufferBuilder, allOf: Int) = builder.addOffset(7, allOf, 0)
+        fun createAllOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startAllOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addAnyOf(builder: FlatBufferBuilder, anyOf: Int) = builder.addOffset(8, anyOf, 0)
+        fun createAnyOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startAnyOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addNoneOf(builder: FlatBufferBuilder, noneOf: Int) = builder.addOffset(9, noneOf, 0)
+        fun createNoneOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startNoneOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endFieldMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

@@ -11,8 +11,8 @@ endif ()
 set(CMAKE_CXX_STANDARD 20)
 option(DEXKIT_ENABLE_INTERNAL_METRICS "Compile internal metrics into core" OFF)
 
-file(GLOB_RECURSE SLICER_SRC_FILES third_party/slicer/*.cc)
-file(GLOB_RECURSE DEXKIT_SRC_FILES dexkit/*.cpp)
+file(GLOB_RECURSE SLICER_SRC_FILES CONFIGURE_DEPENDS third_party/slicer/*.cc)
+file(GLOB_RECURSE DEXKIT_SRC_FILES CONFIGURE_DEPENDS dexkit/*.cpp)
 
 set(SLICER_SOURCES
         ${SLICER_SRC_FILES}

@@ -113,6 +113,45 @@ internal class `-ClassMatcher` : Table() {
         get() {
             val o = __offset(20); return if (o != 0) __vector_len(o) else 0
         }
+    fun allOf(j: Int) : `-ClassMatcher`? = allOf(`-ClassMatcher`(), j)
+    fun allOf(obj: `-ClassMatcher`, j: Int) : `-ClassMatcher`? {
+        val o = __offset(22)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val allOfLength : Int
+        get() {
+            val o = __offset(22); return if (o != 0) __vector_len(o) else 0
+        }
+    fun anyOf(j: Int) : `-ClassMatcher`? = anyOf(`-ClassMatcher`(), j)
+    fun anyOf(obj: `-ClassMatcher`, j: Int) : `-ClassMatcher`? {
+        val o = __offset(24)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val anyOfLength : Int
+        get() {
+            val o = __offset(24); return if (o != 0) __vector_len(o) else 0
+        }
+    fun noneOf(j: Int) : `-ClassMatcher`? = noneOf(`-ClassMatcher`(), j)
+    fun noneOf(obj: `-ClassMatcher`, j: Int) : `-ClassMatcher`? {
+        val o = __offset(26)
+        return if (o != 0) {
+            obj.__assign(__indirect(__vector(o) + j * 4), bb)
+        } else {
+            null
+        }
+    }
+    val noneOfLength : Int
+        get() {
+            val o = __offset(26); return if (o != 0) __vector_len(o) else 0
+        }
     companion object {
         fun validateVersion() = Constants.FLATBUFFERS_23_5_26()
         fun getRootAsClassMatcher(_bb: ByteBuffer): `-ClassMatcher` = getRootAsClassMatcher(_bb, `-ClassMatcher`())
@@ -120,8 +159,11 @@ internal class `-ClassMatcher` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createClassMatcher(builder: FlatBufferBuilder, smaliSourceOffset: Int, classNameOffset: Int, accessFlagsOffset: Int, superClassOffset: Int, interfacesOffset: Int, annotationsOffset: Int, fieldsOffset: Int, methodsOffset: Int, usingStringsOffset: Int) : Int {
-            builder.startTable(9)
+        fun createClassMatcher(builder: FlatBufferBuilder, smaliSourceOffset: Int, classNameOffset: Int, accessFlagsOffset: Int, superClassOffset: Int, interfacesOffset: Int, annotationsOffset: Int, fieldsOffset: Int, methodsOffset: Int, usingStringsOffset: Int, allOfOffset: Int, anyOfOffset: Int, noneOfOffset: Int) : Int {
+            builder.startTable(12)
+            addNoneOf(builder, noneOfOffset)
+            addAnyOf(builder, anyOfOffset)
+            addAllOf(builder, allOfOffset)
             addUsingStrings(builder, usingStringsOffset)
             addMethods(builder, methodsOffset)
             addFields(builder, fieldsOffset)
@@ -133,7 +175,7 @@ internal class `-ClassMatcher` : Table() {
             addSmaliSource(builder, smaliSourceOffset)
             return endClassMatcher(builder)
         }
-        fun startClassMatcher(builder: FlatBufferBuilder) = builder.startTable(9)
+        fun startClassMatcher(builder: FlatBufferBuilder) = builder.startTable(12)
         fun addSmaliSource(builder: FlatBufferBuilder, smaliSource: Int) = builder.addOffset(0, smaliSource, 0)
         fun addClassName(builder: FlatBufferBuilder, className: Int) = builder.addOffset(1, className, 0)
         fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: Int) = builder.addOffset(2, accessFlags, 0)
@@ -151,6 +193,33 @@ internal class `-ClassMatcher` : Table() {
             return builder.endVector()
         }
         fun startUsingStringsVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addAllOf(builder: FlatBufferBuilder, allOf: Int) = builder.addOffset(9, allOf, 0)
+        fun createAllOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startAllOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addAnyOf(builder: FlatBufferBuilder, anyOf: Int) = builder.addOffset(10, anyOf, 0)
+        fun createAnyOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startAnyOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
+        fun addNoneOf(builder: FlatBufferBuilder, noneOf: Int) = builder.addOffset(11, noneOf, 0)
+        fun createNoneOfVector(builder: FlatBufferBuilder, data: IntArray) : Int {
+            builder.startVector(4, data.size, 4)
+            for (i in data.size - 1 downTo 0) {
+                builder.addOffset(data[i])
+            }
+            return builder.endVector()
+        }
+        fun startNoneOfVector(builder: FlatBufferBuilder, numElems: Int) = builder.startVector(4, numElems, 4)
         fun endClassMatcher(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

@@ -294,7 +294,10 @@ struct StringMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_VALUE = 4,
     VT_MATCH_TYPE = 6,
-    VT_IGNORE_CASE = 8
+    VT_IGNORE_CASE = 8,
+    VT_ALL_OF = 10,
+    VT_ANY_OF = 12,
+    VT_NONE_OF = 14
   };
   const ::flatbuffers::String *value() const {
     return GetPointer<const ::flatbuffers::String *>(VT_VALUE);
@@ -305,12 +308,30 @@ struct StringMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool ignore_case() const {
     return GetField<uint8_t>(VT_IGNORE_CASE, 0) != 0;
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *all_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_ALL_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *any_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_ANY_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *none_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_NONE_OF);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_VALUE) &&
            verifier.VerifyString(value()) &&
            VerifyField<int8_t>(verifier, VT_MATCH_TYPE, 1) &&
            VerifyField<uint8_t>(verifier, VT_IGNORE_CASE, 1) &&
+           VerifyOffset(verifier, VT_ALL_OF) &&
+           verifier.VerifyVector(all_of()) &&
+           verifier.VerifyVectorOfTables(all_of()) &&
+           VerifyOffset(verifier, VT_ANY_OF) &&
+           verifier.VerifyVector(any_of()) &&
+           verifier.VerifyVectorOfTables(any_of()) &&
+           VerifyOffset(verifier, VT_NONE_OF) &&
+           verifier.VerifyVector(none_of()) &&
+           verifier.VerifyVectorOfTables(none_of()) &&
            verifier.EndTable();
   }
 };
@@ -328,6 +349,15 @@ struct StringMatcherBuilder {
   void add_ignore_case(bool ignore_case) {
     fbb_.AddElement<uint8_t>(StringMatcher::VT_IGNORE_CASE, static_cast<uint8_t>(ignore_case), 0);
   }
+  void add_all_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> all_of) {
+    fbb_.AddOffset(StringMatcher::VT_ALL_OF, all_of);
+  }
+  void add_any_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> any_of) {
+    fbb_.AddOffset(StringMatcher::VT_ANY_OF, any_of);
+  }
+  void add_none_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> none_of) {
+    fbb_.AddOffset(StringMatcher::VT_NONE_OF, none_of);
+  }
   explicit StringMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -343,8 +373,14 @@ inline ::flatbuffers::Offset<StringMatcher> CreateStringMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> value = 0,
     dexkit::schema::StringMatchType match_type = dexkit::schema::StringMatchType::Contains,
-    bool ignore_case = false) {
+    bool ignore_case = false,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> all_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> any_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> none_of = 0) {
   StringMatcherBuilder builder_(_fbb);
+  builder_.add_none_of(none_of);
+  builder_.add_any_of(any_of);
+  builder_.add_all_of(all_of);
   builder_.add_value(value);
   builder_.add_ignore_case(ignore_case);
   builder_.add_match_type(match_type);
@@ -360,13 +396,22 @@ inline ::flatbuffers::Offset<StringMatcher> CreateStringMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *value = nullptr,
     dexkit::schema::StringMatchType match_type = dexkit::schema::StringMatchType::Contains,
-    bool ignore_case = false) {
+    bool ignore_case = false,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *all_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *any_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *none_of = nullptr) {
   auto value__ = value ? _fbb.CreateString(value) : 0;
+  auto all_of__ = all_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*all_of) : 0;
+  auto any_of__ = any_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*any_of) : 0;
+  auto none_of__ = none_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*none_of) : 0;
   return dexkit::schema::CreateStringMatcher(
       _fbb,
       value__,
       match_type,
-      ignore_case);
+      ignore_case,
+      all_of__,
+      any_of__,
+      none_of__);
 }
 
 struct AccessFlagsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1329,7 +1374,10 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_USING_NUMBERS = 24,
     VT_INVOKING_METHODS = 26,
     VT_METHOD_CALLERS = 28,
-    VT_PROTO_SHORTY = 30
+    VT_PROTO_SHORTY = 30,
+    VT_ALL_OF = 32,
+    VT_ANY_OF = 34,
+    VT_NONE_OF = 36
   };
   const dexkit::schema::StringMatcher *method_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_METHOD_NAME);
@@ -1373,6 +1421,15 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *proto_shorty() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PROTO_SHORTY);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *all_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *>(VT_ALL_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *any_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *>(VT_ANY_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *none_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *>(VT_NONE_OF);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_METHOD_NAME) &&
@@ -1406,6 +1463,15 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(method_callers()) &&
            VerifyOffset(verifier, VT_PROTO_SHORTY) &&
            verifier.VerifyString(proto_shorty()) &&
+           VerifyOffset(verifier, VT_ALL_OF) &&
+           verifier.VerifyVector(all_of()) &&
+           verifier.VerifyVectorOfTables(all_of()) &&
+           VerifyOffset(verifier, VT_ANY_OF) &&
+           verifier.VerifyVector(any_of()) &&
+           verifier.VerifyVectorOfTables(any_of()) &&
+           VerifyOffset(verifier, VT_NONE_OF) &&
+           verifier.VerifyVector(none_of()) &&
+           verifier.VerifyVectorOfTables(none_of()) &&
            verifier.EndTable();
   }
 };
@@ -1456,6 +1522,15 @@ struct MethodMatcherBuilder {
   void add_proto_shorty(::flatbuffers::Offset<::flatbuffers::String> proto_shorty) {
     fbb_.AddOffset(MethodMatcher::VT_PROTO_SHORTY, proto_shorty);
   }
+  void add_all_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> all_of) {
+    fbb_.AddOffset(MethodMatcher::VT_ALL_OF, all_of);
+  }
+  void add_any_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> any_of) {
+    fbb_.AddOffset(MethodMatcher::VT_ANY_OF, any_of);
+  }
+  void add_none_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> none_of) {
+    fbb_.AddOffset(MethodMatcher::VT_NONE_OF, none_of);
+  }
   explicit MethodMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1482,8 +1557,14 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcher(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<void>>> using_numbers = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> proto_shorty = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> proto_shorty = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> all_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> any_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>> none_of = 0) {
   MethodMatcherBuilder builder_(_fbb);
+  builder_.add_none_of(none_of);
+  builder_.add_any_of(any_of);
+  builder_.add_all_of(all_of);
   builder_.add_proto_shorty(proto_shorty);
   builder_.add_method_callers(method_callers);
   builder_.add_invoking_methods(invoking_methods);
@@ -1521,12 +1602,18 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
     const std::vector<::flatbuffers::Offset<void>> *using_numbers = nullptr,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> invoking_methods = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> method_callers = 0,
-    const char *proto_shorty = nullptr) {
+    const char *proto_shorty = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *all_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *any_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>> *none_of = nullptr) {
   auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
   auto using_fields__ = using_fields ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingFieldMatcher>>(*using_fields) : 0;
   auto using_numbers_type__ = using_numbers_type ? _fbb.CreateVector<dexkit::schema::Number>(*using_numbers_type) : 0;
   auto using_numbers__ = using_numbers ? _fbb.CreateVector<::flatbuffers::Offset<void>>(*using_numbers) : 0;
   auto proto_shorty__ = proto_shorty ? _fbb.CreateString(proto_shorty) : 0;
+  auto all_of__ = all_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>(*all_of) : 0;
+  auto any_of__ = any_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>(*any_of) : 0;
+  auto none_of__ = none_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::MethodMatcher>>(*none_of) : 0;
   return dexkit::schema::CreateMethodMatcher(
       _fbb,
       method_name,
@@ -1542,7 +1629,10 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
       using_numbers__,
       invoking_methods,
       method_callers,
-      proto_shorty__);
+      proto_shorty__,
+      all_of__,
+      any_of__,
+      none_of__);
 }
 
 struct MethodsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1721,7 +1811,10 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TYPE_CLASS = 10,
     VT_ANNOTATIONS = 12,
     VT_GET_METHODS = 14,
-    VT_PUT_METHODS = 16
+    VT_PUT_METHODS = 16,
+    VT_ALL_OF = 18,
+    VT_ANY_OF = 20,
+    VT_NONE_OF = 22
   };
   const dexkit::schema::StringMatcher *field_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIELD_NAME);
@@ -1744,6 +1837,15 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const dexkit::schema::MethodsMatcher *put_methods() const {
     return GetPointer<const dexkit::schema::MethodsMatcher *>(VT_PUT_METHODS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *all_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *>(VT_ALL_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *any_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *>(VT_ANY_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *none_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *>(VT_NONE_OF);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_FIELD_NAME) &&
@@ -1760,6 +1862,15 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(get_methods()) &&
            VerifyOffset(verifier, VT_PUT_METHODS) &&
            verifier.VerifyTable(put_methods()) &&
+           VerifyOffset(verifier, VT_ALL_OF) &&
+           verifier.VerifyVector(all_of()) &&
+           verifier.VerifyVectorOfTables(all_of()) &&
+           VerifyOffset(verifier, VT_ANY_OF) &&
+           verifier.VerifyVector(any_of()) &&
+           verifier.VerifyVectorOfTables(any_of()) &&
+           VerifyOffset(verifier, VT_NONE_OF) &&
+           verifier.VerifyVector(none_of()) &&
+           verifier.VerifyVectorOfTables(none_of()) &&
            verifier.EndTable();
   }
 };
@@ -1789,6 +1900,15 @@ struct FieldMatcherBuilder {
   void add_put_methods(::flatbuffers::Offset<dexkit::schema::MethodsMatcher> put_methods) {
     fbb_.AddOffset(FieldMatcher::VT_PUT_METHODS, put_methods);
   }
+  void add_all_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> all_of) {
+    fbb_.AddOffset(FieldMatcher::VT_ALL_OF, all_of);
+  }
+  void add_any_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> any_of) {
+    fbb_.AddOffset(FieldMatcher::VT_ANY_OF, any_of);
+  }
+  void add_none_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> none_of) {
+    fbb_.AddOffset(FieldMatcher::VT_NONE_OF, none_of);
+  }
   explicit FieldMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1808,8 +1928,14 @@ inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcher(
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type_class = 0,
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> get_methods = 0,
-    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> put_methods = 0) {
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> put_methods = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> all_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> any_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>> none_of = 0) {
   FieldMatcherBuilder builder_(_fbb);
+  builder_.add_none_of(none_of);
+  builder_.add_any_of(any_of);
+  builder_.add_all_of(all_of);
   builder_.add_put_methods(put_methods);
   builder_.add_get_methods(get_methods);
   builder_.add_annotations(annotations);
@@ -1824,6 +1950,35 @@ struct FieldMatcher::Traits {
   using type = FieldMatcher;
   static auto constexpr Create = CreateFieldMatcher;
 };
+
+inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcherDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<dexkit::schema::StringMatcher> field_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
+    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> declaring_class = 0,
+    ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type_class = 0,
+    ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> get_methods = 0,
+    ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> put_methods = 0,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *all_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *any_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>> *none_of = nullptr) {
+  auto all_of__ = all_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*all_of) : 0;
+  auto any_of__ = any_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*any_of) : 0;
+  auto none_of__ = none_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::FieldMatcher>>(*none_of) : 0;
+  return dexkit::schema::CreateFieldMatcher(
+      _fbb,
+      field_name,
+      access_flags,
+      declaring_class,
+      type_class,
+      annotations,
+      get_methods,
+      put_methods,
+      all_of__,
+      any_of__,
+      none_of__);
+}
 
 struct FieldsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FieldsMatcherBuilder Builder;
@@ -1920,7 +2075,10 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ANNOTATIONS = 14,
     VT_FIELDS = 16,
     VT_METHODS = 18,
-    VT_USING_STRINGS = 20
+    VT_USING_STRINGS = 20,
+    VT_ALL_OF = 22,
+    VT_ANY_OF = 24,
+    VT_NONE_OF = 26
   };
   const dexkit::schema::StringMatcher *smali_source() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_SMALI_SOURCE);
@@ -1949,6 +2107,15 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *>(VT_USING_STRINGS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *all_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *>(VT_ALL_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *any_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *>(VT_ANY_OF);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *none_of() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *>(VT_NONE_OF);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_SMALI_SOURCE) &&
@@ -1970,6 +2137,15 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_USING_STRINGS) &&
            verifier.VerifyVector(using_strings()) &&
            verifier.VerifyVectorOfTables(using_strings()) &&
+           VerifyOffset(verifier, VT_ALL_OF) &&
+           verifier.VerifyVector(all_of()) &&
+           verifier.VerifyVectorOfTables(all_of()) &&
+           VerifyOffset(verifier, VT_ANY_OF) &&
+           verifier.VerifyVector(any_of()) &&
+           verifier.VerifyVectorOfTables(any_of()) &&
+           VerifyOffset(verifier, VT_NONE_OF) &&
+           verifier.VerifyVector(none_of()) &&
+           verifier.VerifyVectorOfTables(none_of()) &&
            verifier.EndTable();
   }
 };
@@ -2005,6 +2181,15 @@ struct ClassMatcherBuilder {
   void add_using_strings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings) {
     fbb_.AddOffset(ClassMatcher::VT_USING_STRINGS, using_strings);
   }
+  void add_all_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> all_of) {
+    fbb_.AddOffset(ClassMatcher::VT_ALL_OF, all_of);
+  }
+  void add_any_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> any_of) {
+    fbb_.AddOffset(ClassMatcher::VT_ANY_OF, any_of);
+  }
+  void add_none_of(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> none_of) {
+    fbb_.AddOffset(ClassMatcher::VT_NONE_OF, none_of);
+  }
   explicit ClassMatcherBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2026,8 +2211,14 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcher(
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::FieldsMatcher> fields = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> methods = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>> using_strings = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> all_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> any_of = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>> none_of = 0) {
   ClassMatcherBuilder builder_(_fbb);
+  builder_.add_none_of(none_of);
+  builder_.add_any_of(any_of);
+  builder_.add_all_of(all_of);
   builder_.add_using_strings(using_strings);
   builder_.add_methods(methods);
   builder_.add_fields(fields);
@@ -2055,8 +2246,14 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcherDirect(
     ::flatbuffers::Offset<dexkit::schema::AnnotationsMatcher> annotations = 0,
     ::flatbuffers::Offset<dexkit::schema::FieldsMatcher> fields = 0,
     ::flatbuffers::Offset<dexkit::schema::MethodsMatcher> methods = 0,
-    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings = nullptr) {
+    const std::vector<::flatbuffers::Offset<dexkit::schema::StringMatcher>> *using_strings = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *all_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *any_of = nullptr,
+    const std::vector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>> *none_of = nullptr) {
   auto using_strings__ = using_strings ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::StringMatcher>>(*using_strings) : 0;
+  auto all_of__ = all_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>(*all_of) : 0;
+  auto any_of__ = any_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>(*any_of) : 0;
+  auto none_of__ = none_of ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::ClassMatcher>>(*none_of) : 0;
   return dexkit::schema::CreateClassMatcher(
       _fbb,
       smali_source,
@@ -2067,7 +2264,10 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcherDirect(
       annotations,
       fields,
       methods,
-      using_strings__);
+      using_strings__,
+      all_of__,
+      any_of__,
+      none_of__);
 }
 
 struct BatchUsingStringsMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

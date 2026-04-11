@@ -50,6 +50,11 @@ struct AnalyzeRet {
     std::vector<std::string_view> declare_class;
 };
 
+bool HasComposite(const schema::StringMatcher *matcher);
+bool HasComposite(const schema::ClassMatcher *matcher);
+bool HasComposite(const schema::FieldMatcher *matcher);
+bool HasComposite(const schema::MethodMatcher *matcher);
+
 AnalyzeRet Analyze(const schema::ClassMatcher *matcher, int dex_depth);
 AnalyzeRet Analyze(const schema::FieldMatcher *matcher, int dex_depth);
 AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth);

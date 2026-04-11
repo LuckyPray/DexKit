@@ -147,6 +147,100 @@ enum class MatcherCacheScope : uint8_t {
 
 namespace {
 
+template<typename T>
+static bool HasNonEmptyVector(const T *vector) {
+    return vector != nullptr && vector->size() > 0;
+}
+
+template<typename T, typename MatchFunc>
+static bool MatchAllOf(const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers, MatchFunc &&match_func) {
+    if (!HasNonEmptyVector(matchers)) {
+        return true;
+    }
+    for (int i = 0; i < matchers->size(); ++i) {
+        if (!match_func(matchers->Get(i))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<typename T, typename MatchFunc>
+static bool MatchAnyOf(const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers, MatchFunc &&match_func) {
+    if (!HasNonEmptyVector(matchers)) {
+        return true;
+    }
+    for (int i = 0; i < matchers->size(); ++i) {
+        if (match_func(matchers->Get(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+template<typename T, typename MatchFunc>
+static bool MatchNoneOf(const flatbuffers::Vector<flatbuffers::Offset<T>> *matchers, MatchFunc &&match_func) {
+    if (!HasNonEmptyVector(matchers)) {
+        return true;
+    }
+    for (int i = 0; i < matchers->size(); ++i) {
+        if (match_func(matchers->Get(i))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool HasLogicalGroups(const schema::StringMatcher *matcher) {
+    return matcher != nullptr && (
+            HasNonEmptyVector(matcher->all_of())
+            || HasNonEmptyVector(matcher->any_of())
+            || HasNonEmptyVector(matcher->none_of())
+    );
+}
+
+static bool HasLogicalGroups(const schema::ClassMatcher *matcher) {
+    return matcher != nullptr && (
+            HasNonEmptyVector(matcher->all_of())
+            || HasNonEmptyVector(matcher->any_of())
+            || HasNonEmptyVector(matcher->none_of())
+    );
+}
+
+static bool HasLogicalGroups(const schema::MethodMatcher *matcher) {
+    return matcher != nullptr && (
+            HasNonEmptyVector(matcher->all_of())
+            || HasNonEmptyVector(matcher->any_of())
+            || HasNonEmptyVector(matcher->none_of())
+    );
+}
+
+static bool HasLogicalGroups(const schema::FieldMatcher *matcher) {
+    return matcher != nullptr && (
+            HasNonEmptyVector(matcher->all_of())
+            || HasNonEmptyVector(matcher->any_of())
+            || HasNonEmptyVector(matcher->none_of())
+    );
+}
+
+static bool CanUseKeywordUsingStringMatcher(const schema::StringMatcher *matcher) {
+    return matcher != nullptr && matcher->value() != nullptr && !HasLogicalGroups(matcher);
+}
+
+static bool CanUseKeywordUsingStringsMatchers(
+        const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher
+) {
+    if (using_strings_matcher == nullptr) {
+        return true;
+    }
+    for (int i = 0; i < using_strings_matcher->size(); ++i) {
+        if (!CanUseKeywordUsingStringMatcher(using_strings_matcher->Get(i))) {
+            return false;
+        }
+    }
+    return true;
+}
+
 struct MatcherThreadLocalCacheSlot {
     void *cache = nullptr;
     void (*deleter)(void *) = nullptr;
@@ -391,6 +485,7 @@ static PersistentUsingStringsKeywordsCache *GetUsingStringsKeywordsCache(
     if (using_strings_matcher == nullptr) {
         return nullptr;
     }
+    DEXKIT_CHECK(CanUseKeywordUsingStringsMatchers(using_strings_matcher));
     if (QueryContext::Current() == nullptr) {
         return GetPersistentUsingStringsKeywordsCache(using_strings_matcher).get();
     }
@@ -446,8 +541,8 @@ void ReleaseMatcherThreadLocalCaches(const std::vector<std::thread::id> &thread_
     }
 }
 
-bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher *matcher) {
-    if (matcher == nullptr) {
+static bool IsStringMatchedAtomic(std::string_view str, const schema::StringMatcher *matcher) {
+    if (matcher == nullptr || matcher->value() == nullptr) {
         return true;
     }
     auto match_type = matcher->match_type();
@@ -469,6 +564,34 @@ bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher 
     return condition;
 }
 
+bool DexItem::IsStringMatched(std::string_view str, const schema::StringMatcher *matcher) {
+    if (matcher == nullptr) {
+        return true;
+    }
+    if (!HasLogicalGroups(matcher)) {
+        return IsStringMatchedAtomic(str, matcher);
+    }
+    if (!IsStringMatchedAtomic(str, matcher)) {
+        return false;
+    }
+    if (!MatchAllOf(matcher->all_of(), [&](const schema::StringMatcher *child) {
+        return DexItem::IsStringMatched(str, child);
+    })) {
+        return false;
+    }
+    if (!MatchAnyOf(matcher->any_of(), [&](const schema::StringMatcher *child) {
+        return DexItem::IsStringMatched(str, child);
+    })) {
+        return false;
+    }
+    if (!MatchNoneOf(matcher->none_of(), [&](const schema::StringMatcher *child) {
+        return DexItem::IsStringMatched(str, child);
+    })) {
+        return false;
+    }
+    return true;
+}
+
 bool DexItem::IsAccessFlagsMatched(uint32_t access_flags, const schema::AccessFlagsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
@@ -485,6 +608,7 @@ std::set<std::string_view> DexItem::BuildBatchFindKeywordsMap(
         std::vector<std::pair<std::string_view, bool>> &keywords,
         phmap::flat_hash_map<std::string_view, schema::StringMatchType> &match_type_map
 ) {
+    DEXKIT_CHECK(CanUseKeywordUsingStringsMatchers(using_strings_matcher));
     auto result = std::set<std::string_view>();
     for (int i = 0; i < using_strings_matcher->size(); ++i) {
         auto string_matcher = using_strings_matcher->Get(i);
@@ -585,6 +709,29 @@ bool DexItem::IsAnnotationMatched(const ir::Annotation *annotation, const schema
 
 bool DexItem::IsAnnotationUsingStringsMatched(const ir::Annotation *annotation, const schema::AnnotationMatcher *matcher) {
     if (matcher->using_strings() == nullptr) {
+        return true;
+    }
+
+    if (!CanUseKeywordUsingStringsMatchers(matcher->using_strings())) {
+        auto using_string_ids = GetAnnotationUsingStrings(annotation);
+        std::vector<std::string_view> using_strings;
+        using_strings.reserve(using_string_ids.size());
+        for (auto idx: using_string_ids) {
+            using_strings.emplace_back(this->strings[idx]);
+        }
+        for (int i = 0; i < matcher->using_strings()->size(); ++i) {
+            auto string_matcher = matcher->using_strings()->Get(i);
+            bool matched = false;
+            for (auto str: using_strings) {
+                if (IsStringMatched(str, string_matcher)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -877,69 +1024,114 @@ bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matc
     if (!IsMethodsMatched(type_idx, matcher->methods())) {
         return false;
     }
+    if (!HasLogicalGroups(matcher)) {
+        return true;
+    }
+    if (!MatchAllOf(matcher->all_of(), [&](const schema::ClassMatcher *child) {
+        return this->IsClassMatched(type_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchAnyOf(matcher->any_of(), [&](const schema::ClassMatcher *child) {
+        return this->IsClassMatched(type_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchNoneOf(matcher->none_of(), [&](const schema::ClassMatcher *child) {
+        return this->IsClassMatched(type_idx, child);
+    })) {
+        return false;
+    }
     return true;
 }
 
 bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *matcher) {
-    if (matcher == nullptr || matcher->value()->size() == 0) {
+    if (matcher == nullptr) {
         return true;
     }
-    auto type_array_count = this->type_name_array_count[type_idx];
-    auto type_name = this->type_names[type_idx];
-    auto component_type_name = type_name.substr(type_array_count);
+    auto match_atom = [&]() {
+        if (matcher->value() == nullptr || matcher->value()->size() == 0) {
+            return true;
+        }
+        auto type_array_count = this->type_name_array_count[type_idx];
+        auto type_name = this->type_names[type_idx];
+        auto component_type_name = type_name.substr(type_array_count);
 
-    auto match_ptr = GetMatcherCache<std::pair<std::string_view, schema::StringMatchType>>(
-            MatcherCacheScope::StringMatcherNormalized, POINT_CASE(matcher), [&]() {
-        auto match_str = matcher->value()->string_view();
-        auto match_type = matcher->match_type();
-        ConvertSimilarRegex(match_str, match_type);
-        return std::make_pair(match_str, match_type);
-    });
-    auto match_str = match_ptr->first;
-    auto match_type = match_ptr->second;
+        auto match_ptr = GetMatcherCache<std::pair<std::string_view, schema::StringMatchType>>(
+                MatcherCacheScope::StringMatcherNormalized, POINT_CASE(matcher), [&]() {
+                    auto match_str = matcher->value()->string_view();
+                    auto match_type = matcher->match_type();
+                    ConvertSimilarRegex(match_str, match_type);
+                    return std::make_pair(match_str, match_type);
+                });
+        auto match_str = match_ptr->first;
+        auto match_type = match_ptr->second;
 
-    typedef std::pair<std::string, uint8_t> MatchPair;
-    auto ptr = GetMatcherCache<MatchPair>(MatcherCacheScope::TypeNameDescriptor, POINT_CASE(matcher->value()), [&]() {
-        auto array_count = 0;
-        auto find_index = match_str.find_first_of('[');
-        if (find_index != std::string_view::npos) {
-            array_count = (uint8_t) (match_str.size() - find_index) / 2;
-        }
-        auto match_name_type = match_str.substr(0, match_str.size() - array_count * 2);
-        bool start_flag = match_type == schema::StringMatchType::StartWith || match_type == schema::StringMatchType::Equal;
-        bool end_flag = match_type == schema::StringMatchType::EndWith || match_type == schema::StringMatchType::Equal;
-        auto match_name = NameToDescriptor(match_name_type, start_flag, end_flag);
-        return std::make_pair(match_name, static_cast<uint8_t>(array_count));
-    });
+        typedef std::pair<std::string, uint8_t> MatchPair;
+        auto ptr = GetMatcherCache<MatchPair>(MatcherCacheScope::TypeNameDescriptor, POINT_CASE(matcher->value()), [&]() {
+            auto array_count = 0;
+            auto find_index = match_str.find_first_of('[');
+            if (find_index != std::string_view::npos) {
+                array_count = (uint8_t) (match_str.size() - find_index) / 2;
+            }
+            auto match_name_type = match_str.substr(0, match_str.size() - array_count * 2);
+            bool start_flag = match_type == schema::StringMatchType::StartWith || match_type == schema::StringMatchType::Equal;
+            bool end_flag = match_type == schema::StringMatchType::EndWith || match_type == schema::StringMatchType::Equal;
+            auto match_name = NameToDescriptor(match_name_type, start_flag, end_flag);
+            return std::make_pair(match_name, static_cast<uint8_t>(array_count));
+        });
 
-    auto &match_pair = *ptr;
-    auto &match_type_name = match_pair.first;
-    auto &match_array_count = match_pair.second;
-    bool condition;
-    switch (match_type) {
-        case schema::StringMatchType::StartWith: {
-            auto starts_with = kmp::starts_with(component_type_name, match_type_name, matcher->ignore_case());
-            condition = starts_with && match_array_count <= type_array_count;
-            break;
+        auto &match_pair = *ptr;
+        auto &match_type_name = match_pair.first;
+        auto &match_array_count = match_pair.second;
+        bool condition;
+        switch (match_type) {
+            case schema::StringMatchType::StartWith: {
+                auto starts_with = kmp::starts_with(component_type_name, match_type_name, matcher->ignore_case());
+                condition = starts_with && match_array_count <= type_array_count;
+                break;
+            }
+            case schema::StringMatchType::EndWith: {
+                auto ends_with = kmp::ends_with(component_type_name, match_type_name, matcher->ignore_case());
+                condition = ends_with && match_array_count == type_array_count;
+                break;
+            }
+            case schema::StringMatchType::Equal: {
+                auto equals = kmp::equals(component_type_name, match_type_name, matcher->ignore_case());
+                condition = equals && match_array_count == type_array_count;
+                break;
+            }
+            case schema::StringMatchType::Contains: {
+                auto index = kmp::FindIndex(component_type_name, match_type_name, matcher->ignore_case());
+                condition = index != -1 && match_array_count <= type_array_count;
+                break;
+            }
+            case schema::StringMatchType::SimilarRegex: abort();
         }
-        case schema::StringMatchType::EndWith: {
-            auto ends_with = kmp::ends_with(component_type_name, match_type_name, matcher->ignore_case());
-            condition = ends_with && match_array_count == type_array_count;
-            break;
-        }
-        case schema::StringMatchType::Equal: {
-            auto equals = kmp::equals(component_type_name, match_type_name, matcher->ignore_case());
-            condition = equals && match_array_count == type_array_count;
-            break;
-        }
-        case schema::StringMatchType::Contains: {
-            auto index = kmp::FindIndex(component_type_name, match_type_name, matcher->ignore_case());
-            condition = index != -1 && match_array_count <= type_array_count;
-            break;
-        }
-        case schema::StringMatchType::SimilarRegex: abort();
+        return condition;
+    };
+    if (!HasLogicalGroups(matcher)) {
+        return match_atom();
     }
-    return condition;
+    if (!match_atom()) {
+        return false;
+    }
+    if (!MatchAllOf(matcher->all_of(), [&](const schema::StringMatcher *child) {
+        return this->IsTypeNameMatched(type_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchAnyOf(matcher->any_of(), [&](const schema::StringMatcher *child) {
+        return this->IsTypeNameMatched(type_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchNoneOf(matcher->none_of(), [&](const schema::StringMatcher *child) {
+        return this->IsTypeNameMatched(type_idx, child);
+    })) {
+        return false;
+    }
+    return true;
 }
 
 bool DexItem::IsClassAccessFlagsMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher) {
@@ -970,6 +1162,31 @@ bool DexItem::IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassM
     }
     if (!this->type_def_flag[type_idx]) {
         return false;
+    }
+
+    if (!CanUseKeywordUsingStringsMatchers(matcher->using_strings())) {
+        std::vector<std::string_view> using_strings;
+        for (auto method_idx: this->class_method_ids[type_idx]) {
+            auto &method_using_strings = this->method_using_string_ids[method_idx];
+            using_strings.reserve(using_strings.size() + method_using_strings.size());
+            for (auto idx: method_using_strings) {
+                using_strings.emplace_back(this->strings[idx]);
+            }
+        }
+        for (int i = 0; i < matcher->using_strings()->size(); ++i) {
+            auto string_matcher = matcher->using_strings()->Get(i);
+            bool matched = false;
+            for (auto str: using_strings) {
+                if (IsStringMatched(str, string_matcher)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
+        return true;
     }
 
     auto *keywords_cache = GetUsingStringsKeywordsCache(
@@ -1230,6 +1447,24 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsUsingNumbersMatched(method_idx, matcher)) {
         return false;
     }
+    if (!HasLogicalGroups(matcher)) {
+        return true;
+    }
+    if (!MatchAllOf(matcher->all_of(), [&](const schema::MethodMatcher *child) {
+        return this->IsMethodMatched(method_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchAnyOf(matcher->any_of(), [&](const schema::MethodMatcher *child) {
+        return this->IsMethodMatched(method_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchNoneOf(matcher->none_of(), [&](const schema::MethodMatcher *child) {
+        return this->IsMethodMatched(method_idx, child);
+    })) {
+        return false;
+    }
     return true;
 }
 
@@ -1341,6 +1576,24 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
 
 bool DexItem::IsMethodUsingStringsMatched(uint32_t method_idx, const schema::MethodMatcher *matcher) {
     if (matcher->using_strings() == nullptr) {
+        return true;
+    }
+
+    if (!CanUseKeywordUsingStringsMatchers(matcher->using_strings())) {
+        auto &using_string_ids = this->method_using_string_ids[method_idx];
+        for (int i = 0; i < matcher->using_strings()->size(); ++i) {
+            auto string_matcher = matcher->using_strings()->Get(i);
+            bool matched = false;
+            for (auto idx: using_string_ids) {
+                if (IsStringMatched(this->strings[idx], string_matcher)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -1654,6 +1907,24 @@ bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *mat
         return false;
     }
     if (!IsFieldPutMethodsMatched(field_idx, matcher->put_methods())) {
+        return false;
+    }
+    if (!HasLogicalGroups(matcher)) {
+        return true;
+    }
+    if (!MatchAllOf(matcher->all_of(), [&](const schema::FieldMatcher *child) {
+        return this->IsFieldMatched(field_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchAnyOf(matcher->any_of(), [&](const schema::FieldMatcher *child) {
+        return this->IsFieldMatched(field_idx, child);
+    })) {
+        return false;
+    }
+    if (!MatchNoneOf(matcher->none_of(), [&](const schema::FieldMatcher *child) {
+        return this->IsFieldMatched(field_idx, child);
+    })) {
         return false;
     }
     return true;

@@ -188,6 +188,59 @@ class UnitTest {
     }
 
     @Test
+    fun testClassMatcherAnyOf() {
+        val res = bridge.findClass {
+            searchPackages("org.luckypray.dexkit.demo")
+            matcher {
+                anyOf {
+                    match { className = "org.luckypray.dexkit.demo.MainActivity" }
+                    match { className = "org.luckypray.dexkit.demo.PlayActivity" }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 2)
+        assert(res.map { it.name }.toSet() == setOf(
+            "org.luckypray.dexkit.demo.MainActivity",
+            "org.luckypray.dexkit.demo.PlayActivity"
+        ))
+    }
+
+    @Test
+    fun testClassMatcherAnyOfUsingStrings() {
+        val res = bridge.findClass {
+            matcher {
+                anyOf {
+                    match { usingStrings(listOf("PlayActivity"), StringMatchType.Contains) }
+                    match { usingStrings(listOf("You rolled a "), StringMatchType.Contains) }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 1)
+        assert(res.first().name == "org.luckypray.dexkit.demo.PlayActivity")
+    }
+
+    @Test
+    fun testClassMatcherNotAndAnyOfUsingStrings() {
+        val res = bridge.findClass {
+            searchPackages("org.luckypray.dexkit.demo")
+            matcher {
+                anyOf {
+                    match { usingStrings(listOf("MainActivity"), StringMatchType.Contains) }
+                    match { usingStrings(listOf("PlayActivity"), StringMatchType.Contains) }
+                }
+                not {
+                    usingStrings(listOf("MainActivity"), StringMatchType.Contains)
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 1)
+        assert(res.first().name == "org.luckypray.dexkit.demo.PlayActivity")
+    }
+
+    @Test
     fun testFindClassSuper() {
         val res = bridge.findClass {
             matcher {
@@ -332,6 +385,83 @@ class UnitTest {
         assert(res.size == 1)
         assert(res.first().className == "org.luckypray.dexkit.demo.PlayActivity")
         assert(res.first().typeName == "android.widget.TextView")
+    }
+
+    @Test
+    fun testFieldMatcherAnyOf() {
+        val res = bridge.findField {
+            matcher {
+                declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+                anyOf {
+                    match { type = "android.os.Handler" }
+                    match { type = "android.widget.TextView" }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 2)
+        assert(res.map { it.typeName }.toSet() == setOf("android.os.Handler", "android.widget.TextView"))
+    }
+
+    @Test
+    fun testMethodMatcherNotAndAnyOf() {
+        val res = bridge.findMethod {
+            matcher {
+                declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+                anyOf {
+                    match { name = "onCreate" }
+                    match { usingStrings(listOf("rollDice: "), StringMatchType.Contains) }
+                }
+                not {
+                    usingStrings(listOf("onCreate"), StringMatchType.Contains)
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 1)
+        val methodData = bridge.getMethodData(res.first().descriptor)!!
+        assert(methodData.usingStrings.contains("rollDice: "))
+        assert(!methodData.usingStrings.contains("onCreate"))
+    }
+
+    @Test
+    fun testMethodMatcherAnyOfUsingStrings() {
+        val res = bridge.findMethod {
+            matcher {
+                declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+                anyOf {
+                    match { usingStrings(listOf("rollDice: "), StringMatchType.Contains) }
+                    match { usingStrings(listOf("You rolled a "), StringMatchType.Contains) }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 1)
+        val methodData = bridge.getMethodData(res.first().descriptor)!!
+        assert(methodData.className == "org.luckypray.dexkit.demo.PlayActivity")
+        assert(methodData.usingStrings.contains("rollDice: "))
+        assert(methodData.usingStrings.contains("You rolled a "))
+    }
+
+    @Test
+    fun testCompositeStringMatcherWithinUsingStrings() {
+        val res = bridge.findMethod {
+            matcher {
+                declaredClass("org.luckypray.dexkit.demo.PlayActivity")
+                name = "onCreate"
+                usingStrings {
+                    add {
+                        allOf {
+                            match("Play", StringMatchType.StartsWith)
+                            match("Activity", StringMatchType.EndsWith)
+                        }
+                    }
+                }
+            }
+        }
+        println(res)
+        assert(res.size == 1)
+        assert(res.first().descriptor == "Lorg/luckypray/dexkit/demo/PlayActivity;->onCreate(Landroid/os/Bundle;)V")
     }
 
     @Test
