@@ -10,7 +10,7 @@ plugins {
 
 def KDockRepoName = "LuckyPray/DexKit-Doc"
 
-def libVersion = "2.1.0"
+def libVersion = "2.2.0"
 def enableInternalMetricsApi = false
 
 android {
