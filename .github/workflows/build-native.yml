@@ -99,76 +99,72 @@ jobs:
           chmod +x gradlew
           ./gradlew :dexkit:cmakeBuild -PlinuxMuslBuild --console=plain
 
-      - name: Run Gradle CMake build (host)
-        if: ${{ matrix.sys.name != 'linux-musl' }}
+      - name: Run Gradle CMake build (windows)
+        if: ${{ matrix.sys.name == 'windows' }}
         run: |
           chmod +x gradlew
-          ./gradlew :dexkit:cmakeBuild :dexkit:jar :dexkit-android:assembleRelease --console=plain
+          ./gradlew :dexkit:cmakeBuild --console=plain
 
-      - name: Collect native library
+      - name: Run Gradle package build (macOS)
+        if: ${{ matrix.sys.name == 'macos' }}
         run: |
-          mkdir -p artifacts
+          chmod +x gradlew
+          ./gradlew :dexkit:cmakeBuild :dexkit:jar :dexkit:sourcesJar :dexkit-android:assembleRelease :dexkit-android:sourcesJar --console=plain
+
+      - name: Collect build artifacts
+        run: |
+          rm -rf artifacts
           if [ "${RUNNER_OS}" = "Linux" ]; then
-            cp dexkit/build/cmake/main/*/libdexkit.so artifacts/
-          elif [ "${RUNNER_OS}" = "macOS" ]; then
-            cp dexkit/build/cmake/main/*/libdexkit.dylib artifacts/
-            cp dexkit/build/libs/dexkit.jar artifacts/
-            cp dexkit-android/build/outputs/aar/dexkit-android-release.aar artifacts/
+            mkdir -p artifacts/native/linux
+            cp dexkit/build/cmake/main/*/libdexkit.so artifacts/native/linux/
           elif [ "${RUNNER_OS}" = "Windows" ]; then
-            cp dexkit/build/cmake/main/*/libdexkit.dll artifacts/
-            cp dexkit/build/libs/dexkit.jar artifacts/
-            cp dexkit-android/build/outputs/aar/dexkit-android-release.aar artifacts/
+            mkdir -p artifacts/native/windows
+            cp dexkit/build/cmake/main/*/libdexkit.dll artifacts/native/windows/
+          elif [ "${RUNNER_OS}" = "macOS" ]; then
+            mkdir -p artifacts/native/macos artifacts/jvm artifacts/android
+            cp dexkit/build/cmake/main/*/libdexkit.dylib artifacts/native/macos/
+            cp dexkit/build/libs/dexkit.jar artifacts/jvm/
+            cp dexkit/build/libs/dexkit-sources.jar artifacts/jvm/
+            cp dexkit-android/build/outputs/aar/dexkit-android-release.aar artifacts/android/dexkit-android.aar
+            cp dexkit-android/build/libs/dexkit-android-sources.jar artifacts/android/
           fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dexkit-native-${{ matrix.sys.name }}
+          name: dexkit-build-${{ matrix.sys.name }}
           path: artifacts/
 
   package-all:
     needs: build-native
     runs-on: ubuntu-latest
+    env:
+      PACKAGE_ROOT: dexkit-all-platforms
     steps:
-      - name: Download all workflow artifacts
+      - name: Download and merge workflow artifacts
         uses: actions/download-artifact@v4
         with:
-          path: downloaded-artifacts
+          pattern: dexkit-build-*
+          path: ${{ env.PACKAGE_ROOT }}
+          merge-multiple: true
 
-      - name: Prepare staging directory
+      - name: Verify combined artifact layout
         run: |
-          rm -rf staging
-          mkdir -p staging/linux staging/macos staging/windows
-
-      - name: Copy Linux artifacts
-        run: |
-          cp downloaded-artifacts/dexkit-native-linux-musl/libdexkit.so staging/linux/
-
-      - name: Copy macOS artifacts
-        run: |
-          cp downloaded-artifacts/dexkit-native-macos/libdexkit.dylib staging/macos/
-
-      - name: Copy Windows artifacts
-        run: |
-          cp downloaded-artifacts/dexkit-native-windows/libdexkit.dll staging/windows/
-
-      - name: Copy dexkit.jar & AAR
-        run: |
-          cp downloaded-artifacts/dexkit-native-macos/dexkit.jar staging/
-          cp downloaded-artifacts/dexkit-native-macos/dexkit-android-release.aar staging/
+          test -f $PACKAGE_ROOT/jvm/dexkit.jar
+          test -f $PACKAGE_ROOT/jvm/dexkit-sources.jar
+          test -f $PACKAGE_ROOT/android/dexkit-android.aar
+          test -f $PACKAGE_ROOT/android/dexkit-android-sources.jar
+          test -f $PACKAGE_ROOT/native/linux/libdexkit.so
+          test -f $PACKAGE_ROOT/native/macos/libdexkit.dylib
+          test -f $PACKAGE_ROOT/native/windows/libdexkit.dll
 
       - name: Delete individual platform artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: dexkit-native-*
+          name: dexkit-build-*
 
       - name: Upload combined ZIP
         uses: actions/upload-artifact@v4
         with:
           name: dexkit-all-platforms
-          path: |
-            staging/linux
-            staging/macos
-            staging/windows
-            staging/dexkit.jar
-            staging/dexkit-android-release.aar
+          path: ${{ env.PACKAGE_ROOT }}/

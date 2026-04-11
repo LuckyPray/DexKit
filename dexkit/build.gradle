@@ -52,6 +52,13 @@ sourceSets {
     }
 }
 
+tasks.register("sourcesJar", Jar) {
+    archiveClassifier.set("sources")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.java.srcDirs)
+    include("**/*.java", "**/*.kt")
+}
+
 tasks.withType(KotlinCompile).configureEach {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_11
     kotlinOptions.languageVersion = "1.5"
