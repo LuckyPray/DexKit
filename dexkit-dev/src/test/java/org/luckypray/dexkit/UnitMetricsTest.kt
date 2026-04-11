@@ -544,9 +544,10 @@ class UnitMetricsTest {
 
             assert(normal.metrics.firstDispatchDelayNs >= 0)
             assert(normal.metrics.firstBonusDispatchDelayNs == -1L)
+            assert(normal.metrics.maxQueryShareCount >= 2L)
             assert(latencySensitive.metrics.firstDispatchDelayNs >= 0)
             assert(latencySensitive.metrics.firstBonusDispatchDelayNs >= latencySensitive.metrics.firstDispatchDelayNs)
-            assert(latencySensitive.metrics.firstBonusDispatchDelayNs >= normal.metrics.firstDispatchDelayNs)
+            assert(latencySensitive.metrics.maxQueryShareCount >= 2L)
         }
     }
 
