@@ -22,6 +22,7 @@
 package org.luckypray.dexkit.cache
 
 import org.luckypray.dexkit.DexKitCacheBridge
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.exceptions.NoResultException
 import org.luckypray.dexkit.exceptions.NonUniqueResultException
 import org.luckypray.dexkit.wrap.ISerializable
@@ -29,6 +30,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
+@OptIn(DexKitExperimentalApi::class)
 internal object CacheBridgeStore {
     private const val CACHE_NO_RESULT = "CACHE_NO_RESULT"
     private const val CACHE_NON_UNIQUE = "CACHE_NON_UNIQUE"

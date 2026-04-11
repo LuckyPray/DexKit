@@ -26,39 +26,6 @@ int SharedPtrVoidCast(dexkit::DexKit &dexkit) {
     return 0;
 }
 
-int ThreadVariableTest() {
-    ThreadPool pool(2);
-    for (int i = 0; i < 10000; ++i) {
-        pool.enqueue([i]() {
-            ThreadVariable::SetThreadVariable<int>(i, i);
-            auto thread_id = std::this_thread::get_id();
-            auto p = ThreadVariable::GetThreadVariable<int>(i);
-            std::ostringstream os;
-            os << thread_id;
-            printf("thread id: %s, idx: %d, %d\n", os.str().c_str(), (int) i, *p);
-        });
-    }
-    return 0;
-}
-
-int ThreadSharedVariableTest() {
-    {
-        ThreadPool pool(32);
-        for (int i = 0; i < 10000; ++i) {
-            pool.enqueue([i]() {
-                auto p = ThreadVariable::SetSharedVariable<int>(i, i);
-                printf("idx: %d, %d\n", (int) i, *p);
-            });
-        }
-    }
-    for (int i = 0; i < 10000; ++i) {
-        auto p = ThreadVariable::GetSharedVariable<int>(i);
-        assert(p);
-        assert(*p == i);
-    }
-    return 0;
-}
-
 int KmpTest() {
     assert(kmp::FindIndex("abc", "abc") == 0);
     assert(kmp::FindIndex("abc", "bc") == 1);
@@ -1277,7 +1244,6 @@ int main() {
 
     printf("DexCount: %d\n", dexkit.GetDexNum());
 //    SharedPtrVoidCast(dexkit);
-//    ThreadVariableTest();
 //    ThreadSharedVariableTest();
 //    KmpTest();
 //    ACTrieTest();

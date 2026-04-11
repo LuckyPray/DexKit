@@ -95,6 +95,7 @@ void DexItem::InitBaseCache() {
     }
 
     class_field_ids.resize(reader.TypeIds().size());
+    pending_cross_ref_field_ids.resize(reader.TypeIds().size());
     int field_idx = 0;
     for (auto &field: reader.FieldIds()) {
         if (field.class_idx == element_type_idx) {
@@ -140,14 +141,20 @@ void DexItem::InitBaseCache() {
     class_access_flags.resize(reader.TypeIds().size());
     class_interface_ids.resize(reader.TypeIds().size());
     class_method_ids.resize(reader.TypeIds().size());
-    method_descriptors.resize(reader.MethodIds().size());
-    method_access_flags.resize(reader.MethodIds().size());
-    method_codes.resize(reader.MethodIds().size());
-    field_descriptors.resize(reader.FieldIds().size());
-    field_access_flags.resize(reader.FieldIds().size());
+    pending_cross_ref_method_ids.resize(reader.TypeIds().size());
+    const auto method_count = reader.MethodIds().size();
+    const auto field_count = reader.FieldIds().size();
+    method_descriptors.resize(method_count);
+    method_access_flags.resize(method_count);
+    method_codes.resize(method_count);
+    lazy_method_opcode_slots = std::make_unique<LazyMethodOpCodesSlot[]>(method_count);
+    lazy_method_using_string_slots = std::make_unique<LazyMethodUsingStringsSlot[]>(method_count);
+    lazy_using_numbers_slots = std::make_unique<LazyUsingNumbersSlot[]>(method_count);
+    field_descriptors.resize(field_count);
+    field_access_flags.resize(field_count);
 
-    method_cross_info.resize(reader.MethodIds().size());
-    field_cross_info.resize(reader.FieldIds().size());
+    method_cross_info.resize(method_count);
+    field_cross_info.resize(field_count);
 
     auto class_def_idx = 0;
     for (auto &class_def: reader.ClassDefs()) {
@@ -226,10 +233,16 @@ void DexItem::InitBaseCache() {
         }
         std::sort(methods.begin(), methods.end());
     }
+    for (uint32_t type_idx = 0; type_idx < type_def_flag.size(); ++type_idx) {
+        if (!type_def_flag[type_idx]) {
+            std::swap(pending_cross_ref_field_ids[type_idx], class_field_ids[type_idx]);
+        }
+    }
+
     auto method_idx = 0;
     for (auto &method_def: reader.MethodIds()) {
         if (!type_def_flag[method_def.class_idx]) {
-            class_method_ids[method_def.class_idx].emplace_back(method_idx);
+            pending_cross_ref_method_ids[method_def.class_idx].emplace_back(method_idx);
         }
         ++method_idx;
     }
@@ -243,27 +256,59 @@ void DexItem::InitBaseCache() {
 }
 
 bool DexItem::NeedInitCache(uint32_t need_flag) const {
-    return (dex_flag & need_flag) != need_flag;
+    return (dex_flag.load(std::memory_order_acquire) & need_flag) != need_flag;
+}
+
+uint32_t DexItem::BeginInitCache(uint32_t init_flags) {
+    std::unique_lock lock(init_cache_state_mutex);
+    while (true) {
+        auto ready_flags = dex_flag.load(std::memory_order_acquire);
+        auto missing_flags = init_flags & ~ready_flags;
+        if (missing_flags == 0) {
+            return 0;
+        }
+        if (init_cache_inflight_flags == 0) {
+            init_cache_inflight_flags = missing_flags;
+            return missing_flags;
+        }
+        init_cache_state_cv.wait(lock, [this] {
+            return init_cache_inflight_flags == 0;
+        });
+    }
+}
+
+void DexItem::FinishInitCache(uint32_t init_flags) {
+    {
+        std::lock_guard lock(init_cache_state_mutex);
+        dex_flag.fetch_or(init_flags, std::memory_order_release);
+        init_cache_inflight_flags &= ~init_flags;
+    }
+    init_cache_state_cv.notify_all();
+}
+
+void DexItem::WaitInitCache(uint32_t init_flags) const {
+    std::unique_lock lock(init_cache_state_mutex);
+    init_cache_state_cv.wait(lock, [this, init_flags] {
+        auto ready_flags = dex_flag.load(std::memory_order_acquire);
+        return (ready_flags & init_flags) == init_flags;
+    });
 }
 
 void DexItem::InitCache(uint32_t init_flags) {
-    if ((dex_flag & init_flags) == init_flags) {
-        return;
-    }
     bool need_foreach_method = false;
-    bool need_op_seq = init_flags & kOpSequence && (dex_flag & kOpSequence) == 0;
-    bool need_method_using_string = init_flags & kUsingString && (dex_flag & kUsingString) == 0;
-    bool need_method_using_field = init_flags & kMethodUsingField && (dex_flag & kMethodUsingField) == 0;
-    bool need_method_invoking = init_flags & kMethodInvoking && (dex_flag & kMethodInvoking) == 0;
-    bool need_method_caller = init_flags & kCallerMethod && (dex_flag & kCallerMethod) == 0;
-    bool need_field_rw_method = init_flags & kRwFieldMethod && (dex_flag & kRwFieldMethod) == 0;
-    bool need_class_annotation = init_flags & kClassAnnotation && (dex_flag & kClassAnnotation) == 0;
-    bool need_field_annotation = init_flags & kFieldAnnotation && (dex_flag & kFieldAnnotation) == 0;
-    bool need_method_annotation = init_flags & kMethodAnnotation && (dex_flag & kMethodAnnotation) == 0;
-    bool need_param_annotation = init_flags & kParamAnnotation && (dex_flag & kParamAnnotation) == 0;
+    bool need_op_seq = (init_flags & kOpSequence) != 0;
+    bool need_method_using_string = (init_flags & kUsingString) != 0;
+    bool need_method_using_field = (init_flags & kMethodUsingField) != 0;
+    bool need_method_invoking = (init_flags & kMethodInvoking) != 0;
+    bool need_method_caller = (init_flags & kCallerMethod) != 0;
+    bool need_field_rw_method = (init_flags & kRwFieldMethod) != 0;
+    bool need_class_annotation = (init_flags & kClassAnnotation) != 0;
+    bool need_field_annotation = (init_flags & kFieldAnnotation) != 0;
+    bool need_method_annotation = (init_flags & kMethodAnnotation) != 0;
+    bool need_param_annotation = (init_flags & kParamAnnotation) != 0;
     bool need_annotation = need_class_annotation || need_field_annotation || need_method_annotation || need_param_annotation;
     // only used for full cache
-    bool need_method_using_number = init_flags & kUsingNumber && (dex_flag & kUsingNumber) == 0;
+    bool need_method_using_number = (init_flags & kUsingNumber) != 0;
 
     if (need_op_seq) {
         method_opcode_seq.resize(reader.MethodIds().size(), std::nullopt);
@@ -458,21 +503,53 @@ void DexItem::InitCache(uint32_t init_flags) {
             }
         }
     }
-    dex_flag |= init_flags;
 }
 
 bool DexItem::NeedPutCrossRef(uint32_t need_cross_flag) const {
     DEXKIT_CHECK((need_cross_flag & ~(kCallerMethod | kRwFieldMethod)) == 0);
-    return (dex_cross_flag & need_cross_flag) != need_cross_flag;
+    return (dex_cross_flag.load(std::memory_order_acquire) & need_cross_flag) != need_cross_flag;
+}
+
+uint32_t DexItem::BeginPutCrossRef(uint32_t put_cross_flag) {
+    DEXKIT_CHECK((put_cross_flag & ~(kCallerMethod | kRwFieldMethod)) == 0);
+    std::unique_lock lock(cross_ref_state_mutex);
+    while (true) {
+        auto ready_flags = dex_cross_flag.load(std::memory_order_acquire);
+        auto missing_flags = put_cross_flag & ~ready_flags;
+        if (missing_flags == 0) {
+            return 0;
+        }
+        if (cross_ref_inflight_flags == 0) {
+            cross_ref_inflight_flags = missing_flags;
+            return missing_flags;
+        }
+        cross_ref_state_cv.wait(lock, [this] {
+            return cross_ref_inflight_flags == 0;
+        });
+    }
+}
+
+void DexItem::FinishPutCrossRef(uint32_t put_cross_flag) {
+    {
+        std::lock_guard lock(cross_ref_state_mutex);
+        dex_cross_flag.fetch_or(put_cross_flag, std::memory_order_release);
+        cross_ref_inflight_flags &= ~put_cross_flag;
+    }
+    cross_ref_state_cv.notify_all();
+}
+
+void DexItem::WaitPutCrossRef(uint32_t put_cross_flag) const {
+    std::unique_lock lock(cross_ref_state_mutex);
+    cross_ref_state_cv.wait(lock, [this, put_cross_flag] {
+        auto ready_flags = dex_cross_flag.load(std::memory_order_acquire);
+        return (ready_flags & put_cross_flag) == put_cross_flag;
+    });
 }
 
 void DexItem::PutCrossRef(uint32_t put_cross_flag) {
     DEXKIT_CHECK((put_cross_flag & ~(kCallerMethod | kRwFieldMethod)) == 0);
-    if ((dex_cross_flag & put_cross_flag) == put_cross_flag) {
-        return;
-    }
-    bool need_caller_cross = put_cross_flag & kCallerMethod && (dex_cross_flag & kCallerMethod) == 0;
-    bool need_rw_field_cross = put_cross_flag & kRwFieldMethod && (dex_cross_flag & kRwFieldMethod) == 0;
+    bool need_caller_cross = (put_cross_flag & kCallerMethod) != 0;
+    bool need_rw_field_cross = (put_cross_flag & kRwFieldMethod) != 0;
 
     for (int type_idx = 0; type_idx < type_names.size(); ++type_idx) {
         if (!this->type_def_flag[type_idx] && type_names[type_idx][0] != '[') {
@@ -488,8 +565,7 @@ void DexItem::PutCrossRef(uint32_t put_cross_flag) {
             std::lock_guard lock(mutex);
 
             if (need_caller_cross) {
-                std::vector<uint32_t> method_ids;
-                std::swap(method_ids, this->class_method_ids[type_idx]);
+                const auto &method_ids = this->pending_cross_ref_method_ids[type_idx];
 
                 auto &origin_method_ids = origin_dex->class_method_ids[origin_type_idx];
                 for (int ori_i = 0, cur_i = 0; ori_i < origin_method_ids.size() && cur_i < method_ids.size(); ++ori_i) {
@@ -501,16 +577,19 @@ void DexItem::PutCrossRef(uint32_t put_cross_flag) {
                         continue;
                     }
                     method_cross_info[curr_method_idx] = {origin_dex->dex_id, origin_method_idx};
-                    auto &origin_caller_id = origin_dex->method_caller_ids[origin_method_idx];
-                    auto &curr_caller_id = this->method_caller_ids[curr_method_idx];
-                    origin_caller_id.insert(origin_caller_id.end(), curr_caller_id.begin(), curr_caller_id.end());
+                    if (!method_caller_ids[curr_method_idx].empty()) {
+                        pending_aggregate_method_work_items.emplace_back(PendingAggregateMethodWorkItem{
+                                .source_method_idx = curr_method_idx,
+                                .target_dex_id = static_cast<uint16_t>(origin_dex->dex_id),
+                                .target_method_idx = origin_method_idx
+                        });
+                    }
                     ++cur_i;
                 }
             }
 
             if (need_rw_field_cross) {
-                std::vector<uint32_t> field_ids;
-                std::swap(field_ids, this->class_field_ids[type_idx]);
+                const auto &field_ids = this->pending_cross_ref_field_ids[type_idx];
 
                 auto &origin_field_ids = origin_dex->class_field_ids[origin_type_idx];
                 for (int ori_i = 0, cur_i = 0; ori_i < origin_field_ids.size() && cur_i < field_ids.size(); ++ori_i) {
@@ -522,20 +601,27 @@ void DexItem::PutCrossRef(uint32_t put_cross_flag) {
                         continue;
                     }
                     field_cross_info[curr_field_idx] = {origin_dex->dex_id, origin_field_idx};
-                    auto &origin_get_method_id = origin_dex->field_get_method_ids[origin_field_idx];
-                    auto &curr_get_method_id = this->field_get_method_ids[curr_field_idx];
-                    origin_get_method_id.insert(origin_get_method_id.end(), curr_get_method_id.begin(),
-                                                curr_get_method_id.end());
-                    auto &origin_put_method_id = origin_dex->field_put_method_ids[origin_field_idx];
-                    auto &curr_put_method_id = this->field_put_method_ids[curr_field_idx];
-                    origin_put_method_id.insert(origin_put_method_id.end(), curr_put_method_id.begin(),
-                                                curr_put_method_id.end());
+                    if (!field_get_method_ids[curr_field_idx].empty() || !field_put_method_ids[curr_field_idx].empty()) {
+                        pending_aggregate_field_work_items.emplace_back(PendingAggregateFieldWorkItem{
+                                .source_field_idx = curr_field_idx,
+                                .target_dex_id = static_cast<uint16_t>(origin_dex->dex_id),
+                                .target_field_idx = origin_field_idx
+                        });
+                    }
                     ++cur_i;
                 }
             }
         }
     }
-    dex_cross_flag |= put_cross_flag;
+
+    if (need_caller_cross) {
+        pending_cross_ref_method_ids.clear();
+        pending_cross_ref_method_ids.shrink_to_fit();
+    }
+    if (need_rw_field_cross) {
+        pending_cross_ref_field_ids.clear();
+        pending_cross_ref_field_ids.shrink_to_fit();
+    }
 }
 
 std::mutex &DexItem::GetTypeDefMutex(uint32_t type_idx) {
@@ -709,7 +795,7 @@ AnnotationEncodeArrayBean DexItem::GetAnnotationEncodeArrayBean(ir::EncodedArray
 
 std::vector<AnnotationBean>
 DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
-    if (this->class_annotations.empty()) {
+    if ((dex_flag.load(std::memory_order_acquire) & kClassAnnotation) == 0) {
         auto class_def = reader.ClassDefs()[type_def_idx[class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
         if (!annotationsDirectory) return {};
@@ -736,7 +822,7 @@ DexItem::GetClassAnnotationBeans(uint32_t class_idx) {
 
 std::vector<AnnotationBean>
 DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
-    if (this->method_annotations.empty()) {
+    if ((dex_flag.load(std::memory_order_acquire) & kMethodAnnotation) == 0) {
         auto method_def = reader.MethodIds()[method_idx];
         auto class_def = reader.ClassDefs()[type_def_idx[method_def.class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
@@ -772,7 +858,7 @@ DexItem::GetMethodAnnotationBeans(uint32_t method_idx) {
 
 std::vector<AnnotationBean>
 DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
-    if (field_annotations.empty()) {
+    if ((dex_flag.load(std::memory_order_acquire) & kFieldAnnotation) == 0) {
         auto field_def = reader.FieldIds()[field_idx];
         auto class_def = reader.ClassDefs()[type_def_idx[field_def.class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
@@ -808,7 +894,7 @@ DexItem::GetFieldAnnotationBeans(uint32_t field_idx) {
 
 std::vector<std::vector<AnnotationBean>>
 DexItem::GetParameterAnnotationBeans(uint32_t method_idx) {
-    if (method_parameter_annotations.empty()) {
+    if ((dex_flag.load(std::memory_order_acquire) & kParamAnnotation) == 0) {
         auto method_def = reader.MethodIds()[method_idx];
         auto class_def = reader.ClassDefs()[type_def_idx[method_def.class_idx]];
         auto annotationsDirectory = reader.ExtractAnnotations(class_def.annotations_off);
@@ -880,16 +966,20 @@ DexItem::GetParameterNames(uint32_t method_idx) {
 
 std::vector<uint8_t>
 DexItem::GetMethodOpCodes(uint32_t method_idx) {
-    if (method_opcode_seq.empty()) {
-        return GetOpSeqFromCode(method_idx);
+    // OpCodes stay as a per-method lazy exception: cold metadata reads should not force
+    // bridge-level kOpSequence warm-up for the whole DexKit instance.
+    if ((dex_flag.load(std::memory_order_acquire) & kOpSequence) != 0) {
+        const auto &op_seq = method_opcode_seq[method_idx];
+        return op_seq.has_value() ? op_seq.value() : std::vector<uint8_t>();
     }
-    auto &op_seq = method_opcode_seq[method_idx];
-    return op_seq.has_value() ? op_seq.value() : std::vector<uint8_t>();
+    return GetLazyMethodOpCodes(method_idx);
 }
 
 std::vector<MethodBean> DexItem::GetCallMethods(uint32_t method_idx) {
-    auto &method_caller = this->method_caller_ids[method_idx];
+    DEXKIT_CHECK(!method_caller_ids.empty());
+    const auto &method_caller = this->method_caller_ids[method_idx];
     std::vector<MethodBean> beans;
+    beans.reserve(method_caller.size());
     for (auto &[ori_dex_id, caller_id]: method_caller) {
         if (ori_dex_id == this->dex_id) {
             beans.emplace_back(GetMethodBean(caller_id));
@@ -902,40 +992,40 @@ std::vector<MethodBean> DexItem::GetCallMethods(uint32_t method_idx) {
 }
 
 std::vector<MethodBean> DexItem::GetInvokeMethods(uint32_t method_idx) {
+    DEXKIT_CHECK(!method_invoking_ids.empty());
+    const auto &method_invoking = this->method_invoking_ids[method_idx];
     std::vector<MethodBean> beans;
-    if (method_invoking_ids.empty()) {
-        auto method_invoking = GetInvokeMethodsFromCode(method_idx);
-        for (auto invoking_id: method_invoking) {
-            beans.emplace_back(GetMethodBean(invoking_id));
-        }
-    } else {
-        auto &method_invoking = this->method_invoking_ids[method_idx];
-        for (auto invoking_id: method_invoking) {
-            beans.emplace_back(GetMethodBean(invoking_id));
-        }
+    beans.reserve(method_invoking.size());
+    for (auto invoking_id: method_invoking) {
+        beans.emplace_back(GetMethodBean(invoking_id));
     }
     return beans;
 }
 
 std::vector<std::string_view> DexItem::GetUsingStrings(uint32_t method_idx) {
+    // Using-strings follows the same rule as opcodes: per-method lazy fallback is allowed
+    // for metadata getters, while matcher/query hot paths rely on the outer ready barrier.
     std::vector<std::string_view> using_strings;
-    if (method_using_string_ids.empty()) {
-        auto method_using_strings = GetUsingStringsFromCode(method_idx);
-        for (auto string_id: method_using_strings) {
-            using_strings.emplace_back(this->strings[string_id]);
-        }
+    const std::vector<uint32_t> *method_using_strings = nullptr;
+    if ((dex_flag.load(std::memory_order_acquire) & kUsingString) != 0) {
+        method_using_strings = &method_using_string_ids[method_idx];
     } else {
-        auto &method_using_strings = method_using_string_ids[method_idx];
-        for (auto string_id: method_using_strings) {
-            using_strings.emplace_back(this->strings[string_id]);
-        }
+        method_using_strings = &GetLazyMethodUsingStringIds(method_idx);
+    }
+    using_strings.reserve(method_using_strings->size());
+    for (auto string_id: *method_using_strings) {
+        using_strings.emplace_back(this->strings[string_id]);
     }
     return using_strings;
 }
 
 std::vector<UsingFieldBean> DexItem::GetUsingFields(uint32_t method_idx) {
-    auto &method_using_fields = this->method_using_field_ids[method_idx];
+    // Cross-ref accessors intentionally have no fallback: callers must enter through the
+    // DexKit barrier so these final shared indexes are already published.
+    DEXKIT_CHECK(!method_using_field_ids.empty());
+    const auto &method_using_fields = this->method_using_field_ids[method_idx];
     std::vector<UsingFieldBean> using_fields;
+    using_fields.reserve(method_using_fields.size());
     for (auto [method_id, is_getting]: method_using_fields) {
         UsingFieldBean bean;
         bean.field = GetFieldBean(method_id);
@@ -946,8 +1036,10 @@ std::vector<UsingFieldBean> DexItem::GetUsingFields(uint32_t method_idx) {
 }
 
 std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
-    auto &method_ids = this->field_get_method_ids[field_idx];
+    DEXKIT_CHECK(!field_get_method_ids.empty());
+    const auto &method_ids = this->field_get_method_ids[field_idx];
     std::vector<MethodBean> beans;
+    beans.reserve(method_ids.size());
     for (auto &[ori_dex_id, method_id]: method_ids) {
         if (ori_dex_id == this->dex_id) {
             beans.emplace_back(GetMethodBean(method_id));
@@ -960,8 +1052,10 @@ std::vector<MethodBean> DexItem::FieldGetMethods(uint32_t field_idx) {
 }
 
 std::vector<MethodBean> DexItem::FieldPutMethods(uint32_t field_idx) {
-    auto &method_ids = this->field_put_method_ids[field_idx];
+    DEXKIT_CHECK(!field_put_method_ids.empty());
+    const auto &method_ids = this->field_put_method_ids[field_idx];
     std::vector<MethodBean> beans;
+    beans.reserve(method_ids.size());
     for (auto &[ori_dex_id, method_id]: method_ids) {
         if (ori_dex_id == this->dex_id) {
             beans.emplace_back(GetMethodBean(method_id));
@@ -1055,6 +1149,68 @@ std::vector<uint32_t> DexItem::GetUsingStringsFromCode(uint32_t method_idx) {
     return std::move(using_strings);
 }
 
+const std::vector<uint8_t> &DexItem::GetLazyMethodOpCodes(uint32_t method_idx) {
+    auto &slot = lazy_method_opcode_slots[method_idx];
+    auto state = slot.state.load(std::memory_order_acquire);
+    if (state == static_cast<uint8_t>(LazyMethodFeatureState::Ready)) {
+        return *slot.data;
+    }
+
+    uint8_t expected = static_cast<uint8_t>(LazyMethodFeatureState::Empty);
+    if (slot.state.compare_exchange_strong(expected,
+                                           static_cast<uint8_t>(LazyMethodFeatureState::Building),
+                                           std::memory_order_acq_rel,
+                                           std::memory_order_acquire)) {
+        auto built_data = std::make_unique<const std::vector<uint8_t>>(GetOpSeqFromCode(method_idx));
+        auto stripe = method_idx % lazy_method_wait_mutexes->size();
+        {
+            std::lock_guard lock((*lazy_method_wait_mutexes)[stripe]);
+            slot.data = std::move(built_data);
+            slot.state.store(static_cast<uint8_t>(LazyMethodFeatureState::Ready), std::memory_order_release);
+        }
+        (*lazy_method_wait_cvs)[stripe].notify_all();
+        return *slot.data;
+    }
+
+    auto stripe = method_idx % lazy_method_wait_mutexes->size();
+    std::unique_lock lock((*lazy_method_wait_mutexes)[stripe]);
+    (*lazy_method_wait_cvs)[stripe].wait(lock, [&slot] {
+        return slot.state.load(std::memory_order_acquire) == static_cast<uint8_t>(LazyMethodFeatureState::Ready);
+    });
+    return *slot.data;
+}
+
+const std::vector<uint32_t> &DexItem::GetLazyMethodUsingStringIds(uint32_t method_idx) {
+    auto &slot = lazy_method_using_string_slots[method_idx];
+    auto state = slot.state.load(std::memory_order_acquire);
+    if (state == static_cast<uint8_t>(LazyMethodFeatureState::Ready)) {
+        return *slot.data;
+    }
+
+    uint8_t expected = static_cast<uint8_t>(LazyMethodFeatureState::Empty);
+    if (slot.state.compare_exchange_strong(expected,
+                                           static_cast<uint8_t>(LazyMethodFeatureState::Building),
+                                           std::memory_order_acq_rel,
+                                           std::memory_order_acquire)) {
+        auto built_data = std::make_unique<const std::vector<uint32_t>>(GetUsingStringsFromCode(method_idx));
+        auto stripe = method_idx % lazy_method_wait_mutexes->size();
+        {
+            std::lock_guard lock((*lazy_method_wait_mutexes)[stripe]);
+            slot.data = std::move(built_data);
+            slot.state.store(static_cast<uint8_t>(LazyMethodFeatureState::Ready), std::memory_order_release);
+        }
+        (*lazy_method_wait_cvs)[stripe].notify_all();
+        return *slot.data;
+    }
+
+    auto stripe = method_idx % lazy_method_wait_mutexes->size();
+    std::unique_lock lock((*lazy_method_wait_mutexes)[stripe]);
+    (*lazy_method_wait_cvs)[stripe].wait(lock, [&slot] {
+        return slot.state.load(std::memory_order_acquire) == static_cast<uint8_t>(LazyMethodFeatureState::Ready);
+    });
+    return *slot.data;
+}
+
 std::vector<uint32_t> DexItem::GetInvokeMethodsFromCode(uint32_t method_idx) {
     auto code = method_codes[method_idx];
     if (code == nullptr) {
@@ -1127,10 +1283,7 @@ void PushEncodeNumber(dex::InstructionFormat op_format, uint8_t op, const uint16
     }
 }
 
-std::vector<EncodeNumber> DexItem::GetUsingNumbersFromCode(uint32_t method_idx) {
-    if (dex_flag & kUsingNumber) {
-        return method_using_numbers[method_idx];
-    }
+std::vector<EncodeNumber> DexItem::ParseUsingNumbersFromCode(uint32_t method_idx) {
     auto code = method_codes[method_idx];
     if (code == nullptr) {
         return {};
@@ -1146,7 +1299,44 @@ std::vector<EncodeNumber> DexItem::GetUsingNumbersFromCode(uint32_t method_idx) 
         PushEncodeNumber(op_format, op, ptr, &using_numbers);
         p += width;
     }
-    return std::move(using_numbers);
+    return using_numbers;
+}
+
+const std::vector<EncodeNumber> &DexItem::GetUsingNumbers(uint32_t method_idx) {
+    if ((dex_flag.load(std::memory_order_acquire) & kUsingNumber) != 0) {
+        return method_using_numbers[method_idx];
+    }
+
+    // Using-numbers remains a sparse per-method lazy cache because full warm-up cost and
+    // resident memory are too high for the typical "read one method's metadata" path.
+    auto &slot = lazy_using_numbers_slots[method_idx];
+    auto state = slot.state.load(std::memory_order_acquire);
+    if (state == static_cast<uint8_t>(LazyMethodFeatureState::Ready)) {
+        return *slot.data;
+    }
+
+    uint8_t expected = static_cast<uint8_t>(LazyMethodFeatureState::Empty);
+    if (slot.state.compare_exchange_strong(expected,
+                                           static_cast<uint8_t>(LazyMethodFeatureState::Building),
+                                           std::memory_order_acq_rel,
+                                           std::memory_order_acquire)) {
+        auto built_data = std::make_unique<const std::vector<EncodeNumber>>(ParseUsingNumbersFromCode(method_idx));
+        auto stripe = method_idx % lazy_method_wait_mutexes->size();
+        {
+            std::lock_guard lock((*lazy_method_wait_mutexes)[stripe]);
+            slot.data = std::move(built_data);
+            slot.state.store(static_cast<uint8_t>(LazyMethodFeatureState::Ready), std::memory_order_release);
+        }
+        (*lazy_method_wait_cvs)[stripe].notify_all();
+        return *slot.data;
+    }
+
+    auto stripe = method_idx % lazy_method_wait_mutexes->size();
+    std::unique_lock lock((*lazy_method_wait_mutexes)[stripe]);
+    (*lazy_method_wait_cvs)[stripe].wait(lock, [&slot] {
+        return slot.state.load(std::memory_order_acquire) == static_cast<uint8_t>(LazyMethodFeatureState::Ready);
+    });
+    return *slot.data;
 }
 
 bool DexItem::CheckAllTypeNamesDeclared(std::vector<std::string_view> &types) {

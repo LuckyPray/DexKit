@@ -20,7 +20,10 @@
 #include <stdlib.h>
 
 #include <set>
+#include <thread>
 #include <utility>
+
+#include "matcher_thread_cache_registry.h"
 
 namespace slicer {
 
@@ -63,8 +66,27 @@ void _checkFailedOp(uint32_t lhs, uint32_t rhs, const char* op, const char* suff
   std::abort();
 }
 
-// keep track of the failures we already saw to avoid spamming with duplicates
-thread_local std::set<std::pair<int, const char*>> weak_failures;
+namespace {
+
+std::set<std::pair<int, const char*>>& get_weak_failures() {
+  // Avoid direct non-trivial thread_local destruction on Windows DLL TLS
+  // teardown. Native-owned worker-thread instances are released through the
+  // shared registry when the pool shuts down; externally-owned threads keep the
+  // small set alive until process exit.
+  thread_local std::set<std::pair<int, const char*>>* weak_failures = nullptr;
+  if (weak_failures == nullptr) {
+    weak_failures = new std::set<std::pair<int, const char*>>();
+    dexkit::RegisterMatcherThreadLocalCache(
+        std::this_thread::get_id(),
+        weak_failures,
+        [](void* ptr) {
+          delete reinterpret_cast<std::set<std::pair<int, const char*>>*>(ptr);
+        });
+  }
+  return *weak_failures;
+}
+
+}  // namespace
 
 // Helper for the default SLICER_WEAK_CHECK() policy
 //
@@ -72,6 +94,7 @@ thread_local std::set<std::pair<int, const char*>> weak_failures;
 //
 void _weakCheckFailed(const char* expr, int line, const char* file) {
   auto failure_id = std::make_pair(line, file);
+  auto& weak_failures = get_weak_failures();
   if (weak_failures.find(failure_id) == weak_failures.end()) {
     printf("\nSLICER_WEAK_CHECK failed [%s] at %s:%d\n\n", expr, file, line);
     weak_failures.insert(failure_id);

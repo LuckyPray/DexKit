@@ -11,6 +11,39 @@ plugins {
 def KDockRepoName = "LuckyPray/DexKit-Doc"
 
 def libVersion = "2.1.0"
+def requestedTasks = gradle.startParameter.taskNames.collect { it.toLowerCase() }
+def isDexkitAndroidReleaseArtifactTask = { String taskName ->
+    taskName == 'publish' ||
+            taskName == ':publish' ||
+            taskName == 'publishtomavenlocal' ||
+            taskName == ':publishtomavenlocal' ||
+            taskName == 'sign' ||
+            taskName == ':sign' ||
+            taskName == 'dokka' ||
+            taskName == ':dokka' ||
+            taskName == 'dokkahtml' ||
+            taskName == ':dokkahtml' ||
+            taskName == 'assemblerelease' ||
+            taskName == ':assemblerelease' ||
+            taskName == 'bundlerelease' ||
+            taskName == ':bundlerelease' ||
+            taskName == ':dexkit-android:assemblerelease' ||
+            taskName == 'dexkit-android:assemblerelease' ||
+            taskName == ':dexkit-android:bundlerelease' ||
+            taskName == 'dexkit-android:bundlerelease' ||
+            taskName == ':dexkit-android:sourcesjar' ||
+            taskName == 'dexkit-android:sourcesjar' ||
+            taskName == ':dexkit-android:javadocjar' ||
+            taskName == 'dexkit-android:javadocjar' ||
+            taskName.startsWith(':dexkit-android:publish') ||
+            taskName.startsWith('dexkit-android:publish') ||
+            taskName.startsWith(':dexkit-android:sign') ||
+            taskName.startsWith('dexkit-android:sign') ||
+            taskName.startsWith(':dexkit-android:dokka') ||
+            taskName.startsWith('dexkit-android:dokka')
+}
+def isReleaseArtifactBuild = requestedTasks.any(isDexkitAndroidReleaseArtifactTask)
+def enableInternalMetricsApi = !isReleaseArtifactBuild
 
 android {
     namespace = "org.luckypray.dexkit"
@@ -26,6 +59,8 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=none"
+                arguments "-DDEXKIT_ENABLE_INTERNAL_METRICS=${enableInternalMetricsApi ? 'ON' : 'OFF'}"
+                arguments "-DDEXKIT_ENABLE_INTERNAL_METRICS_API=${enableInternalMetricsApi ? 'ON' : 'OFF'}"
                 def flags = [
                         "-funwind-tables",
                         "-fasynchronous-unwind-tables",
@@ -88,6 +123,9 @@ android {
         main {
             manifest.srcFile("AndroidManifest.xml")
             java.setSrcDirs(["${project(':dexkit').projectDir}/src/main/java"])
+            if (enableInternalMetricsApi) {
+                java.srcDir("${project(':dexkit').projectDir}/src/internalMetrics/java")
+            }
         }
     }
 

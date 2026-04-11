@@ -30,20 +30,15 @@
 #include <functional>
 #include <stdexcept>
 
-#include "ThreadVariable.h"
+#include "matcher_thread_cache_registry.h"
 
 class ThreadPool {
 public:
-    explicit ThreadPool(size_t);
+    explicit ThreadPool(size_t, std::function<bool()> should_skip_task = {});
 
     template<class F, class... Args>
     auto enqueue(F &&f, Args &&... args)
     -> std::future<typename std::invoke_result<F, Args...>::type>;
-
-    void skip_unexec_tasks() {
-        std::unique_lock lock(this->queue_mutex);
-        _skip_unexec_tasks = true;
-    }
 
     ~ThreadPool();
 
@@ -52,31 +47,23 @@ private:
     std::vector<std::thread> workers;
     // the task queue
     std::queue<std::function<void()> > tasks;
-    std::mutex thread_ids_mutex;
-    std::atomic<int> ready_tasks = 0;
     // synchronization
     std::mutex queue_mutex;
     std::condition_variable condition;
     bool stop;
-    bool _skip_unexec_tasks = false;
+    std::function<bool()> should_skip_task;
     std::vector<std::thread::id> _thread_ids;
 };
 
 // the constructor just launches some amount of workers
-inline ThreadPool::ThreadPool(size_t threads)
-        : stop(false) {
+inline ThreadPool::ThreadPool(size_t threads, std::function<bool()> should_skip_task)
+        : stop(false), should_skip_task(std::move(should_skip_task)) {
+    workers.reserve(threads);
+    _thread_ids.resize(threads);
     for (size_t i = 0; i < threads; ++i)
         workers.emplace_back(
-                [this, threads] {
-                    {
-                        std::unique_lock lock(this->thread_ids_mutex);
-                        this->_thread_ids.push_back(std::this_thread::get_id());
-                    }
-                    ThreadVariable::InitThreadVariableMap();
-                    this->ready_tasks++;
-                    while (this->ready_tasks != threads) {
-                        std::this_thread::yield();
-                    }
+                [this, i] {
+                    this->_thread_ids[i] = std::this_thread::get_id();
                     for (;;) {
                         std::function<void()> task;
 
@@ -103,7 +90,7 @@ auto ThreadPool::enqueue(F &&f, Args &&... args)
 
     auto task = std::make_shared<std::packaged_task<return_type()> >(
             [f = std::forward<F>(f), args = std::make_tuple(std::forward<Args>(args)...), this]() mutable {
-                if (this->_skip_unexec_tasks) {
+                if (this->should_skip_task && this->should_skip_task()) {
                     if constexpr (std::is_same_v<return_type, void>) return;
                     return return_type();
                 }
@@ -137,5 +124,5 @@ inline ThreadPool::~ThreadPool() {
     condition.notify_all();
     for (std::thread &worker: workers)
         worker.join();
-    ThreadVariable::ClearThreadVariables(_thread_ids);
+    dexkit::ReleaseMatcherThreadLocalCaches(_thread_ids);
 }

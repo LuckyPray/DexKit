@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.4.1...3.27)
 project(dexkit)
 
 set(CMAKE_CXX_STANDARD 20)
+option(DEXKIT_ENABLE_INTERNAL_METRICS "Compile internal metrics into core" OFF)
+option(DEXKIT_ENABLE_INTERNAL_METRICS_API "Enable internal metrics JNI bridge" OFF)
+
+if (DEXKIT_ENABLE_INTERNAL_METRICS_API)
+    set(DEXKIT_ENABLE_INTERNAL_METRICS ON)
+endif ()
 
 add_subdirectory(../../../../Core Core)
 
@@ -20,6 +26,10 @@ endif ()
 
 add_library(${PROJECT_NAME} SHARED
         native-bridge.cpp)
+
+if (DEXKIT_ENABLE_INTERNAL_METRICS_API)
+    target_sources(${PROJECT_NAME} PRIVATE native-bridge-metrics.cpp)
+endif ()
 
 if (WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

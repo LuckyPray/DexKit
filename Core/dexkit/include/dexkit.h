@@ -23,7 +23,10 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+#include <deque>
 #include <atomic>
+#include <condition_variable>
+#include <memory>
 
 #include "flatbuffers/flatbuffers.h"
 #include "zip_archive.h"
@@ -31,8 +34,9 @@
 #include "dex_item.h"
 #include "package_trie.h"
 #include "analyze.h"
+#include "query_executor.h"
 
-#define BATCH_SIZE 5000
+#define BATCH_SIZE 1000
 
 namespace dexkit {
 
@@ -40,12 +44,36 @@ class DexItem;
 
 class DexKit {
 public:
+    class QueryExecutionGuard {
+    public:
+        explicit QueryExecutionGuard(DexKit *owner) : owner_(owner) {}
+        QueryExecutionGuard(const QueryExecutionGuard &) = delete;
+        QueryExecutionGuard &operator=(const QueryExecutionGuard &) = delete;
+        QueryExecutionGuard(QueryExecutionGuard &&other) noexcept : owner_(other.owner_) {
+            other.owner_ = nullptr;
+        }
+        QueryExecutionGuard &operator=(QueryExecutionGuard &&other) = delete;
+        ~QueryExecutionGuard();
+
+    private:
+        DexKit *owner_ = nullptr;
+    };
+
 
     explicit DexKit() = default;
     explicit DexKit(std::string_view apk_path, int unzip_thread_num = 0);
     ~DexKit() = default;
 
     void SetThreadNum(int num);
+    void SetMaxConcurrentQueries(uint32_t max_concurrent_queries);
+#if DEXKIT_ENABLE_INTERNAL_METRICS
+    void SetQueryMetricsEnabled(bool enabled);
+    [[nodiscard]] QuerySchedulerMetricsSnapshot GetQuerySchedulerMetricsSnapshot() const;
+    void ResetQuerySchedulerMetrics() const;
+    [[nodiscard]] static QueryMetricsSnapshot GetLastQueryMetricsSnapshot();
+    [[nodiscard]] QueryMetricsHistorySnapshot GetQueryMetricsHistorySnapshot() const;
+    void ResetQueryMetricsHistory();
+#endif
     Error InitFullCache();
     Error AddDex(uint8_t *data, size_t size);
     Error AddImage(std::unique_ptr<MemMap> dex_image);
@@ -87,13 +115,53 @@ public:
 private:
     std::mutex _mutex;
     std::shared_mutex _put_class_mutex;
+    mutable std::mutex query_execution_mutex;
+    mutable std::condition_variable query_execution_cv;
+    mutable std::mutex query_executor_mutex;
+    uint32_t active_query_count = 0;
+    uint32_t pending_warmup_flags = 0;
+    bool warmup_inflight = false;
+    uint64_t next_shared_pool_admission_ticket_ = 1;
+    std::deque<uint64_t> shared_pool_admission_wait_queue_;
     std::atomic<uint32_t> dex_cnt = 0;
-    uint32_t _thread_num = std::thread::hardware_concurrency();
+    std::atomic<uint32_t> _thread_num = std::thread::hardware_concurrency();
+    std::atomic<uint32_t> max_concurrent_queries_ = 0;
+#if DEXKIT_ENABLE_INTERNAL_METRICS
+    std::atomic<bool> query_metrics_enabled_ = false;
+#endif
+    mutable std::shared_ptr<ThreadPool> shared_query_pool_;
+    mutable std::shared_ptr<QueryScheduler> shared_query_scheduler_;
+    mutable uint32_t shared_query_pool_thread_num_ = 0;
+#if DEXKIT_ENABLE_INTERNAL_METRICS
+    mutable std::mutex query_metrics_history_mutex;
+    mutable std::deque<QueryMetricsRecord> query_metrics_history_;
+    uint64_t dropped_query_metrics_history_records_ = 0;
+#endif
     std::vector<std::shared_ptr<MemMap>> images;
     std::vector<std::unique_ptr<DexItem>> dex_items;
     phmap::flat_hash_map<std::string_view, std::pair<uint16_t /*dex_id*/, uint32_t /*type_idx*/>> class_declare_dex_map;
+    std::atomic<uint32_t> cross_ref_aggregate_flag = 0;
+    mutable std::mutex cross_ref_aggregate_state_mutex;
+    mutable std::condition_variable cross_ref_aggregate_state_cv;
+    uint32_t cross_ref_aggregate_inflight_flags = 0;
 
     void InitDexCache(uint32_t init_flags);
+    [[nodiscard]] QueryExecutionGuard EnterQueryExecution(uint32_t required_flags);
+    void LeaveQueryExecution();
+    [[nodiscard]] bool NeedWarmUp(uint32_t init_flags) const;
+    [[nodiscard]] std::shared_ptr<QueryScheduler> GetOrCreateSharedQueryScheduler(uint32_t thread_num) const;
+    [[nodiscard]] std::unique_ptr<IQueryExecutor> CreateQueryExecutor(QueryContext &query_context) const;
+#if DEXKIT_ENABLE_INTERNAL_METRICS
+    void RecordQueryMetrics(const QueryContext &query_context);
+#endif
+    uint32_t BeginBuildCrossRefAggregates(uint32_t aggregate_flags);
+    void FinishBuildCrossRefAggregates(uint32_t aggregate_flags);
+    void WaitBuildCrossRefAggregates(uint32_t aggregate_flags) const;
+    void BuildCrossRefAggregates(uint32_t aggregate_flags);
+
+#if DEXKIT_ENABLE_INTERNAL_METRICS
+    static constexpr size_t kQueryMetricsHistoryCapacity = 256;
+#endif
 
     static void BuildPackagesMatchTrie(
             const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *search_packages,

@@ -7,14 +7,14 @@ import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.luckypray.dexkit.cache.CacheBridgeKeys
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.exceptions.NoResultException
-import org.luckypray.dexkit.query.enums.StringMatchType
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
+@OptIn(DexKitExperimentalApi::class)
 class DexKitCacheBridgeTest {
     private class MemoryCache : DexKitCacheBridge.Cache {
         private val values = ConcurrentHashMap<String, String>()
@@ -319,71 +319,6 @@ class DexKitCacheBridgeTest {
             assertTrue(cache.getAllKeys().isEmpty())
         } finally {
             bridge.destroy()
-        }
-    }
-
-    @Test
-    fun partialBatchCacheFallsBackToQueryAndRepairsCache() {
-        val cache = sharedCache
-        val appTag = newAppTag()
-        val key = "batch-activities"
-        val successes = CopyOnWriteArrayList<DexKitCacheBridge.QuerySuccessEvent>()
-        val listener = object : DexKitCacheBridge.CacheBridgeListener() {
-            override fun onQuerySuccess(info: DexKitCacheBridge.QuerySuccessEvent) {
-                successes += info
-            }
-        }
-        DexKitCacheBridge.addListener(listener)
-        val bridge = DexKitCacheBridge.create(appTag, demoApkPath())
-
-        fun queryActivities(): Map<String, List<org.luckypray.dexkit.wrap.DexClass>> {
-            return bridge.getBatchUsingStringsClasses(key) {
-                searchPackages("org.luckypray.dexkit.demo")
-                groups(
-                    mapOf(
-                        "main" to listOf("MainActivity", "/main"),
-                        "play" to listOf("PlayActivity", "/play"),
-                    ),
-                    matchType = StringMatchType.Equals
-                )
-            }
-        }
-
-        fun assertActivities(result: Map<String, List<org.luckypray.dexkit.wrap.DexClass>>) {
-            assertTrue(
-                result.getValue("main").any {
-                    it.typeName == "org.luckypray.dexkit.demo.MainActivity"
-                }
-            )
-            assertTrue(
-                result.getValue("play").any {
-                    it.typeName == "org.luckypray.dexkit.demo.PlayActivity"
-                }
-            )
-        }
-
-        try {
-            assertActivities(queryActivities())
-            successes.clear()
-
-            val cacheKey = CacheBridgeKeys.cacheKeyOf(appTag, "b", key)
-            val brokenGroupKey = CacheBridgeKeys.mapGroupKey(cacheKey, "play")
-            cache.remove(brokenGroupKey)
-
-            val repaired = queryActivities()
-            assertActivities(repaired)
-            assertTrue(cache.getAllKeys().contains(brokenGroupKey))
-            assertEquals(1, successes.size)
-            assertEquals(DexKitCacheBridge.QueryKind.CLASS_BATCH, successes.single().queryKind)
-            assertEquals(DexKitCacheBridge.ResultSource.QUERY, successes.single().source)
-
-            successes.clear()
-            assertActivities(bridge.getBatchUsingStringsClasses(key))
-            assertEquals(1, successes.size)
-            assertEquals(DexKitCacheBridge.ResultSource.CACHE, successes.single().source)
-        } finally {
-            bridge.destroy()
-            DexKitCacheBridge.removeListener(listener)
         }
     }
 

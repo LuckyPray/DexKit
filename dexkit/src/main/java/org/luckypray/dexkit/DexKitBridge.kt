@@ -46,18 +46,33 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.nio.ByteBuffer
+import kotlin.concurrent.read
+import kotlin.concurrent.write
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class DexKitBridge : Closeable {
 
+    @Volatile
     private var token: Long = 0L
 
-    private val safeToken: Long
-        get() {
-            if (token == 0L) {
-                throw IllegalStateException("DexKitBridge is not valid")
-            }
-            return token
+    private val lifecycleLock = ReentrantReadWriteLock()
+
+    @JvmSynthetic
+    internal fun <T> withNativeReadToken(block: (Long) -> T): T {
+        return lifecycleLock.read {
+            val nativePtr = token
+            check(nativePtr != 0L) { "DexKitBridge is not valid" }
+            block(nativePtr)
         }
+    }
+
+    private fun <T> withNativeWriteToken(block: (Long) -> T): T {
+        return lifecycleLock.write {
+            val nativePtr = token
+            check(nativePtr != 0L) { "DexKitBridge is not valid" }
+            block(nativePtr)
+        }
+    }
 
     /**
      * DexKit is valid only when token is not 0
@@ -83,11 +98,14 @@ class DexKitBridge : Closeable {
      * ----------------
      * 释放 native 资源
      */
-    @Synchronized
     override fun close() {
-        if (isValid) {
-            nativeRelease(token)
+        lifecycleLock.write {
+            val nativePtr = token
+            if (nativePtr == 0L) {
+                return
+            }
             token = 0L
+            nativeRelease(nativePtr)
         }
     }
 
@@ -102,7 +120,7 @@ class DexKitBridge : Closeable {
      * 初始化全量缓存，注意：这将会占用大量内存以及时间。仅推荐用于性能测试。
      */
     fun initFullCache() {
-        nativeInitFullCache(safeToken)
+        withNativeReadToken { nativeInitFullCache(it) }
     }
 
     /**
@@ -113,7 +131,17 @@ class DexKitBridge : Closeable {
      * @param [num] work thread number
      */
     fun setThreadNum(num: Int) {
-        nativeSetThreadNum(safeToken, num)
+        require(num > 0) { "threadNum must be > 0" }
+        withNativeWriteToken { nativeSetThreadNum(it, num) }
+    }
+
+    /**
+     * set the maximum number of concurrent queries admitted to the shared scheduler.
+     * Use `0` to disable the limit.
+     */
+    fun setMaxConcurrentQueries(maxConcurrentQueries: Int) {
+        require(maxConcurrentQueries >= 0) { "maxConcurrentQueries must be >= 0" }
+        withNativeWriteToken { nativeSetMaxConcurrentQueries(it, maxConcurrentQueries) }
     }
 
     /**
@@ -122,7 +150,7 @@ class DexKitBridge : Closeable {
      * 获取所有已解析的 dex 数量。
      */
     fun getDexNum(): Int {
-        return nativeGetDexNum(safeToken)
+        return withNativeReadToken { nativeGetDexNum(it) }
     }
 
     /**
@@ -135,7 +163,7 @@ class DexKitBridge : Closeable {
      * @since 1.1.0
      */
     fun exportDexFile(outPath: String) {
-        nativeExportDexFile(safeToken, outPath)
+        withNativeReadToken { nativeExportDexFile(it, outPath) }
     }
 
     /**
@@ -230,7 +258,7 @@ class DexKitBridge : Closeable {
             "L" + identifier.replace('.', '/') + ";"
         }
         DexClass(descriptor)
-        return nativeGetClassData(safeToken, descriptor)?.let {
+        return withNativeReadToken { nativeGetClassData(it, descriptor) }?.let {
             ClassData.from(this, InnerClassMeta.getRootAsClassMeta(ByteBuffer.wrap(it)))
         }
     }
@@ -269,7 +297,7 @@ class DexKitBridge : Closeable {
      */
     fun getMethodData(descriptor: String): MethodData? {
         DexMethod(descriptor)
-        return nativeGetMethodData(safeToken, descriptor)?.let {
+        return withNativeReadToken { nativeGetMethodData(it, descriptor) }?.let {
             MethodData.from(this, InnerMethodMeta.getRootAsMethodMeta(ByteBuffer.wrap(it)))
         }
     }
@@ -296,7 +324,7 @@ class DexKitBridge : Closeable {
      */
     fun getFieldData(descriptor: String): FieldData? {
         DexField(descriptor)
-        return nativeGetFieldData(safeToken, descriptor)?.let {
+        return withNativeReadToken { nativeGetFieldData(it, descriptor) }?.let {
             FieldData.from(this, InnerFieldMeta.getRootAsFieldMeta(ByteBuffer.wrap(it)))
         }
     }
@@ -349,7 +377,7 @@ class DexKitBridge : Closeable {
      * find class by [BatchFindMethodUsingStrings]'s [FlatBufferBuilder]
      */
     private fun batchFindClassUsingStrings(encodeBytes: ByteArray): Map<String, ClassDataList> {
-        val res = nativeBatchFindClassUsingStrings(safeToken, encodeBytes)
+        val res = withNativeReadToken { nativeBatchFindClassUsingStrings(it, encodeBytes) }
         val holder = InnerBatchClassMetaArrayHolder.getRootAsBatchClassMetaArrayHolder(ByteBuffer.wrap(res))
         val map = HashMap<String, ClassDataList>()
         for (i in 0 until holder.itemsLength) {
@@ -369,7 +397,7 @@ class DexKitBridge : Closeable {
      * find class by [BatchFindClassUsingStrings]'s [FlatBufferBuilder]
      */
     private fun batchFindMethodUsingStrings(encodeBytes: ByteArray): Map<String, MethodDataList> {
-        val res = nativeBatchFindMethodUsingStrings(safeToken, encodeBytes)
+        val res = withNativeReadToken { nativeBatchFindMethodUsingStrings(it, encodeBytes) }
         val holder = InnerBatchMethodMetaArrayHolder.getRootAsBatchMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val map = HashMap<String, MethodDataList>()
         for (i in 0 until holder.itemsLength) {
@@ -389,7 +417,7 @@ class DexKitBridge : Closeable {
      * find class by [FindClass]'s [FlatBufferBuilder]
      */
     private fun findClass(encodeBytes: ByteArray): ClassDataList {
-        val res = nativeFindClass(safeToken, encodeBytes)
+        val res = withNativeReadToken { nativeFindClass(it, encodeBytes) }
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
@@ -403,7 +431,7 @@ class DexKitBridge : Closeable {
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
     private fun findMethod(encodeBytes: ByteArray): MethodDataList {
-        val res = nativeFindMethod(safeToken, encodeBytes)
+        val res = withNativeReadToken { nativeFindMethod(it, encodeBytes) }
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -417,7 +445,7 @@ class DexKitBridge : Closeable {
      * find method by [FindMethod]'s [FlatBufferBuilder]
      */
     private fun findField(encodeBytes: ByteArray): FieldDataList {
-        val res = nativeFindField(safeToken, encodeBytes)
+        val res = withNativeReadToken { nativeFindField(it, encodeBytes) }
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
@@ -429,7 +457,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getTypeByIds(encodeIdArray: LongArray): ClassDataList {
-        val res = nativeGetClassByIds(safeToken, encodeIdArray)
+        val res = withNativeReadToken { nativeGetClassByIds(it, encodeIdArray) }
         val holder = InnerClassMetaArrayHolder.getRootAsClassMetaArrayHolder(ByteBuffer.wrap(res))
         val list = ClassDataList()
         for (i in 0 until holder.classesLength) {
@@ -440,7 +468,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getMethodByIds(encodeIdArray: LongArray): MethodDataList {
-        val res = nativeGetMethodByIds(safeToken, encodeIdArray)
+        val res = withNativeReadToken { nativeGetMethodByIds(it, encodeIdArray) }
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -451,7 +479,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getFieldByIds(encodeIdArray: LongArray): FieldDataList {
-        val res = nativeGetFieldByIds(safeToken, encodeIdArray)
+        val res = withNativeReadToken { nativeGetFieldByIds(it, encodeIdArray) }
         val holder = InnerFieldMetaArrayHolder.getRootAsFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = FieldDataList()
         for (i in 0 until holder.fieldsLength) {
@@ -462,7 +490,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getClassAnnotations(classId: Long): List<AnnotationData> {
-        val res = nativeGetClassAnnotations(safeToken, classId)
+        val res = withNativeReadToken { nativeGetClassAnnotations(it, classId) }
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
         for (i in 0 until holder.annotationsLength) {
@@ -473,7 +501,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getFieldAnnotations(fieldId: Long): List<AnnotationData> {
-        val res = nativeGetFieldAnnotations(safeToken, fieldId)
+        val res = withNativeReadToken { nativeGetFieldAnnotations(it, fieldId) }
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
         for (i in 0 until holder.annotationsLength) {
@@ -484,7 +512,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getMethodAnnotations(methodId: Long): List<AnnotationData> {
-        val res = nativeGetMethodAnnotations(safeToken, methodId)
+        val res = withNativeReadToken { nativeGetMethodAnnotations(it, methodId) }
         val holder = InnerAnnotationMetaArrayHolder.getRootAsAnnotationMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<AnnotationData>()
         for (i in 0 until holder.annotationsLength) {
@@ -495,12 +523,12 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getParameterNames(encodeId: Long): List<String?>? {
-        return nativeGetParameterNames(safeToken, encodeId)?.map { it }
+        return withNativeReadToken { nativeGetParameterNames(it, encodeId) }?.map { it }
     }
 
     @JvmSynthetic
     internal fun getParameterAnnotations(methodId: Long): List<List<AnnotationData>> {
-        val res = nativeGetParameterAnnotations(safeToken, methodId)
+        val res = withNativeReadToken { nativeGetParameterAnnotations(it, methodId) }
         val holder = InnerParametersAnnotationMetaArrayHoler.getRootAsParametersAnnotationMetaArrayHoler(ByteBuffer.wrap(res))
         val list = mutableListOf<List<AnnotationData>>()
         for (i in 0 until holder.annotationsArrayLength) {
@@ -516,7 +544,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getCallMethods(encodeId: Long): MethodDataList {
-        val res = nativeGetCallMethods(safeToken, encodeId)
+        val res = withNativeReadToken { nativeGetCallMethods(it, encodeId) }
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -527,7 +555,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getInvokeMethods(encodeId: Long): MethodDataList {
-        val res = nativeGetInvokeMethods(safeToken, encodeId)
+        val res = withNativeReadToken { nativeGetInvokeMethods(it, encodeId) }
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -538,12 +566,12 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getMethodUsingStrings(encodeId: Long): List<String> {
-        return nativeGetMethodUsingStrings(safeToken, encodeId).toList()
+        return withNativeReadToken { nativeGetMethodUsingStrings(it, encodeId) }.toList()
     }
 
     @JvmSynthetic
     internal fun getMethodUsingFields(encodeId: Long): List<UsingFieldData> {
-        val res = nativeGetMethodUsingFields(safeToken, encodeId)
+        val res = withNativeReadToken { nativeGetMethodUsingFields(it, encodeId) }
         val holder = InnerUsingFieldMetaArrayHolder.getRootAsUsingFieldMetaArrayHolder(ByteBuffer.wrap(res))
         val list = mutableListOf<UsingFieldData>()
         for (i in 0 until holder.itemsLength) {
@@ -554,7 +582,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun readFieldMethods(encodeId: Long): MethodDataList {
-        val res = nativeFieldGetMethods(safeToken, encodeId)
+        val res = withNativeReadToken { nativeFieldGetMethods(it, encodeId) }
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -565,7 +593,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun writeFieldMethods(encodeId: Long): MethodDataList {
-        val res = nativeFieldPutMethods(safeToken, encodeId)
+        val res = withNativeReadToken { nativeFieldPutMethods(it, encodeId) }
         val holder = InnerMethodMetaArrayHolder.getRootAsMethodMetaArrayHolder(ByteBuffer.wrap(res))
         val list = MethodDataList()
         for (i in 0 until holder.methodsLength) {
@@ -576,7 +604,7 @@ class DexKitBridge : Closeable {
 
     @JvmSynthetic
     internal fun getMethodOpCodes(encodeId: Long): List<Int> {
-        return nativeGetMethodOpCodes(safeToken, encodeId).toList()
+        return withNativeReadToken { nativeGetMethodOpCodes(it, encodeId) }.toList()
     }
 
     companion object {
@@ -647,6 +675,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeSetThreadNum(nativePtr: Long, threadNum: Int)
+
+        @JvmStatic
+        private external fun nativeSetMaxConcurrentQueries(nativePtr: Long, maxConcurrentQueries: Int)
 
         @JvmStatic
         private external fun nativeInitFullCache(nativePtr: Long)

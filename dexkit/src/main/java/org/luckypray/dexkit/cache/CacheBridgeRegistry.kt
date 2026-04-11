@@ -22,10 +22,12 @@
 package org.luckypray.dexkit.cache
 
 import org.luckypray.dexkit.DexKitCacheBridge
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 
+@OptIn(DexKitExperimentalApi::class)
 internal object CacheBridgeRegistry {
     private val strongPool = ConcurrentHashMap<String, DexKitCacheBridge.RecyclableBridge>()
     private val weakPool = ConcurrentHashMap<String, KeyedWeakReference>()

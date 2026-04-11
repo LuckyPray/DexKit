@@ -23,11 +23,13 @@ package org.luckypray.dexkit.cache
 
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.DexKitCacheBridge
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
+@OptIn(DexKitExperimentalApi::class)
 internal class CacheBridgeRuntime(
     private val appTag: String,
     private val bridgeHolder: DexKitCacheBridge.RecyclableBridge,

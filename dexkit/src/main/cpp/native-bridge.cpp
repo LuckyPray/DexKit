@@ -284,8 +284,28 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeSetThreadNum(JNIEnv *env, jclass cl
     if (!native_ptr) {
         return;
     }
+    if (thread_num <= 0) {
+        throwException(env, "threadNum must be > 0");
+        return;
+    }
     auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
     dexkit->SetThreadNum(thread_num);
+}
+
+DEXKIT_JNI void
+Java_org_luckypray_dexkit_DexKitBridge_nativeSetMaxConcurrentQueries(JNIEnv *env, jclass clazz,
+                                                                     jlong native_ptr,
+                                                                     jint max_concurrent_queries
+) {
+    if (!native_ptr) {
+        return;
+    }
+    if (max_concurrent_queries < 0) {
+        throwException(env, "maxConcurrentQueries must be >= 0");
+        return;
+    }
+    auto dexkit = reinterpret_cast<dexkit::DexKit *>(native_ptr);
+    dexkit->SetMaxConcurrentQueries(static_cast<uint32_t>(max_concurrent_queries));
 }
 
 DEXKIT_JNI void

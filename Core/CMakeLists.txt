@@ -9,6 +9,7 @@ if (CCACHE)
 endif ()
 
 set(CMAKE_CXX_STANDARD 20)
+option(DEXKIT_ENABLE_INTERNAL_METRICS "Compile internal metrics into core" OFF)
 
 file(GLOB_RECURSE SLICER_SRC_FILES third_party/slicer/*.cc)
 file(GLOB_RECURSE DEXKIT_SRC_FILES dexkit/*.cpp)
@@ -39,6 +40,11 @@ target_include_directories(${PROJECT_NAME}_static
 )
 
 set_target_properties(${PROJECT_NAME}_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
+if (DEXKIT_ENABLE_INTERNAL_METRICS)
+    target_compile_definitions(${PROJECT_NAME}_static PUBLIC DEXKIT_ENABLE_INTERNAL_METRICS=1)
+else ()
+    target_compile_definitions(${PROJECT_NAME}_static PUBLIC DEXKIT_ENABLE_INTERNAL_METRICS=0)
+endif ()
 target_link_libraries(${PROJECT_NAME}_static
         PUBLIC
         z

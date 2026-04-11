@@ -15,6 +15,7 @@ dependencyResolutionManagement {
 }
 
 include(":dexkit")
+include(":dexkit-dev")
 include(":dexkit-android")
 include(":demo")
 include(":main")

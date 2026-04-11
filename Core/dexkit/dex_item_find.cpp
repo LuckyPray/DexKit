@@ -22,17 +22,55 @@
 
 namespace dexkit {
 
+namespace {
+
+template<bool kEarlyExit, typename MatchFn>
+void ScanFindRange(
+        uint32_t start,
+        uint32_t end,
+        QueryContext &query_context,
+        MatchFn &&match_fn
+) {
+    for (auto i = start; i < end; ++i) {
+        if constexpr (kEarlyExit) {
+            if (query_context.ShouldEarlyExit()) break;
+        }
+        if (!match_fn(i)) continue;
+        if constexpr (kEarlyExit) {
+            (void) query_context.RequestEarlyExit();
+            break;
+        }
+    }
+}
+
+template<bool kEarlyExit, typename Range, typename MatchFn>
+void ScanFindItems(const Range &items, QueryContext &query_context, MatchFn &&match_fn) {
+    for (auto item : items) {
+        if constexpr (kEarlyExit) {
+            if (query_context.ShouldEarlyExit()) break;
+        }
+        if (!match_fn(item)) continue;
+        if constexpr (kEarlyExit) {
+            (void) query_context.RequestEarlyExit();
+            break;
+        }
+    }
+}
+
+} // namespace
+
 std::vector<std::future<std::vector<ClassBean>>>
 DexItem::FindClass(
         const schema::FindClass *query,
         const std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie,
-        ThreadPool &pool,
+        IQueryExecutor &executor,
         uint32_t slice_size,
-        bool &find_fist_flag
+        QueryContext &query_context
 ) {
     std::vector<std::future<std::vector<ClassBean>>> futures;
     uint32_t split_count;
+    auto should_stop_submission = query_context.IsEarlyExitEnabled();
     if (slice_size > 0) {
         split_count = (this->reader.ClassDefs().size() + slice_size - 1) / slice_size;
     } else {
@@ -41,9 +79,16 @@ DexItem::FindClass(
     }
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
-        futures.emplace_back(pool.enqueue(
-                [this, query, &in_class_set, &packageTrie, i, slice_size, &find_fist_flag] {
-                    return FindClass(query, in_class_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.ClassDefs().size()), find_fist_flag);
+        if (should_stop_submission && executor.ShouldSkipTask()) break;
+        query_context.MarkTaskSubmitted();
+        futures.emplace_back(SubmitQueryTask(executor,
+                [this, query, &in_class_set, &packageTrie, i, slice_size, &query_context] {
+                    auto task_scope = query_context.TrackTaskExecution();
+                    auto result = FindClass(query, in_class_set, packageTrie, i * slice_size,
+                                            std::min((i + 1) * slice_size, (uint32_t) this->reader.ClassDefs().size()),
+                                            query_context);
+                    query_context.MarkTaskCompleted();
+                    return result;
                 }
         ));
     }
@@ -56,12 +101,13 @@ DexItem::FindMethod(
         const std::set<uint32_t> &in_class_set,
         const std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie,
-        ThreadPool &pool,
+        IQueryExecutor &executor,
         uint32_t slice_size,
-        bool &find_fist_flag
+        QueryContext &query_context
 ) {
     std::vector<std::future<std::vector<MethodBean>>> futures;
     uint32_t split_count;
+    auto should_stop_submission = query_context.IsEarlyExitEnabled();
     if (slice_size > 0) {
         split_count = (this->reader.MethodIds().size() + slice_size - 1) / slice_size;
     } else {
@@ -70,9 +116,16 @@ DexItem::FindMethod(
     }
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
-        futures.emplace_back(pool.enqueue(
-                [this, query, &in_class_set, &in_method_set, &packageTrie, i, slice_size, &find_fist_flag] {
-                    return FindMethod(query, in_class_set, in_method_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.MethodIds().size()), find_fist_flag);
+        if (should_stop_submission && executor.ShouldSkipTask()) break;
+        query_context.MarkTaskSubmitted();
+        futures.emplace_back(SubmitQueryTask(executor,
+                [this, query, &in_class_set, &in_method_set, &packageTrie, i, slice_size, &query_context] {
+                    auto task_scope = query_context.TrackTaskExecution();
+                    auto result = FindMethod(query, in_class_set, in_method_set, packageTrie, i * slice_size,
+                                             std::min((i + 1) * slice_size, (uint32_t) this->reader.MethodIds().size()),
+                                             query_context);
+                    query_context.MarkTaskCompleted();
+                    return result;
                 }
         ));
     }
@@ -85,12 +138,13 @@ DexItem::FindField(
         const std::set<uint32_t> &in_class_set,
         const std::set<uint32_t> &in_field_set,
         trie::PackageTrie &packageTrie,
-        ThreadPool &pool,
+        IQueryExecutor &executor,
         uint32_t slice_size,
-        bool &find_fist_flag
+        QueryContext &query_context
 ) {
     std::vector<std::future<std::vector<FieldBean>>> futures;
     uint32_t split_count;
+    auto should_stop_submission = query_context.IsEarlyExitEnabled();
     if (slice_size > 0) {
         split_count = (this->reader.FieldIds().size() + slice_size - 1) / slice_size;
     } else {
@@ -99,9 +153,16 @@ DexItem::FindField(
     }
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
-        futures.emplace_back(pool.enqueue(
-                [this, query, &in_class_set, &in_field_set, &packageTrie, i, slice_size, &find_fist_flag] {
-                    return FindField(query, in_class_set, in_field_set, packageTrie, i * slice_size, std::min((i + 1) * slice_size, (uint32_t) this->reader.FieldIds().size()), find_fist_flag);
+        if (should_stop_submission && executor.ShouldSkipTask()) break;
+        query_context.MarkTaskSubmitted();
+        futures.emplace_back(SubmitQueryTask(executor,
+                [this, query, &in_class_set, &in_field_set, &packageTrie, i, slice_size, &query_context] {
+                    auto task_scope = query_context.TrackTaskExecution();
+                    auto result = FindField(query, in_class_set, in_field_set, packageTrie, i * slice_size,
+                                            std::min((i + 1) * slice_size, (uint32_t) this->reader.FieldIds().size()),
+                                            query_context);
+                    query_context.MarkTaskCompleted();
+                    return result;
                 }
         ));
     }
@@ -115,27 +176,28 @@ DexItem::FindClass(
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
-        bool &find_fist_flag
+        QueryContext &query_context
 ) {
+    auto query_binding = query_context.BindToCurrentThread();
 
     std::vector<uint32_t> find_result;
-    for (auto i = start; i < end; ++i) {
-        if (query->find_first() && find_fist_flag) break;
+    auto try_match_class = [&](uint32_t i) {
         auto &class_def = this->reader.ClassDefs()[i];
-        if (query->in_classes() && !in_class_set.contains(class_def.class_idx)) continue;
+        if (query->in_classes() && !in_class_set.contains(class_def.class_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[class_def.class_idx], query->ignore_packages_case());
-            if (query->exclude_packages() && (hit & 1)) continue;
-            if (query->search_packages() && !(hit >> 1)) continue;
+            if (query->exclude_packages() && (hit & 1)) return false;
+            if (query->search_packages() && !(hit >> 1)) return false;
         }
+        if (!IsClassMatched(class_def.class_idx, query->matcher())) return false;
+        find_result.emplace_back(class_def.class_idx);
+        return true;
+    };
 
-        if (IsClassMatched(class_def.class_idx, query->matcher())) {
-            find_result.emplace_back(class_def.class_idx);
-            if (query->find_first()) {
-                find_fist_flag = true;
-                break;
-            }
-        }
+    if (query_context.IsEarlyExitEnabled()) {
+        ScanFindRange<true>(start, end, query_context, try_match_class);
+    } else {
+        ScanFindRange<false>(start, end, query_context, try_match_class);
     }
 
     std::vector<ClassBean> result;
@@ -154,29 +216,30 @@ DexItem::FindMethod(
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
-        bool &find_fist_flag
+        QueryContext &query_context
 ) {
+    auto query_binding = query_context.BindToCurrentThread();
 
     std::vector<uint32_t> find_result;
-    for (auto method_idx = start; method_idx < end; ++method_idx) {
-        if (query->find_first() && find_fist_flag) break;
+    auto try_match_method = [&](uint32_t method_idx) {
         auto &method_def = this->reader.MethodIds()[method_idx];
-        if (!this->type_def_flag[method_def.class_idx]) continue;
-        if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) continue;
+        if (!this->type_def_flag[method_def.class_idx]) return false;
+        if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[method_def.class_idx], query->ignore_packages_case());
-            if (query->exclude_packages() && (hit & 1)) continue;
-            if (query->search_packages() && !(hit >> 1)) continue;
+            if (query->exclude_packages() && (hit & 1)) return false;
+            if (query->search_packages() && !(hit >> 1)) return false;
         }
-        if (query->in_methods() && !in_method_set.contains(method_idx)) continue;
+        if (query->in_methods() && !in_method_set.contains(method_idx)) return false;
+        if (!IsMethodMatched(method_idx, query->matcher())) return false;
+        find_result.emplace_back(method_idx);
+        return true;
+    };
 
-        if (IsMethodMatched(method_idx, query->matcher())) {
-            find_result.emplace_back(method_idx);
-            if (query->find_first()) {
-                find_fist_flag = true;
-                break;
-            }
-        }
+    if (query_context.IsEarlyExitEnabled()) {
+        ScanFindRange<true>(start, end, query_context, try_match_method);
+    } else {
+        ScanFindRange<false>(start, end, query_context, try_match_method);
     }
 
     std::vector<MethodBean> result;
@@ -195,29 +258,30 @@ DexItem::FindField(
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
-        bool &find_fist_flag
+        QueryContext &query_context
 ) {
+    auto query_binding = query_context.BindToCurrentThread();
 
     std::vector<uint32_t> find_result;
-    for (auto field_idx = start; field_idx < end; ++field_idx) {
-        if (query->find_first() && find_fist_flag) break;
+    auto try_match_field = [&](uint32_t field_idx) {
         auto &field_def = this->reader.FieldIds()[field_idx];
-        if (!this->type_def_flag[field_def.class_idx]) continue;
-        if (query->in_classes() && !in_class_set.contains(field_def.class_idx)) continue;
+        if (!this->type_def_flag[field_def.class_idx]) return false;
+        if (query->in_classes() && !in_class_set.contains(field_def.class_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[field_def.class_idx], query->ignore_packages_case());
-            if (query->exclude_packages() && (hit & 1)) continue;
-            if (query->search_packages() && !(hit >> 1)) continue;
+            if (query->exclude_packages() && (hit & 1)) return false;
+            if (query->search_packages() && !(hit >> 1)) return false;
         }
-        if (query->in_fields() && !in_field_set.contains(field_idx)) continue;
+        if (query->in_fields() && !in_field_set.contains(field_idx)) return false;
+        if (!IsFieldMatched(field_idx, query->matcher())) return false;
+        find_result.emplace_back(field_idx);
+        return true;
+    };
 
-        if (IsFieldMatched(field_idx, query->matcher())) {
-            find_result.emplace_back(field_idx);
-            if (query->find_first()) {
-                find_fist_flag = true;
-                break;
-            }
-        }
+    if (query_context.IsEarlyExitEnabled()) {
+        ScanFindRange<true>(start, end, query_context, try_match_field);
+    } else {
+        ScanFindRange<false>(start, end, query_context, try_match_field);
     }
 
     std::vector<FieldBean> result;
@@ -231,20 +295,29 @@ DexItem::FindField(
 std::vector<ClassBean>
 DexItem::FindClass(
         const schema::FindClass *query,
+        const std::set<uint32_t> &in_class_set,
         trie::PackageTrie &packageTrie,
-        uint32_t class_idx
+        uint32_t type_idx,
+        QueryContext &query_context
 ) {
+    auto query_binding = query_context.BindToCurrentThread();
+
+    if (query->in_classes() && !in_class_set.contains(type_idx)) {
+        return {};
+    }
 
     std::vector<uint32_t> find_result;
-    auto &class_def = this->reader.ClassDefs()[class_idx];
     if (query->search_packages() || query->exclude_packages()) {
-        auto hit = packageTrie.search(this->type_names[class_def.class_idx], query->ignore_packages_case());
+        auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
         if (query->exclude_packages() && (hit & 1)) return {};
         if (query->search_packages() && !(hit >> 1)) return {};
     }
 
-    if (IsClassMatched(class_def.class_idx, query->matcher())) {
-        find_result.emplace_back(class_def.class_idx);
+    if (IsClassMatched(type_idx, query->matcher())) {
+        find_result.emplace_back(type_idx);
+        if (query_context.IsEarlyExitEnabled()) {
+            (void) query_context.RequestEarlyExit();
+        }
     }
 
     std::vector<ClassBean> result;
@@ -258,25 +331,35 @@ DexItem::FindClass(
 std::vector<MethodBean>
 DexItem::FindMethod(
         const schema::FindMethod *query,
+        const std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_method_set,
         trie::PackageTrie &packageTrie,
-        uint32_t class_idx
+        uint32_t type_idx,
+        QueryContext &query_context
 ) {
+    auto query_binding = query_context.BindToCurrentThread();
+
+    if (query->in_classes() && !in_class_set.contains(type_idx)) {
+        return {};
+    }
 
     std::vector<uint32_t> find_result;
-    for (auto method_idx: this->class_method_ids[class_idx]) {
+    auto try_match_method = [&](uint32_t method_idx) {
         auto &method_def = this->reader.MethodIds()[method_idx];
+        if (query->in_methods() && !in_method_set.contains(method_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[method_def.class_idx], query->ignore_packages_case());
-            if (query->exclude_packages() && (hit & 1)) continue;
-            if (query->search_packages() && !(hit >> 1)) continue;
+            if (query->exclude_packages() && (hit & 1)) return false;
+            if (query->search_packages() && !(hit >> 1)) return false;
         }
-
-        if (IsMethodMatched(method_idx, query->matcher())) {
-            find_result.emplace_back(method_idx);
-            if (query->find_first()) {
-                break;
-            }
-        }
+        if (!IsMethodMatched(method_idx, query->matcher())) return false;
+        find_result.emplace_back(method_idx);
+        return true;
+    };
+    if (query_context.IsEarlyExitEnabled()) {
+        ScanFindItems<true>(this->class_method_ids[type_idx], query_context, try_match_method);
+    } else {
+        ScanFindItems<false>(this->class_method_ids[type_idx], query_context, try_match_method);
     }
 
     std::vector<MethodBean> result;
@@ -290,25 +373,35 @@ DexItem::FindMethod(
 std::vector<FieldBean>
 DexItem::FindField(
         const schema::FindField *query,
+        const std::set<uint32_t> &in_class_set,
+        const std::set<uint32_t> &in_field_set,
         trie::PackageTrie &packageTrie,
-        uint32_t class_idx
+        uint32_t type_idx,
+        QueryContext &query_context
 ) {
+    auto query_binding = query_context.BindToCurrentThread();
+
+    if (query->in_classes() && !in_class_set.contains(type_idx)) {
+        return {};
+    }
 
     std::vector<uint32_t> find_result;
-    for (auto field_idx: this->class_field_ids[class_idx]) {
+    auto try_match_field = [&](uint32_t field_idx) {
         auto &field_def = this->reader.FieldIds()[field_idx];
+        if (query->in_fields() && !in_field_set.contains(field_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[field_def.class_idx], query->ignore_packages_case());
-            if (query->exclude_packages() && (hit & 1)) continue;
-            if (query->search_packages() && !(hit >> 1)) continue;
+            if (query->exclude_packages() && (hit & 1)) return false;
+            if (query->search_packages() && !(hit >> 1)) return false;
         }
-
-        if (IsFieldMatched(field_idx, query->matcher())) {
-            find_result.emplace_back(field_idx);
-            if (query->find_first()) {
-                break;
-            }
-        }
+        if (!IsFieldMatched(field_idx, query->matcher())) return false;
+        find_result.emplace_back(field_idx);
+        return true;
+    };
+    if (query_context.IsEarlyExitEnabled()) {
+        ScanFindItems<true>(this->class_field_ids[type_idx], query_context, try_match_field);
+    } else {
+        ScanFindItems<false>(this->class_field_ids[type_idx], query_context, try_match_field);
     }
 
     std::vector<FieldBean> result;
