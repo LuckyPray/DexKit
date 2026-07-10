@@ -66,7 +66,7 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
     constructor()
 
     constructor(clazz: Class<*>) {
-        className(DexSignUtil.getClassDescriptor(clazz))
+        descriptor(DexSignUtil.getClassDescriptor(clazz))
     }
 
     constructor(descriptor: String) {
