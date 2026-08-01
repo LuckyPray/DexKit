@@ -302,18 +302,16 @@ object DexKitCacheBridge {
             runtime.destroy()
         }
 
-        fun interface BridgeFunction {
-            fun apply(bridge: DexKitBridge)
+        fun interface BridgeFunction<R> {
+            fun apply(bridge: DexKitBridge): R
         }
 
-        fun withBridge(action: BridgeFunction) {
+        fun <R> withBridge(action: BridgeFunction<R>): R =
             acquireBridge { b -> action.apply(b) }
-        }
 
         @JvmSynthetic
-        fun withBridge(action: (DexKitBridge) -> Unit) {
+        fun <R> withBridge(action: (DexKitBridge) -> R): R =
             acquireBridge { b -> action(b) }
-        }
 
         // region fun interface
 
