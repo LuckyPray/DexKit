@@ -23,6 +23,7 @@
 
 package org.luckypray.dexkit.result
 
+import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerClassMeta
 import org.luckypray.dexkit.query.FindField
@@ -30,13 +31,19 @@ import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
 import org.luckypray.dexkit.wrap.DexClass
-import java.lang.reflect.Modifier
 
 class ClassData private constructor(
     bridge: DexKitBridge,
     id: Int,
     dexId: Int,
     val sourceFile: String,
+    /**
+     * Raw DEX class access flags. [java.lang.reflect.Modifier] handles common flags; see
+     * [DexAccessFlags] for the complete set.
+     * ----------------
+     * 原始 DEX 类访问标志。常规标志可使用 [java.lang.reflect.Modifier]，完整集合请参见
+     * [DexAccessFlags]。
+     */
     val modifiers: Int,
     val descriptor: String,
     private val superClassId: Int?,
@@ -269,7 +276,7 @@ class ClassData private constructor(
     override fun toString(): String {
         return buildString {
             if (modifiers > 0) {
-                append("${Modifier.toString(modifiers)} ")
+                append("${DexAccessFlags.toClassString(modifiers)} ")
             }
             append("class $name")
             superClass?.let {

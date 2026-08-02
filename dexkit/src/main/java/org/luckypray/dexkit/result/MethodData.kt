@@ -23,6 +23,7 @@
 
 package org.luckypray.dexkit.result
 
+import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
 import org.luckypray.dexkit.result.base.BaseData
@@ -38,6 +39,13 @@ class MethodData private constructor(
     id: Int,
     dexId: Int,
     private val classId: Int,
+    /**
+     * Raw DEX method access flags. [java.lang.reflect.Modifier] handles common flags; see
+     * [DexAccessFlags] for the complete set.
+     * ----------------
+     * 原始 DEX 方法访问标志。常规标志可使用 [java.lang.reflect.Modifier]，完整集合请参见
+     * [DexAccessFlags]。
+     */
     val modifiers: Int,
     val descriptor: String,
     private val returnTypeId: Int,
@@ -46,31 +54,26 @@ class MethodData private constructor(
 
     internal companion object `-Companion` {
 
-        /**
-         * [ACC_DECLARED_SYNCHRONIZED](https://source.android.com/docs/core/runtime/dex-format#access-flags)
-         */
-        const val ACC_DECLARED_SYNCHRONIZED = 0x20000
+        @Deprecated(
+            "Use DexAccessFlags.DECLARED_SYNCHRONIZED instead.",
+            ReplaceWith("DexAccessFlags.DECLARED_SYNCHRONIZED", "org.luckypray.dexkit.DexAccessFlags")
+        )
+        const val ACC_DECLARED_SYNCHRONIZED = DexAccessFlags.DECLARED_SYNCHRONIZED
 
-        fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta): MethodData {
-            var modifiers = methodMeta.accessFlags.toInt()
-            if ((modifiers and ACC_DECLARED_SYNCHRONIZED) > 0) {
-                modifiers = modifiers xor ACC_DECLARED_SYNCHRONIZED or Modifier.SYNCHRONIZED
-            }
-            return MethodData(
-                bridge,
-                methodMeta.id.toInt(),
-                methodMeta.dexId.toInt(),
-                methodMeta.classId.toInt(),
-                modifiers,
-                methodMeta.dexDescriptor ?: "",
-                methodMeta.returnType.toInt(),
-                mutableListOf<Int>().apply {
-                    for (i in 0 until methodMeta.parameterTypesLength) {
-                        add(methodMeta.parameterTypes(i))
-                    }
+        fun from(bridge: DexKitBridge, methodMeta: InnerMethodMeta) = MethodData(
+            bridge,
+            methodMeta.id.toInt(),
+            methodMeta.dexId.toInt(),
+            methodMeta.classId.toInt(),
+            methodMeta.accessFlags.toInt(),
+            methodMeta.dexDescriptor ?: "",
+            methodMeta.returnType.toInt(),
+            mutableListOf<Int>().apply {
+                for (i in 0 until methodMeta.parameterTypesLength) {
+                    add(methodMeta.parameterTypes(i))
                 }
-            )
-        }
+            }
+        )
     }
 
     private val dexMethod by lazy {
@@ -324,7 +327,7 @@ class MethodData private constructor(
     override fun toString(): String {
         return buildString {
             if (modifiers != 0) {
-                append("${Modifier.toString(modifiers)} ")
+                append("${DexAccessFlags.toMethodString(modifiers)} ")
             }
             append(returnTypeName)
             append(" ")

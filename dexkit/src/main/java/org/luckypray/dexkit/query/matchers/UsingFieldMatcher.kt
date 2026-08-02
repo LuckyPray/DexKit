@@ -24,6 +24,7 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
+import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.InnerUsingFieldMatcher
 import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.MatchType
@@ -86,14 +87,16 @@ class UsingFieldMatcher : BaseMatcher {
         }
 
     /**
-     * Field modifiers. Match using [java.lang.reflect.Modifier] mask bits,
-     * default match type is contains, if you need to match exactly,
+     * Raw DEX field access flags. Most callers can use [java.lang.reflect.Modifier]; use
+     * [DexAccessFlags] when a required DEX flag is not exposed by `Modifier`.
+     * The default match type is contains. If you need to match exactly,
      * please use [modifiers] overloaded function.
      * ----------------
-     * 字段修饰符。使用 [java.lang.reflect.Modifier] mask bits 进行匹配，
+     * 原始 DEX 字段访问标志。大多数用户使用 [java.lang.reflect.Modifier] 即可；仅当它未公开
+     * 所需 DEX 标志时才需要 [DexAccessFlags]。
      * 默认匹配关系为包含，如果需要完全限定匹配请使用 [modifiers] 重载函数。
      *
-     *     modifiers = Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL
+     *     modifiers = Modifier.PUBLIC or Modifier.VOLATILE
      */
     var modifiers: Int
         @JvmSynthetic
@@ -215,13 +218,13 @@ class UsingFieldMatcher : BaseMatcher {
     }
 
     /**
-     * Field modifiers matcher.
+     * Raw DEX field access flags matcher.
      * ----------------
-     * 字段修饰符匹配器。
+     * 原始 DEX 字段访问标志匹配器。
      *
-     *     modifiers(AccessFlagsMatcher().flags(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL))
+     *     modifiers(AccessFlagsMatcher(Modifier.PUBLIC or Modifier.VOLATILE))
      *
-     * @param modifiers modifiers matcher / 修饰符匹配器
+     * @param modifiers access flags matcher / 访问标志匹配器
      * @return [UsingFieldMatcher]
      */
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
@@ -230,13 +233,15 @@ class UsingFieldMatcher : BaseMatcher {
     }
 
     /**
-     * Field modifiers. Match using [java.lang.reflect.Modifier] mask bits.
+     * Raw DEX field access flags. Most callers can use [java.lang.reflect.Modifier]; use
+     * [DexAccessFlags] when a required DEX flag is not exposed by `Modifier`.
      * ----------------
-     * 字段修饰符。使用 [java.lang.reflect.Modifier] mask bits 进行匹配。
+     * 原始 DEX 字段访问标志。大多数用户使用 [java.lang.reflect.Modifier] 即可；仅当它未公开
+     * 所需 DEX 标志时才需要 [DexAccessFlags]。
      *
-     *     modifiers(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL)
+     *     modifiers(Modifier.PUBLIC or Modifier.VOLATILE)
      *
-     * @param modifiers modifiers / 修饰符
+     * @param modifiers raw DEX field access flag mask / 原始 DEX 字段访问标志掩码
      * @param matchType match type / 匹配关系
      * @return [UsingFieldMatcher]
      */

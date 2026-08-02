@@ -24,6 +24,7 @@
 package org.luckypray.dexkit.query.matchers
 
 import com.google.flatbuffers.FlatBufferBuilder
+import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.InnerClassMatcher
 import org.luckypray.dexkit.query.ClassMatcherList
 import org.luckypray.dexkit.query.StringMatcherList
@@ -123,20 +124,22 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
         }
 
     /**
-     * Class modifiers. Match using [java.lang.reflect.Modifier] mask bits,
-     * default match type is contains, if you need to match exactly,
+     * Raw DEX class access flags. Most callers can use [java.lang.reflect.Modifier]; use
+     * [DexAccessFlags] when a required DEX flag is not exposed by `Modifier`.
+     * The default match type is contains. If you need to match exactly,
      * please use [modifiers] overloaded function.
      * ----------------
-     * 类修饰符。使用 [java.lang.reflect.Modifier] mask bits 进行匹配，
+     * 原始 DEX 类访问标志。大多数用户使用 [java.lang.reflect.Modifier] 即可；仅当它未公开
+     * 所需 DEX 标志时才需要 [DexAccessFlags]。
      * 默认匹配关系为包含，如果需要完全限定匹配请使用 [modifiers] 重载函数。
      *
      * java:
      *
-     *     modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL
+     *     .modifiers(Modifier.PUBLIC | Modifier.FINAL)
      *
      * kotlin:
      *
-     *     modifiers = Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL
+     *     modifiers = Modifier.PUBLIC or Modifier.FINAL
      */
     var modifiers: Int
         @JvmSynthetic
@@ -261,13 +264,13 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Class modifiers matcher.
+     * Raw DEX class access flags matcher.
      * ----------------
-     * 类修饰符匹配器。
+     * 原始 DEX 类访问标志匹配器。
      *
-     *     modifiers(AccessFlagsMatcher(Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL, MatchType.Equals))
+     *     modifiers(AccessFlagsMatcher(Modifier.PUBLIC or Modifier.FINAL, MatchType.Equals))
      *
-     * @param matcher modifiers matcher / 修饰符匹配器
+     * @param matcher access flags matcher / 访问标志匹配器
      * @return [ClassMatcher]
      */
     fun modifiers(matcher: AccessFlagsMatcher) = also {
@@ -275,13 +278,15 @@ class ClassMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Class modifiers. Match using [java.lang.reflect.Modifier] mask bits.
+     * Raw DEX class access flags. Most callers can use [java.lang.reflect.Modifier]; use
+     * [DexAccessFlags] when a required DEX flag is not exposed by `Modifier`.
      * ----------------
-     * 类修饰符。使用 [java.lang.reflect.Modifier] mask bits 进行匹配。
+     * 原始 DEX 类访问标志。大多数用户使用 [java.lang.reflect.Modifier] 即可；仅当它未公开
+     * 所需 DEX 标志时才需要 [DexAccessFlags]。
      *
-     *     modifiers(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL, MatchType.Equals)
+     *     modifiers(Modifier.PUBLIC or Modifier.FINAL, MatchType.Equals)
      *
-     * @param modifiers [java.lang.reflect.Modifier] mask bits / [java.lang.reflect.Modifier] 的常量位或值
+     * @param modifiers raw DEX access flag mask / 原始 DEX 访问标志掩码
      * @param matchType match type / 匹配类型
      * @return [ClassMatcher]
      */

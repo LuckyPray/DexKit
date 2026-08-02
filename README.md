@@ -381,6 +381,34 @@ class MainHook : IXposedHookLoadPackage {
 
 </p></details>
 
+## DEX Access Flags
+
+The `modifiers` fields used by matchers and result objects contain raw DEX
+[`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags). Use
+`DexAccessFlags` when matching compiler-generated or DEX-only flags:
+
+```kotlin
+modifiers = Modifier.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC
+```
+
+```java
+.modifiers(Modifier.PUBLIC | DexAccessFlags.BRIDGE | DexAccessFlags.SYNTHETIC)
+```
+
+The public constants in `java.lang.reflect.Modifier` are a numeric subset of the DEX access flags
+and remain usable when they are valid for the class, field, or method being matched. Most users only
+need `Modifier`. Use `DexAccessFlags` for advanced matching when `Modifier` does not expose the
+required flag or exact DEX-specific semantics are needed. The two models are still not equivalent.
+In particular,
+`ACC_DECLARED_SYNCHRONIZED` is `0x20000` in DEX and is not normalized to
+`Modifier.SYNCHRONIZED` (`0x20`). Match an ordinary source-level `synchronized` method with
+`DexAccessFlags.DECLARED_SYNCHRONIZED`; DEX permits `DexAccessFlags.SYNCHRONIZED` (`0x20`) only on
+native methods. The complete `kAcc` set retains the `SUPER` alias for `0x20`, although `SUPER` is
+not used by a DEX `class_def_item`; `0x40` and `0x80` have field/method-specific meanings. See the
+Java 21 documentation on the
+[difference between access flags and source modifiers](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/reflect/AccessFlag.html)
+for terminology only; `DexAccessFlags` does not depend on that API.
+
 ## Third-Party Open Source References
 
 - [slicer](https://cs.android.com/android/platform/superproject/+/main:tools/dexter/slicer/)

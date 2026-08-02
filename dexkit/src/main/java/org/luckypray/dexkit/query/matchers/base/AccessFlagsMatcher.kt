@@ -24,17 +24,34 @@
 package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
+import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.InnerAccessFlagsMatcher
 import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.MatchType
 
+/**
+ * Matcher for raw DEX access flags.
+ *
+ * The public [java.lang.reflect.Modifier] constants are a numeric subset of the DEX flags and remain
+ * usable when they are valid for the target being matched. Most callers only need `Modifier`. Use
+ * [DexAccessFlags] when `Modifier` does not expose a required flag or exact DEX semantics are needed.
+ * See
+ * [DEX access_flags](https://source.android.com/docs/core/runtime/dex-format#access-flags).
+ *
+ * ----------------
+ * 原始 DEX 访问标志匹配器。
+ *
+ * [java.lang.reflect.Modifier] 的公开常量在数值上是 DEX 标志的子集；当常量适用于当前目标时
+ * 仍可直接使用。大多数用户只需要 `Modifier`；仅当它未公开所需标志或需要精确 DEX 语义时，
+ * 才需要 [DexAccessFlags]。
+ */
 class AccessFlagsMatcher : BaseMatcher {
     /**
-     * Access flags to match.
+     * Raw DEX access flags to match.
      * ----------------
-     * 要匹配的访问标志。
+     * 要匹配的原始 DEX 访问标志。
      *
-     *     modifiers = Modifier.PUBLIC or Modifier.STATIC
+     *     modifiers = Modifier.PUBLIC or DexAccessFlags.SYNTHETIC
      */
     @set:JvmSynthetic
     var modifiers: Int = 0

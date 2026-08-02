@@ -23,6 +23,7 @@
 
 package org.luckypray.dexkit.result
 
+import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerFieldMeta
 import org.luckypray.dexkit.result.base.BaseData
@@ -36,6 +37,13 @@ class FieldData private constructor(
     id: Int,
     dexId: Int,
     private val classId: Int,
+    /**
+     * Raw DEX field access flags. [java.lang.reflect.Modifier] handles common flags; see
+     * [DexAccessFlags] for the complete set.
+     * ----------------
+     * 原始 DEX 字段访问标志。常规标志可使用 [java.lang.reflect.Modifier]，完整集合请参见
+     * [DexAccessFlags]。
+     */
     val modifiers: Int,
     val descriptor: String,
     private val typeId: Int
@@ -195,7 +203,7 @@ class FieldData private constructor(
     override fun toString(): String {
         return buildString {
             if (modifiers > 0) {
-                append("${Modifier.toString(modifiers)} ")
+                append("${DexAccessFlags.toFieldString(modifiers)} ")
             }
             append(typeName)
             append(" ")

@@ -67,8 +67,24 @@
 
 | Field Name | Type                    | Description                      |
 |:-----------|:------------------------|:---------------------------------|
-| modifiers  | Int                     | Bit masks for matching modifiers |
+| modifiers  | Int                     | Raw DEX access flag mask         |
 | matchType  | [MatchType](#matchtype) | Matching mode                    |
+
+`modifiers` matches raw DEX
+[`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags). Use
+`DexAccessFlags` for the complete set, including `BRIDGE`, `VARARGS`, `SYNTHETIC`, `CONSTRUCTOR`,
+and `DECLARED_SYNCHRONIZED`.
+
+The public `java.lang.reflect.Modifier` constants are a numeric subset of the DEX access flags and
+remain usable when they are valid for the target being matched. Most users only need `Modifier`.
+Use `DexAccessFlags` for advanced matching when `Modifier` does not expose a required flag or exact
+DEX-specific semantics are needed. The two models are still not equivalent. DexKit does not convert
+`DECLARED_SYNCHRONIZED` (`0x20000`) to `SYNCHRONIZED` (`0x20`). Match an ordinary source-level
+`synchronized` method with `DexAccessFlags.DECLARED_SYNCHRONIZED`; DEX permits
+`DexAccessFlags.SYNCHRONIZED` only on native methods. `SUPER` is retained for complete `kAcc`
+alignment but is not used by a DEX `class_def_item`; `0x40` and `0x80` have field/method-specific
+meanings. `MatchType.Contains` requires all requested bits to be present, while `MatchType.Equals`
+compares the complete flag value.
 
 ### AnnotationEncodeValueMatcher
 
@@ -179,7 +195,7 @@
 |:-------------|:--------------------------------------------------|:--------------------------------------------------------------|
 | source       | [StringMatcher](#stringmatcher)                   | Source file name of the class, i.e., `.source` field in smali |
 | className    | [StringMatcher](#stringmatcher)                   | Name of the class                                             |
-| modifiers    | [AccessFlagsMatcher](#accessflagsmatcher)         | Modifiers of the class                                        |
+| modifiers    | [AccessFlagsMatcher](#accessflagsmatcher)         | Raw DEX class access flags                                    |
 | superClass   | [ClassMatcher](#classmatcher)                     | Superclass of the class                                       |
 | interfaces   | [InterfacesMatcher](#interfacesmatcher)           | List of interfaces implemented by the class                   |
 | annotations  | [AnnotationsMatcher](#annotationsmatcher)         | List of annotations for the class                             |
@@ -203,7 +219,7 @@
 | Field Name    | Type                                      | Description                        |
 |:--------------|:------------------------------------------|:-----------------------------------|
 | name          | [StringMatcher](#stringmatcher)           | Name of the field                  |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Modifiers of the field             |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Raw DEX field access flags          |
 | declaredClass | [ClassMatcher](#classmatcher)             | Declaring class of the field       |
 | type          | [ClassMatcher](#classmatcher)             | Type of the field                  |
 | annotations   | [AnnotationsMatcher](#annotationsmatcher) | List of annotations for the field  |
@@ -226,7 +242,7 @@
 | Field Name    | Type                                                      | Description                           |
 |:--------------|:----------------------------------------------------------|:--------------------------------------|
 | name          | [StringMatcher](#stringmatcher)                           | Name of the method                    |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Modifiers of the method               |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Raw DEX method access flags            |
 | declaredClass | [ClassMatcher](#classmatcher)                             | Declaring class of the method         |
 | protoShorty   | String                                                    | The method prototype shorty           |
 | returnType    | [ClassMatcher](#classmatcher)                             | Return type of the method             |
