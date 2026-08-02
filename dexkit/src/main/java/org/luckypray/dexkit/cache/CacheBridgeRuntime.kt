@@ -56,14 +56,13 @@ internal class CacheBridgeRuntime(
         check(!isDestroyed()) { "RecyclableBridge is destroyed" }
     }
 
-    private fun beginUse() {
-        synchronized(lifecycleLock) {
-            ensureUsable()
-            generation++
-            reaperFuture?.cancel(false)
-            reaperFuture = null
-            activeCalls++
-        }
+    private fun beginUseLocked() {
+        ensureUsable()
+        CacheBridgeRegistry.promote(appTag, bridgeHolder)
+        generation++
+        reaperFuture?.cancel(false)
+        reaperFuture = null
+        activeCalls++
     }
 
     private fun endUse() {
@@ -88,10 +87,12 @@ internal class CacheBridgeRuntime(
     }
 
     inline fun <R> acquireBridge(block: (DexKitBridge) -> R): R {
-        beginUse()
+        var begun = false
         return try {
             var created = false
             val current = synchronized(lifecycleLock) {
+                beginUseLocked()
+                begun = true
                 bridge ?: createBridge().also {
                     bridge = it
                     created = true
@@ -102,7 +103,9 @@ internal class CacheBridgeRuntime(
             }
             block(current)
         } finally {
-            endUse()
+            if (begun) {
+                endUse()
+            }
         }
     }
 
@@ -122,10 +125,9 @@ internal class CacheBridgeRuntime(
                 if (generation != token) return@schedule
                 reaperFuture = null
                 if (releaseRequested) return@schedule
-                val removed = CacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
-                if (!removed || isDestroyed()) return@schedule
+                if (isDestroyed()) return@schedule
+                CacheBridgeRegistry.demote(appTag, bridgeHolder)
                 val result = releaseBridgeLocked()
-                CacheBridgeRegistry.putWeak(appTag, bridgeHolder)
                 result
             }
             if (released) {
@@ -136,9 +138,9 @@ internal class CacheBridgeRuntime(
 
     private fun moveToWeakPoolLocked() {
         if (!isDestroyed()) {
-            CacheBridgeRegistry.moveToWeak(appTag, bridgeHolder)
+            CacheBridgeRegistry.demote(appTag, bridgeHolder)
         } else {
-            CacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
+            CacheBridgeRegistry.unregister(appTag, bridgeHolder)
         }
     }
 
@@ -163,9 +165,9 @@ internal class CacheBridgeRuntime(
     }
 
     fun destroy() {
-        if (destroyed.compareAndSet(false, true)) {
-            var released = false
-            synchronized(lifecycleLock) {
+        var released = false
+        val destroyNow = synchronized(lifecycleLock) {
+            if (destroyed.compareAndSet(false, true)) {
                 generation++
                 releaseRequested = false
                 reaperFuture?.cancel(false)
@@ -173,13 +175,17 @@ internal class CacheBridgeRuntime(
                 if (activeCalls == 0) {
                     released = releaseBridgeLocked()
                 }
+                true
+            } else {
+                false
             }
-            CacheBridgeRegistry.removeStrong(appTag, bridgeHolder)
-            CacheBridgeRegistry.removeWeak(appTag)
-            if (released) {
-                notifyBridgeReleased()
-            }
-            notifyBridgeDestroyed()
         }
+        if (!destroyNow) return
+
+        CacheBridgeRegistry.unregister(appTag, bridgeHolder)
+        if (released) {
+            notifyBridgeReleased()
+        }
+        notifyBridgeDestroyed()
     }
 }

@@ -26,6 +26,11 @@ import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.exceptions.NoResultException
 import org.luckypray.dexkit.exceptions.NonUniqueResultException
 import org.luckypray.dexkit.wrap.ISerializable
+import java.security.SecureRandom
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.FutureTask
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -34,6 +39,39 @@ import kotlin.concurrent.write
 internal object CacheBridgeStore {
     private const val CACHE_NO_RESULT = "CACHE_NO_RESULT"
     private const val CACHE_NON_UNIQUE = "CACHE_NON_UNIQUE"
+    private val globalGeneration = AtomicLong()
+    private val namespaceGenerations = ConcurrentHashMap<String, AtomicLong>()
+    private val inFlightLoads = ConcurrentHashMap<FlightKey, InFlightLoad>()
+    private val mapGenerationSeed = java.lang.Long.toHexString(SecureRandom().nextLong())
+    private val mapGenerationCounter = AtomicLong()
+
+    private data class Generation(
+        val global: Long,
+        val namespace: Long,
+    )
+
+    private data class FlightKey(
+        val cacheKey: String,
+        val generation: Generation,
+    )
+
+    private class InFlightLoad(
+        val owner: Thread,
+        loader: () -> Any?,
+    ) {
+        val task = FutureTask(loader)
+    }
+
+    private sealed interface CacheRead<out T> {
+        data class Hit<T>(val value: T) : CacheRead<T>
+        object Miss : CacheRead<Nothing>
+        object Corrupt : CacheRead<Nothing>
+    }
+
+    private data class MapManifest(
+        val generation: String,
+        val groupKeys: List<String>,
+    )
 
     enum class SingleResolveMode {
         REQUIRED,
@@ -57,6 +95,95 @@ internal object CacheBridgeStore {
         val source: DexKitCacheBridge.ResultSource,
         val result: Result<T>,
     )
+
+    fun invalidate(namespace: String? = null) {
+        if (namespace == null) {
+            globalGeneration.incrementAndGet()
+        } else {
+            val created = AtomicLong()
+            (namespaceGenerations[namespace]
+                ?: namespaceGenerations.putIfAbsent(namespace, created)
+                ?: created).incrementAndGet()
+        }
+    }
+
+    private fun generationOf(namespace: String): Generation {
+        return Generation(
+            global = globalGeneration.get(),
+            namespace = namespaceGenerations[namespace]?.get() ?: 0L,
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> loadOnce(
+        cacheKey: String,
+        generation: Generation,
+        loader: () -> T,
+    ): Result<T> {
+        val flightKey = FlightKey(cacheKey, generation)
+        val created = InFlightLoad(Thread.currentThread()) { loader() }
+        val current = inFlightLoads.putIfAbsent(flightKey, created)
+        if (current == null) {
+            return try {
+                created.task.run()
+                awaitLoad(created) as Result<T>
+            } finally {
+                inFlightLoads.remove(flightKey)
+            }
+        }
+        if (current.owner === Thread.currentThread()) {
+            return runCatching(loader)
+        }
+        return awaitLoad(current) as Result<T>
+    }
+
+    private fun awaitLoad(load: InFlightLoad): Result<Any?> {
+        return try {
+            Result.success(load.task.get())
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            Result.failure(e)
+        } catch (e: ExecutionException) {
+            Result.failure(e.cause ?: e)
+        }
+    }
+
+    private inline fun <T> decodeCachedValue(block: () -> T): CacheRead<T> {
+        return try {
+            CacheRead.Hit(block())
+        } catch (e: VirtualMachineError) {
+            throw e
+        } catch (e: ThreadDeath) {
+            throw e
+        } catch (_: Throwable) {
+            CacheRead.Corrupt
+        }
+    }
+
+    private fun nextMapGeneration(): String {
+        return mapGenerationSeed + java.lang.Long.toHexString(mapGenerationCounter.incrementAndGet())
+    }
+
+    private fun readMapManifest(
+        cache: DexKitCacheBridge.Cache,
+        cacheKey: String,
+    ): CacheRead<MapManifest> {
+        val raw = cache.getStringList(CacheBridgeKeys.mapGroupsKey(cacheKey), null)
+            ?: return CacheRead.Miss
+        if (raw.isEmpty() || raw.first().isEmpty()) return CacheRead.Corrupt
+        return CacheRead.Hit(MapManifest(raw.first(), raw.drop(1)))
+    }
+
+    private fun removeMapSnapshot(
+        cache: DexKitCacheBridge.Cache,
+        cacheKey: String,
+        manifest: MapManifest?,
+    ) {
+        manifest?.groupKeys?.forEach { groupKey ->
+            cache.remove(CacheBridgeKeys.mapGroupKey(cacheKey, manifest.generation, groupKey))
+        }
+        cache.remove(CacheBridgeKeys.mapGroupsKey(cacheKey))
+    }
 
     fun shouldCacheFailure(
         cachePolicy: DexKitCacheBridge.CachePolicy,
@@ -100,6 +227,7 @@ internal object CacheBridgeStore {
         cache: DexKitCacheBridge.Cache,
         lock: ReentrantReadWriteLock,
         cachePolicy: DexKitCacheBridge.CachePolicy,
+        namespace: String,
         cacheKey: String,
         mode: SingleResolveMode,
         canCacheFailure: Boolean,
@@ -107,21 +235,36 @@ internal object CacheBridgeStore {
         loader: (() -> SingleOutcome<T>)? = null,
     ): LoadResult<T?> {
         ensureUsable()
+        val generation = generationOf(namespace)
 
-        fun <U : ISerializable> innerGet(cacheKey: String): SingleOutcome<U>? {
-            cache.getString(cacheKey, null)?.let { raw ->
-                return parseSingleOutcome(raw)
-            }
-            return null
+        fun <U : ISerializable> innerGet(cacheKey: String): CacheRead<SingleOutcome<U>> {
+            val raw = cache.getString(cacheKey, null) ?: return CacheRead.Miss
+            return decodeCachedValue { parseSingleOutcome(raw) }
         }
 
-        lock.read {
-            innerGet<T>(cacheKey)?.let {
+        when (val cached = lock.read { innerGet<T>(cacheKey) }) {
+            is CacheRead.Hit -> {
                 return LoadResult(
                     source = DexKitCacheBridge.ResultSource.CACHE,
-                    result = resolveSingleOutcome(it, mode)
+                    result = resolveSingleOutcome(cached.value, mode)
                 )
             }
+
+            CacheRead.Corrupt -> lock.write {
+                when (val current = innerGet<T>(cacheKey)) {
+                    is CacheRead.Hit -> {
+                        return LoadResult(
+                            source = DexKitCacheBridge.ResultSource.CACHE,
+                            result = resolveSingleOutcome(current.value, mode)
+                        )
+                    }
+
+                    CacheRead.Corrupt -> cache.remove(cacheKey)
+                    CacheRead.Miss -> Unit
+                }
+            }
+
+            CacheRead.Miss -> Unit
         }
 
         loader ?: return LoadResult(
@@ -129,14 +272,19 @@ internal object CacheBridgeStore {
             result = Result.failure(NoSuchElementException("no found cache for key: $cacheKey"))
         )
 
-        val loaded = runCatching { loader() }
+        val loaded = loadOnce(cacheKey, generation, loader)
 
         return lock.write {
-            innerGet<T>(cacheKey)?.let {
-                return LoadResult(
-                    source = DexKitCacheBridge.ResultSource.CACHE,
-                    result = resolveSingleOutcome(it, mode)
-                )
+            when (val cached = innerGet<T>(cacheKey)) {
+                is CacheRead.Hit -> {
+                    return LoadResult(
+                        source = DexKitCacheBridge.ResultSource.CACHE,
+                        result = resolveSingleOutcome(cached.value, mode)
+                    )
+                }
+
+                CacheRead.Corrupt -> cache.remove(cacheKey)
+                CacheRead.Miss -> Unit
             }
             LoadResult(
                 source = DexKitCacheBridge.ResultSource.QUERY,
@@ -144,19 +292,19 @@ internal object CacheBridgeStore {
                     onSuccess = { outcome ->
                         when (outcome) {
                             is SingleOutcome.Value -> {
-                                if (cachePolicy.cacheSuccess) {
+                                if (cachePolicy.cacheSuccess && generation == generationOf(namespace)) {
                                     cache.putString(cacheKey, outcome.value.serialize())
                                 }
                             }
 
                             is SingleOutcome.NoResult -> {
-                                if (canCacheFailure) {
+                                if (canCacheFailure && generation == generationOf(namespace)) {
                                     cache.putString(cacheKey, CACHE_NO_RESULT)
                                 }
                             }
 
                             is SingleOutcome.NonUnique -> {
-                                if (canCacheFailure) {
+                                if (canCacheFailure && generation == generationOf(namespace)) {
                                     cache.putString(cacheKey, CACHE_NON_UNIQUE)
                                 }
                             }
@@ -173,35 +321,57 @@ internal object CacheBridgeStore {
         cache: DexKitCacheBridge.Cache,
         lock: ReentrantReadWriteLock,
         cachePolicy: DexKitCacheBridge.CachePolicy,
+        namespace: String,
         cacheKey: String,
         allowEmpty: Boolean,
         ensureUsable: () -> Unit,
         loader: (() -> List<T>)? = null,
     ): LoadResult<List<T>> {
         ensureUsable()
+        val generation = generationOf(namespace)
 
-        fun <U : ISerializable> innerGet(cacheKey: String, allowEmpty: Boolean): Result<List<U>>? {
-            cache.getStringList(cacheKey, null)?.let { rawList ->
+        fun <U : ISerializable> innerGet(
+            cacheKey: String,
+            allowEmpty: Boolean
+        ): CacheRead<Result<List<U>>> {
+            val rawList = cache.getStringList(cacheKey, null) ?: return CacheRead.Miss
+            return decodeCachedValue {
                 val list = rawList.map { ISerializable.deserializeAs<U>(it) }
                 if (list.isEmpty() && !allowEmpty) {
-                    return Result.failure(
+                    Result.failure(
                         IllegalStateException(
                             "cached empty for key: $cacheKey but empty not allowed"
                         )
                     )
+                } else {
+                    Result.success(list)
                 }
-                return Result.success(list)
             }
-            return null
         }
 
-        lock.read {
-            innerGet<T>(cacheKey, allowEmpty)?.let {
+        when (val cached = lock.read { innerGet<T>(cacheKey, allowEmpty) }) {
+            is CacheRead.Hit -> {
                 return LoadResult(
                     source = DexKitCacheBridge.ResultSource.CACHE,
-                    result = it
+                    result = cached.value
                 )
             }
+
+            CacheRead.Corrupt -> lock.write {
+                when (val current = innerGet<T>(cacheKey, allowEmpty)) {
+                    is CacheRead.Hit -> {
+                        return LoadResult(
+                            source = DexKitCacheBridge.ResultSource.CACHE,
+                            result = current.value
+                        )
+                    }
+
+                    CacheRead.Corrupt -> cache.remove(cacheKey)
+                    CacheRead.Miss -> Unit
+                }
+            }
+
+            CacheRead.Miss -> Unit
         }
 
         loader ?: return LoadResult(
@@ -209,14 +379,19 @@ internal object CacheBridgeStore {
             result = Result.failure(NoSuchElementException("no found cache for key: $cacheKey"))
         )
 
-        val loaded = runCatching { loader() }
+        val loaded = loadOnce(cacheKey, generation, loader)
 
         return lock.write {
-            innerGet<T>(cacheKey, allowEmpty)?.let {
-                return LoadResult(
-                    source = DexKitCacheBridge.ResultSource.CACHE,
-                    result = it
-                )
+            when (val cached = innerGet<T>(cacheKey, allowEmpty)) {
+                is CacheRead.Hit -> {
+                    return LoadResult(
+                        source = DexKitCacheBridge.ResultSource.CACHE,
+                        result = cached.value
+                    )
+                }
+
+                CacheRead.Corrupt -> cache.remove(cacheKey)
+                CacheRead.Miss -> Unit
             }
             LoadResult(
                 source = DexKitCacheBridge.ResultSource.QUERY,
@@ -229,7 +404,7 @@ internal object CacheBridgeStore {
                                 )
                             )
                         } else {
-                            if (cachePolicy.cacheSuccess) {
+                            if (cachePolicy.cacheSuccess && generation == generationOf(namespace)) {
                                 cache.putStringList(cacheKey, list.map(ISerializable::serialize))
                             }
                             Result.success(list)
@@ -245,43 +420,85 @@ internal object CacheBridgeStore {
         cache: DexKitCacheBridge.Cache,
         lock: ReentrantReadWriteLock,
         cachePolicy: DexKitCacheBridge.CachePolicy,
+        namespace: String,
         cacheKey: String,
         ensureUsable: () -> Unit,
         loader: (() -> Map<String, List<T>>)? = null,
     ): LoadResult<Map<String, List<T>>> {
         ensureUsable()
+        val generation = generationOf(namespace)
 
-        fun <U : ISerializable> innerGetMap(cacheKey: String): Map<String, List<U>>? {
-            val keys = cache.getStringList(CacheBridgeKeys.mapGroupsKey(cacheKey), null)
-                ?: return null
-
-            val uniqueKeys = LinkedHashSet<String>(keys.size)
-            val map = LinkedHashMap<String, List<U>>(keys.size)
-            keys.forEach { groupKey ->
+        fun <U : ISerializable> readSnapshot(
+            cacheKey: String,
+            manifest: MapManifest,
+        ): CacheRead<Map<String, List<U>>> {
+            val uniqueKeys = LinkedHashSet<String>(manifest.groupKeys.size)
+            val map = LinkedHashMap<String, List<U>>(manifest.groupKeys.size)
+            manifest.groupKeys.forEach { groupKey ->
                 if (!uniqueKeys.add(groupKey)) {
-                    return null
+                    return CacheRead.Corrupt
                 }
                 val rawList = cache.getStringList(
-                    CacheBridgeKeys.mapGroupKey(cacheKey, groupKey),
+                    CacheBridgeKeys.mapGroupKey(cacheKey, manifest.generation, groupKey),
                     null
-                ) ?: return null
-                val dataList = runCatching {
+                ) ?: return CacheRead.Corrupt
+                val dataList = when (val decoded = decodeCachedValue {
                     rawList.map { ISerializable.deserializeAs<U>(it) }
-                }.getOrElse {
-                    return null
+                }) {
+                    is CacheRead.Hit -> decoded.value
+                    CacheRead.Corrupt -> return CacheRead.Corrupt
+                    CacheRead.Miss -> error("decodeCachedValue cannot return miss")
                 }
                 map[groupKey] = dataList
             }
-            return map
+            return CacheRead.Hit(map)
         }
 
-        lock.read {
-            innerGetMap<T>(cacheKey)?.let {
+        fun <U : ISerializable> innerGetMap(cacheKey: String): CacheRead<Map<String, List<U>>> {
+            val firstManifest = when (val read = readMapManifest(cache, cacheKey)) {
+                is CacheRead.Hit -> read.value
+                CacheRead.Corrupt -> return CacheRead.Corrupt
+                CacheRead.Miss -> return CacheRead.Miss
+            }
+            val firstRead = readSnapshot<U>(cacheKey, firstManifest)
+            if (firstRead is CacheRead.Hit) return firstRead
+
+            val secondManifest = when (val read = readMapManifest(cache, cacheKey)) {
+                is CacheRead.Hit -> read.value
+                CacheRead.Corrupt -> return CacheRead.Corrupt
+                CacheRead.Miss -> return CacheRead.Miss
+            }
+            if (secondManifest == firstManifest) return CacheRead.Corrupt
+            return readSnapshot(cacheKey, secondManifest)
+        }
+
+        when (val cached = lock.read { innerGetMap<T>(cacheKey) }) {
+            is CacheRead.Hit -> {
                 return LoadResult(
                     source = DexKitCacheBridge.ResultSource.CACHE,
-                    result = Result.success(it)
+                    result = Result.success(cached.value)
                 )
             }
+
+            CacheRead.Corrupt -> lock.write {
+                when (val current = innerGetMap<T>(cacheKey)) {
+                    is CacheRead.Hit -> {
+                        return LoadResult(
+                            source = DexKitCacheBridge.ResultSource.CACHE,
+                            result = Result.success(current.value)
+                        )
+                    }
+
+                    CacheRead.Corrupt -> {
+                        val manifest = (readMapManifest(cache, cacheKey) as? CacheRead.Hit)?.value
+                        removeMapSnapshot(cache, cacheKey, manifest)
+                    }
+
+                    CacheRead.Miss -> Unit
+                }
+            }
+
+            CacheRead.Miss -> Unit
         }
 
         loader ?: return LoadResult(
@@ -289,36 +506,58 @@ internal object CacheBridgeStore {
             result = Result.failure(NoSuchElementException("no found cache for key: $cacheKey"))
         )
 
-        val loaded = runCatching { loader() }
+        val loaded = loadOnce(cacheKey, generation, loader)
 
         return lock.write {
-            innerGetMap<T>(cacheKey)?.let {
-                return LoadResult(
-                    source = DexKitCacheBridge.ResultSource.CACHE,
-                    result = Result.success(it)
-                )
+            when (val cached = innerGetMap<T>(cacheKey)) {
+                is CacheRead.Hit -> {
+                    return LoadResult(
+                        source = DexKitCacheBridge.ResultSource.CACHE,
+                        result = Result.success(cached.value)
+                    )
+                }
+
+                CacheRead.Corrupt -> {
+                    val manifest = (readMapManifest(cache, cacheKey) as? CacheRead.Hit)?.value
+                    removeMapSnapshot(cache, cacheKey, manifest)
+                }
+
+                CacheRead.Miss -> Unit
             }
             LoadResult(
                 source = DexKitCacheBridge.ResultSource.QUERY,
                 result = loaded.fold(
                     onSuccess = { map ->
-                        val oldKeys = cache.getStringList(
-                            CacheBridgeKeys.mapGroupsKey(cacheKey),
-                            null
-                        ) ?: emptyList()
-                        val keys = mutableListOf<String>()
-                        if (cachePolicy.cacheSuccess) {
+                        if (cachePolicy.cacheSuccess && generation == generationOf(namespace)) {
+                            val oldManifest = (readMapManifest(cache, cacheKey) as? CacheRead.Hit)?.value
+                            val newGeneration = nextMapGeneration()
+                            val keys = ArrayList<String>(map.size)
                             map.entries.forEach { (groupKey, value) ->
                                 keys.add(groupKey)
                                 cache.putStringList(
-                                    CacheBridgeKeys.mapGroupKey(cacheKey, groupKey),
+                                    CacheBridgeKeys.mapGroupKey(
+                                        cacheKey,
+                                        newGeneration,
+                                        groupKey
+                                    ),
                                     value.map { it.serialize() }
                                 )
                             }
-                            (oldKeys - keys.toSet()).forEach {
-                                cache.remove(CacheBridgeKeys.mapGroupKey(cacheKey, it))
+                            cache.putStringList(
+                                CacheBridgeKeys.mapGroupsKey(cacheKey),
+                                listOf(newGeneration) + keys
+                            )
+                            oldManifest?.groupKeys?.forEach { groupKey ->
+                                runCatching {
+                                    cache.remove(
+                                        CacheBridgeKeys.mapGroupKey(
+                                            cacheKey,
+                                            oldManifest.generation,
+                                            groupKey
+                                        )
+                                    )
+                                }
                             }
-                            cache.putStringList(CacheBridgeKeys.mapGroupsKey(cacheKey), keys)
                         }
                         Result.success(map)
                     },

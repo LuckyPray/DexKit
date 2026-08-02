@@ -162,7 +162,7 @@ Since DexKit cache content is essentially serialized string collections, stuffin
 
 Under the same `appTag`:
 
-- `DexKitCacheBridge.create(appTag, ...)` uses an `appTag`-scoped singleton reuse pattern inside the current process: as long as the corresponding `RecyclableBridge` has not been `destroy()`ed, later `create(appTag, ...)` calls return the same wrapper object
+- `DexKitCacheBridge.create(appTag, ...)` reuses the current pooled wrapper while it is still reachable. The pool keeps a strong reference while the raw bridge is active or waiting for idle release, and only a weak reference after `close()` or idle release. If that weakly held wrapper is garbage-collected, a later `create(appTag, ...)` creates a new wrapper
 - query cache entries are also written under the same namespace
 
 So `appTag` must stably identify the current dex source. Common choices include:
@@ -351,7 +351,7 @@ create / run query
     ↓
 bridge is in use
     ↓  (no idle countdown while in use)
-last user finishes / use block exits
+last raw borrow / cached query finishes
     ↓
 idleTimeoutMillis countdown starts
     ↓
@@ -363,7 +363,8 @@ current countdown canceled     underlying DexKitBridge released automatically
 Two details are worth keeping in mind:
 
 - The condition here is whether the bridge is still being held by any caller, not a query-result field such as `QuerySuccessEvent.matchCount`.
-- If a query is still running inside `use { ... }`, `withBridge { ... }`, or one of the cached APIs, the idle timer does not run. The countdown only starts after nothing is using that bridge anymore.
+- If a query is still running inside `withBridge { ... }` or one of the cached APIs, the idle timer does not run. The countdown only starts after nothing is using that bridge anymore.
+- Kotlin `use { ... }` calls `close()` when the block exits, so it releases the raw bridge immediately instead of starting the idle countdown.
 
 This does not conflict with manual `close()`:
 

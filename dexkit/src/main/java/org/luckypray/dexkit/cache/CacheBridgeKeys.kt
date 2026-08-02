@@ -21,8 +21,11 @@
  */
 package org.luckypray.dexkit.cache
 
+import org.luckypray.dexkit.DexKitCacheBridge
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.query.base.BaseFinder
 
+@OptIn(DexKitExperimentalApi::class)
 internal object CacheBridgeKeys {
     private val hexDigits = "0123456789ABCDEF".toCharArray()
 
@@ -53,12 +56,23 @@ internal object CacheBridgeKeys {
 
     fun mapGroupsKey(cacheKey: String): String = "$cacheKey:meta:groups"
 
-    fun mapGroupKey(cacheKey: String, groupKey: String): String {
-        return "$cacheKey:group:${encodeSegment(groupKey)}"
+    fun mapGroupKey(cacheKey: String, generation: String, groupKey: String): String {
+        return "$cacheKey:group:$generation:${encodeSegment(groupKey)}"
     }
 
-    fun cacheKeyOf(appTag: String, kind: String, key: String?, query: BaseFinder? = null): String {
-        val prefix = "${cachePrefixOf(appTag)}:$kind"
+    fun cacheKeyOf(
+        appTag: String,
+        queryKind: DexKitCacheBridge.QueryKind,
+        key: String?,
+        query: BaseFinder? = null
+    ): String {
+        val prefix = buildString {
+            append(cachePrefixOf(appTag))
+            append(':')
+            append(typeCodeOf(queryKind))
+            append(':')
+            append(resultCodeOf(queryKind))
+        }
         if (key != null) {
             return "$prefix:user:${encodeSegment(key)}"
         }
@@ -66,5 +80,35 @@ internal object CacheBridgeKeys {
             "Either key or query must be provided for auto-generated cache key."
         }
         return "$prefix:auto:${encodeSegment(query.hashKey())}"
+    }
+
+    private fun typeCodeOf(queryKind: DexKitCacheBridge.QueryKind): Char {
+        return when (queryKind) {
+            DexKitCacheBridge.QueryKind.CLASS_SINGLE,
+            DexKitCacheBridge.QueryKind.CLASS_LIST,
+            DexKitCacheBridge.QueryKind.CLASS_BATCH -> 'c'
+
+            DexKitCacheBridge.QueryKind.METHOD_SINGLE,
+            DexKitCacheBridge.QueryKind.METHOD_LIST,
+            DexKitCacheBridge.QueryKind.METHOD_BATCH -> 'm'
+
+            DexKitCacheBridge.QueryKind.FIELD_SINGLE,
+            DexKitCacheBridge.QueryKind.FIELD_LIST -> 'f'
+        }
+    }
+
+    private fun resultCodeOf(queryKind: DexKitCacheBridge.QueryKind): Char {
+        return when (queryKind) {
+            DexKitCacheBridge.QueryKind.CLASS_SINGLE,
+            DexKitCacheBridge.QueryKind.METHOD_SINGLE,
+            DexKitCacheBridge.QueryKind.FIELD_SINGLE -> 's'
+
+            DexKitCacheBridge.QueryKind.CLASS_LIST,
+            DexKitCacheBridge.QueryKind.METHOD_LIST,
+            DexKitCacheBridge.QueryKind.FIELD_LIST -> 'l'
+
+            DexKitCacheBridge.QueryKind.CLASS_BATCH,
+            DexKitCacheBridge.QueryKind.METHOD_BATCH -> 'b'
+        }
     }
 }

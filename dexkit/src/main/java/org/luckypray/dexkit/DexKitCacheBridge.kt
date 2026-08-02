@@ -114,9 +114,11 @@ object DexKitCacheBridge {
     private val listeners = CopyOnWriteArraySet<CacheBridgeListener>()
 
     @JvmStatic
+    @Volatile
     var idleTimeoutMillis: Long = 5_000L
 
     @JvmStatic
+    @Volatile
     var cachePolicy: CachePolicy = CachePolicy()
 
     @JvmStatic
@@ -175,7 +177,8 @@ object DexKitCacheBridge {
     fun clearCache(appTag: String) {
         cacheLock.write {
             val prefix = "${CacheBridgeKeys.cachePrefixOf(appTag)}:"
-            cache.getAllKeys().forEach {
+            CacheBridgeStore.invalidate(CacheBridgeKeys.cachePrefixOf(appTag))
+            cache.getAllKeys().toList().forEach {
                 if (it.startsWith(prefix)) {
                     cache.remove(it)
                 }
@@ -185,7 +188,10 @@ object DexKitCacheBridge {
 
     @JvmStatic
     fun clearAllCache() {
-        cacheLock.write { cache.clearAll() }
+        cacheLock.write {
+            CacheBridgeStore.invalidate()
+            cache.clearAll()
+        }
     }
 
     interface Cache {
@@ -225,18 +231,16 @@ object DexKitCacheBridge {
             ): RecyclableBridge = RecyclableBridge(appTag, null, null, classLoader)
         }
 
-        private val runtime by lazy(LazyThreadSafetyMode.NONE) {
-            CacheBridgeRuntime(
-                appTag = appTag,
-                bridgeHolder = this,
-                scheduler = reaperScheduler,
-                idleTimeoutMillis = { idleTimeoutMillis },
-                createBridge = ::createBridge,
-                notifyBridgeCreated = { notifyListeners { onBridgeCreated(appTag) } },
-                notifyBridgeReleased = { notifyListeners { onBridgeReleased(appTag) } },
-                notifyBridgeDestroyed = { notifyListeners { onBridgeDestroyed(appTag) } },
-            )
-        }
+        private val runtime = CacheBridgeRuntime(
+            appTag = appTag,
+            bridgeHolder = this,
+            scheduler = reaperScheduler,
+            idleTimeoutMillis = { idleTimeoutMillis },
+            createBridge = ::createBridge,
+            notifyBridgeCreated = { notifyListeners { onBridgeCreated(appTag) } },
+            notifyBridgeReleased = { notifyListeners { onBridgeReleased(appTag) } },
+            notifyBridgeDestroyed = { notifyListeners { onBridgeDestroyed(appTag) } },
+        )
 
         fun isRetired(): Boolean = runtime.isDestroyed()
 
@@ -1643,8 +1647,10 @@ object DexKitCacheBridge {
             noinline mapper: (D) -> R
         ): Result<R?> {
             val query = buildQuery?.invoke()
+            val namespace = CacheBridgeKeys.cachePrefixOf(appTag)
+            val policy = cachePolicy
             // :s: -> single
-            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "s", key, query)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, queryKind, key, query)
             val loader: (() -> CacheBridgeStore.SingleOutcome<R>)? = query?.let {
                 {
                     acquireBridge {
@@ -1669,11 +1675,12 @@ object DexKitCacheBridge {
                 loadResult = CacheBridgeStore.getCachedSingle(
                     cache = cache,
                     lock = cacheLock,
-                    cachePolicy = cachePolicy,
+                    cachePolicy = policy,
+                    namespace = namespace,
                     cacheKey = spKey,
                     mode = mode,
                     canCacheFailure = CacheBridgeStore.shouldCacheFailure(
-                        cachePolicy = cachePolicy,
+                        cachePolicy = policy,
                         stableQueryIdentity = stableQueryIdentity
                     ),
                     ensureUsable = ::ensureUsable,
@@ -1692,8 +1699,10 @@ object DexKitCacheBridge {
             noinline mapper: (D) -> R
         ): Result<List<R>> {
             val query = buildQuery?.invoke()
+            val namespace = CacheBridgeKeys.cachePrefixOf(appTag)
+            val policy = cachePolicy
             // :l: -> list
-            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "l", key, query)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, queryKind, key, query)
             val loader: (() -> List<R>)? = query?.let {
                 { acquireBridge { executor(it, query).map(mapper) } }
             }
@@ -1703,7 +1712,8 @@ object DexKitCacheBridge {
                 loadResult = CacheBridgeStore.getCachedList(
                     cache = cache,
                     lock = cacheLock,
-                    cachePolicy = cachePolicy,
+                    cachePolicy = policy,
+                    namespace = namespace,
                     cacheKey = spKey,
                     allowEmpty = allowEmpty,
                     ensureUsable = ::ensureUsable,
@@ -1721,8 +1731,10 @@ object DexKitCacheBridge {
             noinline mapper: (D) -> R
         ): Result<Map<String, List<R>>> {
             val query = buildQuery?.invoke()
+            val namespace = CacheBridgeKeys.cachePrefixOf(appTag)
+            val policy = cachePolicy
             // :b: -> batch find
-            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "b", key, query)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, queryKind, key, query)
             val loader: (() -> Map<String, List<R>>)? = query?.let {
                 { acquireBridge { executor(it, query).mapValues { it.value.map(mapper) } } }
             }
@@ -1732,7 +1744,8 @@ object DexKitCacheBridge {
                 loadResult = CacheBridgeStore.getCachedMap(
                     cache = cache,
                     lock = cacheLock,
-                    cachePolicy = cachePolicy,
+                    cachePolicy = policy,
+                    namespace = namespace,
                     cacheKey = spKey,
                     ensureUsable = ::ensureUsable,
                     loader = loader
@@ -1748,8 +1761,10 @@ object DexKitCacheBridge {
             noinline executor: (DexKitBridge.() -> D?)?,
             noinline mapper: (D) -> R
         ): Result<R?> {
+            val namespace = CacheBridgeKeys.cachePrefixOf(appTag)
+            val policy = cachePolicy
             // :s: -> single
-            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "s", key)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, queryKind, key)
             val loader: (() -> CacheBridgeStore.SingleOutcome<R>)? = executor?.let {
                 {
                     try {
@@ -1771,11 +1786,12 @@ object DexKitCacheBridge {
                 loadResult = CacheBridgeStore.getCachedSingle(
                     cache = cache,
                     lock = cacheLock,
-                    cachePolicy = cachePolicy,
+                    cachePolicy = policy,
+                    namespace = namespace,
                     cacheKey = spKey,
                     mode = mode,
                     canCacheFailure = CacheBridgeStore.shouldCacheFailure(
-                        cachePolicy = cachePolicy,
+                        cachePolicy = policy,
                         stableQueryIdentity = false
                     ),
                     ensureUsable = ::ensureUsable,
@@ -1792,8 +1808,10 @@ object DexKitCacheBridge {
             noinline executor: (DexKitBridge.() -> List<D>)?,
             noinline mapper: (D) -> R
         ): Result<List<R>> {
+            val namespace = CacheBridgeKeys.cachePrefixOf(appTag)
+            val policy = cachePolicy
             // :l: -> list
-            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, "l", key)
+            val spKey = CacheBridgeKeys.cacheKeyOf(appTag, queryKind, key)
             val loader: (() -> List<R>)? = executor?.let {
                 { acquireBridge { it.let(executor).map(mapper) } }
             }
@@ -1803,7 +1821,8 @@ object DexKitCacheBridge {
                 loadResult = CacheBridgeStore.getCachedList(
                     cache = cache,
                     lock = cacheLock,
-                    cachePolicy = cachePolicy,
+                    cachePolicy = policy,
+                    namespace = namespace,
                     cacheKey = spKey,
                     allowEmpty = allowEmpty,
                     ensureUsable = ::ensureUsable,

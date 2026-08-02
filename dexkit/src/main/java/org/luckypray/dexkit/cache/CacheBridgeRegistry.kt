@@ -25,12 +25,13 @@ import org.luckypray.dexkit.DexKitCacheBridge
 import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
-import java.util.concurrent.ConcurrentHashMap
+import java.util.HashMap
 
 @OptIn(DexKitExperimentalApi::class)
 internal object CacheBridgeRegistry {
-    private val strongPool = ConcurrentHashMap<String, DexKitCacheBridge.RecyclableBridge>()
-    private val weakPool = ConcurrentHashMap<String, KeyedWeakReference>()
+    private val registryLock = Any()
+    private val strongPool = HashMap<String, DexKitCacheBridge.RecyclableBridge>()
+    private val weakPool = HashMap<String, KeyedWeakReference>()
     private val refQueue = ReferenceQueue<DexKitCacheBridge.RecyclableBridge>()
 
     private class KeyedWeakReference(
@@ -39,70 +40,111 @@ internal object CacheBridgeRegistry {
         q: ReferenceQueue<DexKitCacheBridge.RecyclableBridge>
     ) : WeakReference<DexKitCacheBridge.RecyclableBridge>(referent, q)
 
-    fun removeClearedWeakRefs() {
+    private fun removeClearedWeakRefsLocked() {
         while (true) {
             val ref = refQueue.poll() ?: break
             val keyed = ref as? KeyedWeakReference ?: continue
-            weakPool.remove(keyed.key, keyed)
+            if (weakPool[keyed.key] === keyed) {
+                weakPool.remove(keyed.key)
+            }
         }
     }
 
-    private fun tryPromoteFromWeakPool(appTag: String): DexKitCacheBridge.RecyclableBridge? {
-        removeClearedWeakRefs()
-
-        val ref = weakPool[appTag] ?: return null
-        val candidate = ref.get()
-        if (candidate == null) {
-            weakPool.remove(appTag, ref)
-            return null
+    fun removeClearedWeakRefs() {
+        synchronized(registryLock) {
+            removeClearedWeakRefsLocked()
         }
-
-        if (candidate.isRetired()) {
-            weakPool.remove(appTag, ref)
-            return null
-        }
-
-        val prev = strongPool.putIfAbsent(appTag, candidate)
-            ?: return candidate
-        if (!prev.isRetired()) return prev
-        strongPool.remove(appTag, prev)
-        return null
     }
 
     fun obtainBridge(
         appTag: String,
         factory: () -> DexKitCacheBridge.RecyclableBridge
     ): DexKitCacheBridge.RecyclableBridge {
-        while (true) {
+        return synchronized(registryLock) {
+            removeClearedWeakRefsLocked()
+
             strongPool[appTag]?.let { bridge ->
-                if (!bridge.isRetired()) return bridge
-                strongPool.remove(appTag, bridge)
+                if (!bridge.isRetired()) return@synchronized bridge
+                strongPool.remove(appTag)
             }
-            tryPromoteFromWeakPool(appTag)?.let { return it }
+
+            weakPool[appTag]?.let { ref ->
+                val bridge = ref.get()
+                if (bridge != null && !bridge.isRetired()) {
+                    return@synchronized bridge
+                }
+                weakPool.remove(appTag)
+            }
 
             val newBridge = factory()
-            val prev = strongPool.putIfAbsent(appTag, newBridge)
-                ?: return newBridge
-            if (!prev.isRetired()) return prev
-            strongPool.remove(appTag, prev)
+            weakPool[appTag] = KeyedWeakReference(appTag, newBridge, refQueue)
+            newBridge
         }
     }
 
-    fun removeStrong(appTag: String, bridge: DexKitCacheBridge.RecyclableBridge): Boolean {
-        return strongPool.remove(appTag, bridge)
+    fun promote(appTag: String, bridge: DexKitCacheBridge.RecyclableBridge) {
+        synchronized(registryLock) {
+            removeClearedWeakRefsLocked()
+
+            strongPool[appTag]?.let { current ->
+                if (current !== bridge && !current.isRetired()) {
+                    error("Another RecyclableBridge is active for appTag: $appTag")
+                }
+                if (current !== bridge) {
+                    strongPool.remove(appTag)
+                }
+            }
+
+            weakPool[appTag]?.let { ref ->
+                val current = ref.get()
+                if (current != null && current !== bridge && !current.isRetired()) {
+                    error("Another RecyclableBridge is registered for appTag: $appTag")
+                }
+                weakPool.remove(appTag)
+            }
+            strongPool[appTag] = bridge
+        }
     }
 
-    fun moveToWeak(appTag: String, bridge: DexKitCacheBridge.RecyclableBridge) {
-        strongPool.remove(appTag, bridge)
-        putWeak(appTag, bridge)
+    fun demote(appTag: String, bridge: DexKitCacheBridge.RecyclableBridge) {
+        synchronized(registryLock) {
+            removeClearedWeakRefsLocked()
+
+            if (strongPool[appTag] === bridge) {
+                strongPool.remove(appTag)
+            }
+            if (bridge.isRetired()) {
+                unregisterWeakLocked(appTag, bridge)
+                return
+            }
+
+            weakPool[appTag]?.let { ref ->
+                val current = ref.get()
+                if (current != null && current !== bridge && !current.isRetired()) {
+                    error("Another RecyclableBridge is registered for appTag: $appTag")
+                }
+            }
+            weakPool[appTag] = KeyedWeakReference(appTag, bridge, refQueue)
+        }
     }
 
-    fun putWeak(appTag: String, bridge: DexKitCacheBridge.RecyclableBridge) {
-        removeClearedWeakRefs()
-        weakPool[appTag] = KeyedWeakReference(appTag, bridge, refQueue)
+    fun unregister(appTag: String, bridge: DexKitCacheBridge.RecyclableBridge) {
+        synchronized(registryLock) {
+            if (strongPool[appTag] === bridge) {
+                strongPool.remove(appTag)
+            }
+            unregisterWeakLocked(appTag, bridge)
+        }
     }
 
-    fun removeWeak(appTag: String) {
-        weakPool.remove(appTag)
+    private fun unregisterWeakLocked(
+        appTag: String,
+        bridge: DexKitCacheBridge.RecyclableBridge,
+    ) {
+        val ref = weakPool[appTag] ?: return
+        val current = ref.get()
+        if (current == null || current === bridge) {
+            weakPool.remove(appTag)
+        }
     }
 }

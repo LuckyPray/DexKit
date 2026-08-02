@@ -10,41 +10,46 @@ import org.junit.Test
 import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.exceptions.NoResultException
 import java.io.File
+import java.util.LinkedHashMap
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 @OptIn(DexKitExperimentalApi::class)
 class DexKitCacheBridgeTest {
     private class MemoryCache : DexKitCacheBridge.Cache {
-        private val values = ConcurrentHashMap<String, String>()
-        private val lists = ConcurrentHashMap<String, List<String>>()
+        private val values = LinkedHashMap<String, Any>()
 
-        override fun getString(key: String, default: String?): String? = values[key] ?: default
+        override fun getString(key: String, default: String?): String? =
+            values[key] as? String ?: default
 
         override fun putString(key: String, value: String) {
             values[key] = value
         }
 
-        override fun getStringList(key: String, default: List<String>?): List<String>? = lists[key] ?: default
+        @Suppress("UNCHECKED_CAST")
+        override fun getStringList(key: String, default: List<String>?): List<String>? =
+            values[key] as? List<String> ?: default
 
         override fun putStringList(key: String, value: List<String>) {
-            lists[key] = value
+            values[key] = value
         }
 
         override fun remove(key: String) {
             values.remove(key)
-            lists.remove(key)
         }
 
-        override fun getAllKeys(): Collection<String> = values.keys + lists.keys
+        override fun getAllKeys(): Collection<String> = values.keys
 
         override fun clearAll() {
             values.clear()
-            lists.clear()
         }
 
-        fun storedValues(): Collection<String> = values.values
+        fun storedValues(): Collection<String> = values.values.filterIsInstance<String>()
     }
 
     companion object {
@@ -380,6 +385,89 @@ class DexKitCacheBridgeTest {
             assertFalse(failures.any { it.appTag == appTag })
         } finally {
             DexKitCacheBridge.removeListener(listener)
+        }
+    }
+
+    @Test
+    fun reusedWeakWrapperReleasesAfterEachIdleTimeout() {
+        val appTag = newAppTag()
+        val released = LinkedBlockingQueue<String>()
+        val listener = object : DexKitCacheBridge.CacheBridgeListener() {
+            override fun onBridgeReleased(releasedAppTag: String) {
+                if (releasedAppTag == appTag) {
+                    released += releasedAppTag
+                }
+            }
+        }
+        val oldTimeout = DexKitCacheBridge.idleTimeoutMillis
+        DexKitCacheBridge.idleTimeoutMillis = 50L
+        DexKitCacheBridge.addListener(listener)
+        val bridge = DexKitCacheBridge.create(appTag, demoApkPath())
+
+        try {
+            assertEquals(
+                "org.luckypray.dexkit.demo.PlayActivity",
+                bridge.getClass("play-first") {
+                    matcher {
+                        className("org.luckypray.dexkit.demo.PlayActivity")
+                    }
+                }.typeName
+            )
+            assertEquals(appTag, released.poll(5, TimeUnit.SECONDS))
+
+            assertEquals(
+                "org.luckypray.dexkit.demo.MainActivity",
+                bridge.getClass("main-second") {
+                    matcher {
+                        className("org.luckypray.dexkit.demo.MainActivity")
+                    }
+                }.typeName
+            )
+            assertEquals(appTag, released.poll(5, TimeUnit.SECONDS))
+        } finally {
+            bridge.destroy()
+            DexKitCacheBridge.removeListener(listener)
+            DexKitCacheBridge.idleTimeoutMillis = oldTimeout
+        }
+    }
+
+    @Test
+    fun concurrentFirstUseCreatesOneRawBridge() {
+        val appTag = newAppTag()
+        val created = AtomicInteger()
+        val listener = object : DexKitCacheBridge.CacheBridgeListener() {
+            override fun onBridgeCreated(createdAppTag: String) {
+                if (createdAppTag == appTag) {
+                    created.incrementAndGet()
+                }
+            }
+        }
+        val threadCount = 8
+        val ready = CountDownLatch(threadCount)
+        val start = CountDownLatch(1)
+        val executor = Executors.newFixedThreadPool(threadCount)
+        DexKitCacheBridge.addListener(listener)
+        val bridge = DexKitCacheBridge.create(appTag, demoApkPath())
+
+        try {
+            val futures = (0 until threadCount).map {
+                executor.submit {
+                    ready.countDown()
+                    start.await()
+                    bridge.withBridge {
+                        assertTrue(it.isValid)
+                        Thread.sleep(20)
+                    }
+                }
+            }
+            ready.await()
+            start.countDown()
+            futures.forEach { it.get(5, TimeUnit.SECONDS) }
+            assertEquals(1, created.get())
+        } finally {
+            bridge.destroy()
+            DexKitCacheBridge.removeListener(listener)
+            executor.shutdownNow()
         }
     }
 }

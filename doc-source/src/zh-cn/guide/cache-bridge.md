@@ -162,7 +162,7 @@ fun findPlayActivity(apkPath: String) {
 
 同一个 `appTag` 下：
 
-- `DexKitCacheBridge.create(appTag, ...)` 采用基于 `appTag` 的单例复用模式：在当前进程内，只要对应 `RecyclableBridge` 还没有被 `destroy()`，后续再次 `create(appTag, ...)` 就会返回同一个包装对象
+- `DexKitCacheBridge.create(appTag, ...)` 会复用当前仍可达的池中包装对象。raw bridge 正在使用或等待空闲释放时，池会持有强引用；`close()` 或空闲释放后只保留弱引用。如果这个弱引用包装对象已被回收，后续 `create(appTag, ...)` 会创建新的包装对象
 - 查询缓存也会落在同一命名空间下
 
 因此，`appTag` 必须能够稳定标识“当前这份 dex 来源”。常见做法是把这些信息拼进去：
@@ -351,7 +351,7 @@ create/apply query
     ↓
 bridge 正在被使用
     ↓  （此时不会开始空闲倒计时）
-最后一个使用方结束 / use 块退出
+最后一次 raw bridge 借用 / 缓存查询结束
     ↓
 开始 idleTimeoutMillis 倒计时
     ↓
@@ -363,7 +363,8 @@ bridge 正在被使用
 需要特别注意两点：
 
 - 这里判断的是 bridge 是否仍被占用，而不是 `QuerySuccessEvent.matchCount` 这类“查询结果数量”字段。
-- 如果查询还在 `use { ... }`、`withBridge { ... }` 或某个缓存 API 内部执行，空闲计时器不会生效；只有在没有任何地方继续占用该 bridge 后，才会开始倒计时。
+- 如果查询还在 `withBridge { ... }` 或某个缓存 API 内部执行，空闲计时器不会生效；只有在没有任何地方继续占用该 bridge 后，才会开始倒计时。
+- Kotlin 的 `use { ... }` 会在代码块退出时调用 `close()`，因此会立即释放 raw bridge，而不是开始空闲倒计时。
 
 这和手动 `close()` 并不冲突：
 
