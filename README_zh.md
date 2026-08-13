@@ -407,7 +407,7 @@ modifiers = Modifier.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=luckypray/dexkit&type=Date)](https://star-history.com/#luckypray/dexkit&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=luckypray/dexkit&type=Date)](https://star-history.dera.page/#luckypray/dexkit&Date)
 
 ## 许可证
 

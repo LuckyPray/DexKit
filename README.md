@@ -417,7 +417,7 @@ for terminology only; `DexAccessFlags` does not depend on that API.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=luckypray/dexkit&type=Date)](https://star-history.com/#luckypray/dexkit&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=luckypray/dexkit&type=Date)](https://star-history.dera.page/#luckypray/dexkit&Date)
 
 ## License
 
