@@ -65,7 +65,7 @@ DexItem::BatchFindClassUsingStrings(
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
         if (class_method_ids[type_idx].empty()) continue;
-        if (query->in_classes() && in_class_set.contains(type_idx)) continue;
+        if (query->in_classes() && !in_class_set.contains(type_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
             if (query->exclude_packages() && (hit & 1)) continue;
@@ -165,7 +165,7 @@ DexItem::BatchFindMethodUsingStrings(
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
         if (class_method_ids[type_idx].empty()) continue;
-        if (query->in_classes() && in_class_set.contains(type_idx)) continue;
+        if (query->in_classes() && !in_class_set.contains(type_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[type_idx], query->ignore_packages_case());
             if (query->exclude_packages() && (hit & 1)) continue;
@@ -173,7 +173,7 @@ DexItem::BatchFindMethodUsingStrings(
         }
 
         for (auto method_idx: class_method_ids[type_idx]) {
-            if (query->in_methods() && in_method_set.contains(method_idx)) continue;
+            if (query->in_methods() && !in_method_set.contains(method_idx)) continue;
             auto code = this->method_codes[method_idx];
             if (code == nullptr) continue;
 

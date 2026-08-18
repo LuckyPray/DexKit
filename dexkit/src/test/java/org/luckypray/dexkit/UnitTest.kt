@@ -670,6 +670,80 @@ class UnitTest {
 
 
     @Test
+    fun testBatchFindClassUsingStringsSearchIn() {
+        val groupName = "SearchGroup"
+        val playActivity = bridge.getClassData("org.luckypray.dexkit.demo.PlayActivity")!!
+        val mainActivity = bridge.getClassData("org.luckypray.dexkit.demo.MainActivity")!!
+
+        val baseline = bridge.batchFindClassUsingStrings {
+            addSearchGroup(groupName, listOf("PlayActivity"), StringMatchType.Contains, true)
+        }
+        assert(baseline[groupName]!!.map { it.descriptor } == listOf(playActivity.descriptor))
+
+        val inSelf = bridge.batchFindClassUsingStrings {
+            searchIn(listOf(playActivity))
+            addSearchGroup(groupName, listOf("PlayActivity"), StringMatchType.Contains, true)
+        }
+        assert(inSelf[groupName]!!.map { it.descriptor } == listOf(playActivity.descriptor))
+
+        val inOther = bridge.batchFindClassUsingStrings {
+            searchIn(listOf(mainActivity))
+            addSearchGroup(groupName, listOf("PlayActivity"), StringMatchType.Contains, true)
+        }
+        assert(inOther[groupName]!!.isEmpty())
+    }
+
+    @Test
+    fun testBatchFindMethodUsingStringsSearchInScope() {
+        val groupName = "SearchGroup"
+        val groups = mapOf(groupName to listOf("getRandomDice: "))
+        val randomUtil = bridge.getClassData("org.luckypray.dexkit.demo.RandomUtil")!!
+        val mainActivity = bridge.getClassData("org.luckypray.dexkit.demo.MainActivity")!!
+        // demo release apk is minified: method names are obfuscated, locate by used string
+        val hit = bridge.findMethod {
+            excludePackages("org.luckypray.dexkit.demo.hook")
+            matcher {
+                declaredClass("org.luckypray.dexkit.demo.RandomUtil")
+                usingStrings("getRandomDice: ")
+            }
+        }.single()
+        val unrelated = mainActivity.methods.single { it.name == "onCreate" }
+
+        // no scope, the hook package also uses this literal, so exclude it
+        val baseline = bridge.batchFindMethodUsingStrings {
+            excludePackages("org.luckypray.dexkit.demo.hook")
+            groups(groups)
+        }
+        assert(baseline[groupName]!!.map { it.descriptor } == listOf(hit.descriptor))
+
+        // in_classes
+        val inDeclaringClass = bridge.batchFindMethodUsingStrings {
+            searchInClasses(listOf(randomUtil))
+            groups(groups)
+        }
+        assert(inDeclaringClass[groupName]!!.map { it.descriptor } == listOf(hit.descriptor))
+
+        val inOtherClass = bridge.batchFindMethodUsingStrings {
+            searchInClasses(listOf(mainActivity))
+            groups(groups)
+        }
+        assert(inOtherClass[groupName]!!.isEmpty())
+
+        // in_methods
+        val inHitMethod = bridge.batchFindMethodUsingStrings {
+            searchInMethods(listOf(hit))
+            groups(groups)
+        }
+        assert(inHitMethod[groupName]!!.map { it.descriptor } == listOf(hit.descriptor))
+
+        val inUnrelatedMethod = bridge.batchFindMethodUsingStrings {
+            searchInMethods(listOf(unrelated))
+            groups(groups)
+        }
+        assert(inUnrelatedMethod[groupName]!!.isEmpty())
+    }
+
+    @Test
     fun testConcurrentBatchFindClassUsingStringsOnSharedBridge() {
         DexKitBridge.create(demoApkPath).use { parallelBridge ->
             parallelBridge.setThreadNum(2)
