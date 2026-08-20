@@ -22,6 +22,7 @@
 #include "matcher_thread_cache_registry.h"
 #include "utils/dex_descriptor_util.h"
 
+#include <algorithm>
 #include <mutex>
 
 namespace dexkit {
@@ -1494,16 +1495,20 @@ bool DexItem::IsOpCodesMatched(uint32_t method_idx, const schema::OpCodesMatcher
         }
 
         if (!matcher_opcodes.empty()) {
-            auto index = kmp::FindIndex(opt_opcodes.value(), matcher_opcodes);
-            if (index == -1) {
-                return false;
-            }
+            auto &opcodes = opt_opcodes.value();
             bool condition = false;
-            switch (matcher->match_type()) {
-                case schema::OpCodeMatchType::Equal: condition = index == 0 && matcher_opcodes.size() == op_code_size; break;
-                case schema::OpCodeMatchType::StartWith: condition = index == 0; break;
-                case schema::OpCodeMatchType::EndWith: condition = index + matcher_opcodes.size() == op_code_size; break;
-                case schema::OpCodeMatchType::Contains: condition = true; break;
+            if (matcher->match_type() == schema::OpCodeMatchType::EndWith) {
+                // kmp::FindIndex returns the first occurrence, which is not
+                // necessarily the tail; compare the tail directly.
+                condition = std::equal(matcher_opcodes.begin(), matcher_opcodes.end(), opcodes.end() - matcher_opcodes.size());
+            } else {
+                auto index = kmp::FindIndex(opcodes, matcher_opcodes);
+                switch (matcher->match_type()) {
+                    case schema::OpCodeMatchType::Equal: condition = index == 0 && matcher_opcodes.size() == op_code_size; break;
+                    case schema::OpCodeMatchType::StartWith: condition = index == 0; break;
+                    case schema::OpCodeMatchType::Contains: condition = index != -1; break;
+                    default: break;
+                }
             }
             if (!condition) {
                 return false;

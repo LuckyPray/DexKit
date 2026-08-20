@@ -2,6 +2,7 @@ package org.luckypray.dexkit
 
 import org.junit.Test
 import org.luckypray.dexkit.annotations.DexKitExperimentalApi
+import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.enums.UsingType
 import java.io.File
@@ -920,6 +921,28 @@ class UnitTest {
             } finally {
                 executor.shutdownNow()
             }
+        }
+    }
+
+    @Test
+    fun testOpCodesEndsWith() {
+        // A method whose last opcode also occurs earlier in the sequence is
+        // the regression case: EndsWith must anchor at the tail, not at the
+        // first occurrence found when scanning from the start.
+        val method = bridge.findMethod {
+            searchPackages("org.luckypray.dexkit.demo")
+        }.first {
+            val ops = it.opCodes
+            ops.size >= 2 && ops.indexOf(ops.last()) != ops.size - 1
+        }
+        val opCodes = method.opCodes
+        for (len in 1..opCodes.size) {
+            val res = bridge.findMethod {
+                matcher {
+                    opCodes(opCodes.takeLast(len), OpCodeMatchType.EndsWith)
+                }
+            }
+            assert(res.any { it.getEncodeId() == method.getEncodeId() })
         }
     }
 }
