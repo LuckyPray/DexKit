@@ -21,6 +21,7 @@
 #pragma once
 
 #include <algorithm>
+#include <condition_variable>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -50,10 +51,22 @@ struct QuerySchedulerMetricsSnapshot {
     size_t max_runnable_queue_size = 0;
 };
 
-class QueryScheduler final : public std::enable_shared_from_this<QueryScheduler> {
+class QueryScheduler final {
 public:
-    QueryScheduler(std::shared_ptr<ThreadPool> pool, size_t worker_count)
-            : pool_(std::move(pool)), worker_count_(std::max<size_t>(1, worker_count)) {}
+    explicit QueryScheduler(size_t worker_count)
+            : pool_(std::make_unique<ThreadPool>(std::max<size_t>(1, worker_count))),
+              worker_count_(std::max<size_t>(1, worker_count)) {}
+
+    ~QueryScheduler() {
+        {
+            std::unique_lock lock(mutex_);
+            // Completion callbacks may still dispatch pending tasks to the pool.
+            idle_cv_.wait(lock, [this] { return total_in_flight_ == 0; });
+        }
+        // Join before destroying scheduler state, including the task closures
+        // whose results were ready before their worker finished cleaning up.
+        pool_.reset();
+    }
 
     void AttachQuery(uint64_t query_id, QueryPriority priority, QueryContext *query_context) {
         std::lock_guard lock(mutex_);
@@ -202,20 +215,18 @@ private:
 
     class TaskCompletionGuard {
     public:
-        TaskCompletionGuard(std::shared_ptr<QueryScheduler> scheduler, uint64_t query_id)
-                : scheduler_(std::move(scheduler)), query_id_(query_id) {}
+        TaskCompletionGuard(QueryScheduler *scheduler, uint64_t query_id)
+                : scheduler_(scheduler), query_id_(query_id) {}
 
         TaskCompletionGuard(const TaskCompletionGuard &) = delete;
         TaskCompletionGuard &operator=(const TaskCompletionGuard &) = delete;
 
         ~TaskCompletionGuard() {
-            if (scheduler_ != nullptr) {
-                scheduler_->OnTaskFinished(query_id_);
-            }
+            scheduler_->OnTaskFinished(query_id_);
         }
 
     private:
-        std::shared_ptr<QueryScheduler> scheduler_;
+        QueryScheduler *scheduler_;
         uint64_t query_id_ = 0;
     };
 
@@ -571,10 +582,10 @@ private:
             return;
         }
 
-        auto self = shared_from_this();
         for (auto &dispatch_task: dispatch_tasks) {
-            pool_->enqueue([self, dispatch_task = std::move(dispatch_task)]() mutable {
-                TaskCompletionGuard completion_guard(self, dispatch_task.query_id);
+            // The caller owns the scheduler; its destructor joins these workers.
+            pool_->enqueue([this, dispatch_task = std::move(dispatch_task)]() mutable {
+                TaskCompletionGuard completion_guard(this, dispatch_task.query_id);
                 dispatch_task.task();
             });
         }
@@ -582,6 +593,7 @@ private:
 
     void OnTaskFinished(uint64_t query_id) {
         std::vector<DispatchTask> dispatch_tasks;
+        bool idle;
         {
             std::lock_guard lock(mutex_);
             if (total_in_flight_ > 0) {
@@ -600,13 +612,18 @@ private:
             }
 
             DispatchReadyTasksLocked(dispatch_tasks);
+            idle = total_in_flight_ == 0;
         }
         EnqueueDispatchTasks(std::move(dispatch_tasks));
+        if (idle) {
+            idle_cv_.notify_all();
+        }
     }
 
-    std::shared_ptr<ThreadPool> pool_;
+    std::unique_ptr<ThreadPool> pool_;
     size_t worker_count_;
     mutable std::mutex mutex_;
+    std::condition_variable idle_cv_;
     QuerySlotMap query_slots_;
     std::deque<uint64_t> base_runnable_queries_;
     std::deque<uint64_t> latency_sensitive_bonus_runnable_queries_;

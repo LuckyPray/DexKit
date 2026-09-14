@@ -62,7 +62,7 @@ public:
 
     explicit DexKit() = default;
     explicit DexKit(std::string_view apk_path, int unzip_thread_num = 0);
-    ~DexKit() = default;
+    ~DexKit();
 
     void SetThreadNum(int num);
     void SetMaxConcurrentQueries(uint32_t max_concurrent_queries);
@@ -129,7 +129,6 @@ private:
 #if DEXKIT_ENABLE_INTERNAL_METRICS
     std::atomic<bool> query_metrics_enabled_ = false;
 #endif
-    mutable std::shared_ptr<ThreadPool> shared_query_pool_;
     mutable std::shared_ptr<QueryScheduler> shared_query_scheduler_;
     mutable uint32_t shared_query_pool_thread_num_ = 0;
 #if DEXKIT_ENABLE_INTERNAL_METRICS

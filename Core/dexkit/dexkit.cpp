@@ -110,12 +110,16 @@ DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
     std::sort(dex_items.begin(), dex_items.end(), comp);
 }
 
+DexKit::~DexKit() {
+    // Finish worker cleanup while the DEX data and other bridge state are alive.
+    shared_query_scheduler_.reset();
+}
+
 void DexKit::SetThreadNum(int num) {
     auto thread_num = NormalizeThreadNum(num > 0 ? static_cast<uint32_t>(num) : 1U);
     _thread_num.store(thread_num, std::memory_order_release);
     std::lock_guard lock(query_executor_mutex);
     shared_query_scheduler_.reset();
-    shared_query_pool_.reset();
     shared_query_pool_thread_num_ = 0;
 }
 
@@ -367,13 +371,9 @@ std::unique_ptr<IQueryExecutor> DexKit::CreateQueryExecutor(QueryContext &query_
 std::shared_ptr<QueryScheduler> DexKit::GetOrCreateSharedQueryScheduler(uint32_t thread_num) const {
     auto normalized_thread_num = NormalizeThreadNum(thread_num);
     std::lock_guard lock(query_executor_mutex);
-    if (!shared_query_pool_ || shared_query_pool_thread_num_ != normalized_thread_num) {
-        shared_query_scheduler_.reset();
-        shared_query_pool_ = std::make_shared<ThreadPool>(normalized_thread_num);
+    if (!shared_query_scheduler_ || shared_query_pool_thread_num_ != normalized_thread_num) {
+        shared_query_scheduler_ = std::make_shared<QueryScheduler>(normalized_thread_num);
         shared_query_pool_thread_num_ = normalized_thread_num;
-    }
-    if (!shared_query_scheduler_) {
-        shared_query_scheduler_ = std::make_shared<QueryScheduler>(shared_query_pool_, normalized_thread_num);
     }
     return shared_query_scheduler_;
 }
