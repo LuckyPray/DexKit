@@ -375,7 +375,7 @@ static std::shared_ptr<PersistentUsingStringsKeywordsCache> GetPersistentUsingSt
 ) {
     // Avoid direct non-trivial thread_local destruction on Windows DLL TLS
     // teardown. Keep the TLS slot trivially destructible and free native-owned
-    // worker-thread instances through the registry when the pool shuts down.
+    // worker-thread instances through the registry before the worker exits.
     thread_local PersistentUsingStringsThreadCache *cache = nullptr;
     if (cache == nullptr) {
         cache = new PersistentUsingStringsThreadCache();
@@ -383,6 +383,9 @@ static std::shared_ptr<PersistentUsingStringsKeywordsCache> GetPersistentUsingSt
                 std::this_thread::get_id(),
                 cache,
                 [](void *ptr) {
+                    if (cache == ptr) {
+                        cache = nullptr;
+                    }
                     delete reinterpret_cast<PersistentUsingStringsThreadCache *>(ptr);
                 }
         );
@@ -444,6 +447,9 @@ static MatcherThreadLocalQueryCache &GetMatcherThreadLocalQueryCache() {
                 std::this_thread::get_id(),
                 cache,
                 [](void *ptr) {
+                    if (cache == ptr) {
+                        cache = nullptr;
+                    }
                     delete reinterpret_cast<MatcherThreadLocalQueryCache *>(ptr);
                 }
         );
@@ -504,28 +510,17 @@ void RegisterMatcherThreadLocalCache(
     });
 }
 
-void ReleaseMatcherThreadLocalCaches(const std::vector<std::thread::id> &thread_ids) {
+void ReleaseCurrentThreadLocalCaches() {
     std::vector<MatcherThreadLocalCacheSlot> slots;
     {
         std::lock_guard lock(GetMatcherThreadLocalCacheRegistryMutex());
         auto &registry = GetMatcherThreadLocalCacheRegistry();
-        size_t reserve_count = 0;
-        for (const auto &thread_id: thread_ids) {
-            auto it = registry.find(thread_id);
-            if (it == registry.end()) {
-                continue;
-            }
-            reserve_count += it->second.size();
+        auto it = registry.find(std::this_thread::get_id());
+        if (it == registry.end()) {
+            return;
         }
-        slots.reserve(reserve_count);
-        for (const auto &thread_id: thread_ids) {
-            auto it = registry.find(thread_id);
-            if (it == registry.end()) {
-                continue;
-            }
-            slots.insert(slots.end(), it->second.begin(), it->second.end());
-            registry.erase(it);
-        }
+        slots = std::move(it->second);
+        registry.erase(it);
     }
     for (const auto &slot: slots) {
         if (slot.cache != nullptr && slot.deleter != nullptr) {

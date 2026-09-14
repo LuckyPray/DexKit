@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <thread>
-#include <vector>
 
 #define POINT_CASE(X) reinterpret_cast<std::uintptr_t>(X)
 
@@ -14,6 +13,7 @@ void RegisterMatcherThreadLocalCache(
         void (*deleter)(void *)
 );
 
-void ReleaseMatcherThreadLocalCaches(const std::vector<std::thread::id> &thread_ids);
+// Call on the owning worker after its final task, before the thread exits.
+void ReleaseCurrentThreadLocalCaches();
 
 } // namespace dexkit

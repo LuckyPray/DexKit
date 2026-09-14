@@ -71,7 +71,7 @@ namespace {
 std::set<std::pair<int, const char*>>& get_weak_failures() {
   // Avoid direct non-trivial thread_local destruction on Windows DLL TLS
   // teardown. Native-owned worker-thread instances are released through the
-  // shared registry when the pool shuts down; externally-owned threads keep the
+  // shared registry before the worker exits; externally-owned threads keep the
   // small set alive until process exit.
   thread_local std::set<std::pair<int, const char*>>* weak_failures = nullptr;
   if (weak_failures == nullptr) {
@@ -80,6 +80,9 @@ std::set<std::pair<int, const char*>>& get_weak_failures() {
         std::this_thread::get_id(),
         weak_failures,
         [](void* ptr) {
+          if (weak_failures == ptr) {
+            weak_failures = nullptr;
+          }
           delete reinterpret_cast<std::set<std::pair<int, const char*>>*>(ptr);
         });
   }

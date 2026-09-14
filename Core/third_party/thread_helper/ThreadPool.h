@@ -52,18 +52,22 @@ private:
     std::condition_variable condition;
     bool stop;
     std::function<bool()> should_skip_task;
-    std::vector<std::thread::id> _thread_ids;
 };
 
 // the constructor just launches some amount of workers
 inline ThreadPool::ThreadPool(size_t threads, std::function<bool()> should_skip_task)
         : stop(false), should_skip_task(std::move(should_skip_task)) {
     workers.reserve(threads);
-    _thread_ids.resize(threads);
     for (size_t i = 0; i < threads; ++i)
         workers.emplace_back(
-                [this, i] {
-                    this->_thread_ids[i] = std::this_thread::get_id();
+                [this] {
+                    struct ThreadCacheCleanupGuard {
+                        ~ThreadCacheCleanupGuard() {
+                            dexkit::ReleaseCurrentThreadLocalCaches();
+                        }
+                    } cleanup_guard;
+                    // Clean up after the final task is destroyed, before this
+                    // worker exits and its thread ID can be reused.
                     for (;;) {
                         std::function<void()> task;
 
@@ -124,5 +128,4 @@ inline ThreadPool::~ThreadPool() {
     condition.notify_all();
     for (std::thread &worker: workers)
         worker.join();
-    dexkit::ReleaseMatcherThreadLocalCaches(_thread_ids);
 }
