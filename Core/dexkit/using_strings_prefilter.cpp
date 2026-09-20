@@ -443,7 +443,7 @@ bool DexItem::MayMatchMethodUsingStringsPrefilter(
         internal::UsingStringsPrefilterPlan &plan
 ) {
     return internal::MayMatchUsingStringsPrefilter(plan, [&](auto &&visit_string) {
-        auto &using_string_ids = this->method_using_string_ids[method_idx];
+        auto &&using_string_ids = this->method_using_string_ids[method_idx];
         for (auto string_id: using_string_ids) {
             if (visit_string(this->strings[string_id])) {
                 return true;
@@ -473,7 +473,7 @@ bool DexItem::MayMatchClassUsingStringsPrefilter(
 
     return internal::MayMatchUsingStringsPrefilter(plan, [&](auto &&visit_string) {
         for (auto method_idx: scan_dex->class_method_ids[scan_type_idx]) {
-            auto &using_string_ids = scan_dex->method_using_string_ids[method_idx];
+            auto &&using_string_ids = scan_dex->method_using_string_ids[method_idx];
             for (auto string_id: using_string_ids) {
                 if (visit_string(scan_dex->strings[string_id])) {
                     return true;

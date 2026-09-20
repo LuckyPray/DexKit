@@ -199,6 +199,20 @@ public:
         return kind_;
     }
 
+    bool TryReserveStringMemo(size_t bytes) {
+        constexpr size_t budget = 1024 * 1024;
+        if (bytes > budget) return false;
+        auto used = string_memo_bytes_.load(std::memory_order_relaxed);
+        while (used <= budget - bytes) {
+            if (string_memo_bytes_.compare_exchange_weak(used, used + bytes, std::memory_order_relaxed)) return true;
+        }
+        return false;
+    }
+
+    void ReleaseStringMemo(size_t bytes) {
+        string_memo_bytes_.fetch_sub(bytes, std::memory_order_relaxed);
+    }
+
     void SetQueryPriority(QueryPriority priority) {
         priority_ = priority;
     }
@@ -482,6 +496,7 @@ private:
     QueryKind kind_;
     uint64_t query_id_;
     QueryPriority priority_ = QueryPriority::Normal;
+    std::atomic<size_t> string_memo_bytes_ = 0;
 #if DEXKIT_ENABLE_INTERNAL_METRICS
     bool metrics_enabled_ = false;
 #endif

@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <string>
+#include <string_view>
 #include <variant>
 
 #include "schema/enums_generated.h"
@@ -50,7 +52,7 @@ public:
     uint32_t dex_id = -1;
     uint32_t class_id = -1;
     uint32_t access_flags = 0;
-    std::string_view dex_descriptor;
+    std::string dex_descriptor;
     uint32_t return_type = -1;
     std::vector<uint32_t> parameter_types;
 
@@ -65,7 +67,7 @@ public:
     uint32_t dex_id = -1;
     uint32_t class_id = -1;
     uint32_t access_flags = 0;
-    std::string_view dex_descriptor;
+    std::string dex_descriptor;
     uint32_t type_id = -1;
 
 public:

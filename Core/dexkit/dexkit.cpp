@@ -22,6 +22,7 @@
 #include "include/query_context.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "zip_archive.h"
 #include "ThreadPool.h"
@@ -179,6 +180,7 @@ Error DexKit::InitFullCache() {
 }
 
 DexKit::QueryExecutionGuard DexKit::EnterQueryExecution(uint32_t required_flags) {
+    required_flags = NormalizeInitFlags(required_flags);
     std::unique_lock lock(query_execution_mutex);
     uint64_t shared_pool_admission_ticket = 0;
     bool required_warmup_pending = false;
@@ -305,8 +307,10 @@ bool DexKit::NeedWarmUp(uint32_t init_flags) const {
         return false;
     }
 
-    uint32_t cross_ref_flags = init_flags & (kCallerMethod | kRwFieldMethod);
-    uint32_t cache_flags = init_flags & ~cross_ref_flags;
+    init_flags = NormalizeInitFlags(init_flags);
+    uint32_t cross_ref_flags = init_flags & kCrossRefIdentityFlags;
+    uint32_t aggregate_flags = init_flags & (kCallerMethod | kRwFieldMethod);
+    uint32_t cache_flags = init_flags & ~kFieldIdentity;
 
     if (cache_flags != 0) {
         for (const auto &dex_item: dex_items) {
@@ -322,10 +326,10 @@ bool DexKit::NeedWarmUp(uint32_t init_flags) const {
                 return true;
             }
         }
+    }
+    if (aggregate_flags != 0) {
         auto aggregate_ready_flags = cross_ref_aggregate_flag.load(std::memory_order_acquire);
-        if ((aggregate_ready_flags & cross_ref_flags) != cross_ref_flags) {
-            return true;
-        }
+        if ((aggregate_ready_flags & aggregate_flags) != aggregate_flags) return true;
     }
 
     return false;
@@ -605,7 +609,7 @@ DexKit::FindClass(const schema::FindClass *query) {
         for (; future_index < futures.size(); ++future_index) {
             auto vec = futures[future_index].get();
             if (vec.empty()) continue;
-            result.insert(result.end(), vec.begin(), vec.end());
+            result.insert(result.end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
             if (find_first) {
                 should_drain_pending_futures = true;
                 ++future_index;
@@ -718,7 +722,7 @@ DexKit::FindMethod(const schema::FindMethod *query) {
         for (; future_index < futures.size(); ++future_index) {
             auto vec = futures[future_index].get();
             if (vec.empty()) continue;
-            result.insert(result.end(), vec.begin(), vec.end());
+            result.insert(result.end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
             if (find_first) {
                 should_drain_pending_futures = true;
                 ++future_index;
@@ -1343,7 +1347,7 @@ DexKit::GetUsingStrings(int64_t encode_method_id) {
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::GetUsingFields(int64_t encode_method_id) {
-    auto execution_guard = EnterQueryExecution(kRwFieldMethod | kMethodUsingField);
+    auto execution_guard = EnterQueryExecution(kFieldIdentity | kMethodUsingField);
 
     auto dex_id = encode_method_id >> 32;
     auto method_id = encode_method_id & UINT32_MAX;
@@ -1460,183 +1464,24 @@ void DexKit::BuildCrossRefAggregates(uint32_t aggregate_flags) {
     auto thread_num = NormalizeThreadNum(_thread_num.load(std::memory_order_acquire));
 
     if ((aggregate_flags & kCallerMethod) != 0) {
-        struct MethodAggregateWorkItem {
-            uint16_t source_dex_id;
-            uint32_t source_method_idx;
-            uint32_t target_method_idx;
-        };
-
-        std::vector<std::vector<MethodAggregateWorkItem>> work_items(dex_items.size());
-        std::vector<phmap::flat_hash_map<uint32_t, size_t>> reserve_counts(dex_items.size());
-
-        for (uint16_t source_dex_id = 0; source_dex_id < dex_items.size(); ++source_dex_id) {
-            auto &source_dex = dex_items[source_dex_id];
-            for (const auto &pending_item: source_dex->pending_aggregate_method_work_items) {
-                auto &source_callers = source_dex->method_caller_ids[pending_item.source_method_idx];
-                DEXKIT_CHECK(!source_callers.empty());
-                work_items[pending_item.target_dex_id].push_back(MethodAggregateWorkItem{
-                        .source_dex_id = source_dex_id,
-                        .source_method_idx = pending_item.source_method_idx,
-                        .target_method_idx = pending_item.target_method_idx
-                });
-                reserve_counts[pending_item.target_dex_id][pending_item.target_method_idx] += source_callers.size();
-            }
-        }
-
-        auto aggregate_target_methods = [this, &work_items, &reserve_counts](uint16_t target_dex_id) {
-            auto *target_dex = dex_items[target_dex_id].get();
-            for (const auto &[target_method_idx, extra_count]: reserve_counts[target_dex_id]) {
-                auto &target_callers = target_dex->method_caller_ids[target_method_idx];
-                target_callers.reserve(target_callers.size() + extra_count);
-            }
-            for (const auto &work_item: work_items[target_dex_id]) {
-                auto *source_dex = dex_items[work_item.source_dex_id].get();
-                auto &source_callers = source_dex->method_caller_ids[work_item.source_method_idx];
-                auto &target_callers = target_dex->method_caller_ids[work_item.target_method_idx];
-                target_callers.insert(target_callers.end(), source_callers.begin(), source_callers.end());
-                source_callers.clear();
-                source_callers.shrink_to_fit();
-            }
-        };
-
-        size_t target_count = 0;
-        for (const auto &target_work_items: work_items) {
-            if (!target_work_items.empty()) {
-                ++target_count;
-            }
-        }
-        if (target_count > 1 && thread_num > 1) {
-            ThreadPool pool(std::min(static_cast<size_t>(thread_num), target_count));
-            std::vector<std::future<void>> futures;
-            futures.reserve(target_count);
-            for (uint16_t target_dex_id = 0; target_dex_id < work_items.size(); ++target_dex_id) {
-                if (work_items[target_dex_id].empty()) {
-                    continue;
-                }
-                futures.emplace_back(pool.enqueue([aggregate_target_methods, target_dex_id]() {
-                    aggregate_target_methods(target_dex_id);
-                }));
-            }
-            for (auto &future: futures) {
-                future.get();
-            }
-        } else {
-            for (uint16_t target_dex_id = 0; target_dex_id < work_items.size(); ++target_dex_id) {
-                if (work_items[target_dex_id].empty()) {
-                    continue;
-                }
-                aggregate_target_methods(target_dex_id);
-            }
-        }
-
-        for (auto &source_dex: dex_items) {
-            source_dex->pending_aggregate_method_work_items.clear();
-            source_dex->pending_aggregate_method_work_items.shrink_to_fit();
-        }
+        BuildCompactCallers(thread_num);
     }
 
     if ((aggregate_flags & kRwFieldMethod) != 0) {
-        struct FieldAggregateWorkItem {
-            uint16_t source_dex_id;
-            uint32_t source_field_idx;
-            uint32_t target_field_idx;
-        };
-
-        std::vector<std::vector<FieldAggregateWorkItem>> work_items(dex_items.size());
-        std::vector<phmap::flat_hash_map<uint32_t, size_t>> get_reserve_counts(dex_items.size());
-        std::vector<phmap::flat_hash_map<uint32_t, size_t>> put_reserve_counts(dex_items.size());
-
-        for (uint16_t source_dex_id = 0; source_dex_id < dex_items.size(); ++source_dex_id) {
-            auto &source_dex = dex_items[source_dex_id];
-            for (const auto &pending_item: source_dex->pending_aggregate_field_work_items) {
-                auto &source_get_methods = source_dex->field_get_method_ids[pending_item.source_field_idx];
-                auto &source_put_methods = source_dex->field_put_method_ids[pending_item.source_field_idx];
-                DEXKIT_CHECK(!source_get_methods.empty() || !source_put_methods.empty());
-                work_items[pending_item.target_dex_id].push_back(FieldAggregateWorkItem{
-                        .source_dex_id = source_dex_id,
-                        .source_field_idx = pending_item.source_field_idx,
-                        .target_field_idx = pending_item.target_field_idx
-                });
-                get_reserve_counts[pending_item.target_dex_id][pending_item.target_field_idx] += source_get_methods.size();
-                put_reserve_counts[pending_item.target_dex_id][pending_item.target_field_idx] += source_put_methods.size();
-            }
-        }
-
-        auto aggregate_target_fields = [this, &work_items, &get_reserve_counts, &put_reserve_counts](uint16_t target_dex_id) {
-            auto *target_dex = dex_items[target_dex_id].get();
-            for (const auto &[target_field_idx, get_extra_count]: get_reserve_counts[target_dex_id]) {
-                auto &target_get_methods = target_dex->field_get_method_ids[target_field_idx];
-                target_get_methods.reserve(target_get_methods.size() + get_extra_count);
-            }
-            for (const auto &[target_field_idx, put_extra_count]: put_reserve_counts[target_dex_id]) {
-                auto &target_put_methods = target_dex->field_put_method_ids[target_field_idx];
-                target_put_methods.reserve(target_put_methods.size() + put_extra_count);
-            }
-            for (const auto &work_item: work_items[target_dex_id]) {
-                auto *source_dex = dex_items[work_item.source_dex_id].get();
-
-                auto &source_get_methods = source_dex->field_get_method_ids[work_item.source_field_idx];
-                if (!source_get_methods.empty()) {
-                    auto &target_get_methods = target_dex->field_get_method_ids[work_item.target_field_idx];
-                    target_get_methods.insert(target_get_methods.end(), source_get_methods.begin(), source_get_methods.end());
-                    source_get_methods.clear();
-                    source_get_methods.shrink_to_fit();
-                }
-
-                auto &source_put_methods = source_dex->field_put_method_ids[work_item.source_field_idx];
-                if (!source_put_methods.empty()) {
-                    auto &target_put_methods = target_dex->field_put_method_ids[work_item.target_field_idx];
-                    target_put_methods.insert(target_put_methods.end(), source_put_methods.begin(), source_put_methods.end());
-                    source_put_methods.clear();
-                    source_put_methods.shrink_to_fit();
-                }
-            }
-        };
-
-        size_t target_count = 0;
-        for (const auto &target_work_items: work_items) {
-            if (!target_work_items.empty()) {
-                ++target_count;
-            }
-        }
-        if (target_count > 1 && thread_num > 1) {
-            ThreadPool pool(std::min(static_cast<size_t>(thread_num), target_count));
-            std::vector<std::future<void>> futures;
-            futures.reserve(target_count);
-            for (uint16_t target_dex_id = 0; target_dex_id < work_items.size(); ++target_dex_id) {
-                if (work_items[target_dex_id].empty()) {
-                    continue;
-                }
-                futures.emplace_back(pool.enqueue([aggregate_target_fields, target_dex_id]() {
-                    aggregate_target_fields(target_dex_id);
-                }));
-            }
-            for (auto &future: futures) {
-                future.get();
-            }
-        } else {
-            for (uint16_t target_dex_id = 0; target_dex_id < work_items.size(); ++target_dex_id) {
-                if (work_items[target_dex_id].empty()) {
-                    continue;
-                }
-                aggregate_target_fields(target_dex_id);
-            }
-        }
-
-        for (auto &source_dex: dex_items) {
-            source_dex->pending_aggregate_field_work_items.clear();
-            source_dex->pending_aggregate_field_work_items.shrink_to_fit();
-        }
+        BuildCompactFields(thread_num);
     }
 }
 
 void DexKit::InitDexCache(uint32_t init_flags) {
-    uint32_t cross_ref_flags = init_flags & (kCallerMethod | kRwFieldMethod);
+    init_flags = NormalizeInitFlags(init_flags);
+    uint32_t cross_ref_flags = init_flags & kCrossRefIdentityFlags;
+    uint32_t requested_aggregate_flags = init_flags & (kCallerMethod | kRwFieldMethod);
+    uint32_t cache_flags = init_flags & ~kFieldIdentity;
     auto thread_num = NormalizeThreadNum(_thread_num.load(std::memory_order_acquire));
     std::vector<std::pair<DexItem *, uint32_t>> init_jobs;
     init_jobs.reserve(dex_items.size());
     for (auto &dex_item: dex_items) {
-        auto claimed_flags = dex_item->BeginInitCache(init_flags);
+        auto claimed_flags = dex_item->BeginInitCache(cache_flags);
         if (claimed_flags != 0) {
             init_jobs.emplace_back(dex_item.get(), claimed_flags);
         }
@@ -1652,7 +1497,7 @@ void DexKit::InitDexCache(uint32_t init_flags) {
         }
     }
     for (auto &dex_item: dex_items) {
-        dex_item->WaitInitCache(init_flags);
+        dex_item->WaitInitCache(cache_flags);
     }
 
     if (cross_ref_flags == 0) {
@@ -1680,12 +1525,12 @@ void DexKit::InitDexCache(uint32_t init_flags) {
         dex_item->WaitPutCrossRef(cross_ref_flags);
     }
 
-    auto aggregate_flags = BeginBuildCrossRefAggregates(cross_ref_flags);
+    auto aggregate_flags = BeginBuildCrossRefAggregates(requested_aggregate_flags);
     if (aggregate_flags != 0) {
         BuildCrossRefAggregates(aggregate_flags);
         FinishBuildCrossRefAggregates(aggregate_flags);
     }
-    WaitBuildCrossRefAggregates(cross_ref_flags);
+    WaitBuildCrossRefAggregates(requested_aggregate_flags);
 }
 
 void DexKit::BuildPackagesMatchTrie(

@@ -1,6 +1,8 @@
 package org.luckypray.dexkit
 
 import org.junit.Test
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -745,6 +747,29 @@ class UnitTest {
     }
 
     @Test
+    fun testBatchStringsMatchOrdinaryQueriesAcrossModesAndEmptyStrings() {
+        DexKitBridge.create(demoApkPath).use { target ->
+            val groups = mapOf(
+                "missing" to listOf("dexkit-no-such-literal-9187"),
+                "hit" to listOf("PlayActivity"),
+                "empty" to listOf(""),
+                "case" to listOf("playactivity"),
+                "and" to listOf("PlayActivity", "onCreate")
+            )
+            for (type in StringMatchType.values()) for (ignoreCase in listOf(false, true)) {
+                val batch = target.batchFindMethodUsingStrings { groups(groups, type, ignoreCase) }
+                assert(batch.keys == groups.keys)
+                groups.forEach { (key, words) ->
+                    val ordinary = target.findMethod {
+                        matcher { usingStrings(words, type, ignoreCase) }
+                    }
+                    assert(batch[key]!!.map { it.descriptor }.sorted() == ordinary.map { it.descriptor }.sorted())
+                }
+            }
+        }
+    }
+
+    @Test
     fun testConcurrentBatchFindClassUsingStringsOnSharedBridge() {
         DexKitBridge.create(demoApkPath).use { parallelBridge ->
             parallelBridge.setThreadNum(2)
@@ -943,6 +968,174 @@ class UnitTest {
                 }
             }
             assert(res.any { it.getEncodeId() == method.getEncodeId() })
+        }
+    }
+
+    @Test
+    fun testLazyMetadataMatchesFullCacheIncludingEmptyMethods() {
+        DexKitBridge.create(demoApkPath).use { target ->
+            val token = getBridgeToken(target)
+            val methods = target.findMethod {
+                searchPackages("org.luckypray.dexkit.demo")
+            }
+            assert(methods.isNotEmpty())
+            val before = methods.associate { method ->
+                val id = method.getEncodeId()
+                id to Pair(nativeGetMethodUsingStrings(token, id), nativeGetMethodOpCodes(token, id))
+            }
+            // Router's abstract annotation members have no code; empty is a value.
+            assert(before.values.any { it.second.isEmpty() })
+            assert(before.values.any { it.first.isNotEmpty() && it.second.isNotEmpty() })
+            target.initFullCache()
+            before.forEach { (id, expected) ->
+                // Bypass MethodData's Kotlin lazy properties to read native state again.
+                assert(nativeGetMethodUsingStrings(token, id) == expected.first)
+                assert(nativeGetMethodOpCodes(token, id) == expected.second)
+            }
+        }
+    }
+
+    @Test
+    fun testCompactRowsSurvivePartialWarmupInEitherOrder() {
+        for (stringsFirst in listOf(true, false)) {
+            DexKitBridge.create(demoApkPath).use { target ->
+                val methods = target.findMethod {
+                    searchPackages("org.luckypray.dexkit.demo")
+                }
+                assertTrue(methods.isNotEmpty())
+                // Include preceding IDs to exercise gaps outside declared method lists.
+                val ids = methods.flatMap {
+                    val id = it.getEncodeId()
+                    if ((id and 0xffffffffL) == 0L) listOf(id) else listOf(id - 1, id)
+                }.distinct().sorted()
+                val token = getBridgeToken(target)
+                fun strings() = ids.associateWith { nativeGetMethodUsingStrings(token, it) }
+                fun opcodes() = ids.associateWith { nativeGetMethodOpCodes(token, it) }
+                fun invokes() = ids.associateWith { id ->
+                    target.getInvokeMethods(id).map { it.getEncodeId() }
+                }
+                fun callers() = ids.associateWith { id ->
+                    target.getCallMethods(id).map { it.getEncodeId() }
+                }
+                fun warmStrings() {
+                    target.findMethod { matcher { usingStrings("PlayActivity") } }
+                }
+
+                val expectedStrings = strings()
+                val expectedOpcodes = opcodes()
+                assertTrue(expectedOpcodes.values.any { it.isEmpty() })
+                assertTrue(expectedStrings.values.any { it.isNotEmpty() })
+                if (stringsFirst) warmStrings()
+                val expectedInvokes = invokes()
+                val expectedCallers = callers()
+                if (!stringsFirst) warmStrings()
+
+                // Fresh native reads bypass MethodData's lazy properties. List
+                // equality checks order and duplicate entries, not only membership.
+                assertEquals(expectedStrings, strings())
+                assertEquals(expectedInvokes, invokes())
+                assertEquals(expectedCallers, callers())
+                target.initFullCache()
+                assertEquals(expectedStrings, strings())
+                assertEquals(expectedOpcodes, opcodes())
+                assertEquals(expectedInvokes, invokes())
+                assertEquals(expectedCallers, callers())
+            }
+        }
+    }
+
+    @Test
+    fun testFieldReverseRowsSurviveWarmupAndConcurrentReads() {
+        val fieldIds: List<Long>
+        val methodIds: List<Long>
+        fun rows(target: DexKitBridge, ids: List<Long>) = ids.associateWith { id ->
+            // Read through the bridge each time, bypassing FieldData's lazy values.
+            target.readFieldMethods(id).map { it.getEncodeId() } to
+                    target.writeFieldMethods(id).map { it.getEncodeId() }
+        }
+        val expected: Map<Long, Pair<List<Long>, List<Long>>>
+        DexKitBridge.create(demoApkPath).use { reference ->
+            fieldIds = reference.findField {
+                searchPackages("org.luckypray.dexkit.demo")
+            }.map { it.getEncodeId() }
+            methodIds = reference.findMethod {
+                searchPackages("org.luckypray.dexkit.demo")
+            }.map { it.getEncodeId() }
+            reference.initFullCache()
+            expected = rows(reference, fieldIds)
+        }
+        assertTrue(fieldIds.isNotEmpty() && methodIds.isNotEmpty())
+        assertTrue(expected.values.any { it.first.isNotEmpty() })
+        assertTrue(expected.values.any { it.second.isNotEmpty() })
+        assertTrue(expected.values.any { it.first.isEmpty() || it.second.isEmpty() })
+        for (schedule in 0..3) {
+            DexKitBridge.create(demoApkPath).use { target ->
+                if (schedule == 1) methodIds.forEach { target.getMethodUsingFields(it) }
+                if (schedule == 2) methodIds.forEach { target.getCallMethods(it) }
+                if (schedule == 3) {
+                    val start = CountDownLatch(1)
+                    val executor = Executors.newFixedThreadPool(3)
+                    try {
+                        val readers = executor.submit<Unit> {
+                            start.await(10, TimeUnit.SECONDS)
+                            assertEquals(expected, rows(target, fieldIds))
+                        }
+                        val callers = executor.submit<Unit> {
+                            start.await(10, TimeUnit.SECONDS)
+                            methodIds.forEach { target.getCallMethods(it) }
+                        }
+                        val warmup = executor.submit<Unit> {
+                            start.await(10, TimeUnit.SECONDS)
+                            target.initFullCache()
+                        }
+                        start.countDown()
+                        listOf(readers, callers, warmup).forEach { it.get(60, TimeUnit.SECONDS) }
+                    } finally {
+                        executor.shutdownNow()
+                    }
+                }
+                // List equality preserves occurrence order and repeated uses.
+                assertEquals(expected, rows(target, fieldIds))
+                target.initFullCache()
+                assertEquals(expected, rows(target, fieldIds))
+            }
+        }
+    }
+
+    @Test
+    fun testColdMetadataReadersRaceFullWarmup() {
+        val descriptor = "Lorg/luckypray/dexkit/demo/PlayActivity;->onCreate(Landroid/os/Bundle;)V"
+        val expectedStrings: List<String>
+        val expectedOpcodes: List<Int>
+        DexKitBridge.create(demoApkPath).use { reference ->
+            val id = reference.getMethodData(descriptor)!!.getEncodeId()
+            expectedStrings = nativeGetMethodUsingStrings(getBridgeToken(reference), id)
+            expectedOpcodes = nativeGetMethodOpCodes(getBridgeToken(reference), id)
+        }
+        DexKitBridge.create(demoApkPath).use { target ->
+            val id = target.getMethodData(descriptor)!!.getEncodeId()
+            val token = getBridgeToken(target)
+            val start = CountDownLatch(1)
+            val executor = Executors.newFixedThreadPool(7)
+            try {
+                val readers = (0 until 6).map {
+                    executor.submit<Unit> {
+                        start.await(10, TimeUnit.SECONDS)
+                        repeat(16) {
+                            assert(nativeGetMethodUsingStrings(token, id) == expectedStrings)
+                            assert(nativeGetMethodOpCodes(token, id) == expectedOpcodes)
+                        }
+                    }
+                }
+                val warmup = executor.submit<Unit> {
+                    start.await(10, TimeUnit.SECONDS)
+                    target.initFullCache()
+                }
+                start.countDown()
+                (readers + warmup).forEach { it.get(60, TimeUnit.SECONDS) }
+            } finally {
+                executor.shutdownNow()
+            }
         }
     }
 }

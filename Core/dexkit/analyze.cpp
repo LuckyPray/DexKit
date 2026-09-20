@@ -395,8 +395,8 @@ AnalyzeRet Analyze(const schema::MethodMatcher *matcher, int dex_depth) {
         ret.declare_class.insert(ret.declare_class.end(), result.declare_class.begin(), result.declare_class.end());
     }
     if (matcher->using_fields()) {
-        // 不初始化 kRwFieldMethod 可能会导致复杂查询无法跳转至对应的 dexItem 执行
-        ret.need_flags |= kMethodUsingField | kRwFieldMethod;
+        // Field identity is required for nested matching across DEX files.
+        ret.need_flags |= kMethodUsingField | kFieldIdentity;
         for (auto i = 0; i < matcher->using_fields()->size(); ++i) {
             // 使用的 field 可能定义在其它 dex 中
             auto result = Analyze(matcher->using_fields()->Get(i)->field(), dex_depth + 1);

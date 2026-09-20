@@ -18,6 +18,7 @@
 // <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
 
 #include "dex_item.h"
+#include "negative_string_memo.h"
 
 namespace dexkit {
 
@@ -61,9 +62,15 @@ DexItem::BatchFindClassUsingStrings(
         QueryContext &query_context
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    StringCandidateGroups candidate_groups;
+    const bool inverted = !query->in_classes() && !query->search_packages() && !query->exclude_packages()
+            && BuildStringCandidateGroups(acTrie, keywords_map, match_type_map, true, candidate_groups);
+    inverted_string::Bits candidate_classes(inverted ? type_names.size() : 0);
+    if (inverted) for (const auto &[key, hits] : candidate_groups) candidate_classes.Or(hits);
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
+        if (inverted && !candidate_classes.Has(type_idx)) continue;
         if (class_method_ids[type_idx].empty()) continue;
         if (query->in_classes() && !in_class_set.contains(type_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
@@ -71,11 +78,16 @@ DexItem::BatchFindClassUsingStrings(
             if (query->exclude_packages() && (hit & 1)) continue;
             if (query->search_packages() && !(hit >> 1)) continue;
         }
-
+        if (inverted) {
+            for (const auto &[key, hits] : candidate_groups) {
+                if (hits.Has(type_idx)) find_result[key].emplace_back(type_idx);
+            }
+            continue;
+        }
         if (keywords_map.empty()) {
             std::vector<std::string_view> using_strings;
             for (auto method_idx: class_method_ids[type_idx]) {
-                auto &method_using_strings = method_using_string_ids[method_idx];
+                auto &&method_using_strings = method_using_string_ids[method_idx];
                 using_strings.reserve(using_strings.size() + method_using_strings.size());
                 for (auto string_idx: method_using_strings) {
                     using_strings.emplace_back(this->strings[string_idx]);
@@ -161,9 +173,21 @@ DexItem::BatchFindMethodUsingStrings(
         QueryContext &query_context
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    StringCandidateGroups candidate_groups;
+    const bool inverted = !query->in_classes() && !query->in_methods() && !query->search_packages()
+            && !query->exclude_packages()
+            && BuildStringCandidateGroups(acTrie, keywords_map, match_type_map, false, candidate_groups);
+    inverted_string::Bits candidate_methods(inverted ? reader.MethodIds().size() : 0);
+    inverted_string::Bits candidate_classes(inverted ? type_names.size() : 0);
+    if (inverted) {
+        for (const auto &[key, hits] : candidate_groups) candidate_methods.Or(hits);
+        candidate_methods.Each([&](uint32_t method) { candidate_classes.Set(reader.MethodIds()[method].class_idx); });
+    }
+    NegativeStringMemo negative_memo(query_context, keywords_map.empty() || inverted ? 0 : strings.size());
 
     std::map<std::string_view, std::vector<uint32_t>> find_result;
     for (int type_idx = 0; type_idx < this->type_names.size(); ++type_idx) {
+        if (inverted && !candidate_classes.Has(type_idx)) continue;
         if (class_method_ids[type_idx].empty()) continue;
         if (query->in_classes() && !in_class_set.contains(type_idx)) continue;
         if (query->search_packages() || query->exclude_packages()) {
@@ -173,13 +197,21 @@ DexItem::BatchFindMethodUsingStrings(
         }
 
         for (auto method_idx: class_method_ids[type_idx]) {
+            if (inverted && !candidate_methods.Has(method_idx)) continue;
             if (query->in_methods() && !in_method_set.contains(method_idx)) continue;
             auto code = this->method_codes[method_idx];
             if (code == nullptr) continue;
-
+            if (inverted) {
+                // Preserve the existing class-method row order (InitBaseCache
+                // sorts it after decoding direct and virtual methods).
+                for (const auto &[key, hits] : candidate_groups) {
+                    if (hits.Has(method_idx)) find_result[key].emplace_back(method_idx);
+                }
+                continue;
+            }
             if (keywords_map.empty()) {
                 std::vector<std::string_view> using_strings;
-                auto &using_string_ids = method_using_string_ids[method_idx];
+                auto &&using_string_ids = method_using_string_ids[method_idx];
                 using_strings.reserve(using_string_ids.size());
                 for (auto string_idx: using_string_ids) {
                     using_strings.emplace_back(this->strings[string_idx]);
@@ -200,7 +232,9 @@ DexItem::BatchFindMethodUsingStrings(
             for (auto string_idx: method_using_string_ids[method_idx]) {
                 if (string_idx == this->empty_string_id) ++using_empty_string_count;
                 auto str = this->strings[string_idx];
+                if (negative_memo.Contains(string_idx)) continue;
                 auto hits = acTrie.ParseText(str);
+                if (hits.empty()) negative_memo.RecordEmpty(string_idx);
                 for (auto &hit: hits) {
                     auto match_type = match_type_map[hit.value];
                     bool match;

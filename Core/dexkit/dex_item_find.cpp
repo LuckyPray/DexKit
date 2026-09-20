@@ -72,22 +72,27 @@ DexItem::FindClass(
     std::vector<std::future<std::vector<ClassBean>>> futures;
     uint32_t split_count;
     auto should_stop_submission = query_context.IsEarlyExitEnabled();
+    inverted_string::QueryPlan string_plan;
+    if (!should_stop_submission && !query->in_classes() && !query->search_packages()
+            && !query->exclude_packages()) string_plan = PlanRootStringCandidates(query->matcher());
+    if (string_plan.Admitted()) slice_size = 0;
     if (slice_size > 0) {
         split_count = (this->reader.ClassDefs().size() + slice_size - 1) / slice_size;
     } else {
         split_count = 1;
         slice_size = this->reader.ClassDefs().size();
     }
+    if (string_plan.route == inverted_string::QueryPlan::Route::Empty) split_count = 0;
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
         if (should_stop_submission && executor.ShouldSkipTask()) break;
         query_context.MarkTaskSubmitted();
         futures.emplace_back(SubmitQueryTask(executor,
-                [this, query, &in_class_set, &packageTrie, i, slice_size, &query_context] {
+                [this, query, &in_class_set, &packageTrie, i, slice_size, &query_context, string_plan] {
                     auto task_scope = query_context.TrackTaskExecution();
                     auto result = FindClass(query, in_class_set, packageTrie, i * slice_size,
                                             std::min((i + 1) * slice_size, (uint32_t) this->reader.ClassDefs().size()),
-                                            query_context);
+                                            query_context, string_plan);
                     query_context.MarkTaskCompleted();
                     return result;
                 }
@@ -109,22 +114,27 @@ DexItem::FindMethod(
     std::vector<std::future<std::vector<MethodBean>>> futures;
     uint32_t split_count;
     auto should_stop_submission = query_context.IsEarlyExitEnabled();
+    inverted_string::QueryPlan string_plan;
+    if (!should_stop_submission && !query->in_classes() && !query->in_methods() && !query->search_packages()
+            && !query->exclude_packages()) string_plan = PlanRootStringCandidates(query->matcher());
+    if (string_plan.Admitted()) slice_size = 0;
     if (slice_size > 0) {
         split_count = (this->reader.MethodIds().size() + slice_size - 1) / slice_size;
     } else {
         split_count = 1;
         slice_size = this->reader.MethodIds().size();
     }
+    if (string_plan.route == inverted_string::QueryPlan::Route::Empty) split_count = 0;
     futures.reserve(split_count);
     for (auto i = 0; i < split_count; ++i) {
         if (should_stop_submission && executor.ShouldSkipTask()) break;
         query_context.MarkTaskSubmitted();
         futures.emplace_back(SubmitQueryTask(executor,
-                [this, query, &in_class_set, &in_method_set, &packageTrie, i, slice_size, &query_context] {
+                [this, query, &in_class_set, &in_method_set, &packageTrie, i, slice_size, &query_context, string_plan] {
                     auto task_scope = query_context.TrackTaskExecution();
                     auto result = FindMethod(query, in_class_set, in_method_set, packageTrie, i * slice_size,
                                              std::min((i + 1) * slice_size, (uint32_t) this->reader.MethodIds().size()),
-                                             query_context);
+                                             query_context, string_plan);
                     query_context.MarkTaskCompleted();
                     return result;
                 }
@@ -177,9 +187,12 @@ DexItem::FindClass(
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
-        QueryContext &query_context
+        QueryContext &query_context,
+        const inverted_string::QueryPlan &string_plan
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    DEXKIT_CHECK(!string_plan.Admitted() || (start == 0 && end == reader.ClassDefs().size()));
+    if (string_plan.route == inverted_string::QueryPlan::Route::Empty) return {};
     auto *prefilter_plan = internal::GetClassUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     std::vector<uint32_t> find_result;
@@ -197,7 +210,21 @@ DexItem::FindClass(
         return true;
     };
 
-    if (query_context.IsEarlyExitEnabled()) {
+    inverted_string::Bits candidates;
+    const bool inverted = string_plan.Admitted()
+            && BuildRootStringCandidates(query->matcher()->using_strings(), true, string_plan, candidates);
+    const void *proof_matchers = query->matcher() ? query->matcher()->using_strings() : nullptr;
+    const auto *proof = inverted ? &candidates : nullptr;
+    inverted_string::MatchScope scope(this, proof_matchers, true, proof);
+    if (inverted) {
+        std::vector<uint32_t> definitions;
+        candidates.Each([&](uint32_t type) {
+            if (type_def_flag[type]) definitions.push_back(type_def_idx[type]);
+        });
+        // ClassDefs order need not equal type-ID order.
+        std::sort(definitions.begin(), definitions.end());
+        ScanFindItems<false>(definitions, query_context, try_match_class);
+    } else if (query_context.IsEarlyExitEnabled()) {
         ScanFindRange<true>(start, end, query_context, try_match_class);
     } else {
         ScanFindRange<false>(start, end, query_context, try_match_class);
@@ -219,9 +246,12 @@ DexItem::FindMethod(
         trie::PackageTrie &packageTrie,
         uint32_t start,
         uint32_t end,
-        QueryContext &query_context
+        QueryContext &query_context,
+        const inverted_string::QueryPlan &string_plan
 ) {
     auto query_binding = query_context.BindToCurrentThread();
+    DEXKIT_CHECK(!string_plan.Admitted() || (start == 0 && end == reader.MethodIds().size()));
+    if (string_plan.route == inverted_string::QueryPlan::Route::Empty) return {};
     auto *prefilter_plan = internal::GetMethodUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     std::vector<uint32_t> find_result;
@@ -241,7 +271,18 @@ DexItem::FindMethod(
         return true;
     };
 
-    if (query_context.IsEarlyExitEnabled()) {
+    inverted_string::Bits candidates;
+    const bool inverted = string_plan.Admitted()
+            && BuildRootStringCandidates(query->matcher()->using_strings(), false, string_plan, candidates);
+    const void *proof_matchers = query->matcher() ? query->matcher()->using_strings() : nullptr;
+    const auto *proof = inverted ? &candidates : nullptr;
+    inverted_string::MatchScope scope(this, proof_matchers, false, proof);
+    if (inverted) {
+        // Root results admit only locally defined owners. Cross-reference
+        // bindings are populated only for undefined owners; nested matches
+        // still resolve them through IsMethodMatched without this scope.
+        candidates.Each(try_match_method);
+    } else if (query_context.IsEarlyExitEnabled()) {
         ScanFindRange<true>(start, end, query_context, try_match_method);
     } else {
         ScanFindRange<false>(start, end, query_context, try_match_method);
@@ -411,9 +452,9 @@ DexItem::FindField(
         return true;
     };
     if (query_context.IsEarlyExitEnabled()) {
-        ScanFindItems<true>(this->class_field_ids[type_idx], query_context, try_match_field);
+        ScanFindItems<true>(GetClassFieldIds(type_idx), query_context, try_match_field);
     } else {
-        ScanFindItems<false>(this->class_field_ids[type_idx], query_context, try_match_field);
+        ScanFindItems<false>(GetClassFieldIds(type_idx), query_context, try_match_field);
     }
 
     std::vector<FieldBean> result;

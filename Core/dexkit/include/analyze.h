@@ -44,6 +44,13 @@ const uint32_t kMethodUsingField = 0x0800;
 const uint32_t kRwFieldMethod = 0x1000; // cross
 const uint32_t kOpSequence = 0x2000;
 const uint32_t kUsingNumber = 0x4000;
+const uint32_t kFieldIdentity = 0x8000;
+const uint32_t kCrossRefIdentityFlags = kCallerMethod | kFieldIdentity;
+
+inline uint32_t NormalizeInitFlags(uint32_t flags) {
+    if (flags & kRwFieldMethod) flags |= kFieldIdentity | kMethodUsingField;
+    return flags;
+}
 
 struct AnalyzeRet {
     uint32_t need_flags = 0;

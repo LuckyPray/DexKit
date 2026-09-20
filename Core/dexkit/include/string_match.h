@@ -23,10 +23,11 @@
 #include <vector>
 #include <cstdint>
 #include <optional>
+#include <span>
 
 namespace kmp {
 
-static void FindNext(const std::vector<uint8_t> &data, const std::vector<std::optional<uint8_t>> &find, std::vector<int> &next) {
+static void FindNext(std::span<const uint8_t> data, const std::vector<std::optional<uint8_t>> &find, std::vector<int> &next) {
     int i = 0;
     int k = next[0] = -1;
     int len = (int) find.size();
@@ -39,7 +40,7 @@ static void FindNext(const std::vector<uint8_t> &data, const std::vector<std::op
     }
 }
 
-static int FindIndex(const std::vector<uint8_t> &data, const std::vector<std::optional<uint8_t>> &find) {
+static int FindIndex(std::span<const uint8_t> data, const std::vector<std::optional<uint8_t>> &find) {
     std::vector<int> next(find.size() + 5);
     FindNext(data, find, next);
     int i = 0, j = 0;
