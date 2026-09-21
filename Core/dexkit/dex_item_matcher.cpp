@@ -261,7 +261,7 @@ phmap::flat_hash_map<std::thread::id, std::vector<MatcherThreadLocalCacheSlot>> 
 constexpr size_t kPersistentUsingStringsCacheLimit = 32;
 
 struct NormalizedUsingStringMatcher {
-    std::string value;
+    std::string_view value;
     schema::StringMatchType match_type = schema::StringMatchType::Contains;
     bool ignore_case = false;
 };
@@ -303,6 +303,13 @@ struct PersistentUsingStringsThreadCache {
     std::vector<Entry> entries;
 };
 
+static NormalizedUsingStringMatcher NormalizeUsingStringMatcher(const schema::StringMatcher *matcher) {
+    auto value = matcher->value()->string_view();
+    auto type = matcher->match_type();
+    ConvertSimilarRegex(value, type);
+    return {value, type, matcher->ignore_case()};
+}
+
 static std::vector<NormalizedUsingStringMatcher> NormalizeUsingStringsMatchers(
         const flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>> *using_strings_matcher
 ) {
@@ -312,15 +319,7 @@ static std::vector<NormalizedUsingStringMatcher> NormalizeUsingStringsMatchers(
     }
     normalized.reserve(using_strings_matcher->size());
     for (int i = 0; i < using_strings_matcher->size(); ++i) {
-        auto string_matcher = using_strings_matcher->Get(i);
-        auto value = string_matcher->value()->string_view();
-        auto match_type = string_matcher->match_type();
-        ConvertSimilarRegex(value, match_type);
-        normalized.push_back(NormalizedUsingStringMatcher{
-                .value = std::string(value),
-                .match_type = match_type,
-                .ignore_case = string_matcher->ignore_case(),
-        });
+        normalized.push_back(NormalizeUsingStringMatcher(using_strings_matcher->Get(i)));
     }
     return normalized;
 }
@@ -490,83 +489,60 @@ static PersistentUsingStringsKeywordsCache *GetUsingStringsKeywordsCache(
     return cache_ref->get();
 }
 
-bool DexItem::CanUseInvertedStrings(const StringMatcherVector *matchers) const {
-    if (!matchers || matchers->size() == 0 || !CanUseKeywordUsingStringsMatchers(matchers)) return false;
-    // Empty patterns have intentionally different ordinary/Batch semantics;
-    // let the established matcher handle these cheap, degenerate root queries.
-    for (const auto *matcher : *matchers) if (matcher->value()->size() == 0) return false;
-    return true;
-}
-
-inverted_string::QueryPlan DexItem::PlanRootStringCandidates(const schema::MethodMatcher *matcher) const {
-    if (!matcher) return {};
-    const bool strings_only = !matcher->method_name() && !matcher->access_flags() && !matcher->declaring_class()
-            && !matcher->return_type() && !matcher->parameters() && !matcher->annotations() && !matcher->op_codes()
-            && !matcher->using_fields() && !matcher->using_numbers() && !matcher->invoking_methods()
-            && !matcher->method_callers() && !matcher->proto_shorty() && !HasLogicalGroups(matcher);
-    return PlanRootStringCandidates(matcher->using_strings(), false, strings_only);
-}
-
-inverted_string::QueryPlan DexItem::PlanRootStringCandidates(const schema::ClassMatcher *matcher) const {
-    if (!matcher) return {};
-    const bool strings_only = !matcher->smali_source() && !matcher->class_name() && !matcher->access_flags()
-            && !matcher->super_class() && !matcher->interfaces() && !matcher->annotations()
-            && !matcher->fields() && !matcher->methods() && !HasLogicalGroups(matcher);
-    return PlanRootStringCandidates(matcher->using_strings(), true, strings_only);
-}
-
 inverted_string::QueryPlan DexItem::PlanRootStringCandidates(const StringMatcherVector *matchers,
-        bool classes, bool strings_only) const {
+        bool classes) const {
     using Plan = inverted_string::QueryPlan;
     Plan plan;
-    if (!matchers || matchers->size() == 0) return plan;
-    if (!strings_only) {
-        // This is a conservative admission rule, not a guess that a name,
-        // flag, or relation is selective. Keep its existing filtering order
-        // and parallel slices unless an already-published range is bounded.
-        plan.index_ready = inverted_strings_ready.load(std::memory_order_acquire);
-        if (!plan.index_ready) return plan;
-    } else {
-        plan.index_ready = inverted_strings_ready.load(std::memory_order_acquire);
+    if (!matchers || matchers->size() == 0 || !CanUseKeywordUsingStringsMatchers(matchers)) return plan;
+    // Keep the ordinary matcher's established empty-pattern semantics.
+    for (const auto *matcher : *matchers) {
+        if (NormalizeUsingStringMatcher(matcher).value.empty()) return plan;
     }
-    if (!strings_only && matchers->size() != 1) return plan;
-    if (!CanUseInvertedStrings(matchers)) return plan;
     const auto entities = classes ? type_names.size() : reader.MethodIds().size();
-    if (matchers->size() == 1) {
-        const auto *matcher = matchers->Get(0);
-        auto type = matcher->match_type();
-        auto value = matcher->value()->string_view();
-        // Select the range path from the same normalized condition used by matching.
-        ConvertSimilarRegex(value, type);
-        if (!matcher->ignore_case() && (type == schema::StringMatchType::Equal
-                || type == schema::StringMatchType::StartWith)) {
-            const auto range = string_pool::FindIds(strings, value, type == schema::StringMatchType::StartWith);
-            if (range.valid) {
-                plan.begin = range.begin;
-                plan.end = range.end;
-                const auto postings = plan.index_ready ? inverted_strings.CountRange(range.begin, range.end) : 0;
-                if (!strings_only && postings > 1) {
-                    return plan;
-                }
-                if (range.begin == range.end || (plan.index_ready && postings == 0)) {
-                    plan.route = Plan::Route::Empty;
-                    return plan;
-                }
-                if (inverted_string::WordCount(entities) > inverted_string::kBitmapBudget / sizeof(uint64_t)) {
-                    return plan;
-                }
-                plan.route = Plan::Route::Range;
-                return plan;
+    if (inverted_string::WordCount(entities) > inverted_string::kBitmapBudget / sizeof(uint64_t)) return plan;
+    plan.index_ready = inverted_strings_ready.load(std::memory_order_acquire);
+    size_t smallest_range = SIZE_MAX;
+    for (const auto *matcher : *matchers) {
+        const auto atom = NormalizeUsingStringMatcher(matcher);
+        if (atom.ignore_case || (atom.match_type != schema::StringMatchType::Equal
+                && atom.match_type != schema::StringMatchType::StartWith)) continue;
+        // The keyword matcher merges equal text, including its match mode.
+        // Only unambiguous atoms may be promoted to necessary range filters.
+        bool unambiguous = true;
+        for (const auto *other : *matchers) {
+            const auto normalized = NormalizeUsingStringMatcher(other);
+            if (normalized.value == atom.value && (normalized.match_type != atom.match_type
+                    || normalized.ignore_case != atom.ignore_case)) {
+                unambiguous = false;
+                break;
             }
         }
+        if (!unambiguous) continue;
+        const auto range = string_pool::FindIds(strings, atom.value,
+                atom.match_type == schema::StringMatchType::StartWith);
+        if (!range.valid) continue;
+        const auto entries = plan.index_ready ? inverted_strings.CountRange(range.begin, range.end)
+                : range.end - range.begin;
+        if (entries == 0) {
+            plan.route = Plan::Route::Empty;
+            return plan;
+        }
+        if (entries < smallest_range) {
+            smallest_range = entries;
+            plan.route = Plan::Route::Range;
+            plan.begin = range.begin;
+            plan.end = range.end;
+        }
     }
-    if (!strings_only) return plan;
-    // Raw keyword count is an upper bound on the canonical planes. Reject
-    // before collapsing slices, without building an AC trie to estimate cost.
-    if (!inverted_string::BitmapPlanBytes(entities, type_names.size(), matchers->size(), 1)) {
+    if (plan.route == Plan::Route::Range) {
+        plan.proves_all_strings = matchers->size() == 1;
         return plan;
     }
-    plan.route = Plan::Route::Keywords;
+    // Content scans retain the shared keyword matcher and its bitmap budget.
+    if (inverted_string::BitmapPlanBytes(entities, type_names.size(), matchers->size(), 1)) {
+        plan.route = Plan::Route::Keywords;
+        plan.proves_all_strings = true;
+    }
     return plan;
 }
 

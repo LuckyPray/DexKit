@@ -1493,6 +1493,7 @@ void DexKit::InitDexCache(uint32_t init_flags) {
             pool.enqueue([dex_item, claimed_flags]() {
                 dex_item->InitCache(claimed_flags);
                 dex_item->FinishInitCache(claimed_flags);
+                if ((claimed_flags & kUsingString) != 0) dex_item->EnsureInvertedStrings();
             });
         }
     }

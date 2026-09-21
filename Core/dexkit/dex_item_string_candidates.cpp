@@ -30,9 +30,25 @@ bool DexItem::EnsureInvertedStrings() {
     DEXKIT_CHECK((dex_flag.load(std::memory_order_acquire) & kUsingString) != 0);
     std::call_once(inverted_strings_once, [this] {
         inverted_strings.Build(strings.size(), reader.MethodIds().size(), method_using_string_ids);
-        if (inverted_strings.Ready()) inverted_strings_ready.store(true, std::memory_order_release);
+        if (inverted_strings.Ready()) {
+            inverted_strings.EachString([&](uint32_t id) {
+                const auto length = strings[id].size();
+                inverted_string_bytes = length > SIZE_MAX - inverted_string_bytes
+                        ? SIZE_MAX : inverted_string_bytes + length;
+            });
+            inverted_strings_ready.store(true, std::memory_order_release);
+        }
     });
     return inverted_strings.Ready();
+}
+
+bool DexItem::AccumulateMethodStringBytes(uint32_t method_idx, size_t &bytes) const {
+    for (auto string_id : method_using_string_ids[method_idx]) {
+        const auto length = strings[string_id].size();
+        if (length > inverted_string_bytes - bytes) return false;
+        bytes += length;
+    }
+    return true;
 }
 
 bool DexItem::BuildStringCandidateGroups(

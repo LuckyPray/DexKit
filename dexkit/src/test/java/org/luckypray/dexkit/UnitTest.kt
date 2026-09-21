@@ -7,6 +7,7 @@ import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.enums.UsingType
+import org.luckypray.dexkit.query.matchers.MethodMatcher
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -807,6 +808,148 @@ class UnitTest {
                     }.map { it.name }.sorted()
                     assertEquals(label, expectedClasses, classes)
                 }
+            }
+        }
+    }
+
+    @Test
+    fun testRootRangeSeedChecksRemainingStringsAndLogicalConditions() {
+        val cases: List<MethodMatcher.() -> Unit> = listOf(
+            { usingEqStrings("PlayActivity", "onCreate") },
+            { usingEqStrings("PlayActivity", "MainActivity") },
+            { addEqString("PlayActivity"); addUsingString("onC", StringMatchType.StartsWith) },
+            { addEqString("PlayActivity"); addUsingString("rollDice:") },
+            { addEqString("PlayActivity"); addUsingString("dexkit-absent-condition-9246") },
+            {
+                addUsingString("^PlayActivity$", StringMatchType.SimilarRegex)
+                addUsingString("^onC", StringMatchType.SimilarRegex)
+                anyOf {
+                    match { name("onCreate") }
+                    match { name("dexkit-absent-method-9246") }
+                }
+            }
+        )
+        for (fullCache in listOf(false, true)) {
+            DexKitBridge.create(demoApkPath).use { target ->
+                if (fullCache) target.initFullCache()
+                cases.forEachIndexed { index, configure ->
+                    val actual = target.findMethod {
+                        matcher { configure(); returnType("void") }
+                    }.map { it.descriptor }.sorted()
+                    // The nested predicate uses the established full matcher,
+                    // without supplying a root string candidate seed.
+                    val expected = target.findMethod {
+                        matcher { returnType("void"); allOf { match { configure() } } }
+                    }.map { it.descriptor }.sorted()
+                    assertEquals("case=$index, fullCache=$fullCache", expected, actual)
+                    if (index == 0) assertTrue(actual.isNotEmpty())
+                    if (index == 1 || index == 4) assertTrue(actual.isEmpty())
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testRootRangeSeedsPreserveDuplicateTextAndCaseSemantics() {
+        val cases: List<MethodMatcher.() -> Unit> = listOf(
+            { addEqString("Activity"); addUsingString("Activity") },
+            { addUsingString("Activity"); addEqString("Activity") },
+            { addEqString("playactivity"); addUsingString("playactivity", StringMatchType.Equals, true) },
+            { addUsingString("playactivity", StringMatchType.Equals, true); addEqString("PlayActivity") },
+            { addEqString("PlayActivity"); addEqString("PlayActivity") },
+            { addUsingString("^Activity$", StringMatchType.SimilarRegex); addUsingString("Activity") }
+        )
+        // Preserve the existing flat keyword matcher's duplicate-text behavior.
+        // Logical-group prefilters have separate atom semantics and are not an
+        // equivalent oracle for these ambiguous duplicate specifications.
+        val equivalents: List<MethodMatcher.() -> Unit> = listOf(
+            { addUsingString("Activity") },
+            { addEqString("Activity") },
+            { addUsingString("playactivity", StringMatchType.Equals, true) },
+            { addEqString("PlayActivity") },
+            { addEqString("PlayActivity") },
+            { addUsingString("Activity") }
+        )
+        DexKitBridge.create(demoApkPath).use { target ->
+            cases.forEachIndexed { index, configure ->
+                val expected = target.findMethod {
+                    matcher { equivalents[index]() }
+                }.map { it.descriptor }.sorted()
+                val actual = target.findMethod {
+                    matcher { configure() }
+                }.map { it.descriptor }.sorted()
+                assertEquals("duplicate/case=$index", expected, actual)
+            }
+        }
+    }
+
+    @Test
+    fun testClassRangeSeedsAllowStringsInDifferentMethods() {
+        DexKitBridge.create(demoApkPath).use { target ->
+            val play = target.getClassData("org.luckypray.dexkit.demo.PlayActivity")!!
+            val usedStrings = play.methods.map { it.usingStrings }
+            val roll = usedStrings.flatten().first { it.startsWith("rollDice:") }
+            assertTrue(usedStrings.none { it.contains("onCreate") && it.contains(roll) })
+            val actual = target.findClass {
+                matcher { usingEqStrings("onCreate", roll) }
+            }.map { it.name }.sorted()
+            val expected = target.findClass {
+                matcher { allOf { match { usingEqStrings("onCreate", roll) } } }
+            }.map { it.name }.sorted()
+            assertEquals(expected, actual)
+            assertTrue(actual.contains(play.name))
+        }
+    }
+
+    @Test
+    fun testRootStringCandidatesIntersectExplicitAndPackageScopes() {
+        val cases: List<MethodMatcher.() -> Unit> = listOf(
+            { addEqString("PlayActivity"); addUsingString("onC", StringMatchType.StartsWith) },
+            { usingStrings("PlayActivity", "onCreate") },
+            { addUsingString("Activity", StringMatchType.EndsWith) }
+        )
+        DexKitBridge.create(demoApkPath).use { target ->
+            val play = target.getClassData("org.luckypray.dexkit.demo.PlayActivity")!!
+            val selected = play.methods.filter { it.name == "onCreate" }
+            assertTrue(selected.isNotEmpty())
+            cases.forEachIndexed { index, configure ->
+                val all = target.findMethod { matcher { configure() } }
+                val expected = all.filter { value -> selected.any { it.descriptor == value.descriptor } }
+                    .map { it.descriptor }.sorted()
+                val actual = target.findMethod {
+                    searchPackages("org.luckypray.dexkit.demo")
+                    excludePackages("org.luckypray.dexkit.demo.hook")
+                    searchInClass(listOf(play))
+                    searchInMethod(selected)
+                    matcher { configure() }
+                }.map { it.descriptor }.sorted()
+                assertTrue("scope=$index should have a witness", expected.isNotEmpty())
+                assertEquals("scope=$index", expected, actual)
+                assertTrue("excluded method scope=$index", target.findMethod {
+                    searchPackages("org.luckypray.dexkit.demo")
+                    excludePackages("org.luckypray.dexkit.demo")
+                    searchInClass(listOf(play))
+                    searchInMethod(selected)
+                    matcher { configure() }
+                }.isEmpty())
+                assertTrue(target.findMethod {
+                    searchInMethod(emptyList())
+                    matcher { configure() }
+                }.isEmpty())
+            }
+            for (matchType in listOf(StringMatchType.Equals, StringMatchType.Contains)) {
+                val scoped = target.findClass {
+                    searchPackages("org.luckypray.dexkit.demo")
+                    searchIn(listOf(play))
+                    matcher { addUsingString("PlayActivity", matchType) }
+                }.map { it.name }
+                assertEquals("class scope=$matchType", listOf(play.name), scoped)
+                assertTrue("excluded class scope=$matchType", target.findClass {
+                    searchPackages("org.luckypray.dexkit.demo")
+                    excludePackages("org.luckypray.dexkit.demo")
+                    searchIn(listOf(play))
+                    matcher { addUsingString("PlayActivity", matchType) }
+                }.isEmpty())
             }
         }
     }

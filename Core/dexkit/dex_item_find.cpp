@@ -73,8 +73,8 @@ DexItem::FindClass(
     uint32_t split_count;
     auto should_stop_submission = query_context.IsEarlyExitEnabled();
     inverted_string::QueryPlan string_plan;
-    if (!should_stop_submission && !query->in_classes() && !query->search_packages()
-            && !query->exclude_packages()) string_plan = PlanRootStringCandidates(query->matcher());
+    if (!should_stop_submission && query->matcher())
+        string_plan = PlanRootStringCandidates(query->matcher()->using_strings(), true);
     if (string_plan.Admitted()) slice_size = 0;
     if (slice_size > 0) {
         split_count = (this->reader.ClassDefs().size() + slice_size - 1) / slice_size;
@@ -115,8 +115,8 @@ DexItem::FindMethod(
     uint32_t split_count;
     auto should_stop_submission = query_context.IsEarlyExitEnabled();
     inverted_string::QueryPlan string_plan;
-    if (!should_stop_submission && !query->in_classes() && !query->in_methods() && !query->search_packages()
-            && !query->exclude_packages()) string_plan = PlanRootStringCandidates(query->matcher());
+    if (!should_stop_submission && query->matcher())
+        string_plan = PlanRootStringCandidates(query->matcher()->using_strings(), false);
     if (string_plan.Admitted()) slice_size = 0;
     if (slice_size > 0) {
         split_count = (this->reader.MethodIds().size() + slice_size - 1) / slice_size;
@@ -196,27 +196,56 @@ DexItem::FindClass(
     auto *prefilter_plan = internal::GetClassUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     std::vector<uint32_t> find_result;
-    auto try_match_class = [&](uint32_t i) {
-        auto &class_def = this->reader.ClassDefs()[i];
+    auto in_scope = [&](uint32_t i) {
+        const auto &class_def = this->reader.ClassDefs()[i];
         if (query->in_classes() && !in_class_set.contains(class_def.class_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
             auto hit = packageTrie.search(this->type_names[class_def.class_idx], query->ignore_packages_case());
             if (query->exclude_packages() && (hit & 1)) return false;
             if (query->search_packages() && !(hit >> 1)) return false;
         }
+        return true;
+    };
+    auto try_match_class = [&](uint32_t i) {
+        if (!in_scope(i)) return false;
+        const auto &class_def = this->reader.ClassDefs()[i];
         if (prefilter_plan && !MayMatchClassUsingStringsPrefilter(class_def.class_idx, *prefilter_plan)) return false;
         if (!IsClassMatched(class_def.class_idx, query->matcher())) return false;
         find_result.emplace_back(class_def.class_idx);
         return true;
     };
 
+    const bool filter_strings = string_plan.route == inverted_string::QueryPlan::Route::Keywords
+            && (query->in_classes() || query->search_packages() || query->exclude_packages());
+    bool local_strings = filter_strings && string_plan.index_ready && inverted_string_bytes != SIZE_MAX;
+    std::vector<uint32_t> filtered_classes;
+    if (filter_strings) {
+        size_t bytes = 0;
+        for (auto i = start; i < end; ++i) {
+            if (!in_scope(i)) continue;
+            filtered_classes.push_back(i);
+            if (local_strings) {
+                for (auto method : class_method_ids[reader.ClassDefs()[i].class_idx]) {
+                    if (!AccumulateMethodStringBytes(method, bytes)) {
+                        local_strings = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (filtered_classes.empty()) return {};
+    }
     inverted_string::Bits candidates;
-    const bool inverted = string_plan.Admitted()
+    const bool inverted = !local_strings && string_plan.Admitted()
             && BuildRootStringCandidates(query->matcher()->using_strings(), true, string_plan, candidates);
     const void *proof_matchers = query->matcher() ? query->matcher()->using_strings() : nullptr;
-    const auto *proof = inverted ? &candidates : nullptr;
+    const auto *proof = inverted && string_plan.proves_all_strings ? &candidates : nullptr;
     inverted_string::MatchScope scope(this, proof_matchers, true, proof);
-    if (inverted) {
+    if (filter_strings) {
+        for (auto i : filtered_classes) {
+            if (!inverted || candidates.Has(reader.ClassDefs()[i].class_idx)) try_match_class(i);
+        }
+    } else if (inverted) {
         std::vector<uint32_t> definitions;
         candidates.Each([&](uint32_t type) {
             if (type_def_flag[type]) definitions.push_back(type_def_idx[type]);
@@ -255,8 +284,8 @@ DexItem::FindMethod(
     auto *prefilter_plan = internal::GetMethodUsingStringsPrefilterPlan(query->matcher(), query_context);
 
     std::vector<uint32_t> find_result;
-    auto try_match_method = [&](uint32_t method_idx) {
-        auto &method_def = this->reader.MethodIds()[method_idx];
+    auto in_scope = [&](uint32_t method_idx) {
+        const auto &method_def = this->reader.MethodIds()[method_idx];
         if (!this->type_def_flag[method_def.class_idx]) return false;
         if (query->in_classes() && !in_class_set.contains(method_def.class_idx)) return false;
         if (query->search_packages() || query->exclude_packages()) {
@@ -265,19 +294,45 @@ DexItem::FindMethod(
             if (query->search_packages() && !(hit >> 1)) return false;
         }
         if (query->in_methods() && !in_method_set.contains(method_idx)) return false;
+        return true;
+    };
+    auto try_match_method = [&](uint32_t method_idx) {
+        if (!in_scope(method_idx)) return false;
         if (prefilter_plan && !MayMatchMethodUsingStringsPrefilter(method_idx, *prefilter_plan)) return false;
         if (!IsMethodMatched(method_idx, query->matcher())) return false;
         find_result.emplace_back(method_idx);
         return true;
     };
 
+    const auto *name_matcher = query->matcher() ? query->matcher()->method_name() : nullptr;
+    const bool filter_name = name_matcher && name_matcher->value()
+            && name_matcher->match_type() == schema::StringMatchType::Equal;
+    const bool has_scope = query->in_classes() || query->in_methods()
+            || query->search_packages() || query->exclude_packages();
+    const bool filter_strings = string_plan.route == inverted_string::QueryPlan::Route::Keywords
+            && (filter_name || has_scope);
+    bool local_strings = filter_strings && string_plan.index_ready && inverted_string_bytes != SIZE_MAX;
+    std::vector<uint32_t> filtered_methods;
+    if (filter_strings) {
+        size_t bytes = 0;
+        for (auto id = start; id < end; ++id) {
+            const auto &method = reader.MethodIds()[id];
+            if (has_scope ? !in_scope(id) : !type_def_flag[method.class_idx]) continue;
+            if (filter_name && !IsStringMatched(strings[method.name_idx], name_matcher)) continue;
+            filtered_methods.push_back(id);
+            if (local_strings) local_strings = AccumulateMethodStringBytes(id, bytes);
+        }
+        if (filtered_methods.empty()) return {};
+    }
     inverted_string::Bits candidates;
-    const bool inverted = string_plan.Admitted()
+    const bool inverted = !local_strings && string_plan.Admitted()
             && BuildRootStringCandidates(query->matcher()->using_strings(), false, string_plan, candidates);
     const void *proof_matchers = query->matcher() ? query->matcher()->using_strings() : nullptr;
-    const auto *proof = inverted ? &candidates : nullptr;
+    const auto *proof = inverted && string_plan.proves_all_strings ? &candidates : nullptr;
     inverted_string::MatchScope scope(this, proof_matchers, false, proof);
-    if (inverted) {
+    if (filter_strings) {
+        for (auto id : filtered_methods) if (!inverted || candidates.Has(id)) try_match_method(id);
+    } else if (inverted) {
         // Root results admit only locally defined owners. Cross-reference
         // bindings are populated only for undefined owners; nested matches
         // still resolve them through IsMethodMatched without this scope.

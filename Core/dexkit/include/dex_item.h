@@ -286,11 +286,8 @@ private:
     friend class DexKit;
     using StringMatcherVector = flatbuffers::Vector<flatbuffers::Offset<schema::StringMatcher>>;
     using StringCandidateGroups = std::vector<std::pair<std::string_view, inverted_string::Bits>>;
-    bool CanUseInvertedStrings(const StringMatcherVector *matchers) const;
-    inverted_string::QueryPlan PlanRootStringCandidates(const schema::MethodMatcher *matcher) const;
-    inverted_string::QueryPlan PlanRootStringCandidates(const schema::ClassMatcher *matcher) const;
-    inverted_string::QueryPlan PlanRootStringCandidates(const StringMatcherVector *matchers, bool classes,
-            bool strings_only) const;
+    inverted_string::QueryPlan PlanRootStringCandidates(const StringMatcherVector *matchers, bool classes) const;
+    bool AccumulateMethodStringBytes(uint32_t method_idx, size_t &bytes) const;
     bool EnsureInvertedStrings();
     bool BuildRootStringCandidates(const StringMatcherVector *matchers, bool classes,
             const inverted_string::QueryPlan &plan, inverted_string::Bits &hits);
@@ -301,6 +298,7 @@ private:
     std::once_flag inverted_strings_once;
     std::atomic<bool> inverted_strings_ready{false};
     inverted_string::Index inverted_strings;
+    size_t inverted_string_bytes = 0;
     DexTypeListView GetInterfaceTypeIds(uint32_t type_idx) const;
     MemberIdRange GetFieldIds(uint32_t type_idx) const;
     MemberIdRange GetClassFieldIds(uint32_t type_idx) const;

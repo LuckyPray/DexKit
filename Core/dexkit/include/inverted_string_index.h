@@ -40,6 +40,8 @@ struct QueryPlan {
     Route route = Route::Legacy;
     size_t begin = 0, end = 0;
     bool index_ready = false;
+    // A range chosen from one of several conditions is only a necessary seed.
+    bool proves_all_strings = false;
     bool Admitted() const { return route != Route::Legacy; }
 };
 
