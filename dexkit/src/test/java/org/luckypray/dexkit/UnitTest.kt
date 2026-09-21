@@ -770,6 +770,48 @@ class UnitTest {
     }
 
     @Test
+    fun testAnchoredStringsMatchExplicitModes() {
+        val cases = listOf(
+            Triple("^PlayActivity$", "PlayActivity", StringMatchType.Equals),
+            Triple("^Play", "Play", StringMatchType.StartsWith),
+            Triple("Activity$", "Activity", StringMatchType.EndsWith),
+            Triple("Play", "Play", StringMatchType.Contains),
+            Triple("^playactivity$", "playactivity", StringMatchType.Equals),
+            Triple("^play", "play", StringMatchType.StartsWith),
+            Triple("^dexkit-no-such-literal-9187$", "dexkit-no-such-literal-9187", StringMatchType.Equals),
+            Triple("^dexkit-no-such-prefix-9187", "dexkit-no-such-prefix-9187", StringMatchType.StartsWith),
+            Triple("^\u4e2d$", "\u4e2d", StringMatchType.Equals),
+            Triple("^$", "", StringMatchType.Equals),
+            Triple("^", "", StringMatchType.StartsWith),
+            Triple("$", "", StringMatchType.EndsWith)
+        )
+        for (fullCache in listOf(false, true)) {
+            DexKitBridge.create(demoApkPath).use { target ->
+                if (fullCache) target.initFullCache()
+                for ((pattern, value, type) in cases) for (ignoreCase in listOf(false, true)) {
+                    val label = "$pattern, ignoreCase=$ignoreCase, fullCache=$fullCache"
+                    val methods = target.findMethod {
+                        matcher { usingStrings(listOf(pattern), StringMatchType.SimilarRegex, ignoreCase) }
+                    }.map { it.descriptor }.sorted()
+                    val expectedMethods = target.findMethod {
+                        matcher { usingStrings(listOf(value), type, ignoreCase) }
+                    }.map { it.descriptor }.sorted()
+                    assertEquals(label, expectedMethods, methods)
+                    if (pattern == "^PlayActivity$" || pattern == "^Play") assertTrue(label, methods.isNotEmpty())
+
+                    val classes = target.findClass {
+                        matcher { usingStrings(listOf(pattern), StringMatchType.SimilarRegex, ignoreCase) }
+                    }.map { it.name }.sorted()
+                    val expectedClasses = target.findClass {
+                        matcher { usingStrings(listOf(value), type, ignoreCase) }
+                    }.map { it.name }.sorted()
+                    assertEquals(label, expectedClasses, classes)
+                }
+            }
+        }
+    }
+
+    @Test
     fun testConcurrentBatchFindClassUsingStringsOnSharedBridge() {
         DexKitBridge.create(demoApkPath).use { parallelBridge ->
             parallelBridge.setThreadNum(2)

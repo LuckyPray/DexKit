@@ -123,11 +123,11 @@ static std::vector<uint32_t> GetAnnotationUsingStrings(const ir::Annotation *ann
 void ConvertSimilarRegex(std::string_view &str, schema::StringMatchType &type) {
     if (type == schema::StringMatchType::SimilarRegex) {
         type = schema::StringMatchType::Contains;
-        if (str.front() == '^') {
+        if (str.starts_with('^')) {
             type = schema::StringMatchType::StartWith;
             str = str.substr(1);
         }
-        if (str.back() == '$') {
+        if (str.ends_with('$')) {
             if (type == schema::StringMatchType::StartWith) {
                 type = schema::StringMatchType::Equal;
             } else {
@@ -315,24 +315,7 @@ static std::vector<NormalizedUsingStringMatcher> NormalizeUsingStringsMatchers(
         auto string_matcher = using_strings_matcher->Get(i);
         auto value = string_matcher->value()->string_view();
         auto match_type = string_matcher->match_type();
-        if (match_type == schema::StringMatchType::SimilarRegex) {
-            match_type = schema::StringMatchType::Contains;
-            int left = 0;
-            int right = static_cast<int>(value.size());
-            if (value.starts_with('^')) {
-                left = 1;
-                match_type = schema::StringMatchType::StartWith;
-            }
-            if (value.ends_with('$')) {
-                right = static_cast<int>(value.size()) - 1;
-                if (match_type == schema::StringMatchType::StartWith) {
-                    match_type = schema::StringMatchType::Equal;
-                } else {
-                    match_type = schema::StringMatchType::EndWith;
-                }
-            }
-            value = value.substr(left, right - left);
-        }
+        ConvertSimilarRegex(value, match_type);
         normalized.push_back(NormalizedUsingStringMatcher{
                 .value = std::string(value),
                 .match_type = match_type,
@@ -551,11 +534,13 @@ inverted_string::QueryPlan DexItem::PlanRootStringCandidates(const StringMatcher
     const auto entities = classes ? type_names.size() : reader.MethodIds().size();
     if (matchers->size() == 1) {
         const auto *matcher = matchers->Get(0);
-        const auto type = matcher->match_type();
+        auto type = matcher->match_type();
+        auto value = matcher->value()->string_view();
+        // Select the range path from the same normalized condition used by matching.
+        ConvertSimilarRegex(value, type);
         if (!matcher->ignore_case() && (type == schema::StringMatchType::Equal
                 || type == schema::StringMatchType::StartWith)) {
-            const auto range = string_pool::FindIds(strings, matcher->value()->string_view(),
-                    type == schema::StringMatchType::StartWith);
+            const auto range = string_pool::FindIds(strings, value, type == schema::StringMatchType::StartWith);
             if (range.valid) {
                 plan.begin = range.begin;
                 plan.end = range.end;
