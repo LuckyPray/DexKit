@@ -450,8 +450,8 @@ Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
 }
 
 Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
-    auto map = MemMap(apk_path);
-    if (!map.ok()) {
+    auto map = std::make_shared<MemMap>(apk_path);
+    if (!map->ok()) {
         return Error::FILE_NOT_FOUND;
     }
     auto zip_file = ZipArchive::Open(map);
@@ -475,7 +475,7 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
         ThreadPool pool(thread_num);
         for (auto &dex_pair: image_pairs) {
             pool.enqueue([this, &dex_pair, old_size, &zip_file]() {
-                auto dex_image = zip_file->GetUncompressData(*dex_pair.second);
+                auto dex_image = zip_file->GetUncompressData(*dex_pair.second, alignof(dex::Header));
                 auto ptr = std::make_unique<MemMap>(std::move(dex_image));
                 if (!ptr->ok()) {
                     return;

@@ -193,9 +193,9 @@ public:
 
     void SetDeflateProbe(DeflateProbe fn) { probe_deflate_ = fn; }
 
-    static std::unique_ptr<ZipArchive> Open(const MemMap &mm, bool allow_local_scan = false) {
-        if (!mm.ok()) return nullptr;
-        auto za = std::unique_ptr<ZipArchive>(new ZipArchive(mm));
+    static std::unique_ptr<ZipArchive> Open(std::shared_ptr<const MemMap> mm, bool allow_local_scan = false) {
+        if (!mm || !mm->ok()) return nullptr;
+        auto za = std::unique_ptr<ZipArchive>(new ZipArchive(std::move(mm)));
         auto has_cd = za->parse_from_central();
         // trust central
         if (has_cd && !allow_local_scan) {
@@ -216,28 +216,39 @@ public:
     [[nodiscard]] const std::vector<Entry> &GetEntries() const { return entries; }
 
     [[nodiscard]] bool GetCompressedSlice(const Entry &e, const uint8_t *&ptr, size_t &len) const {
-        if (e.data_offset + e.comp_size > mm_.len()) return false;
+        if (e.data_offset > mm_.len() || e.comp_size > mm_.len() - e.data_offset) return false;
         ptr = mm_.data() + e.data_offset;
         len = static_cast<size_t>(e.comp_size);
         return true;
     }
 
-    [[nodiscard]] MemMap GetUncompressData(const Entry& e) const {
-        MemMap out(e.uncomp_size);
-        if (!out.ok()) return {};
-
-        const auto *lfh = reinterpret_cast<const LocalFileHeader *>(mm_.data() + e.lfh_offset);
-
+    [[nodiscard]] MemMap GetUncompressData(const Entry &e, size_t alignment = 1) const {
+        const uint8_t *data = nullptr;
+        size_t compressed_size = 0;
+        if (!GetCompressedSlice(e, data, compressed_size) || e.uncomp_size == 0
+            || e.uncomp_size > SIZE_MAX || (e.flags & 1u) != 0 || alignment == 0) return {};
         if (e.method == COMP_STORE) {
             if (e.uncomp_size != e.comp_size) return {};
-            std::memcpy(const_cast<uint8_t*>(out.data()), lfh->data(), e.uncomp_size);
-        } else if (e.method == COMP_DEFLATE) {
+            if (reinterpret_cast<uintptr_t>(data) % alignment == 0) {
+                return MemMap::slice(mapping_, e.data_offset, e.uncomp_size);
+            }
+        } else if (e.method != COMP_DEFLATE
+                   || compressed_size > std::numeric_limits<uInt>::max()
+                   || e.uncomp_size > std::numeric_limits<uInt>::max()) {
+            return {};
+        }
+
+        MemMap out(e.uncomp_size);
+        if (!out.ok()) return {};
+        if (e.method == COMP_STORE) {
+            std::memcpy(out.data(), data, e.uncomp_size);
+        } else {
             z_stream s{};
             s.zalloc = Z_NULL;
             s.zfree  = Z_NULL;
             s.opaque = nullptr;
 
-            s.next_in = const_cast<Bytef *>(reinterpret_cast<const Bytef *>(lfh->data()));
+            s.next_in = const_cast<Bytef *>(reinterpret_cast<const Bytef *>(data));
             s.avail_in = static_cast<uInt>(e.comp_size);
             s.next_out = const_cast<Bytef *>(reinterpret_cast<const Bytef *>(out.data()));
             s.avail_out = static_cast<uInt>(out.len());
@@ -254,8 +265,6 @@ public:
             inflateEnd(&s);
 
             if (s.total_out != e.uncomp_size) return {};
-        } else {
-            return {};
         }
 
 #if !(defined(_WIN32) || defined(WIN32))
@@ -265,7 +274,8 @@ public:
     }
 
 private:
-    explicit ZipArchive(const MemMap &mm) : mm_(mm) {}
+    explicit ZipArchive(std::shared_ptr<const MemMap> mm)
+            : mapping_(std::move(mm)), mm_(*mapping_) {}
 
     bool parse_from_central() {
         const EOCD *eocd = find_eocd();
@@ -583,6 +593,7 @@ private:
 
 private:
     DeflateProbe probe_deflate_ = nullptr;
+    std::shared_ptr<const MemMap> mapping_;
     const MemMap &mm_;
     std::vector<Entry> entries;
     std::map<std::string, size_t> map_;

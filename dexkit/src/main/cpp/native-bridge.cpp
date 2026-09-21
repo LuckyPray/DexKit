@@ -120,55 +120,41 @@ static bool CheckPoint(void *addr) {
     return true;
 }
 
-static uint32_t alignUp4(uint32_t value) {
-    return (value + 3u) & ~3u;
-}
+// Each borrowed image retains both the loader and the exact Java DexFile.
+// Do not keep a JNIEnv: the final image may be released on another thread.
+struct CookieDexOwner {
+    JavaVM *vm = nullptr;
+    jobject loader = nullptr;
+    jobject dex_file = nullptr;
 
-static dexkit::MemMap copyCookieDexForParse(const void *image) {
-    const auto *header = reinterpret_cast<const dex::Header *>(image);
-    const uint32_t original_file_size = header->file_size;
-    uint32_t fixed_file_size = alignUp4(original_file_size);
-    uint32_t fixed_data_size = header->data_size;
-
-    // Some protected apps keep a mostly-valid in-memory dex but make the data
-    // section/file size non-4-byte-aligned. ART can already have consumed it,
-    // while slicer rejects it during re-parse.
-    if (header->data_off <= fixed_file_size) {
-        const uint32_t rounded_data_size = alignUp4(header->data_size);
-        if (header->data_size != rounded_data_size) {
-            const uint64_t rounded_data_end =
-                    static_cast<uint64_t>(header->data_off) + rounded_data_size;
-            if (rounded_data_end > fixed_file_size) {
-                fixed_file_size = alignUp4(static_cast<uint32_t>(rounded_data_end));
-            }
+    static std::shared_ptr<CookieDexOwner> Create(JNIEnv *env, jobject loader, jobject dex_file) {
+        auto owner = std::make_shared<CookieDexOwner>();
+        if (env->GetJavaVM(&owner->vm) != JNI_OK) {
+            throwException(env, "Cannot retain cookie DEX owner");
+            return {};
         }
-        if (fixed_file_size != original_file_size || header->data_size != rounded_data_size) {
-            fixed_data_size = fixed_file_size - header->data_off;
+        owner->loader = env->NewGlobalRef(loader);
+        if (!owner->loader) return {};
+        owner->dex_file = env->NewGlobalRef(dex_file);
+        if (!owner->dex_file) return {};
+        return owner;
+    }
+
+    ~CookieDexOwner() {
+        if (!vm || (!loader && !dex_file)) return;
+        JNIEnv *env = nullptr;
+        const auto status = vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
+        const bool attach = status == JNI_EDETACHED;
+        if (attach) {
+            if (vm->AttachCurrentThread(&env, nullptr) != JNI_OK) return;
+        } else if (status != JNI_OK) {
+            return;
         }
+        if (dex_file) env->DeleteGlobalRef(dex_file);
+        if (loader) env->DeleteGlobalRef(loader);
+        if (attach) vm->DetachCurrentThread();
     }
-
-    auto mmap = dexkit::MemMap(fixed_file_size);
-    if (!mmap.ok()) {
-        return {};
-    }
-    memcpy((void *) mmap.data(), image, original_file_size);
-    if (fixed_file_size > original_file_size) {
-        memset((void *) (mmap.data() + original_file_size), 0, fixed_file_size - original_file_size);
-    }
-
-    if (fixed_file_size != original_file_size || fixed_data_size != header->data_size) {
-        auto *fixed_header = reinterpret_cast<dex::Header *>(mmap.data());
-        LOGW("normalize cookie dex for DexKit: file_size %u -> %u, data_size %u -> %u, pad=%u",
-             original_file_size,
-             fixed_file_size,
-             header->data_size,
-             fixed_data_size,
-             fixed_file_size - original_file_size);
-        fixed_header->file_size = fixed_file_size;
-        fixed_header->data_size = fixed_data_size;
-    }
-    return mmap;
-}
+};
 
 void init(JNIEnv *env) {
     if (is_initialized) {
@@ -204,8 +190,10 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
     if (!elements)
         return 0;
     LOGD("elements size -> %d", env->GetArrayLength(elements));
-    auto dexkit = new dexkit::DexKit();
+    auto dexkit = std::make_unique<dexkit::DexKit>();
     for (auto i = 0, len = env->GetArrayLength(elements); i < len; ++i) {
+        ScopedLocalFrame locals(env, 8);
+        if (!locals.ok()) return 0;
         auto element = env->GetObjectArrayElement(elements, i);
         if (!element) continue;
         auto java_dex_file = env->GetObjectField(element, dex_file_field);
@@ -213,14 +201,15 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
         auto cookie = (jlongArray) env->GetObjectField(java_dex_file, cookie_field);
         if (!cookie) continue;
         auto dex_file_length = env->GetArrayLength(cookie);
-        const auto *dex_files = reinterpret_cast<const DexFile **>(
-                env->GetLongArrayElements(cookie, nullptr));
+        std::vector<jlong> dex_files(dex_file_length);
+        env->GetLongArrayRegion(cookie, 0, dex_file_length, dex_files.data());
+        if (env->ExceptionCheck()) return 0;
         LOGI("dex_file_length -> %d", dex_file_length);
         std::vector<const void *> dex_images;
         bool has_compact = false;
         if (use_memory_dex_file) {
             for (int j = 1; j < dex_file_length; ++j) {
-                const auto *dex_file = dex_files[j];
+                const auto *dex_file = reinterpret_cast<const DexFile *>(static_cast<uintptr_t>(dex_files[j]));
                 if (!CheckPoint((void *) dex_file)
                     || !CheckPoint((void *) dex_file->begin_)) {
                     LOGD("dex_file %d is invalid", j);
@@ -228,7 +217,12 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
                 }
                 // https://cs.android.com/android/_/android/platform/art/+/4b7aef13e87be3e35de747fb10845057f9ddb712
                 // in a14-r29+ size_ is unused
+                if (reinterpret_cast<uintptr_t>(dex_file->begin_) % alignof(dex::Header) != 0) {
+                    LOGD("dex_file %d is unaligned", j);
+                    continue;
+                }
                 auto header = reinterpret_cast<const struct dex::Header *>(dex_file->begin_);
+                if (header->file_size < sizeof(dex::Header)) continue;
                 if (dex_file->size_ && dex_file->size_ != header->file_size) {
                     // TODO dex verify
                     LOGD("dex_file %d is invalid", j);
@@ -258,29 +252,27 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             auto ret = dexkit->AddZipPath(file_name.c_str());
             if (ret != Error::SUCCESS) {
                 throwException(env, ret);
-                delete dexkit;
                 return 0;
             }
         } else {
+            auto owner = CookieDexOwner::Create(env, class_loader, java_dex_file);
+            if (!owner) return 0;
             std::vector<std::unique_ptr<dexkit::MemMap>> images;
+            images.reserve(dex_images.size());
             for (auto image: dex_images) {
                 auto header = reinterpret_cast<const struct dex::Header *>(image);
-                auto mmap = copyCookieDexForParse(image);
-                if (!mmap.ok()) {
-                    LOGW("copy cookie dex failed, skip image size: %u", header->file_size);
-                    continue;
-                }
+                auto mmap = dexkit::MemMap::view(static_cast<const uint8_t *>(image),
+                                                header->file_size, owner);
                 images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
             }
             auto ret = dexkit->AddImage(std::move(images));
             if (ret != Error::SUCCESS) {
                 throwException(env, ret);
-                delete dexkit;
                 return 0;
             }
         }
     }
-    return (jlong) dexkit;
+    return reinterpret_cast<jlong>(dexkit.release());
 }
 #endif
 
@@ -291,7 +283,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
     if (!dex_bytes_array) {
         return 0;
     }
-    auto dexkit = new dexkit::DexKit();
+    auto dexkit = std::make_unique<dexkit::DexKit>();
     std::vector<std::unique_ptr<dexkit::MemMap>> images;
     for (int32_t i = 0, len = env->GetArrayLength(dex_bytes_array); i < len; ++i) {
         auto dex_byte = (jbyteArray) env->GetObjectArrayElement(dex_bytes_array, i);
@@ -307,10 +299,9 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
     auto ret = dexkit->AddImage(std::move(images));
     if (ret != Error::SUCCESS) {
         throwException(env, ret);
-        delete dexkit;
         return 0;
     }
-    return (jlong) dexkit;
+    return reinterpret_cast<jlong>(dexkit.release());
 }
 
 DEXKIT_JNI jlong
@@ -322,14 +313,13 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass claz
     }
     auto cpath = ScopedUtfChars(env, apk_path);
     LOGI("apkPath -> %s", cpath.c_str());
-    auto dexkit = new dexkit::DexKit();
+    auto dexkit = std::make_unique<dexkit::DexKit>();
     auto ret = dexkit->AddZipPath(cpath.c_str());
     if (ret != Error::SUCCESS) {
         throwException(env, ret);
-        delete dexkit;
         return 0;
     }
-    return (jlong) dexkit;
+    return reinterpret_cast<jlong>(dexkit.release());
 }
 
 DEXKIT_JNI void
