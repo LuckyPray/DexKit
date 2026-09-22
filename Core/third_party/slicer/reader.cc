@@ -392,15 +392,15 @@ ir::AnnotationSetRefList* Reader::ExtractAnnotationSetRefList(dex::u4 offset) {
   SLICER_CHECK_EQ(offset % 4, 0);
 
   auto dex_annotation_set_ref_list = dataPtr<dex::AnnotationSetRefList>(offset);
+  auto entries = section<dex::AnnotationSetRefItem>(
+      static_cast<size_t>(offset) + sizeof(dex::AnnotationSetRefList),
+      dex_annotation_set_ref_list->size);
   auto ir_annotation_set_ref_list = dex_ir_->Alloc<ir::AnnotationSetRefList>();
 
-  for (dex::u4 i = 0; i < dex_annotation_set_ref_list->size; ++i) {
-    dex::u4 entry_offset = dex_annotation_set_ref_list->list[i].annotations_off;
-    if (entry_offset != 0) {
-      auto ir_annotation_set = ExtractAnnotationSet(entry_offset);
-      SLICER_CHECK_NE(ir_annotation_set, nullptr);
-      ir_annotation_set_ref_list->annotations.push_back(ir_annotation_set);
-    }
+  for (const auto& entry : entries) {
+    // Parameter positions are significant, including those without annotations.
+    ir_annotation_set_ref_list->annotations.push_back(
+        ExtractAnnotationSet(entry.annotations_off));
   }
 
   return ir_annotation_set_ref_list;
@@ -1015,6 +1015,7 @@ void Reader::ValidateHeader() {
 
   // If the dex file is within container with other dex files,
   // adjust the base address to the start of the container.
+  SLICER_CHECK_LE(header_->ContainerOff(), header_->ContainerSize());
   SLICER_CHECK_LE(header_->ContainerSize() - header_->ContainerOff(), size_);
   image_ -= header_->ContainerOff();
   size_ = header_->ContainerSize();
@@ -1053,9 +1054,9 @@ void Reader::ValidateHeader() {
   // (map section size = sizeof(MapList::size) + sizeof(MapList::list[size])
   auto map_list = ptr<dex::MapList>(header_->map_off);
   SLICER_CHECK_GT(map_list->size, 0);
-  auto map_section_size =
-      sizeof(dex::u4) + sizeof(dex::MapItem) * map_list->size;
-  SLICER_CHECK_LE(header_->map_off + map_section_size, size_);
+  section<dex::MapItem>(
+      static_cast<size_t>(header_->map_off) + sizeof(dex::MapList),
+      map_list->size);
 }
 
 }  // namespace dex

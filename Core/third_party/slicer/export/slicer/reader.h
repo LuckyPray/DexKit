@@ -107,23 +107,33 @@ class Reader {
 
   // Convert a file pointer (absolute offset) to an in-memory pointer
   template <class T>
-  const T* ptr(int offset) const {
-    SLICER_CHECK_GE(offset, 0 && offset + sizeof(T) <= size_);
+  const T* ptr(size_t offset) const {
+    SLICER_CHECK(offset <= size_ && sizeof(T) <= size_ - offset);
     return reinterpret_cast<const T*>(image_ + offset);
   }
 
   // Convert a data section file pointer (absolute offset) to an in-memory pointer
   // (offset should be inside the data section)
   template <class T>
-  const T* dataPtr(int offset) const {
-    SLICER_CHECK_GE(offset, header_->data_off && offset + sizeof(T) <= size_);
-    return reinterpret_cast<const T*>(image_ + offset);
+  const T* dataPtr(size_t offset) const {
+    if (header_->header_size >= dex::Header::kV41Size) {
+      // Container DEX files can share later data; data_off is unused.
+      const size_t header_offset = header_->ContainerOff();
+      SLICER_CHECK(offset >= header_offset &&
+                   offset - header_offset >= header_->header_size);
+    } else {
+      SLICER_CHECK_GE(offset, header_->data_off);
+    }
+    return ptr<T>(offset);
   }
 
   // Map an indexed section to an ArrayView<T>
   template <class T>
-  slicer::ArrayView<const T> section(int offset, int count) const {
-    return slicer::ArrayView<const T>(ptr<T>(offset), count);
+  slicer::ArrayView<const T> section(size_t offset, size_t count) const {
+    // Check the whole array without overflowing offset + count * sizeof(T).
+    SLICER_CHECK(offset <= size_ && count <= (size_ - offset) / sizeof(T));
+    return slicer::ArrayView<const T>(
+        reinterpret_cast<const T*>(image_ + offset), count);
   }
 
   // Simple accessor for a MUTF8 string data

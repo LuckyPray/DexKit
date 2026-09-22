@@ -563,7 +563,7 @@ Bytecode* CodeIr::DecodeBytecode(const dex::u2* ptr, dex::u4 offset) {
       auto vreg_list = Alloc<VRegList>();
       SLICER_CHECK_LE(dex_instr.vA, 5);
       // vC if necessary.
-      if (dex_instr.vA > 1) {
+      if (dex_instr.vA > 0) {
         vreg_list->registers.push_back(dex_instr.vC);
       }
       // Add vD,vE,vF,vG as necessary.
