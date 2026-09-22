@@ -1317,25 +1317,29 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_METHOD_NAME = 4,
-    VT_ACCESS_FLAGS = 6,
-    VT_DECLARING_CLASS = 8,
-    VT_RETURN_TYPE = 10,
-    VT_PARAMETERS = 12,
-    VT_ANNOTATIONS = 14,
-    VT_OP_CODES = 16,
-    VT_USING_STRINGS = 18,
-    VT_USING_FIELDS = 20,
-    VT_USING_NUMBERS_TYPE = 22,
-    VT_USING_NUMBERS = 24,
-    VT_INVOKING_METHODS = 26,
-    VT_METHOD_CALLERS = 28,
-    VT_PROTO_SHORTY = 30,
-    VT_ALL_OF = 32,
-    VT_ANY_OF = 34,
-    VT_NONE_OF = 36
+    VT_MODIFIERS = 6,
+    VT_ACCESS_FLAGS = 8,
+    VT_DECLARING_CLASS = 10,
+    VT_RETURN_TYPE = 12,
+    VT_PARAMETERS = 14,
+    VT_ANNOTATIONS = 16,
+    VT_OP_CODES = 18,
+    VT_USING_STRINGS = 20,
+    VT_USING_FIELDS = 22,
+    VT_USING_NUMBERS_TYPE = 24,
+    VT_USING_NUMBERS = 26,
+    VT_INVOKING_METHODS = 28,
+    VT_METHOD_CALLERS = 30,
+    VT_PROTO_SHORTY = 32,
+    VT_ALL_OF = 34,
+    VT_ANY_OF = 36,
+    VT_NONE_OF = 38
   };
   const dexkit::schema::StringMatcher *method_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_METHOD_NAME);
+  }
+  const dexkit::schema::AccessFlagsMatcher *modifiers() const {
+    return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_MODIFIERS);
   }
   const dexkit::schema::AccessFlagsMatcher *access_flags() const {
     return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_ACCESS_FLAGS);
@@ -1389,6 +1393,8 @@ struct MethodMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_METHOD_NAME) &&
            verifier.VerifyTable(method_name()) &&
+           VerifyOffset(verifier, VT_MODIFIERS) &&
+           verifier.VerifyTable(modifiers()) &&
            VerifyOffset(verifier, VT_ACCESS_FLAGS) &&
            verifier.VerifyTable(access_flags()) &&
            VerifyOffset(verifier, VT_DECLARING_CLASS) &&
@@ -1437,6 +1443,9 @@ struct MethodMatcherBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_method_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> method_name) {
     fbb_.AddOffset(MethodMatcher::VT_METHOD_NAME, method_name);
+  }
+  void add_modifiers(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers) {
+    fbb_.AddOffset(MethodMatcher::VT_MODIFIERS, modifiers);
   }
   void add_access_flags(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags) {
     fbb_.AddOffset(MethodMatcher::VT_ACCESS_FLAGS, access_flags);
@@ -1500,6 +1509,7 @@ struct MethodMatcherBuilder {
 inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> method_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> declaring_class = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> return_type = 0,
@@ -1533,6 +1543,7 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcher(
   builder_.add_return_type(return_type);
   builder_.add_declaring_class(declaring_class);
   builder_.add_access_flags(access_flags);
+  builder_.add_modifiers(modifiers);
   builder_.add_method_name(method_name);
   return builder_.Finish();
 }
@@ -1545,6 +1556,7 @@ struct MethodMatcher::Traits {
 inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> method_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> declaring_class = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> return_type = 0,
@@ -1572,6 +1584,7 @@ inline ::flatbuffers::Offset<MethodMatcher> CreateMethodMatcherDirect(
   return dexkit::schema::CreateMethodMatcher(
       _fbb,
       method_name,
+      modifiers,
       access_flags,
       declaring_class,
       return_type,
@@ -1761,18 +1774,22 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   struct Traits;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_FIELD_NAME = 4,
-    VT_ACCESS_FLAGS = 6,
-    VT_DECLARING_CLASS = 8,
-    VT_TYPE_CLASS = 10,
-    VT_ANNOTATIONS = 12,
-    VT_GET_METHODS = 14,
-    VT_PUT_METHODS = 16,
-    VT_ALL_OF = 18,
-    VT_ANY_OF = 20,
-    VT_NONE_OF = 22
+    VT_MODIFIERS = 6,
+    VT_ACCESS_FLAGS = 8,
+    VT_DECLARING_CLASS = 10,
+    VT_TYPE_CLASS = 12,
+    VT_ANNOTATIONS = 14,
+    VT_GET_METHODS = 16,
+    VT_PUT_METHODS = 18,
+    VT_ALL_OF = 20,
+    VT_ANY_OF = 22,
+    VT_NONE_OF = 24
   };
   const dexkit::schema::StringMatcher *field_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_FIELD_NAME);
+  }
+  const dexkit::schema::AccessFlagsMatcher *modifiers() const {
+    return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_MODIFIERS);
   }
   const dexkit::schema::AccessFlagsMatcher *access_flags() const {
     return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_ACCESS_FLAGS);
@@ -1805,6 +1822,8 @@ struct FieldMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_FIELD_NAME) &&
            verifier.VerifyTable(field_name()) &&
+           VerifyOffset(verifier, VT_MODIFIERS) &&
+           verifier.VerifyTable(modifiers()) &&
            VerifyOffset(verifier, VT_ACCESS_FLAGS) &&
            verifier.VerifyTable(access_flags()) &&
            VerifyOffset(verifier, VT_DECLARING_CLASS) &&
@@ -1836,6 +1855,9 @@ struct FieldMatcherBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_field_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> field_name) {
     fbb_.AddOffset(FieldMatcher::VT_FIELD_NAME, field_name);
+  }
+  void add_modifiers(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers) {
+    fbb_.AddOffset(FieldMatcher::VT_MODIFIERS, modifiers);
   }
   void add_access_flags(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags) {
     fbb_.AddOffset(FieldMatcher::VT_ACCESS_FLAGS, access_flags);
@@ -1878,6 +1900,7 @@ struct FieldMatcherBuilder {
 inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> field_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> declaring_class = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type_class = 0,
@@ -1897,6 +1920,7 @@ inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcher(
   builder_.add_type_class(type_class);
   builder_.add_declaring_class(declaring_class);
   builder_.add_access_flags(access_flags);
+  builder_.add_modifiers(modifiers);
   builder_.add_field_name(field_name);
   return builder_.Finish();
 }
@@ -1909,6 +1933,7 @@ struct FieldMatcher::Traits {
 inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> field_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> declaring_class = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> type_class = 0,
@@ -1924,6 +1949,7 @@ inline ::flatbuffers::Offset<FieldMatcher> CreateFieldMatcherDirect(
   return dexkit::schema::CreateFieldMatcher(
       _fbb,
       field_name,
+      modifiers,
       access_flags,
       declaring_class,
       type_class,
@@ -2024,22 +2050,26 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SMALI_SOURCE = 4,
     VT_CLASS_NAME = 6,
-    VT_ACCESS_FLAGS = 8,
-    VT_SUPER_CLASS = 10,
-    VT_INTERFACES = 12,
-    VT_ANNOTATIONS = 14,
-    VT_FIELDS = 16,
-    VT_METHODS = 18,
-    VT_USING_STRINGS = 20,
-    VT_ALL_OF = 22,
-    VT_ANY_OF = 24,
-    VT_NONE_OF = 26
+    VT_MODIFIERS = 8,
+    VT_ACCESS_FLAGS = 10,
+    VT_SUPER_CLASS = 12,
+    VT_INTERFACES = 14,
+    VT_ANNOTATIONS = 16,
+    VT_FIELDS = 18,
+    VT_METHODS = 20,
+    VT_USING_STRINGS = 22,
+    VT_ALL_OF = 24,
+    VT_ANY_OF = 26,
+    VT_NONE_OF = 28
   };
   const dexkit::schema::StringMatcher *smali_source() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_SMALI_SOURCE);
   }
   const dexkit::schema::StringMatcher *class_name() const {
     return GetPointer<const dexkit::schema::StringMatcher *>(VT_CLASS_NAME);
+  }
+  const dexkit::schema::AccessFlagsMatcher *modifiers() const {
+    return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_MODIFIERS);
   }
   const dexkit::schema::AccessFlagsMatcher *access_flags() const {
     return GetPointer<const dexkit::schema::AccessFlagsMatcher *>(VT_ACCESS_FLAGS);
@@ -2077,6 +2107,8 @@ struct ClassMatcher FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(smali_source()) &&
            VerifyOffset(verifier, VT_CLASS_NAME) &&
            verifier.VerifyTable(class_name()) &&
+           VerifyOffset(verifier, VT_MODIFIERS) &&
+           verifier.VerifyTable(modifiers()) &&
            VerifyOffset(verifier, VT_ACCESS_FLAGS) &&
            verifier.VerifyTable(access_flags()) &&
            VerifyOffset(verifier, VT_SUPER_CLASS) &&
@@ -2114,6 +2146,9 @@ struct ClassMatcherBuilder {
   }
   void add_class_name(::flatbuffers::Offset<dexkit::schema::StringMatcher> class_name) {
     fbb_.AddOffset(ClassMatcher::VT_CLASS_NAME, class_name);
+  }
+  void add_modifiers(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers) {
+    fbb_.AddOffset(ClassMatcher::VT_MODIFIERS, modifiers);
   }
   void add_access_flags(::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags) {
     fbb_.AddOffset(ClassMatcher::VT_ACCESS_FLAGS, access_flags);
@@ -2160,6 +2195,7 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcher(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> smali_source = 0,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> class_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> super_class = 0,
     ::flatbuffers::Offset<dexkit::schema::InterfacesMatcher> interfaces = 0,
@@ -2181,6 +2217,7 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcher(
   builder_.add_interfaces(interfaces);
   builder_.add_super_class(super_class);
   builder_.add_access_flags(access_flags);
+  builder_.add_modifiers(modifiers);
   builder_.add_class_name(class_name);
   builder_.add_smali_source(smali_source);
   return builder_.Finish();
@@ -2195,6 +2232,7 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcherDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> smali_source = 0,
     ::flatbuffers::Offset<dexkit::schema::StringMatcher> class_name = 0,
+    ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> modifiers = 0,
     ::flatbuffers::Offset<dexkit::schema::AccessFlagsMatcher> access_flags = 0,
     ::flatbuffers::Offset<dexkit::schema::ClassMatcher> super_class = 0,
     ::flatbuffers::Offset<dexkit::schema::InterfacesMatcher> interfaces = 0,
@@ -2213,6 +2251,7 @@ inline ::flatbuffers::Offset<ClassMatcher> CreateClassMatcherDirect(
       _fbb,
       smali_source,
       class_name,
+      modifiers,
       access_flags,
       super_class,
       interfaces,

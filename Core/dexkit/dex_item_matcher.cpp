@@ -19,6 +19,7 @@
 // <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
 
 #include "dex_item.h"
+#include "java_modifiers.h"
 #include "string_pool_lookup.h"
 #include <type_traits>
 #include "matcher_thread_cache_registry.h"
@@ -1041,7 +1042,11 @@ bool DexItem::IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matc
     if (!IsClassSmaliSourceMatched(type_idx, matcher->smali_source())) {
         return false;
     }
-    if (!IsClassAccessFlagsMatched(type_idx, matcher->access_flags())) {
+    if (!IsClassModifiersMatched(type_idx, matcher->modifiers())) {
+        return false;
+    }
+    if (matcher->access_flags() && (!type_def_flag[type_idx]
+        || !IsAccessFlagsMatched(class_access_flags[type_idx], matcher->access_flags()))) {
         return false;
     }
     if (!IsSuperClassMatched(type_idx, matcher->super_class())) {
@@ -1140,15 +1145,14 @@ bool DexItem::IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *
     return false;
 }
 
-bool DexItem::IsClassAccessFlagsMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher) {
+bool DexItem::IsClassModifiersMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher) {
     if (matcher == nullptr) {
         return true;
     }
     if (!this->type_def_flag[type_idx]) {
         return false;
     }
-    auto access_flags = this->class_access_flags[type_idx];
-    return IsAccessFlagsMatched(access_flags, matcher);
+    return IsAccessFlagsMatched(GetClassModifiers(type_idx), matcher);
 }
 
 bool DexItem::IsClassSmaliSourceMatched(uint32_t type_idx, const schema::StringMatcher *matcher) {
@@ -1420,7 +1424,8 @@ bool DexItem::IsMethodMatched(uint32_t method_idx, const schema::MethodMatcher *
     if (!IsStringMatched(method_name, matcher->method_name())) {
         return false;
     }
-    if (!IsAccessFlagsMatched(this->method_access_flags[method_idx], matcher->access_flags())) {
+    if (!IsAccessFlagsMatched(JavaMethodModifiers(method_access_flags[method_idx]), matcher->modifiers())
+        || !IsAccessFlagsMatched(method_access_flags[method_idx], matcher->access_flags())) {
         return false;
     }
     if (!IsClassMatched(method_def.class_idx, matcher->declaring_class())) {
@@ -1931,7 +1936,8 @@ bool DexItem::IsFieldMatched(uint32_t field_idx, const schema::FieldMatcher *mat
     if (!IsStringMatched(field_name, matcher->field_name())) {
         return false;
     }
-    if (!IsAccessFlagsMatched(this->field_access_flags[field_idx], matcher->access_flags())) {
+    if (!IsAccessFlagsMatched(JavaModifiers(field_access_flags[field_idx]), matcher->modifiers())
+        || !IsAccessFlagsMatched(field_access_flags[field_idx], matcher->access_flags())) {
         return false;
     }
     if (!IsClassMatched(field_def.class_idx, matcher->declaring_class())) {

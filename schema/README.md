@@ -1,10 +1,26 @@
 # DexKit FlatBuffer schema
 
-## python generate kotlin && c++ code
+## Generate Kotlin and C++ together
+
+Use `flatc` **23.5.26**, matching the native and JVM runtimes. Download the executable for your
+platform from the [official release](https://github.com/google/flatbuffers/releases/tag/v23.5.26)
+and place it in this directory as `flatc` (`flatc.exe` on Windows). The local binary is gitignored.
+Alternatively, set `FLATC` to its path or install the same version on `PATH`.
+
+From the repository root:
 
 ```shell
-python gen_code.py
+python3 schema/gen_code.py
 ```
+
+The script verifies the compiler version and regenerates both languages, including Kotlin
+package/type aliases. Do not hand-edit the generated files.
+
+## Access flag fields
+
+The Kotlin and native schema code are generated and released together. Matchers and result
+metadata use the same adjacent fields: `modifiers` for Android Java reflection semantics and
+`access_flags` (`accessFlags` in Kotlin) for raw DEX flags.
 
 ## kotlin
 

@@ -64,25 +64,27 @@
 
 ### AccessFlagsMatcher
 
-| 字段名       | 类型                      | 说明                |
-|:----------|:------------------------|:------------------|
-| modifiers | Int                     | 原始 DEX 访问标志掩码    |
-| matchType | [MatchType](#matchtype) | 匹配模式              |
+| 字段名 | 类型 | 描述 |
+|:-------|:-----|:-----|
+| modifiers | Int | 位掩码，语义由所属匹配条件决定 |
+| matchType | [MatchType](#matchtype) | 匹配模式 |
 
-`modifiers` 匹配原始 DEX
-[`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags)。完整标志集合请使用
-`DexAccessFlags`，其中包括 `BRIDGE`、`VARARGS`、`SYNTHETIC`、`CONSTRUCTOR` 和
-`DECLARED_SYNCHRONIZED`。
+`ClassMatcher`、`MethodMatcher`、`FieldMatcher` 和 `UsingFieldMatcher` 提供两个独立入口：
 
-`java.lang.reflect.Modifier` 的公开常量在数值上是 DEX 访问标志的子集；当常量适用于当前匹配
-目标时仍可直接使用。大多数用户只需要 `Modifier`。仅当 `Modifier` 未公开所需标志，或高级匹配
-需要精确 DEX 语义时，才需要使用 `DexAccessFlags`。但两种模型仍不完全等价。DexKit 不再把
-`DECLARED_SYNCHRONIZED` (`0x20000`) 转换为
-`SYNCHRONIZED` (`0x20`)。普通源码层 `synchronized` 方法应使用
-`DexAccessFlags.DECLARED_SYNCHRONIZED`；DEX 中的 `DexAccessFlags.SYNCHRONIZED` 仅适用于
-native 方法。`SUPER` 仅用于完整对齐 `kAcc` 集合，不用于 DEX `class_def_item`；`0x40` 和
-`0x80` 则分别具有字段/方法语义。`MatchType.Contains` 要求查询的所有位均存在，
-`MatchType.Equals` 则比较完整标志值。
+- `modifiers`：Android Java 反射语义，保留 `BRIDGE`、`VARARGS`、`SYNTHETIC` 等隐藏
+  Java 标志位。反射条件使用 `Modifier`。
+- `accessFlags`：原始 DEX [`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags)。
+  `CONSTRUCTOR`、`DECLARED_SYNCHRONIZED` 等 DEX 专有标志使用 `DexAccessFlags`。
+
+两种条件可同时设置，取 AND。`Contains` 要求包含所有指定的位；`Equals` 比较完整值。
+掩码保持原有的非零限制。`ClassData`、`MethodData`、`FieldData` 通过 `modifiers` 和
+`accessFlags` 提供相同的两种视图。
+
+方法的反射视图去掉 DEX 专有高位，并将 `DECLARED_SYNCHRONIZED` (`0x20000`) 转为
+`SYNCHRONIZED` (`0x20`)。与 Android 反射一致，native 方法若仅有原始 `0x20`，
+`modifiers` 不会保留该位；需要区分时请读取 `accessFlags`。
+类的反射视图优先使用 `InnerClass` 注解中的标志，包含 `PRIVATE`、`PROTECTED`、`STATIC`；
+原始标志仍来自 `class_def_item`。加载的 DEX 中不存在的元数据无法通过转换恢复。
 
 ### AnnotationEncodeValueMatcher
 
@@ -193,7 +195,8 @@ native 方法。`SUPER` 仅用于完整对齐 `kAcc` 集合，不用于 DEX `cla
 |:-------------|:--------------------------------------------------|:--------------------------------|
 | source       | [StringMatcher](#stringmatcher)                   | 类的源码文件名，即 smali 中的 `.source` 字段 |
 | className    | [StringMatcher](#stringmatcher)                   | 类的名称                            |
-| modifiers    | [AccessFlagsMatcher](#accessflagsmatcher)         | 原始 DEX 类访问标志                     |
+| modifiers    | [AccessFlagsMatcher](#accessflagsmatcher)         | Java 反射类修饰符                     |
+| accessFlags    | [AccessFlagsMatcher](#accessflagsmatcher)         | 原始 DEX 类访问标志                     |
 | superClass   | [ClassMatcher](#classmatcher)                     | 类的父类                            |
 | interfaces   | [InterfacesMatcher](#interfacesmatcher)           | 类的接口列表                          |
 | annotations  | [AnnotationsMatcher](#annotationsmatcher)         | 类的注解列表                          |
@@ -217,7 +220,8 @@ native 方法。`SUPER` 仅用于完整对齐 `kAcc` 集合，不用于 DEX `cla
 | 字段名           | 类型                                        | 说明         |
 |:--------------|:------------------------------------------|:-----------|
 | name          | [StringMatcher](#stringmatcher)           | 字段的名称      |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | 原始 DEX 字段访问标志 |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Java 反射字段修饰符 |
+| accessFlags     | [AccessFlagsMatcher](#accessflagsmatcher) | 原始 DEX 字段访问标志 |
 | declaredClass | [ClassMatcher](#classmatcher)             | 字段的声明类     |
 | type          | [ClassMatcher](#classmatcher)             | 字段的类型      |
 | annotations   | [AnnotationsMatcher](#annotationsmatcher) | 字段的注解      |
@@ -240,7 +244,8 @@ native 方法。`SUPER` 仅用于完整对齐 `kAcc` 集合，不用于 DEX `cla
 | 字段名           | 类型                                                        | 说明               |
 |:--------------|:----------------------------------------------------------|:-----------------|
 | name          | [StringMatcher](#stringmatcher)                           | 方法的名称            |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | 原始 DEX 方法访问标志     |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Java 反射方法修饰符     |
+| accessFlags     | [AccessFlagsMatcher](#accessflagsmatcher)                 | 原始 DEX 方法访问标志     |
 | declaredClass | [ClassMatcher](#classmatcher)                             | 方法的声明类           |
 | protoShorty   | String                                                    | 方法的原型简写          |
 | returnType    | [ClassMatcher](#classmatcher)                             | 方法的返回值类型         |
@@ -292,10 +297,15 @@ native 方法。`SUPER` 仅用于完整对齐 `kAcc` 集合，不用于 DEX `cla
 
 ### UsingFieldMatcher
 
-| 字段名       | 类型                            | 说明    |
-|:----------|:------------------------------|:------|
-| field     | [FieldMatcher](#fieldmatcher) | 匹配的字段 |
-| usingType | [UsingType](#usingtype)       | 使用类型  |
+| 字段名      | 类型                                      | 说明                                  |
+|:------------|:------------------------------------------|:--------------------------------------|
+| field       | [FieldMatcher](#fieldmatcher)              | 匹配的字段                            |
+| modifiers   | [AccessFlagsMatcher](#accessflagsmatcher)  | 被使用字段的 Java 反射修饰符           |
+| accessFlags | [AccessFlagsMatcher](#accessflagsmatcher)  | 被使用字段的原始 DEX 访问标志          |
+| usingType   | [UsingType](#usingtype)                    | 使用类型                              |
+
+`modifiers` 和 `accessFlags` 是内部 `FieldMatcher` 的便捷入口，可直接赋值 `Int`
+或调用接受 `AccessFlagsMatcher` 的重载。两种条件可以同时设置，取 AND。
 
 ### EncodeValueByte
 
@@ -354,6 +364,21 @@ native 方法。`SUPER` 仅用于完整对齐 `kAcc` 集合，不用于 DEX `cla
 | 字段名   | 类型      | 说明  |
 |:------|:--------|:----|
 | value | Boolean | 布尔值 |
+
+## 结果对象相关
+
+### 访问标志属性
+
+以下只读属性适用于 `ClassData`、`MethodData` 和 `FieldData`：
+
+| 属性        | 类型 | 说明                                                               |
+|:------------|:-----|:-------------------------------------------------------------------|
+| modifiers   | Int  | Android Java 反射修饰符，保留 `BRIDGE`、`VARARGS`、`SYNTHETIC` 等隐藏位 |
+| accessFlags | Int  | 原始 DEX 访问标志，保留 `CONSTRUCTOR`、`DECLARED_SYNCHRONIZED` 等 DEX 专有位 |
+
+Java 分别通过 `getModifiers()` 和 `getAccessFlags()` 读取。类的原始标志来自
+`class_def_item`；`modifiers` 优先使用 `InnerClass` 注解中的标志。
+方法的归一化规则见 [AccessFlagsMatcher](#accessflagsmatcher)。
 
 ## 枚举相关
 

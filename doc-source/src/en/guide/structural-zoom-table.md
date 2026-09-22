@@ -65,26 +65,29 @@
 
 ### AccessFlagsMatcher
 
-| Field Name | Type                    | Description                      |
-|:-----------|:------------------------|:---------------------------------|
-| modifiers  | Int                     | Raw DEX access flag mask         |
-| matchType  | [MatchType](#matchtype) | Matching mode                    |
+| Field Name | Type | Description |
+|:-----------|:-----|:------------|
+| modifiers | Int | Bit mask interpreted by the owning matcher condition |
+| matchType | [MatchType](#matchtype) | Matching mode |
 
-`modifiers` matches raw DEX
-[`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags). Use
-`DexAccessFlags` for the complete set, including `BRIDGE`, `VARARGS`, `SYNTHETIC`, `CONSTRUCTOR`,
-and `DECLARED_SYNCHRONIZED`.
+`ClassMatcher`, `MethodMatcher`, `FieldMatcher`, and `UsingFieldMatcher` accept this matcher
+through two independent conditions:
 
-The public `java.lang.reflect.Modifier` constants are a numeric subset of the DEX access flags and
-remain usable when they are valid for the target being matched. Most users only need `Modifier`.
-Use `DexAccessFlags` for advanced matching when `Modifier` does not expose a required flag or exact
-DEX-specific semantics are needed. The two models are still not equivalent. DexKit does not convert
-`DECLARED_SYNCHRONIZED` (`0x20000`) to `SYNCHRONIZED` (`0x20`). Match an ordinary source-level
-`synchronized` method with `DexAccessFlags.DECLARED_SYNCHRONIZED`; DEX permits
-`DexAccessFlags.SYNCHRONIZED` only on native methods. `SUPER` is retained for complete `kAcc`
-alignment but is not used by a DEX `class_def_item`; `0x40` and `0x80` have field/method-specific
-meanings. `MatchType.Contains` requires all requested bits to be present, while `MatchType.Equals`
-compares the complete flag value.
+- `modifiers`: Android Java reflection semantics, including hidden Java bits such as `BRIDGE`,
+  `VARARGS`, and `SYNTHETIC`. Use `Modifier` for reflection conditions.
+- `accessFlags`: raw DEX [`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags).
+  Use `DexAccessFlags` for DEX-only flags such as `CONSTRUCTOR` and `DECLARED_SYNCHRONIZED`.
+
+Both conditions can be set together and are combined with AND. `Contains` requires every requested
+bit; `Equals` compares the whole value. As before, the mask must be nonzero.
+`ClassData`, `MethodData`, and `FieldData` expose the same two views as `modifiers` and `accessFlags`.
+
+For methods, reflection removes DEX-only high bits and maps `DECLARED_SYNCHRONIZED` (`0x20000`)
+to `SYNCHRONIZED` (`0x20`). As in Android reflection, a native method carrying only raw `0x20`
+does not retain that bit in `modifiers`; inspect `accessFlags` when this distinction matters.
+For classes, reflection uses the `InnerClass` annotation's flags when present, including
+`PRIVATE`, `PROTECTED`, and `STATIC`; raw flags still come from `class_def_item`.
+Metadata that is absent from the loaded DEX cannot be recovered through reflection normalization.
 
 ### AnnotationEncodeValueMatcher
 
@@ -195,7 +198,8 @@ compares the complete flag value.
 |:-------------|:--------------------------------------------------|:--------------------------------------------------------------|
 | source       | [StringMatcher](#stringmatcher)                   | Source file name of the class, i.e., `.source` field in smali |
 | className    | [StringMatcher](#stringmatcher)                   | Name of the class                                             |
-| modifiers    | [AccessFlagsMatcher](#accessflagsmatcher)         | Raw DEX class access flags                                    |
+| modifiers    | [AccessFlagsMatcher](#accessflagsmatcher)         | Java reflection class modifiers                                    |
+| accessFlags    | [AccessFlagsMatcher](#accessflagsmatcher)         | Raw DEX class access flags                                    |
 | superClass   | [ClassMatcher](#classmatcher)                     | Superclass of the class                                       |
 | interfaces   | [InterfacesMatcher](#interfacesmatcher)           | List of interfaces implemented by the class                   |
 | annotations  | [AnnotationsMatcher](#annotationsmatcher)         | List of annotations for the class                             |
@@ -219,7 +223,8 @@ compares the complete flag value.
 | Field Name    | Type                                      | Description                        |
 |:--------------|:------------------------------------------|:-----------------------------------|
 | name          | [StringMatcher](#stringmatcher)           | Name of the field                  |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Raw DEX field access flags          |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher) | Java reflection field modifiers          |
+| accessFlags     | [AccessFlagsMatcher](#accessflagsmatcher) | Raw DEX field access flags          |
 | declaredClass | [ClassMatcher](#classmatcher)             | Declaring class of the field       |
 | type          | [ClassMatcher](#classmatcher)             | Type of the field                  |
 | annotations   | [AnnotationsMatcher](#annotationsmatcher) | List of annotations for the field  |
@@ -242,7 +247,8 @@ compares the complete flag value.
 | Field Name    | Type                                                      | Description                           |
 |:--------------|:----------------------------------------------------------|:--------------------------------------|
 | name          | [StringMatcher](#stringmatcher)                           | Name of the method                    |
-| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Raw DEX method access flags            |
+| modifiers     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Java reflection method modifiers            |
+| accessFlags     | [AccessFlagsMatcher](#accessflagsmatcher)                 | Raw DEX method access flags            |
 | declaredClass | [ClassMatcher](#classmatcher)                             | Declaring class of the method         |
 | protoShorty   | String                                                    | The method prototype shorty           |
 | returnType    | [ClassMatcher](#classmatcher)                             | Return type of the method             |
@@ -294,10 +300,16 @@ child matcher to `noneOf`. `allOf`, `anyOf`, and `noneOf` can be nested recursiv
 
 ### UsingFieldMatcher
 
-| Field Name | Type                          | Description   |
-|:-----------|:------------------------------|:--------------|
-| field      | [FieldMatcher](#fieldmatcher) | Matched field |
-| usingType  | [UsingType](#usingtype)       | Type of usage |
+| Field Name  | Type                                      | Description                                  |
+|:------------|:------------------------------------------|:---------------------------------------------|
+| field       | [FieldMatcher](#fieldmatcher)              | Matched field                                |
+| modifiers   | [AccessFlagsMatcher](#accessflagsmatcher)  | Java reflection modifiers of the used field  |
+| accessFlags | [AccessFlagsMatcher](#accessflagsmatcher)  | Raw DEX access flags of the used field       |
+| usingType   | [UsingType](#usingtype)                    | Type of usage                                |
+
+`modifiers` and `accessFlags` are convenience setters on the inner `FieldMatcher`. Assign an
+`Int` directly or call the overload accepting an `AccessFlagsMatcher`. Both conditions can
+be set together and are combined with AND.
 
 ### EncodeValueByte
 
@@ -356,6 +368,21 @@ This object has no fields.
 | Field Name | Type    | Description   |
 |:-----------|:--------|:--------------|
 | value      | Boolean | boolean value |
+
+## Result Objects
+
+### Access flag properties
+
+These read-only properties are available on `ClassData`, `MethodData`, and `FieldData`:
+
+| Property    | Type | Description |
+|:------------|:-----|:------------|
+| modifiers   | Int  | Android Java reflection modifiers, preserving hidden bits such as `BRIDGE`, `VARARGS`, and `SYNTHETIC` |
+| accessFlags | Int  | Raw DEX access flags, preserving DEX-only bits such as `CONSTRUCTOR` and `DECLARED_SYNCHRONIZED` |
+
+Java callers use `getModifiers()` and `getAccessFlags()`, respectively. Raw class flags come
+from `class_def_item`; class `modifiers` use the `InnerClass` annotation's flags when available.
+See [AccessFlagsMatcher](#accessflagsmatcher) for method normalization rules.
 
 ## Enumerations
 

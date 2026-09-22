@@ -70,13 +70,27 @@ internal class `-MethodMeta` : Table() {
             false
         }
     }
-    val accessFlags : UInt
+    val modifiers : UInt
         get() {
             val o = __offset(10)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    fun mutateAccessFlags(accessFlags: UInt) : Boolean {
+    fun mutateModifiers(modifiers: UInt) : Boolean {
         val o = __offset(10)
+        return if (o != 0) {
+            bb.putInt(o + bb_pos, modifiers.toInt())
+            true
+        } else {
+            false
+        }
+    }
+    val accessFlags : UInt
+        get() {
+            val o = __offset(12)
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
+        }
+    fun mutateAccessFlags(accessFlags: UInt) : Boolean {
+        val o = __offset(12)
         return if (o != 0) {
             bb.putInt(o + bb_pos, accessFlags.toInt())
             true
@@ -86,22 +100,22 @@ internal class `-MethodMeta` : Table() {
     }
     val dexDescriptor : String?
         get() {
-            val o = __offset(12)
+            val o = __offset(14)
             return if (o != 0) {
                 __string(o + bb_pos)
             } else {
                 null
             }
         }
-    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(12, 1)
-    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 12, 1)
+    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
+    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
     val returnType : UInt
         get() {
-            val o = __offset(14)
+            val o = __offset(16)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun mutateReturnType(returnType: UInt) : Boolean {
-        val o = __offset(14)
+        val o = __offset(16)
         return if (o != 0) {
             bb.putInt(o + bb_pos, returnType.toInt())
             true
@@ -110,7 +124,7 @@ internal class `-MethodMeta` : Table() {
         }
     }
     fun parameterTypes(j: Int) : Int {
-        val o = __offset(16)
+        val o = __offset(18)
         return if (o != 0) {
             bb.getInt(__vector(o) + j * 4)
         } else {
@@ -119,12 +133,12 @@ internal class `-MethodMeta` : Table() {
     }
     val parameterTypesLength : Int
         get() {
-            val o = __offset(16); return if (o != 0) __vector_len(o) else 0
+            val o = __offset(18); return if (o != 0) __vector_len(o) else 0
         }
-    val parameterTypesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(16, 4)
-    fun parameterTypesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 16, 4)
+    val parameterTypesAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(18, 4)
+    fun parameterTypesInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 18, 4)
     fun mutateParameterTypes(j: Int, parameterTypes: Int) : Boolean {
-        val o = __offset(16)
+        val o = __offset(18)
         return if (o != 0) {
             bb.putInt(__vector(o) + j * 4, parameterTypes)
             true
@@ -139,25 +153,27 @@ internal class `-MethodMeta` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createMethodMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, accessFlags: UInt, dexDescriptorOffset: Int, returnType: UInt, parameterTypesOffset: Int) : Int {
-            builder.startTable(7)
+        fun createMethodMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, modifiers: UInt, accessFlags: UInt, dexDescriptorOffset: Int, returnType: UInt, parameterTypesOffset: Int) : Int {
+            builder.startTable(8)
             addParameterTypes(builder, parameterTypesOffset)
             addReturnType(builder, returnType)
             addDexDescriptor(builder, dexDescriptorOffset)
             addAccessFlags(builder, accessFlags)
+            addModifiers(builder, modifiers)
             addClassId(builder, classId)
             addDexId(builder, dexId)
             addId(builder, id)
             return endMethodMeta(builder)
         }
-        fun startMethodMeta(builder: FlatBufferBuilder) = builder.startTable(7)
+        fun startMethodMeta(builder: FlatBufferBuilder) = builder.startTable(8)
         fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
         fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
         fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
-        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(3, accessFlags.toInt(), 0)
-        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(4, dexDescriptor, 0)
-        fun addReturnType(builder: FlatBufferBuilder, returnType: UInt) = builder.addInt(5, returnType.toInt(), 0)
-        fun addParameterTypes(builder: FlatBufferBuilder, parameterTypes: Int) = builder.addOffset(6, parameterTypes, 0)
+        fun addModifiers(builder: FlatBufferBuilder, modifiers: UInt) = builder.addInt(3, modifiers.toInt(), 0)
+        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
+        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
+        fun addReturnType(builder: FlatBufferBuilder, returnType: UInt) = builder.addInt(6, returnType.toInt(), 0)
+        fun addParameterTypes(builder: FlatBufferBuilder, parameterTypes: Int) = builder.addOffset(7, parameterTypes, 0)
         fun createParameterTypesVector(builder: FlatBufferBuilder, data: IntArray) : Int {
             builder.startVector(4, data.size, 4)
             for (i in data.size - 1 downTo 0) {

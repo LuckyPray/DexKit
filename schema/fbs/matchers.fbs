@@ -104,6 +104,7 @@ union Number {
 
 table MethodMatcher {
     method_name: StringMatcher;
+    modifiers: AccessFlagsMatcher;
     access_flags: AccessFlagsMatcher;
     declaring_class: ClassMatcher;
     return_type: ClassMatcher;
@@ -135,6 +136,7 @@ table InterfacesMatcher {
 
 table FieldMatcher {
     field_name: StringMatcher;
+    modifiers: AccessFlagsMatcher;
     access_flags: AccessFlagsMatcher;
     declaring_class: ClassMatcher;
     type_class: ClassMatcher;
@@ -155,6 +157,7 @@ table FieldsMatcher {
 table ClassMatcher {
     smali_source: StringMatcher;
     class_name: StringMatcher;
+    modifiers: AccessFlagsMatcher;
     access_flags: AccessFlagsMatcher;
     super_class: ClassMatcher;
     interfaces: InterfacesMatcher;

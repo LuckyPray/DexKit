@@ -19,6 +19,7 @@
 // <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
 
 #include "dex_item.h"
+#include "java_modifiers.h"
 
 #include "utils/byte_code_util.h"
 #include "utils/opcode_util.h"
@@ -625,6 +626,51 @@ std::mutex &DexItem::GetTypeDefMutex(uint32_t type_idx) {
     return (*type_def_mutexes)[type_idx % type_def_mutexes->size()];
 }
 
+uint32_t DexItem::GetClassModifiers(uint32_t type_idx) const {
+    // InnerClass flags replace class_def flags; even a present zero must not fall back.
+    // Android Class.getModifiers():
+    // https://android.googlesource.com/platform/libcore/+/refs/tags/android-15.0.0_r1/ojluni/src/main/java/java/lang/Class.java#1541
+    const auto flags = ReadInnerClassAccessFlags(type_idx).value_or(class_access_flags[type_idx]);
+    return JavaModifiers(flags);
+}
+
+std::optional<uint32_t> DexItem::ReadInnerClassAccessFlags(uint32_t type_idx) const {
+    if (!type_def_flag[type_idx]) return std::nullopt;
+    const auto &definition = reader.ClassDefs()[type_def_idx[type_idx]];
+    if (definition.annotations_off == 0) return std::nullopt;
+    const auto *directory = reader.dataPtr<dex::AnnotationsDirectoryItem>(definition.annotations_off);
+    if (directory->class_annotations_off == 0) return std::nullopt;
+    const auto *annotations = reader.dataPtr<dex::AnnotationSetItem>(directory->class_annotations_off);
+
+    // Read only class annotations, without allocating or updating slicer's annotation IR caches.
+    // ART likewise requires a SYSTEM InnerClass annotation with an INT accessFlags value:
+    // https://android.googlesource.com/platform/art/+/refs/tags/android-15.0.0_r1/runtime/dex/dex_file_annotations.cc#1674
+    for (uint32_t i = 0; i < annotations->size; ++i) {
+        const auto *item = reader.dataPtr<dex::AnnotationItem>(annotations->entries[i]);
+        if (item->visibility != dex::kVisibilitySystem) continue;
+        const auto *data = item->annotation;
+        const auto annotation_type = ReadULeb128(&data);
+        if (type_names[annotation_type] != "Ldalvik/annotation/InnerClass;") continue;
+        // Standard InnerClass has accessFlags and name. Elements are sorted by string_id,
+        // so accessFlags comes first; this shortcut is specific to this system annotation.
+        // https://source.android.com/docs/core/runtime/dex-format#encoded-annotation
+        // https://source.android.com/docs/core/runtime/dex-format#dalvik-innerclass
+        if (ReadULeb128(&data) == 0 || strings[ReadULeb128(&data)] != "accessFlags") return std::nullopt;
+        const auto tag = *data++;
+        const uint32_t width = (tag >> 5) + 1;
+        if ((tag & 0x1f) != dex::kEncodedInt || width > sizeof(uint32_t)) return std::nullopt;
+
+        // VALUE_INT uses 1-4 little-endian bytes with sign extension, not ULEB128.
+        // The width guard also avoids shifting a uint32_t by 32 during sign extension.
+        // https://android.googlesource.com/platform/art/+/refs/tags/android-15.0.0_r1/runtime/dex/dex_file_annotations.cc#447
+        uint32_t flags = 0;
+        for (uint32_t byte = 0; byte < width; ++byte) flags |= uint32_t(data[byte]) << (byte * 8);
+        if (width < 4 && (data[width - 1] & 0x80) != 0) flags |= UINT32_MAX << (width * 8);
+        return flags;
+    }
+    return std::nullopt;
+}
+
 // NOLINTNEXTLINE
 ClassBean DexItem::GetClassBean(uint32_t type_idx) {
     if (!this->type_def_flag[type_idx]) {
@@ -641,6 +687,7 @@ ClassBean DexItem::GetClassBean(uint32_t type_idx) {
         auto &class_def = this->reader.ClassDefs()[this->type_def_idx[type_idx]];
         bean.source_file = this->class_source_files[type_idx];
         bean.access_flags = class_def.access_flags;
+        bean.modifiers = GetClassModifiers(type_idx);
         bean.super_class_id = class_def.superclass_idx;
         const auto interfaces = GetInterfaceTypeIds(type_idx);
         bean.interface_ids.resize(interfaces.size());
@@ -686,6 +733,7 @@ MethodBean DexItem::GetMethodBean(uint32_t method_idx) {
     bean.dex_id = this->dex_id;
     bean.class_id = method_def.class_idx;
     bean.access_flags = this->method_access_flags[method_idx];
+    bean.modifiers = JavaMethodModifiers(bean.access_flags);
     bean.dex_descriptor = this->GetMethodDescriptor(method_idx);
     bean.return_type = proto_def.return_type_idx;
     std::vector<uint32_t> parameter_type_ids;
@@ -713,6 +761,7 @@ FieldBean DexItem::GetFieldBean(uint32_t field_idx) {
     bean.dex_id = this->dex_id;
     bean.class_id = field_def.class_idx;
     bean.access_flags = this->field_access_flags[field_idx];
+    bean.modifiers = JavaModifiers(bean.access_flags);
     bean.dex_descriptor = this->GetFieldDescriptor(field_idx);
     bean.type_id = field_def.type_idx;
     return bean;

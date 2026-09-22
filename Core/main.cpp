@@ -220,6 +220,7 @@ int DexKitFindClassUsingStrings(dexkit::DexKit &dexkit) {
                     0,
                     0,
                     0,
+                    0,
                     fbb.CreateVector(std::vector<flatbuffers::Offset<StringMatcher>>{
                             CreateStringMatcher(
                                     fbb,
@@ -265,6 +266,7 @@ int DexKitFindClassTest(dexkit::DexKit &dexkit) {
             fbb, 0, 0, false, 0, false,
             CreateClassMatcher(
                     fbb,
+                    0,
                     0,
                     0,
                     0,
@@ -383,11 +385,13 @@ int DexKitFindClassFieldsTest(dexkit::DexKit &dexkit) {
                     0,
                     0,
                     0,
+                    0,
                     CreateFieldsMatcher(
                             fbb,
                             fbb.CreateVector(std::vector<flatbuffers::Offset<FieldMatcher>>{
                                     CreateFieldMatcher(
                                             fbb,
+                                            0,
                                             0,
                                             0,
                                             0,
@@ -407,6 +411,7 @@ int DexKitFindClassFieldsTest(dexkit::DexKit &dexkit) {
                                             0,
                                             0,
                                             0,
+                                            0,
                                             CreateClassMatcher(
                                                     fbb,
                                                     0,
@@ -420,6 +425,7 @@ int DexKitFindClassFieldsTest(dexkit::DexKit &dexkit) {
                                     ),
                                     CreateFieldMatcher(
                                             fbb,
+                                            0,
                                             0,
                                             0,
                                             0,
@@ -469,6 +475,7 @@ int DexKitFindClassUsingAnnotationTest(dexkit::DexKit &dexkit) {
             fbb, 0, 0, false, 0, false,
             CreateClassMatcher(
                     fbb,
+                    0,
                     0,
                     0,
                     0,
@@ -555,6 +562,7 @@ int DexKitFindMethodUsingAnnotationTest(dexkit::DexKit &dexkit) {
                     0,
                     0,
                     0,
+                    0,
                     CreateAnnotationsMatcher(
                             fbb,
                             fbb.CreateVector(std::vector<flatbuffers::Offset<AnnotationMatcher>>{
@@ -632,6 +640,7 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
                     0,
                     0,
                     0,
+                    0,
                     CreateMethodsMatcher(
                             fbb,
                             fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
@@ -643,6 +652,7 @@ int DexKitFindMethodInvoking(dexkit::DexKit &dexkit) {
                                                     StringMatchType::Equal,
                                                     false
                                             ),
+                                            0,
                                             0,
                                             CreateClassMatcher(
                                                     fbb,
@@ -702,11 +712,13 @@ int DexKitFindMethodCaller(dexkit::DexKit &dexkit) {
                     0,
                     0,
                     0,
+                    0,
                     CreateMethodsMatcher(
                             fbb,
                             fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
                                     CreateMethodMatcher(
                                             fbb,
+                                            0,
                                             0,
                                             0,
                                             CreateClassMatcher(
@@ -789,6 +801,7 @@ int DexKitFindParameterTypeArray(dexkit::DexKit &dexkit) {
                     fbb,
                     0,
                     0,
+                    0,
                     CreateClassMatcher(
                             fbb,
                             0,
@@ -863,6 +876,7 @@ int DexKitFindFieldTest(dexkit::DexKit &dexkit) {
                     fbb,
                     0,
                     0,
+                    0,
                     CreateClassMatcher(
                             fbb,
                             0,
@@ -889,6 +903,7 @@ int DexKitFindFieldTest(dexkit::DexKit &dexkit) {
                             fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
                                     CreateMethodMatcher(
                                             fbb,
+                                            0,
                                             0,
                                             0,
                                             CreateClassMatcher(
@@ -926,6 +941,7 @@ int DexKitFindFieldTest(dexkit::DexKit &dexkit) {
                                                     fbb.CreateVector(std::vector<flatbuffers::Offset<MethodMatcher>>{
                                                             CreateMethodMatcher(
                                                                     fbb,
+                                                                    0,
                                                                     0,
                                                                     0,
                                                                     CreateClassMatcher(
@@ -1006,6 +1022,7 @@ int DexKitFindMethodUsingNumbers(dexkit::DexKit &dexkit) {
                     fbb,
                     0,
                     0,
+                    0,
                     CreateClassMatcher(
                             fbb,
                             0,
@@ -1073,11 +1090,13 @@ int DexKitFindDyClassTest(dexkit::DexKit &dexkit) {
                     0,
                     0,
                     0,
+                    0,
                     CreateFieldsMatcher(
                             fbb,
                             fbb.CreateVector(std::vector<flatbuffers::Offset<FieldMatcher>>{
                                     CreateFieldMatcher(
                                             fbb,
+                                            0,
                                             0,
                                             0,
                                             0,
@@ -1107,6 +1126,7 @@ int DexKitFindDyClassTest(dexkit::DexKit &dexkit) {
                                             ),
                                             0,
                                             0,
+                                            0,
                                             CreateClassMatcher(
                                                     fbb,
                                                     0,
@@ -1126,6 +1146,7 @@ int DexKitFindDyClassTest(dexkit::DexKit &dexkit) {
                                                     StringMatchType::Equal,
                                                     false
                                             ),
+                                            0,
                                             0,
                                             0,
                                             0,
@@ -1181,6 +1202,7 @@ int DexKitFindDyClassUsingStrings(dexkit::DexKit &dexkit) {
             fbb, 0, 0, false, 0, false,
             CreateClassMatcher(
                     fbb,
+                    0,
                     0,
                     0,
                     0,

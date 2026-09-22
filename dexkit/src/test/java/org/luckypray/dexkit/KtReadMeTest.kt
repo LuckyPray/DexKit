@@ -21,6 +21,24 @@ class KtReadMeTest {
     }
 
     @Test
+    fun modifiersAndRawFlagsExample() {
+        val dex = File(System.getProperty("access.flags.dex.path")).readBytes()
+        DexKitBridge.create(arrayOf(dex)).use { fixture ->
+            val methods = fixture.findMethod {
+                matcher {
+                    modifiers = Modifier.SYNCHRONIZED
+                    accessFlags = DexAccessFlags.DECLARED_SYNCHRONIZED
+                }
+            }
+            org.junit.Assert.assertEquals(2, methods.size)
+            methods.forEach { method ->
+                org.junit.Assert.assertTrue(Modifier.isSynchronized(method.modifiers))
+                org.junit.Assert.assertTrue(DexAccessFlags.isDeclaredSynchronized(method.accessFlags))
+            }
+        }
+    }
+
+    @Test
     fun testGetDexNum() {
         assert(bridge.getDexNum() > 0)
     }

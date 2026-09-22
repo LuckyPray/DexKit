@@ -51,6 +51,8 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
         private set
     var modifiersMatcher: AccessFlagsMatcher? = null
         private set
+    var accessFlagsMatcher: AccessFlagsMatcher? = null
+        private set
     var classMatcher: ClassMatcher? = null
         private set
     var protoShortyMatcher: String? = null
@@ -125,16 +127,33 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
         }
 
     /**
-     * Raw DEX method access flags. Most callers can use [java.lang.reflect.Modifier]; use
-     * [DexAccessFlags] when a required DEX flag is not exposed by `Modifier`.
+     * Raw DEX access flags; no reflection normalization is applied.
+     * ----------------
+     * 原始 DEX 访问标志，不进行反射语义转换。
+     *
+     *     accessFlags = DexAccessFlags.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC
+     */
+    var accessFlags: Int
+        @JvmSynthetic
+        @Deprecated("Property can only be written.", level = DeprecationLevel.ERROR)
+        get() = throw NotImplementedError()
+        @JvmSynthetic
+        set(value) {
+            accessFlags(value)
+        }
+
+    /**
+     * Android Java reflection method modifiers, including hidden Java flag bits.
+     * Use [java.lang.reflect.Modifier] for reflection conditions.
+     * For raw DEX flags, use [accessFlags] with [DexAccessFlags].
      * The default match type is contains. If you need to match exactly,
      * please use [modifiers] overloaded function.
      * ----------------
-     * 原始 DEX 方法访问标志。大多数用户使用 [java.lang.reflect.Modifier] 即可；仅当它未公开
-     * 所需 DEX 标志时才需要 [DexAccessFlags]。
+     * Android Java 反射方法修饰符，保留隐藏 Java 标志位。
+     * 反射条件使用 [java.lang.reflect.Modifier]；原始 DEX 条件使用 [accessFlags] 和 [DexAccessFlags]。
      * 默认匹配关系为包含，如果需要完全限定匹配请使用 [modifiers] 重载函数。
      *
-     *     modifiers = Modifier.PUBLIC or DexAccessFlags.BRIDGE
+     *     modifiers = Modifier.PUBLIC or Modifier.SYNCHRONIZED
      */
     var modifiers: Int
         @JvmSynthetic
@@ -344,13 +363,36 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Raw DEX method access flags matcher.
+     * Match raw DEX flags independently of [modifiers]. Both constraints may be combined.
      * ----------------
-     * 原始 DEX 方法访问标志匹配器。
+     * 匹配原始 DEX 标志，可与 [modifiers] 条件同时使用。
      *
-     *     modifiers(AccessFlagsMatcher(Modifier.PUBLIC or DexAccessFlags.BRIDGE))
+     *     accessFlags(AccessFlagsMatcher(DexAccessFlags.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC))
+     */
+    fun accessFlags(matcher: AccessFlagsMatcher) = also {
+        this.accessFlagsMatcher = matcher
+    }
+
+    /**
+     * Match raw DEX access flags, including DEX-only flags from [DexAccessFlags].
+     * ----------------
+     * 匹配原始 DEX 访问标志，支持 [DexAccessFlags] 中的 DEX 专有标志。
      *
-     * @param modifiers method access flags matcher / 方法访问标志匹配器
+     *     accessFlags(DexAccessFlags.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC)
+     */
+    @JvmOverloads
+    fun accessFlags(accessFlags: Int, matchType: MatchType = MatchType.Contains) = also {
+        this.accessFlagsMatcher = AccessFlagsMatcher(accessFlags, matchType)
+    }
+
+    /**
+     * Java reflection method modifiers matcher.
+     * ----------------
+     * Java 反射修饰符（包含隐藏 Java 标志位）匹配器。
+     *
+     *     modifiers(AccessFlagsMatcher(Modifier.PUBLIC or Modifier.SYNCHRONIZED))
+     *
+     * @param modifiers reflection method modifiers matcher / 反射方法修饰符匹配器
      * @return [MethodMatcher]
      */
     fun modifiers(modifiers: AccessFlagsMatcher) = also {
@@ -358,15 +400,16 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Raw DEX method access flags. Most callers can use [java.lang.reflect.Modifier]; use
-     * [DexAccessFlags] when a required DEX flag is not exposed by `Modifier`.
+     * Android Java reflection method modifiers, including hidden Java flag bits.
+     * Use [java.lang.reflect.Modifier] for reflection conditions.
+     * For raw DEX flags, use [accessFlags] with [DexAccessFlags].
      * ----------------
-     * 原始 DEX 方法访问标志。大多数用户使用 [java.lang.reflect.Modifier] 即可；仅当它未公开
-     * 所需 DEX 标志时才需要 [DexAccessFlags]。
+     * Android Java 反射方法修饰符，保留隐藏 Java 标志位。
+     * 反射条件使用 [java.lang.reflect.Modifier]；原始 DEX 条件使用 [accessFlags] 和 [DexAccessFlags]。
      *
-     *     modifiers(Modifier.PUBLIC or DexAccessFlags.BRIDGE)
+     *     modifiers(Modifier.PUBLIC or Modifier.SYNCHRONIZED)
      *
-     * @param modifiers raw DEX method access flag mask / 原始 DEX 方法访问标志掩码
+     * @param modifiers Java reflection method modifier mask / Java 反射修饰符（包含隐藏 Java 标志位）掩码
      * @return [MethodMatcher]
      */
     @JvmOverloads
@@ -1476,6 +1519,7 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
             fbb,
             nameMatcher?.build(fbb) ?: 0,
             modifiersMatcher?.build(fbb) ?: 0,
+            accessFlagsMatcher?.build(fbb) ?: 0,
             classMatcher?.build(fbb) ?: 0,
             returnTypeMatcher?.build(fbb) ?: 0,
             paramsMatcher?.build(fbb) ?: 0,
@@ -1497,7 +1541,7 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
             anyOfMatchers?.map { it.build(fbb) }?.toIntArray()
                 ?.let { fbb.createVectorOfTables(it) } ?: 0,
             noneOfMatchers?.map { it.build(fbb) }?.toIntArray()
-                ?.let { fbb.createVectorOfTables(it) } ?: 0,
+                ?.let { fbb.createVectorOfTables(it) } ?: 0
         )
         fbb.finish(root)
         return root

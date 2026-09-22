@@ -29,6 +29,7 @@ ClassBean::CreateClassMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             this->id,
             this->dex_id,
             fbb.CreateString(this->source_file),
+            this->modifiers,
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
             this->super_class_id,
@@ -47,6 +48,7 @@ MethodBean::CreateMethodMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             this->id,
             this->dex_id,
             this->class_id,
+            this->modifiers,
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
             this->return_type,
@@ -63,6 +65,7 @@ FieldBean::CreateFieldMeta(flatbuffers::FlatBufferBuilder &fbb) const {
             this->id,
             this->dex_id,
             this->class_id,
+            this->modifiers,
             this->access_flags,
             fbb.CreateString(this->dex_descriptor),
             this->type_id

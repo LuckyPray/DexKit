@@ -70,13 +70,27 @@ internal class `-FieldMeta` : Table() {
             false
         }
     }
-    val accessFlags : UInt
+    val modifiers : UInt
         get() {
             val o = __offset(10)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
-    fun mutateAccessFlags(accessFlags: UInt) : Boolean {
+    fun mutateModifiers(modifiers: UInt) : Boolean {
         val o = __offset(10)
+        return if (o != 0) {
+            bb.putInt(o + bb_pos, modifiers.toInt())
+            true
+        } else {
+            false
+        }
+    }
+    val accessFlags : UInt
+        get() {
+            val o = __offset(12)
+            return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
+        }
+    fun mutateAccessFlags(accessFlags: UInt) : Boolean {
+        val o = __offset(12)
         return if (o != 0) {
             bb.putInt(o + bb_pos, accessFlags.toInt())
             true
@@ -86,22 +100,22 @@ internal class `-FieldMeta` : Table() {
     }
     val dexDescriptor : String?
         get() {
-            val o = __offset(12)
+            val o = __offset(14)
             return if (o != 0) {
                 __string(o + bb_pos)
             } else {
                 null
             }
         }
-    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(12, 1)
-    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 12, 1)
+    val dexDescriptorAsByteBuffer : ByteBuffer get() = __vector_as_bytebuffer(14, 1)
+    fun dexDescriptorInByteBuffer(_bb: ByteBuffer) : ByteBuffer = __vector_in_bytebuffer(_bb, 14, 1)
     val typeId : UInt
         get() {
-            val o = __offset(14)
+            val o = __offset(16)
             return if(o != 0) bb.getInt(o + bb_pos).toUInt() else 0u
         }
     fun mutateTypeId(typeId: UInt) : Boolean {
-        val o = __offset(14)
+        val o = __offset(16)
         return if (o != 0) {
             bb.putInt(o + bb_pos, typeId.toInt())
             true
@@ -116,23 +130,25 @@ internal class `-FieldMeta` : Table() {
             _bb.order(ByteOrder.LITTLE_ENDIAN)
             return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb))
         }
-        fun createFieldMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, accessFlags: UInt, dexDescriptorOffset: Int, typeId: UInt) : Int {
-            builder.startTable(6)
+        fun createFieldMeta(builder: FlatBufferBuilder, id: UInt, dexId: UInt, classId: UInt, modifiers: UInt, accessFlags: UInt, dexDescriptorOffset: Int, typeId: UInt) : Int {
+            builder.startTable(7)
             addTypeId(builder, typeId)
             addDexDescriptor(builder, dexDescriptorOffset)
             addAccessFlags(builder, accessFlags)
+            addModifiers(builder, modifiers)
             addClassId(builder, classId)
             addDexId(builder, dexId)
             addId(builder, id)
             return endFieldMeta(builder)
         }
-        fun startFieldMeta(builder: FlatBufferBuilder) = builder.startTable(6)
+        fun startFieldMeta(builder: FlatBufferBuilder) = builder.startTable(7)
         fun addId(builder: FlatBufferBuilder, id: UInt) = builder.addInt(0, id.toInt(), 0)
         fun addDexId(builder: FlatBufferBuilder, dexId: UInt) = builder.addInt(1, dexId.toInt(), 0)
         fun addClassId(builder: FlatBufferBuilder, classId: UInt) = builder.addInt(2, classId.toInt(), 0)
-        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(3, accessFlags.toInt(), 0)
-        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(4, dexDescriptor, 0)
-        fun addTypeId(builder: FlatBufferBuilder, typeId: UInt) = builder.addInt(5, typeId.toInt(), 0)
+        fun addModifiers(builder: FlatBufferBuilder, modifiers: UInt) = builder.addInt(3, modifiers.toInt(), 0)
+        fun addAccessFlags(builder: FlatBufferBuilder, accessFlags: UInt) = builder.addInt(4, accessFlags.toInt(), 0)
+        fun addDexDescriptor(builder: FlatBufferBuilder, dexDescriptor: Int) = builder.addOffset(5, dexDescriptor, 0)
+        fun addTypeId(builder: FlatBufferBuilder, typeId: UInt) = builder.addInt(6, typeId.toInt(), 0)
         fun endFieldMeta(builder: FlatBufferBuilder) : Int {
             val o = builder.endTable()
             return o

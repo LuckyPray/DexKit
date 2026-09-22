@@ -1,6 +1,19 @@
 import os
 import re
 import subprocess
+from pathlib import Path
+import shutil
+
+SCHEMA_DIR = Path(__file__).resolve().parent
+os.chdir(SCHEMA_DIR)
+FLATC_VERSION = "23.5.26"
+local_flatc = next((path for path in (SCHEMA_DIR / "flatc", SCHEMA_DIR / "flatc.exe") if path.is_file()), None)
+FLATC = os.environ.get("FLATC") or (str(local_flatc) if local_flatc else shutil.which("flatc"))
+if not FLATC:
+    raise SystemExit(f"flatc {FLATC_VERSION} is required; place it in schema/ or set FLATC.")
+version = subprocess.check_output([FLATC, "--version"], text=True).strip()
+if version != f"flatc version {FLATC_VERSION}":
+    raise SystemExit(f"Expected flatc {FLATC_VERSION}, found: {version}")
 
 KOTLIN_OUT_DIR = '../dexkit/src/main/java/org/luckypray'
 KOTLIN_ALIAS_OUT_DIR = '../dexkit/src/main/java/org/luckypray/dexkit'
@@ -15,7 +28,7 @@ for dir, _, _files in os.walk('./fbs'):
             files.append(path)
 
 # kotlin
-subprocess.call(['./flatc', '--kotlin', '--gen-mutable', '-o', KOTLIN_OUT_DIR] + files)
+subprocess.run([FLATC, '--kotlin', '--gen-mutable', '-o', KOTLIN_OUT_DIR] + sorted(files), check=True)
 for dir, _, _files in os.walk(f"{KOTLIN_OUT_DIR}/dexkit/schema"):
     class_list = []
     for file in _files:
@@ -44,4 +57,4 @@ for dir, _, _files in os.walk(f"{KOTLIN_OUT_DIR}/dexkit/schema"):
         f.write(b'\n')
 
 # c++
-subprocess.call(['./flatc', '--cpp', '--cpp-std', 'c++17', '--scoped-enums', '--no-emit-min-max-enum-values', '-o', CPP_OUT_DIR] + files)
+subprocess.run([FLATC, '--cpp', '--cpp-std', 'c++17', '--scoped-enums', '--no-emit-min-max-enum-values', '-o', CPP_OUT_DIR] + sorted(files), check=True)

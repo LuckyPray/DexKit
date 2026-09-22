@@ -374,30 +374,33 @@ class MainHook : IXposedHookLoadPackage {
 
 </p></details>
 
-## DEX 访问标志
+## 修饰符与 DEX 访问标志
 
-匹配器和结果对象中的 `modifiers` 字段保存原始 DEX
-[`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags)。匹配编译器生成或
-DEX 专用标志时请使用 `DexAccessFlags`：
+匹配器和结果对象提供两个独立的入口：
+
+- `modifiers` 遵循 Android Java 反射语义。普通标志使用 `java.lang.reflect.Modifier`；
+  `BRIDGE`、`VARARGS`、`SYNTHETIC` 等隐藏 Java 标志位也会保留。
+- `accessFlags` 保留原始 DEX
+  [`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags)。
+  `CONSTRUCTOR`、`DECLARED_SYNCHRONIZED` 等 DEX 专有标志通过 `DexAccessFlags` 使用。
+
+例如，两种条件可以同时设置，匹配声明了同步的方法：
 
 ```kotlin
-modifiers = Modifier.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC
+modifiers = Modifier.SYNCHRONIZED
+accessFlags = DexAccessFlags.DECLARED_SYNCHRONIZED
 ```
 
 ```java
-.modifiers(Modifier.PUBLIC | DexAccessFlags.BRIDGE | DexAccessFlags.SYNTHETIC)
+.modifiers(Modifier.SYNCHRONIZED)
+.accessFlags(DexAccessFlags.DECLARED_SYNCHRONIZED)
 ```
 
-`java.lang.reflect.Modifier` 的公开常量在数值上是 DEX 访问标志的子集；当常量适用于当前匹配的类、
-字段或方法时仍可直接使用。大多数用户只需要 `Modifier`。仅当 `Modifier` 未公开所需标志，或高级
-匹配需要精确 DEX 语义时，才需要使用 `DexAccessFlags`。但两种模型仍不完全等价，例如 DEX 的
-`ACC_DECLARED_SYNCHRONIZED` 为 `0x20000`，不会再转换为
-`Modifier.SYNCHRONIZED` (`0x20`)。普通源码层 `synchronized` 方法应使用
-`DexAccessFlags.DECLARED_SYNCHRONIZED`；DEX 中的 `DexAccessFlags.SYNCHRONIZED` (`0x20`)
-仅适用于 native 方法。完整 `kAcc` 集合保留了 `0x20` 的 `SUPER` 别名，但 `SUPER` 不用于 DEX
-`class_def_item`；`0x40` 和 `0x80` 则分别具有字段/方法语义。更多区别可参考 Java 21 对
-[access flags 与源码修饰符的说明](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/reflect/AccessFlag.html)，
-该链接仅用于术语说明，`DexAccessFlags` 不依赖此 API。
+结果通过 `ClassData`、`MethodData`、`FieldData` 的 `data.modifiers` / `data.accessFlags`
+读取（Java 对应 `getModifiers()` / `getAccessFlags()`）。方法的 `modifiers` 会把
+`DECLARED_SYNCHRONIZED` 转换为 `SYNCHRONIZED`，并去掉 DEX 专有高位；类的 `modifiers`
+优先使用 `InnerClass` 注解中的标志。原始 `accessFlags` 不变。两种匹配条件取 AND，
+各自支持 `MatchType.Contains` 和 `MatchType.Equals`。
 
 ## 第三方开源引用
 

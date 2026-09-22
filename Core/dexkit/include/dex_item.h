@@ -221,6 +221,8 @@ public:
 
 private:
 
+    uint32_t GetClassModifiers(uint32_t type_idx) const;
+    std::optional<uint32_t> ReadInnerClassAccessFlags(uint32_t type_idx) const;
     void InitBaseCache();
     inline std::mutex &GetTypeDefMutex(uint32_t type_idx);
 
@@ -254,7 +256,7 @@ private:
 
     bool IsClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher);
     bool IsTypeNameMatched(uint32_t type_idx, const schema::StringMatcher *matcher);
-    bool IsClassAccessFlagsMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher);
+    bool IsClassModifiersMatched(uint32_t type_idx, const schema::AccessFlagsMatcher *matcher);
     bool IsClassSmaliSourceMatched(uint32_t type_idx, const schema::StringMatcher *matcher);
     bool IsClassUsingStringsMatched(uint32_t type_idx, const schema::ClassMatcher *matcher);
     bool IsSuperClassMatched(uint32_t type_idx, const schema::ClassMatcher *matcher);

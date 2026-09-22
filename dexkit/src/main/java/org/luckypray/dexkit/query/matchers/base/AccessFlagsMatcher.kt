@@ -24,34 +24,26 @@
 package org.luckypray.dexkit.query.matchers.base
 
 import com.google.flatbuffers.FlatBufferBuilder
-import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.InnerAccessFlagsMatcher
 import org.luckypray.dexkit.query.base.BaseMatcher
 import org.luckypray.dexkit.query.enums.MatchType
 
 /**
- * Matcher for raw DEX access flags.
- *
- * The public [java.lang.reflect.Modifier] constants are a numeric subset of the DEX flags and remain
- * usable when they are valid for the target being matched. Most callers only need `Modifier`. Use
- * [DexAccessFlags] when `Modifier` does not expose a required flag or exact DEX semantics are needed.
- * See
- * [DEX access_flags](https://source.android.com/docs/core/runtime/dex-format#access-flags).
- *
+ * Bit-mask matcher used by both `modifiers` and `accessFlags` query conditions.
+ * The owning condition selects Java reflection or raw DEX semantics.
  * ----------------
- * 原始 DEX 访问标志匹配器。
- *
- * [java.lang.reflect.Modifier] 的公开常量在数值上是 DEX 标志的子集；当常量适用于当前目标时
- * 仍可直接使用。大多数用户只需要 `Modifier`；仅当它未公开所需标志或需要精确 DEX 语义时，
- * 才需要 [DexAccessFlags]。
+ * 位掩码匹配器，可用于 modifiers 或 accessFlags 条件；由所属条件决定使用
+ * Java 反射语义还是原始 DEX 语义。
  */
 class AccessFlagsMatcher : BaseMatcher {
     /**
-     * Raw DEX access flags to match.
+     * Flag mask to match. This property name does not select the semantics;
+     * the outer `modifiers(...)` or `accessFlags(...)` condition does.
      * ----------------
-     * 要匹配的原始 DEX 访问标志。
+     * 要匹配的标志掩码。此属性名不决定语义，语义由外层的
+     * `modifiers(...)` 或 `accessFlags(...)` 条件决定。
      *
-     *     modifiers = Modifier.PUBLIC or DexAccessFlags.SYNTHETIC
+     *     modifiers = Modifier.PUBLIC or Modifier.STATIC
      */
     @set:JvmSynthetic
     var modifiers: Int = 0
@@ -71,7 +63,7 @@ class AccessFlagsMatcher : BaseMatcher {
      * ----------------
      * 创建一个新的 [AccessFlagsMatcher]。
      *
-     * @param modifiers access flags / 访问标志
+     * @param modifiers flag mask / 标志掩码
      * @param matchType match type / 匹配类型
      * @return [AccessFlagsMatcher]
      */
@@ -90,7 +82,7 @@ class AccessFlagsMatcher : BaseMatcher {
          * ----------------
          * 创建一个新的 [AccessFlagsMatcher]。
          *
-         * @param modifiers access flags / 访问标志
+         * @param modifiers flag mask / 标志掩码
          * @param matchType match type / 匹配类型
          * @return [AccessFlagsMatcher]
          */
@@ -102,7 +94,7 @@ class AccessFlagsMatcher : BaseMatcher {
     }
 
     override fun innerBuild(fbb: FlatBufferBuilder): Int {
-        if (modifiers == 0) throw IllegalArgumentException("modifiers must not be 0")
+        require(modifiers != 0) { "modifiers must not be 0" }
         val root = InnerAccessFlagsMatcher.createAccessFlagsMatcher(
             fbb,
             modifiers.toUInt(),

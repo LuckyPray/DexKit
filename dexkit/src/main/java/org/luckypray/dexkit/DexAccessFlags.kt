@@ -26,47 +26,39 @@ package org.luckypray.dexkit
 /**
  * Constants and helpers for raw DEX `access_flags` values.
  *
- * The public constants in [java.lang.reflect.Modifier] are a numeric subset of this set and remain
- * usable when the constant is valid for the DEX target being matched. Most callers only need
- * `Modifier`. Use this complete raw flag set when `Modifier` does not expose the required flag or
- * when exact DEX-specific semantics are needed, such as [BRIDGE], [SYNTHETIC], [CONSTRUCTOR], and
- * [DECLARED_SYNCHRONIZED]. This object follows the raw DEX values exactly and does not normalize
- * [DECLARED_SYNCHRONIZED] (`0x20000`) to [SYNCHRONIZED] (`0x20`). Use [DECLARED_SYNCHRONIZED] for
- * an ordinary source-level `synchronized` method; [SYNCHRONIZED] is only valid for a native method
- * in DEX.
+ * Use these with the `accessFlags` result property or matcher condition for exact DEX semantics.
+ * The separate `modifiers` property and condition follow Android Java reflection, including
+ * hidden Java bits such as [BRIDGE], [VARARGS], and [SYNTHETIC]. Use
+ * [java.lang.reflect.Modifier] for reflection conditions.
  *
- * Several bit positions have different meanings depending on where they occur: [SYNCHRONIZED] and
- * [SUPER] are both `0x20`, [VOLATILE] and [BRIDGE] are both `0x40`, and [TRANSIENT] and [VARARGS]
- * are both `0x80`. Callers must select the constant appropriate for the class, field, or method
- * being inspected. [SUPER] is retained to mirror the complete slicer `kAcc` set, but it is not
- * used by a DEX `class_def_item`.
+ * [CONSTRUCTOR] and [DECLARED_SYNCHRONIZED] are DEX-only bits: inspect them through `accessFlags`.
+ * The helpers only test bits and never normalize them. In raw DEX, [SYNCHRONIZED] is only valid
+ * for native methods; reflection maps [DECLARED_SYNCHRONIZED] to [SYNCHRONIZED] instead.
  *
- * See the Android documentation for
- * [DEX access_flags](https://source.android.com/docs/core/runtime/dex-format#access-flags) and the
- * Java 21 documentation describing the distinction between
- * [access flags and source modifiers](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/reflect/AccessFlag.html).
- * The Java 21 page is linked for terminology only; this object does not depend on that API.
+ * Several bit positions depend on the target: [SYNCHRONIZED] and [SUPER] are both `0x20`,
+ * [VOLATILE] and [BRIDGE] are both `0x40`, and [TRANSIENT] and [VARARGS] are both `0x80`.
+ * [SUPER] mirrors slicer's complete `kAcc` set but is not used by a DEX `class_def_item`.
+ * See [DEX access_flags](https://source.android.com/docs/core/runtime/dex-format#access-flags).
  *
  * Java can access constants and helpers directly, for example:
  *
- *     Modifier.PUBLIC | DexAccessFlags.BRIDGE | DexAccessFlags.SYNTHETIC
- *     DexAccessFlags.isBridge(accessFlags)
+ *     DexAccessFlags.isConstructor(methodData.getAccessFlags())
+ *     DexAccessFlags.isBridge(methodData.getAccessFlags())
  *
  * ----------------
  * 原始 DEX `access_flags` 常量及辅助方法。
  *
- * [java.lang.reflect.Modifier] 的公开常量在数值上是本集合的子集；当常量适用于当前 DEX
- * 目标时仍可直接使用。大多数用户只需要 `Modifier`。仅当 `Modifier` 未公开所需标志，或需要
- * 精确的 DEX 特有语义时，才需要使用本完整原始标志集合，例如 [BRIDGE]、[SYNTHETIC]、
- * [CONSTRUCTOR]、[DECLARED_SYNCHRONIZED]。本对象严格保留 DEX 原始值，不会把
- * [DECLARED_SYNCHRONIZED] (`0x20000`) 转换为 [SYNCHRONIZED] (`0x20`)。普通源码层
- * `synchronized` 方法应使用 [DECLARED_SYNCHRONIZED]；DEX 中的 [SYNCHRONIZED] 仅适用于
- * native 方法。
+ * 精确 DEX 语义请使用结果属性或匹配条件 `accessFlags`；独立的 `modifiers` 属性和条件遵循
+ * Android Java 反射语义，保留 [BRIDGE]、[VARARGS]、[SYNTHETIC] 等隐藏 Java 标志位。
+ * 反射条件使用 [java.lang.reflect.Modifier]。
  *
- * 部分位值会根据目标类型复用：[SYNCHRONIZED] 与 [SUPER] 均为 `0x20`，[VOLATILE] 与
- * [BRIDGE] 均为 `0x40`，[TRANSIENT] 与 [VARARGS] 均为 `0x80`。调用方需要根据目标是类、
- * 字段还是方法自行选择对应常量。[SUPER] 仅用于完整对齐 slicer 的 `kAcc` 集合，不用于
- * DEX `class_def_item`。
+ * [CONSTRUCTOR]、[DECLARED_SYNCHRONIZED] 是 DEX 专有标志，应通过 `accessFlags` 读取。
+ * 本工具类只判断位值，不做归一化。原始 DEX 的 [SYNCHRONIZED] 仅适用于 native 方法；
+ * 反射语义则把 [DECLARED_SYNCHRONIZED] 转换为 [SYNCHRONIZED]。
+ *
+ * 部分位值按目标类型复用：[SYNCHRONIZED] 与 [SUPER] 均为 `0x20`，[VOLATILE] 与 [BRIDGE]
+ * 均为 `0x40`，[TRANSIENT] 与 [VARARGS] 均为 `0x80`。请选择适用于类、字段或方法的常量。
+ * [SUPER] 仅用于对齐 slicer 的完整 `kAcc` 集合，不用于 DEX `class_def_item`。
  */
 object DexAccessFlags {
 

@@ -109,6 +109,28 @@ afterEvaluate {
             }
         }
     }
+    // Use the same test class files for JVM reflection and D8, without passing through R8.
+    def fixtureOutput = layout.buildDirectory.dir("access-flags-fixture")
+    def fixtureDex = tasks.register("accessFlagsFixtureDex", JavaExec) {
+        def compiledTests = tasks.named("compileTestJava", JavaCompile)
+        dependsOn(compiledTests)
+        def classes = compiledTests.get().destinationDirectory.get().asFileTree.matching {
+            include("org/luckypray/dexkit/testflags/*.class")
+        }
+        def android = project(":demo").extensions.getByName("android")
+        inputs.files(classes)
+        outputs.dir(fixtureOutput)
+        classpath = files("${android.sdkDirectory}/build-tools/${android.buildToolsVersion}/lib/d8.jar")
+        mainClass.set("com.android.tools.r8.D8")
+        doFirst {
+            fixtureOutput.get().asFile.mkdirs()
+            args = ["--min-api", "21", "--lib", "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar",
+                    "--output", fixtureOutput.get().asFile.absolutePath] + classes.files.collect { it.absolutePath }.sort()
+        }
+    }
+    tasks.test.dependsOn(fixtureDex)
+    tasks.test.inputs.dir(fixtureOutput)
+    tasks.test.systemProperty("access.flags.dex.path", fixtureOutput.get().file("classes.dex").asFile.absolutePath)
     tasks.testClasses.dependsOn(tasks.copyReleaseDemo)
     tasks.testClasses.dependsOn(tasks.copyLibrary)
 }

@@ -4,6 +4,7 @@ import static org.luckypray.dexkit.LibLoader.loadLibrary;
 
 import org.junit.Test;
 import org.luckypray.dexkit.query.FindClass;
+import org.luckypray.dexkit.query.FindMethod;
 import org.luckypray.dexkit.query.enums.MatchType;
 import org.luckypray.dexkit.query.enums.StringMatchType;
 import org.luckypray.dexkit.query.matchers.AnnotationElementMatcher;
@@ -18,6 +19,8 @@ import org.luckypray.dexkit.result.ClassData;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public class JavaReadMeTest {
@@ -29,6 +32,21 @@ public class JavaReadMeTest {
         String path = System.getProperty("apk.path");
         File demoApk = new File(path, "demo.apk");
         bridge = DexKitBridge.create(demoApk.getAbsolutePath());
+    }
+
+    @Test
+    public void modifiersAndRawFlagsExample() throws Exception {
+        byte[] dex = Files.readAllBytes(Path.of(System.getProperty("access.flags.dex.path")));
+        try (DexKitBridge fixture = DexKitBridge.create(new byte[][] {dex})) {
+            var methods = fixture.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                .modifiers(Modifier.SYNCHRONIZED)
+                .accessFlags(DexAccessFlags.DECLARED_SYNCHRONIZED)));
+            org.junit.Assert.assertEquals(2, methods.size());
+            methods.forEach(method -> {
+                org.junit.Assert.assertTrue(Modifier.isSynchronized(method.getModifiers()));
+                org.junit.Assert.assertTrue(DexAccessFlags.isDeclaredSynchronized(method.getAccessFlags()));
+            });
+        }
     }
 
     @Test

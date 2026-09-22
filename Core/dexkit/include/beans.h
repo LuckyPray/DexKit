@@ -34,6 +34,7 @@ public:
     uint32_t id = -1;
     uint32_t dex_id = -1;
     std::string_view source_file;
+    uint32_t modifiers = 0;
     uint32_t access_flags = 0;
     std::string_view dex_descriptor;
     uint32_t super_class_id = -1;
@@ -51,6 +52,7 @@ public:
     uint32_t id = -1;
     uint32_t dex_id = -1;
     uint32_t class_id = -1;
+    uint32_t modifiers = 0;
     uint32_t access_flags = 0;
     std::string dex_descriptor;
     uint32_t return_type = -1;
@@ -66,6 +68,7 @@ public:
     uint32_t id = -1;
     uint32_t dex_id = -1;
     uint32_t class_id = -1;
+    uint32_t modifiers = 0;
     uint32_t access_flags = 0;
     std::string dex_descriptor;
     uint32_t type_id = -1;

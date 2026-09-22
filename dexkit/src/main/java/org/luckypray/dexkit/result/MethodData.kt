@@ -40,13 +40,17 @@ class MethodData private constructor(
     dexId: Int,
     private val classId: Int,
     /**
-     * Raw DEX method access flags. [java.lang.reflect.Modifier] handles common flags; see
-     * [DexAccessFlags] for the complete set.
+     * Java reflection modifiers, including hidden Java flag bits such as SYNTHETIC.
      * ----------------
-     * 原始 DEX 方法访问标志。常规标志可使用 [java.lang.reflect.Modifier]，完整集合请参见
-     * [DexAccessFlags]。
+     * Java 反射修饰符，保留 SYNTHETIC 等隐藏 Java 标志位。
      */
     val modifiers: Int,
+    /**
+     * Raw DEX access flags; use [DexAccessFlags] to inspect DEX-only bits.
+     * ----------------
+     * 原始 DEX 访问标志，可用 [DexAccessFlags] 判断 DEX 专有标志位。
+     */
+    val accessFlags: Int,
     val descriptor: String,
     private val returnTypeId: Int,
     private val paramTypeIds: List<Int>
@@ -65,6 +69,7 @@ class MethodData private constructor(
             methodMeta.id.toInt(),
             methodMeta.dexId.toInt(),
             methodMeta.classId.toInt(),
+            methodMeta.modifiers.toInt(),
             methodMeta.accessFlags.toInt(),
             methodMeta.dexDescriptor ?: "",
             methodMeta.returnType.toInt(),

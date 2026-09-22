@@ -105,6 +105,10 @@ afterEvaluate {
             }
         }
     }
+    tasks.test.dependsOn("${dexkitSourceProject.path}:accessFlagsFixtureDex")
+    tasks.test.inputs.dir(dexkitSourceProject.layout.buildDirectory.dir("access-flags-fixture"))
+    tasks.test.systemProperty("access.flags.dex.path", dexkitSourceProject.layout.buildDirectory
+            .file("access-flags-fixture/classes.dex").get().asFile.absolutePath)
     tasks.testClasses.dependsOn(tasks.copyReleaseDemo)
     tasks.testClasses.dependsOn(tasks.copyLibrary)
 }

@@ -381,33 +381,34 @@ class MainHook : IXposedHookLoadPackage {
 
 </p></details>
 
-## DEX Access Flags
+## Modifiers and DEX Access Flags
 
-The `modifiers` fields used by matchers and result objects contain raw DEX
-[`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags). Use
-`DexAccessFlags` when matching compiler-generated or DEX-only flags:
+Matchers and result objects expose two independent views:
+
+- `modifiers` follows Android Java reflection. Use `java.lang.reflect.Modifier` for ordinary
+  flags. Hidden Java bits such as `BRIDGE`, `VARARGS`, and `SYNTHETIC` are also preserved.
+- `accessFlags` preserves raw DEX
+  [`access_flags`](https://source.android.com/docs/core/runtime/dex-format#access-flags).
+  Use `DexAccessFlags` for DEX-only flags such as `CONSTRUCTOR` and `DECLARED_SYNCHRONIZED`.
+
+For example, both conditions can be combined to match a declared synchronized method:
 
 ```kotlin
-modifiers = Modifier.PUBLIC or DexAccessFlags.BRIDGE or DexAccessFlags.SYNTHETIC
+modifiers = Modifier.SYNCHRONIZED
+accessFlags = DexAccessFlags.DECLARED_SYNCHRONIZED
 ```
 
 ```java
-.modifiers(Modifier.PUBLIC | DexAccessFlags.BRIDGE | DexAccessFlags.SYNTHETIC)
+.modifiers(Modifier.SYNCHRONIZED)
+.accessFlags(DexAccessFlags.DECLARED_SYNCHRONIZED)
 ```
 
-The public constants in `java.lang.reflect.Modifier` are a numeric subset of the DEX access flags
-and remain usable when they are valid for the class, field, or method being matched. Most users only
-need `Modifier`. Use `DexAccessFlags` for advanced matching when `Modifier` does not expose the
-required flag or exact DEX-specific semantics are needed. The two models are still not equivalent.
-In particular,
-`ACC_DECLARED_SYNCHRONIZED` is `0x20000` in DEX and is not normalized to
-`Modifier.SYNCHRONIZED` (`0x20`). Match an ordinary source-level `synchronized` method with
-`DexAccessFlags.DECLARED_SYNCHRONIZED`; DEX permits `DexAccessFlags.SYNCHRONIZED` (`0x20`) only on
-native methods. The complete `kAcc` set retains the `SUPER` alias for `0x20`, although `SUPER` is
-not used by a DEX `class_def_item`; `0x40` and `0x80` have field/method-specific meanings. See the
-Java 21 documentation on the
-[difference between access flags and source modifiers](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/reflect/AccessFlag.html)
-for terminology only; `DexAccessFlags` does not depend on that API.
+Read the corresponding values from `ClassData`, `MethodData`, or `FieldData` using
+`data.modifiers` / `data.accessFlags` (Java: `getModifiers()` / `getAccessFlags()`). Method
+`modifiers` maps `DECLARED_SYNCHRONIZED` to `SYNCHRONIZED` and removes DEX-only high bits;
+class `modifiers` uses `InnerClass` annotation flags when available. Raw `accessFlags`
+remain unchanged. The two matcher conditions are combined with AND and independently
+support `MatchType.Contains` and `MatchType.Equals`.
 
 ## Third-Party Open Source References
 
