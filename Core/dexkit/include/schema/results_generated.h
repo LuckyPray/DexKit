@@ -73,6 +73,11 @@ struct UsingFieldMetaBuilder;
 struct UsingFieldMetaArrayHolder;
 struct UsingFieldMetaArrayHolderBuilder;
 
+struct UsingNumberMeta;
+
+struct UsingNumberMetaArrayHolder;
+struct UsingNumberMetaArrayHolderBuilder;
+
 enum class AnnotationEncodeValue : uint8_t {
   NONE = 0,
   EncodeValueByte = 1,
@@ -209,6 +214,47 @@ template<> struct AnnotationEncodeValueTraits<dexkit::schema::EncodeValueBoolean
 
 bool VerifyAnnotationEncodeValue(::flatbuffers::Verifier &verifier, const void *obj, AnnotationEncodeValue type);
 bool VerifyAnnotationEncodeValueVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<AnnotationEncodeValue> *types);
+
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(8) UsingNumberMeta FLATBUFFERS_FINAL_CLASS {
+ private:
+  uint64_t raw_bits_;
+  uint8_t op_code_;
+  int8_t padding0__;  int16_t padding1__;  int32_t padding2__;
+
+ public:
+  struct Traits;
+  UsingNumberMeta()
+      : raw_bits_(0),
+        op_code_(0),
+        padding0__(0),
+        padding1__(0),
+        padding2__(0) {
+    (void)padding0__;
+    (void)padding1__;
+    (void)padding2__;
+  }
+  UsingNumberMeta(uint64_t _raw_bits, uint8_t _op_code)
+      : raw_bits_(::flatbuffers::EndianScalar(_raw_bits)),
+        op_code_(::flatbuffers::EndianScalar(_op_code)),
+        padding0__(0),
+        padding1__(0),
+        padding2__(0) {
+    (void)padding0__;
+    (void)padding1__;
+    (void)padding2__;
+  }
+  uint64_t raw_bits() const {
+    return ::flatbuffers::EndianScalar(raw_bits_);
+  }
+  uint8_t op_code() const {
+    return ::flatbuffers::EndianScalar(op_code_);
+  }
+};
+FLATBUFFERS_STRUCT_END(UsingNumberMeta, 16);
+
+struct UsingNumberMeta::Traits {
+  using type = UsingNumberMeta;
+};
 
 struct ClassMeta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ClassMetaBuilder Builder;
@@ -1727,6 +1773,63 @@ inline ::flatbuffers::Offset<UsingFieldMetaArrayHolder> CreateUsingFieldMetaArra
     const std::vector<::flatbuffers::Offset<dexkit::schema::UsingFieldMeta>> *items = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<dexkit::schema::UsingFieldMeta>>(*items) : 0;
   return dexkit::schema::CreateUsingFieldMetaArrayHolder(
+      _fbb,
+      items__);
+}
+
+struct UsingNumberMetaArrayHolder FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef UsingNumberMetaArrayHolderBuilder Builder;
+  struct Traits;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ITEMS = 4
+  };
+  const ::flatbuffers::Vector<const dexkit::schema::UsingNumberMeta *> *items() const {
+    return GetPointer<const ::flatbuffers::Vector<const dexkit::schema::UsingNumberMeta *> *>(VT_ITEMS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ITEMS) &&
+           verifier.VerifyVector(items()) &&
+           verifier.EndTable();
+  }
+};
+
+struct UsingNumberMetaArrayHolderBuilder {
+  typedef UsingNumberMetaArrayHolder Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_items(::flatbuffers::Offset<::flatbuffers::Vector<const dexkit::schema::UsingNumberMeta *>> items) {
+    fbb_.AddOffset(UsingNumberMetaArrayHolder::VT_ITEMS, items);
+  }
+  explicit UsingNumberMetaArrayHolderBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<UsingNumberMetaArrayHolder> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<UsingNumberMetaArrayHolder>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<UsingNumberMetaArrayHolder> CreateUsingNumberMetaArrayHolder(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<const dexkit::schema::UsingNumberMeta *>> items = 0) {
+  UsingNumberMetaArrayHolderBuilder builder_(_fbb);
+  builder_.add_items(items);
+  return builder_.Finish();
+}
+
+struct UsingNumberMetaArrayHolder::Traits {
+  using type = UsingNumberMetaArrayHolder;
+  static auto constexpr Create = CreateUsingNumberMetaArrayHolder;
+};
+
+inline ::flatbuffers::Offset<UsingNumberMetaArrayHolder> CreateUsingNumberMetaArrayHolderDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<dexkit::schema::UsingNumberMeta> *items = nullptr) {
+  auto items__ = items ? _fbb.CreateVectorOfStructs<dexkit::schema::UsingNumberMeta>(*items) : 0;
+  return dexkit::schema::CreateUsingNumberMetaArrayHolder(
       _fbb,
       items__);
 }

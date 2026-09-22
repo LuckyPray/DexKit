@@ -1,5 +1,5 @@
 # Keep the exact instruction forms for numeric matching regression tests.
-.class public Lorg/luckypray/dexkit/fixture/UsingNumbers;
+.class public abstract Lorg/luckypray/dexkit/fixture/UsingNumbers;
 .super Ljava/lang/Object;
 
 .method public static int4Min()I
@@ -211,4 +211,64 @@
     .registers 2
     const-wide/high16 v0, -0x10000000000000L
     return-wide v0
+.end method
+
+.method public static mixed(I)V
+    .registers 3
+    const/4 v0, 1
+    add-int/lit8 v0, p0, -1
+    const/4 v0, 1
+    const/16 v0, 1
+    const-wide/16 v0, -1
+    const/16 v0, 0
+    return-void
+.end method
+.method public static nanFloatOne()F
+    .registers 1
+    const v0, 0x7fc00001
+    return v0
+.end method
+.method public static nanFloatTwo()F
+    .registers 1
+    const v0, 0x7fc00002
+    return v0
+.end method
+.method public static nanDoubleOne()D
+    .registers 2
+    const-wide v0, 0x7ff8000000000001L
+    return-wide v0
+.end method
+.method public static nanDoubleTwo()D
+    .registers 2
+    const-wide v0, 0x7ff8000000000002L
+    return-wide v0
+.end method
+.method public abstract emptyAbstract()V
+.end method
+.method public static native emptyNative()V
+.end method
+.method public static noNumbers()V
+    .registers 0
+    return-void
+.end method
+.method public static payloads(I[I)V
+    .registers 2
+    packed-switch p0, :packed
+    sparse-switch p0, :sparse
+    fill-array-data p1, :array
+    :done
+    return-void
+    :packed
+    .packed-switch 0x7f010123
+        :done
+    .end packed-switch
+    :sparse
+    .sparse-switch
+        0x7f010456 -> :done
+    .end sparse-switch
+    :array
+    .array-data 4
+        0x7f010789
+        0x7f010abc
+    .end array-data
 .end method

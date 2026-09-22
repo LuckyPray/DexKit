@@ -24,6 +24,7 @@
 package org.luckypray.dexkit
 
 import com.google.flatbuffers.FlatBufferBuilder
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.query.BatchFindClassUsingStrings
 import org.luckypray.dexkit.query.BatchFindMethodUsingStrings
 import org.luckypray.dexkit.query.FindClass
@@ -37,6 +38,7 @@ import org.luckypray.dexkit.result.FieldDataList
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.result.MethodDataList
 import org.luckypray.dexkit.result.UsingFieldData
+import org.luckypray.dexkit.result.UsingNumberData
 import org.luckypray.dexkit.util.DexSignUtil
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
@@ -46,6 +48,7 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.nio.ByteBuffer
+import java.util.Collections
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -569,6 +572,20 @@ class DexKitBridge : Closeable {
         return withNativeReadToken { nativeGetMethodUsingStrings(it, encodeId) }.toList()
     }
 
+    @OptIn(DexKitExperimentalApi::class)
+    @JvmSynthetic
+    internal fun getMethodUsingNumbers(encodeId: Long): List<UsingNumberData> {
+        val res = withNativeReadToken { nativeGetMethodUsingNumbers(it, encodeId) }
+        val holder = InnerUsingNumberMetaArrayHolder.getRootAsUsingNumberMetaArrayHolder(ByteBuffer.wrap(res))
+        val list = ArrayList<UsingNumberData>(holder.itemsLength)
+        val item = InnerUsingNumberMeta()
+        for (i in 0 until holder.itemsLength) {
+            val meta = checkNotNull(holder.items(item, i))
+            list.add(UsingNumberData.from(meta.rawBits.toLong(), meta.opCode.toInt()))
+        }
+        return Collections.unmodifiableList(list)
+    }
+
     @JvmSynthetic
     internal fun getMethodUsingFields(encodeId: Long): List<UsingFieldData> {
         val res = withNativeReadToken { nativeGetMethodUsingFields(it, encodeId) }
@@ -750,6 +767,9 @@ class DexKitBridge : Closeable {
 
         @JvmStatic
         private external fun nativeGetMethodUsingStrings(nativePtr: Long, encodeId: Long): Array<String>
+
+        @JvmStatic
+        private external fun nativeGetMethodUsingNumbers(nativePtr: Long, encodeId: Long): ByteArray
 
         @JvmStatic
         private external fun nativeGetMethodUsingFields(nativePtr: Long, encodeId: Long): ByteArray

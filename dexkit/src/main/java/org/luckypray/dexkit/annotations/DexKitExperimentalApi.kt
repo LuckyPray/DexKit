@@ -5,5 +5,5 @@ package org.luckypray.dexkit.annotations
     message = "This API is experimental. It can be incompatibly changed in the future."
 )
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 annotation class DexKitExperimentalApi

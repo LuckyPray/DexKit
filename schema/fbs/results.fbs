@@ -126,3 +126,12 @@ table UsingFieldMeta {
 table UsingFieldMetaArrayHolder {
     items: [UsingFieldMeta];
 }
+
+struct UsingNumberMeta {
+    raw_bits: uint64;
+    op_code: uint8;
+}
+
+table UsingNumberMetaArrayHolder {
+    items: [UsingNumberMeta];
+}

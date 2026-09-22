@@ -1346,6 +1346,27 @@ DexKit::GetUsingStrings(int64_t encode_method_id) {
 }
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder>
+DexKit::GetUsingNumbers(int64_t encode_method_id) {
+    auto execution_guard = EnterQueryExecution(0);
+    auto dex_id = encode_method_id >> 32;
+    auto method_id = encode_method_id & UINT32_MAX;
+    const auto numbers = dex_items[dex_id]->GetUsingNumbers(method_id);
+
+    // Consume the cache span while the execution guard prevents full-cache transitions.
+    auto builder = std::make_unique<flatbuffers::FlatBufferBuilder>();
+    const auto items = builder->CreateVectorOfNativeStructs<schema::UsingNumberMeta, EncodeNumber>(
+            numbers.data(), numbers.size(), [](const EncodeNumber &number) {
+                const auto value = GetLongValue(number);
+                const auto raw_bits = number.type == LONG
+                        ? static_cast<uint64_t>(value)
+                        : static_cast<uint64_t>(static_cast<uint32_t>(value));
+                return schema::UsingNumberMeta(raw_bits, number.op);
+            });
+    builder->Finish(schema::CreateUsingNumberMetaArrayHolder(*builder, items));
+    return builder;
+}
+
+std::unique_ptr<flatbuffers::FlatBufferBuilder>
 DexKit::GetUsingFields(int64_t encode_method_id) {
     auto execution_guard = EnterQueryExecution(kFieldIdentity | kMethodUsingField);
 

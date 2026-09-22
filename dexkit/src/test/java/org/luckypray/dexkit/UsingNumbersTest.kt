@@ -1,13 +1,9 @@
 package org.luckypray.dexkit
 
-import org.jf.smali.Smali
-import org.jf.smali.SmaliOptions
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.nio.file.Files
 
 @RunWith(Parameterized::class)
 class UsingNumbersTest(private val fullCache: Boolean) {
@@ -18,30 +14,10 @@ class UsingNumbersTest(private val fullCache: Boolean) {
         @Parameterized.Parameters(name = "fullCache={0}")
         fun cacheModes() = listOf(arrayOf(false), arrayOf(true))
 
-        // Assemble exact encodings: D8 may otherwise replace a const with a shorter form.
-        private val dexBytes by lazy {
-            val directory = Files.createTempDirectory("dexkit-using-numbers").toFile()
-            try {
-                val source = directory.resolve("UsingNumbers.smali")
-                source.writeBytes(UsingNumbersTest::class.java.getResourceAsStream("/UsingNumbers.smali")!!.use {
-                    it.readBytes()
-                })
-                val dex = directory.resolve("classes.dex")
-                val options = SmaliOptions().apply {
-                    apiLevel = 21
-                    jobs = 1
-                    outputDexFile = dex.absolutePath
-                }
-                assertTrue("Assemble numeric instruction fixture", Smali.assemble(options, source.absolutePath))
-                dex.readBytes()
-            } finally {
-                directory.deleteRecursively()
-            }
-        }
     }
 
     private fun withBridge(block: (DexKitBridge) -> Unit) {
-        DexKitBridge.create(arrayOf(dexBytes)).use { bridge ->
+        DexKitBridge.create(arrayOf(UsingNumbersFixture.dexBytes())).use { bridge ->
             if (fullCache) bridge.initFullCache()
             block(bridge)
         }

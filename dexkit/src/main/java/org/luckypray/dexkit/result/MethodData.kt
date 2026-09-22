@@ -26,6 +26,7 @@ package org.luckypray.dexkit.result
 import org.luckypray.dexkit.DexAccessFlags
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.InnerMethodMeta
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.result.base.BaseData
 import org.luckypray.dexkit.util.InstanceUtil
 import org.luckypray.dexkit.util.OpCodeUtil
@@ -255,6 +256,26 @@ class MethodData private constructor(
      */
     val usingStrings by lazy {
         bridge.getMethodUsingStrings(getEncodeId(dexId, id))
+    }
+
+    /**
+     * Experimental, unmodifiable snapshot of const* and arithmetic lit8/lit16 operands,
+     * in instruction order with duplicates preserved. List indices are literal occurrence
+     * indices, not opcode indices or bytecode offsets. No source types or call arguments
+     * are inferred; switch keys, array payloads and field initializers are not included.
+     * Methods without code return an empty list.
+     *
+     * The first access requires an open bridge. Once initialized, this snapshot remains
+     * available after close. Parsing is per method unless the full cache already exists.
+     * ----------------
+     * 实验性 API：返回 const* 与整数 lit8/lit16 操作数的不可修改快照，保持指令顺序和重复项。
+     * 列表下标不是操作码下标或字节码偏移，不推断源码类型或调用实参，也不包含 switch 键、
+     * 数组 payload 或字段初值。没有代码的方法返回空列表。
+     * 首次访问需要 bridge 有效，读取后关闭 bridge 仍可使用快照。仅按方法解析或复用已有全量缓存。
+     */
+    @DexKitExperimentalApi
+    val usingNumbers: List<UsingNumberData> by lazy {
+        bridge.getMethodUsingNumbers(getEncodeId(dexId, id))
     }
 
     /**

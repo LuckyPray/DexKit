@@ -64,5 +64,7 @@ internal typealias InnerTargetElementTypesMatcher = org.luckypray.dexkit.schema.
 internal typealias InnerUsingFieldMatcher = org.luckypray.dexkit.schema.`-UsingFieldMatcher`
 internal typealias InnerUsingFieldMeta = org.luckypray.dexkit.schema.`-UsingFieldMeta`
 internal typealias InnerUsingFieldMetaArrayHolder = org.luckypray.dexkit.schema.`-UsingFieldMetaArrayHolder`
+internal typealias InnerUsingNumberMeta = org.luckypray.dexkit.schema.`-UsingNumberMeta`
+internal typealias InnerUsingNumberMetaArrayHolder = org.luckypray.dexkit.schema.`-UsingNumberMetaArrayHolder`
 internal typealias InnerUsingType = org.luckypray.dexkit.schema.`-UsingType`
 
