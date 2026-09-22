@@ -24,8 +24,10 @@
 #include <type_traits>
 #include "matcher_thread_cache_registry.h"
 #include "utils/dex_descriptor_util.h"
+#include "slicer/dex_bytecode.h"
 
 #include <algorithm>
+#include <cstring>
 #include <mutex>
 
 namespace dexkit {
@@ -1708,6 +1710,27 @@ bool DexItem::IsUsingFieldsMatched(uint32_t method_idx, const schema::MethodMatc
     return true;
 }
 
+static bool TryGetConstantFloatingValue(const EncodeNumber &number, double &value) {
+    static_assert(sizeof(float) == sizeof(int32_t));
+    static_assert(sizeof(double) == sizeof(int64_t));
+    if (number.op >= dex::OP_CONST_4 && number.op <= dex::OP_CONST_HIGH16) {
+        DEXKIT_CHECK(number.type == INT);
+        // The Android cxx dependency lacks std::bit_cast. memcpy preserves the bits
+        // without reading an inactive union member or converting the integer value.
+        float decoded;
+        std::memcpy(&decoded, &number.value.L32.int_value, sizeof(decoded));
+        value = decoded;
+        return true;
+    }
+    if (number.op >= dex::OP_CONST_WIDE_16 && number.op <= dex::OP_CONST_WIDE_HIGH16) {
+        DEXKIT_CHECK(number.type == LONG);
+        std::memcpy(&value, &number.value.L64.long_value, sizeof(value));
+        return true;
+    }
+    // binop/lit8 and binop/lit16 operands are integers, not floating bit patterns.
+    return false;
+}
+
 bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMatcher *matcher) {
     if (matcher->using_numbers() == nullptr) {
         return true;
@@ -1777,7 +1800,13 @@ bool DexItem::IsUsingNumbersMatched(uint32_t method_idx, const schema::MethodMat
 
     auto IsNumberMatched = [](EncodeNumber number, EncodeNumber matcher) {
         if (matcher.type >= FLOAT) {
-            return abs(GetDoubleValue(number) - GetDoubleValue(matcher)) < EPS;
+            double value;
+            if (!TryGetConstantFloatingValue(number, value)) {
+                return false;
+            }
+            const auto expected = GetDoubleValue(matcher);
+            // Equality also handles same-sign infinities; NaN never matches.
+            return value == expected || std::abs(value - expected) < EPS;
         }
         return GetLongValue(number) == GetLongValue(matcher);
     };

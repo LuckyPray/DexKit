@@ -278,10 +278,15 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
         }
 
     /**
-     * This method using numbers. To avoid floating point precision error,
-     * the number is considered equal when the value error is less than 1e-6.
+     * Numbers used by this method. Integer queries compare signed values exactly.
+     * Floating queries interpret const instructions at their 32/64-bit width, with
+     * an absolute tolerance of less than 1e-6. Arithmetic literals are integer-only.
+     * Same-sign infinities and signed zeros compare equal; NaN never matches.
+     * This does not infer the original source-language type.
      * ----------------
-     * 该方法使用的数字。为了避免浮点精度误差，数值误差小于 1e-6 时会被判定为相等。
+     * 方法使用的数字。整数查询按有符号数值精确比较；浮点查询按 const 指令的
+     * 32/64 位宽解释位模式，绝对误差小于 1e-6 时相等。整数运算立即数仅参与整数匹配。
+     * 同号无穷大、正负零分别相等；NaN 不匹配。这不会推断源码中的真实类型。
      *
      *     usingNumbers = listOf(0.01, -1, 0.987, 0, 114514)
      */
@@ -1101,10 +1106,9 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Using numbers matcher. To avoid floating point precision error,
-     * the number is considered equal when the value error is less than 1e-6.
+     * Match numbers using the integer/floating semantics described in [usingNumbers].
      * ----------------
-     * 使用数字匹配器。为了避免浮点精度误差，数值误差小于 1e-6 时会被判定为相等。
+     * 使用数字匹配器，整数与浮点比较规则见 [usingNumbers]。
      *
      *     usingNumbers(listOf(0.01, -1, 0.987, 0, 114514))
      *
@@ -1116,10 +1120,9 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Using numbers matcher. To avoid floating point precision error,
-     * the number is considered equal when the value error is less than 1e-6.
+     * Match numbers using the integer/floating semantics described in [usingNumbers].
      * ----------------
-     * 使用数字匹配器。为了避免浮点精度误差，数值误差小于 1e-6 时会被判定为相等。
+     * 使用数字匹配器，整数与浮点比较规则见 [usingNumbers]。
      *
      *     usingNumbers(0.01, -1, 0.987, 0, 114514)
      *
@@ -1131,10 +1134,9 @@ class MethodMatcher : BaseMatcher, IAnnotationEncodeValue {
     }
 
     /**
-     * Add using number matcher. To avoid floating point precision error,
-     * the number is considered equal when the value error is less than 1e-6.
+     * Add a number matcher using the integer/floating semantics described in [usingNumbers].
      * ----------------
-     * 添加使用数字匹配器。为了避免浮点精度误差，数值误差小于 1e-6 时会被判定为相等。
+     * 添加使用数字匹配器，整数与浮点比较规则见 [usingNumbers]。
      *
      *     addUsingNumber(0.01)
      *

@@ -1351,52 +1351,68 @@ std::vector<uint32_t> DexItem::GetInvokeMethodsFromCode(uint32_t method_idx) {
 }
 
 void PushEncodeNumber(dex::InstructionFormat op_format, uint8_t op, const uint16_t *ptr, std::vector<EncodeNumber> *using_numbers) {
+    EncodeNumber number{.op = op};
+    // Restore the register-width bit pattern before choosing an integer or floating view.
+    // Narrow consts sign-extend; high16 consts fill the low bits with zero.
+    // https://source.android.com/docs/core/runtime/dalvik-bytecode
     switch (op_format) {
-        // using number
         case dex::k11n: { // const/4
-            uint8_t value = *(ptr - 1) >> 12;
+            int32_t value = *(ptr - 1) >> 12;
             if (value & 0x8) {
-                value |= 0xf0;
+                value -= 16;
             }
-            using_numbers->emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) value}});
+            number.type = INT;
+            number.value.L32.int_value = value;
             break;
         }
         case dex::k21s: { // const/16, const-wide/16
-            uint16_t value = *ptr;
-            if (value & 0x8000) {
-                value |= 0xffff0000;
+            auto value = static_cast<int16_t>(*ptr);
+            if (op == dex::OP_CONST_16) {
+                number.type = INT;
+                number.value.L32.int_value = value;
+            } else {
+                number.type = LONG;
+                number.value.L64.long_value = value;
             }
-            using_numbers->emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) value}});
             break;
         }
         case dex::k21h: { // const/high16, const-wide/high16
-            if (op == 0x15) {
-                using_numbers->emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) (*ptr << 16)}}});
-            } else { // 0x19
-                using_numbers->emplace_back(EncodeNumber{.type = DOUBLE, .value = {.L64 = {.long_value = (int64_t) (((uint64_t) *ptr) << 48)}}});
+            if (op == dex::OP_CONST_HIGH16) {
+                number.type = INT;
+                number.value.L32.int_value = static_cast<int32_t>(uint32_t(*ptr) << 16);
+            } else {
+                number.type = LONG;
+                number.value.L64.long_value = static_cast<int64_t>(uint64_t(*ptr) << 48);
             }
             break;
         }
         case dex::k31i: { // const, const-wide/32
-            if (op == 0x14) {
-                using_numbers->emplace_back(EncodeNumber{.type = FLOAT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
-            } else { // 0x17
-                using_numbers->emplace_back(EncodeNumber{.type = INT, .value = {.L32 = {.int_value = (int32_t) ReadInt(ptr)}}});
+            auto value = static_cast<int32_t>(ReadInt(ptr));
+            if (op == dex::OP_CONST) {
+                number.type = INT;
+                number.value.L32.int_value = value;
+            } else {
+                number.type = LONG;
+                number.value.L64.long_value = value;
             }
             break;
         }
         case dex::k51l: // const-wide
-            using_numbers->emplace_back(EncodeNumber{.type = LONG, .value = {.L64 = {.long_value = (int64_t) ReadLong(ptr)}}});
+            number.type = LONG;
+            number.value.L64.long_value = static_cast<int64_t>(ReadLong(ptr));
             break;
         case dex::k22s: // binop/lit16
-            using_numbers->emplace_back(EncodeNumber{.type = SHORT, .value = {.L16 = (int16_t) *ptr}});
+            number.type = SHORT;
+            number.value.L16 = static_cast<int16_t>(*ptr);
             break;
         case dex::k22b: // binop/lit8
-            using_numbers->emplace_back(EncodeNumber{.type = BYTE, .value = {.L8 = (int8_t) (*ptr >> 8)}});
+            number.type = BYTE;
+            number.value.L8 = static_cast<int8_t>(*ptr >> 8);
             break;
         default:
-            break;
+            return;
     }
+    using_numbers->emplace_back(number);
 }
 
 std::vector<EncodeNumber> DexItem::ParseUsingNumbersFromCode(uint32_t method_idx) {

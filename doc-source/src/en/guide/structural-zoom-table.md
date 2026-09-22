@@ -269,6 +269,12 @@ Metadata that is absent from the loaded DEX cannot be recovered through reflecti
 child matcher to `noneOf`. `allOf`, `anyOf`, and `noneOf` can be nested recursively.
 :::
 
+`usingNumbers` compares integer arguments by exact signed value across integer widths.
+Floating arguments interpret the restored 32/64-bit `const*` patterns as `float`/`double`,
+including short encodings of zero, with an absolute tolerance of less than `1e-6`.
+Arithmetic `lit8`/`lit16` operands only match integer arguments. Same-sign infinities
+and signed zeros compare equal; NaN never matches. Source-language types are not inferred.
+
 ### MethodsMatcher
 
 | Field Name | Type                                              | Description               |

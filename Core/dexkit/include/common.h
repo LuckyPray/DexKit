@@ -68,6 +68,8 @@ enum NumberType: uint8_t {
 
 struct EncodeNumber {
     NumberType type;
+    // Source opcode for cached literals; query values have no instruction (0).
+    uint8_t op = 0;
     NumberValue value;
 };
 
@@ -82,6 +84,8 @@ constexpr uint8_t GetNumberSize(NumberType type) {
     }
 }
 
+// Requires an active float_value/double_value member. Numeric matchers call this
+// only for FLOAT/DOUBLE query values; cached literals need opcode-aware decoding.
 inline double GetDoubleValue(EncodeNumber number) {
     switch (number.type) {
         case INT:

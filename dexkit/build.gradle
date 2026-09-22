@@ -71,6 +71,7 @@ test {
 dependencies {
     implementation("com.google.flatbuffers:flatbuffers-java:23.5.26")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.smali:smali:2.5.2")
 }
 
 afterEvaluate {
