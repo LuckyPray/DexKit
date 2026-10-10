@@ -24,6 +24,12 @@
 #include <algorithm>
 #include <iterator>
 
+#if defined(__linux__) || defined(__ANDROID__)
+#include "linux_syscall_support.h"
+#else
+#include <unistd.h>
+#endif
+
 #include "zip_archive.h"
 #include "ThreadPool.h"
 #include "schema/querys_generated.h"
@@ -519,17 +525,21 @@ Error DexKit::ExportDexFile(std::string_view path) const {
         if (fp == nullptr) {
             return Error::OPEN_FILE_FAILED;
         }
-        int len = (int) image->len();
-        int offset = 0;
+        const int fd = fileno(fp);
+        const size_t len = image->len();
+        size_t offset = 0;
         while (offset < len) {
-            int size = std::min(WRITE_FILE_BLOCK_SIZE, len - offset);
-            size_t write_size = fwrite(image->data() + offset, 1, size, fp);
-            if (write_size != size) {
+            const size_t size = std::min<size_t>(WRITE_FILE_BLOCK_SIZE, len - offset);
+#if defined(__linux__) || defined(__ANDROID__)
+            const auto write_size = sys_write(fd, image->data() + offset, size);
+#else
+            const auto write_size = write(fd, image->data() + offset, size);
+#endif
+            if (write_size <= 0) {
                 fclose(fp);
                 return Error::WRITE_FILE_INCOMPLETE;
             }
-            offset += size;
-            fflush(fp);
+            offset += static_cast<size_t>(write_size);
         }
         fclose(fp);
     }

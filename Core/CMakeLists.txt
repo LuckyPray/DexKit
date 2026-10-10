@@ -37,6 +37,8 @@ target_include_directories(${PROJECT_NAME}_static
         third_party/aho_corasick_trie
         third_party/parallel_hashmap
         third_party/flatbuffers/include
+        PRIVATE
+        third_party/linux_syscall_support
 )
 
 set_target_properties(${PROJECT_NAME}_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
