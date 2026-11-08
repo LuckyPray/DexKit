@@ -19,6 +19,7 @@
 // <https://github.com/LuckyPray/DexKit/blob/master/LICENSE>.
 
 #include <jni.h>
+#include <unordered_set>
 #include "dexkit.h"
 #include "jni_helper.h"
 
@@ -191,6 +192,7 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
         return 0;
     LOGD("elements size -> %d", env->GetArrayLength(elements));
     auto dexkit = std::make_unique<dexkit::DexKit>();
+    std::unordered_set<const uint8_t *> dex_containers;
     for (auto i = 0, len = env->GetArrayLength(elements); i < len; ++i) {
         ScopedLocalFrame locals(env, 8);
         if (!locals.ok()) return 0;
@@ -261,8 +263,16 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             images.reserve(dex_images.size());
             for (auto image: dex_images) {
                 auto header = reinterpret_cast<const struct dex::Header *>(image);
-                auto mmap = dexkit::MemMap::view(static_cast<const uint8_t *>(image),
-                                                header->file_size, owner);
+                const auto container_size = header->ContainerSize();
+                const auto container_offset = header->ContainerOff();
+                if (container_offset > container_size ||
+                    header->file_size > container_size - container_offset) {
+                    throwException(env, "Invalid DEX container bounds");
+                    return 0;
+                }
+                const auto *container = static_cast<const uint8_t *>(image) - container_offset;
+                if (!dex_containers.insert(container).second) continue;
+                auto mmap = dexkit::MemMap::view(container, container_size, owner);
                 images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
             }
             auto ret = dexkit->AddImage(std::move(images));
