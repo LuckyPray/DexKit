@@ -1033,8 +1033,16 @@ void Reader::ValidateHeader() {
   SLICER_CHECK_EQ(header_->class_defs_off % 4, 0);
   SLICER_CHECK_GE(header_->map_off, header_->data_off);
   SLICER_CHECK_LT(header_->map_off, size_);
-  SLICER_CHECK_EQ(header_->link_size, 0);
-  SLICER_CHECK_EQ(header_->link_off, 0);
+  // Link data is runtime-specific and is not interpreted by DexKit queries.
+  // Validate its container-relative range without overflowing offset + size.
+  if (header_->link_size == 0) {
+    SLICER_CHECK_EQ(header_->link_off, 0);
+  } else {
+    SLICER_CHECK_NE(header_->link_off, 0);
+    SLICER_CHECK_GE(header_->link_off, header_->ContainerOff());
+    SLICER_CHECK_LT(header_->link_off, size_);
+    SLICER_CHECK_LE(header_->link_size, size_ - header_->link_off);
+  }
   SLICER_CHECK_EQ(header_->data_off % 4, 0);
   SLICER_CHECK_EQ(header_->map_off % 4, 0);
 
