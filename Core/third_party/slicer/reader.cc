@@ -1011,7 +1011,8 @@ void Reader::ValidateHeader() {
       header_->header_size == dex::Header::kV40Size ||
       header_->header_size == dex::Header::kV41Size);
   SLICER_CHECK_EQ(header_->endian_tag, dex::kEndianConstant);
-  SLICER_CHECK_EQ(header_->data_size % 4, 0);
+  // Match ART's tolerance for unpadded tails; item alignment is checked separately.
+  SLICER_WEAK_CHECK(header_->data_size % 4 == 0);
 
   // If the dex file is within container with other dex files,
   // adjust the base address to the start of the container.
