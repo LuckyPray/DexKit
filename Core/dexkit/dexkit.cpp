@@ -108,12 +108,11 @@ DexKit::QueryExecutionGuard::~QueryExecutionGuard() {
     }
 }
 
-DexKit::DexKit(std::string_view apk_path, int unzip_thread_num) {
+DexKit::DexKit(std::string_view dex_path, int unzip_thread_num) {
     if (unzip_thread_num > 0) {
         _thread_num.store(NormalizeThreadNum(static_cast<uint32_t>(unzip_thread_num)), std::memory_order_release);
     }
-    std::lock_guard lock(_mutex);
-    AddZipPath(apk_path, unzip_thread_num);
+    AddDexPath(dex_path, unzip_thread_num);
     std::sort(dex_items.begin(), dex_items.end(), comp);
 }
 
@@ -455,11 +454,38 @@ Error DexKit::AddImage(std::vector<std::unique_ptr<MemMap>> dex_images) {
     return Error::SUCCESS;
 }
 
-Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
-    auto map = std::make_shared<MemMap>(apk_path);
-    if (!map->ok()) {
+Error DexKit::AddDexPath(std::string_view dex_path, int unzip_thread_num) {
+    auto image = std::make_unique<MemMap>(dex_path);
+    if (!image->ok()) {
         return Error::FILE_NOT_FOUND;
     }
+    constexpr std::string_view magic = "dex\n";
+    if (image->len() < magic.size() || std::memcmp(image->data(), magic.data(), magic.size()) != 0) {
+        return AddZip(std::move(image), unzip_thread_num);
+    }
+
+    size_t offset = 0;
+    do {
+        const size_t remaining = image->len() - offset;
+        if (remaining < sizeof(dex::Header) || offset % alignof(dex::Header) != 0) {
+            return Error::INVALID_DEX_FILE;
+        }
+        const auto *header = reinterpret_cast<const dex::Header *>(image->data() + offset);
+        const auto version = header->GetVersion();
+        const auto header_size = version < dex::Header::kV41 ? dex::Header::kV40Size : dex::Header::kV41Size;
+        if (std::memcmp(header->magic, magic.data(), magic.size()) != 0 ||
+            version < dex::Header::kMinVersion || version > dex::Header::kMaxVersion ||
+            header->header_size != header_size || header->endian_tag != dex::kEndianConstant ||
+            header->file_size < sizeof(dex::Header) || header->file_size > remaining ||
+            header->ContainerOff() != offset || header->ContainerSize() != image->len()) {
+            return Error::INVALID_DEX_FILE;
+        }
+        offset += header->file_size;
+    } while (offset < image->len());
+    return AddImage(std::move(image));
+}
+
+Error DexKit::AddZip(std::shared_ptr<MemMap> map, int unzip_thread_num) {
     auto zip_file = ZipArchive::Open(map);
     if (!zip_file) return Error::OPEN_ZIP_FILE_FAILED;
     std::vector<std::pair<int, const Entry *>> image_pairs;
@@ -471,6 +497,7 @@ Error DexKit::AddZipPath(std::string_view apk_path, int unzip_thread_num) {
         }
         image_pairs.emplace_back(idx, entry);
     }
+    std::lock_guard lock(_mutex);
     const auto old_size = images.size();
     const auto new_size = old_size + image_pairs.size();
     images.resize(new_size);

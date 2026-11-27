@@ -246,14 +246,17 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByClassLoader(JNIEnv *env
             auto file_name_obj = (jstring) env->GetObjectField(java_dex_file, file_name_field);
             if (!file_name_obj) continue;
             auto file_name = ScopedUtfChars(env, file_name_obj);
+            if (!file_name.c_str()) return 0;
             if (has_compact) {
                 LOGD("contains compact dex, use path load: %s", file_name.c_str());
             } else {
                 LOGD("images is empty, use path load: %s", file_name.c_str());
             }
-            auto ret = dexkit->AddZipPath(file_name.c_str());
+            auto ret = dexkit->AddDexPath(file_name.c_str());
             if (ret != Error::SUCCESS) {
-                throwException(env, ret);
+                auto message = std::string(dexkit::GetErrorMessage(ret)) + " (dexElements[" +
+                               std::to_string(i) + "]: " + file_name.c_str() + ")";
+                throwException(env, message.c_str());
                 return 0;
             }
         } else {
@@ -316,15 +319,16 @@ Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKitByBytesArray(JNIEnv *env,
 
 DEXKIT_JNI jlong
 Java_org_luckypray_dexkit_DexKitBridge_nativeInitDexKit(JNIEnv *env, jclass clazz,
-                                                        jstring apk_path
+                                                        jstring dex_path
 ) {
-    if (!apk_path) {
+    if (!dex_path) {
         return 0;
     }
-    auto cpath = ScopedUtfChars(env, apk_path);
-    LOGI("apkPath -> %s", cpath.c_str());
+    auto cpath = ScopedUtfChars(env, dex_path);
+    if (!cpath.c_str()) return 0;
+    LOGI("dexPath -> %s", cpath.c_str());
     auto dexkit = std::make_unique<dexkit::DexKit>();
-    auto ret = dexkit->AddZipPath(cpath.c_str());
+    auto ret = dexkit->AddDexPath(cpath.c_str());
     if (ret != Error::SUCCESS) {
         throwException(env, ret);
         return 0;

@@ -626,13 +626,13 @@ class DexKitBridge : Closeable {
 
     companion object {
         /**
-         * create DexKitBridge by apk path
+         * Create a bridge from a standalone DEX file or an archive containing DEX files.
          * ----------------
-         * 通过 apk 路径创建 DexKitBridge
+         * 从独立 DEX 文件或包含 DEX 的归档文件创建 DexKitBridge。
          *
          * @see [Companion.create]
          *
-         * @param apkPath apk path / apk 路径
+         * @param apkPath path to a DEX, APK, JAR or ZIP file / DEX、APK、JAR 或 ZIP 文件路径
          * @return [DexKitBridge]
          */
         @JvmStatic

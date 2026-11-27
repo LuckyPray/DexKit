@@ -62,7 +62,7 @@ public:
 
 
     explicit DexKit() = default;
-    explicit DexKit(std::string_view apk_path, int unzip_thread_num = 0);
+    explicit DexKit(std::string_view dex_path, int unzip_thread_num = 0);
     ~DexKit();
 
     void SetThreadNum(int num);
@@ -79,7 +79,7 @@ public:
     Error AddDex(uint8_t *data, size_t size);
     Error AddImage(std::unique_ptr<MemMap> dex_image);
     Error AddImage(std::vector<std::unique_ptr<MemMap>> dex_images);
-    Error AddZipPath(std::string_view apk_path, int unzip_thread_num = 0);
+    Error AddDexPath(std::string_view dex_path, int unzip_thread_num = 0);
     [[nodiscard]] Error ExportDexFile(std::string_view path) const;
     [[nodiscard]] int GetDexNum() const;
 
@@ -146,6 +146,7 @@ private:
     mutable std::condition_variable cross_ref_aggregate_state_cv;
     uint32_t cross_ref_aggregate_inflight_flags = 0;
 
+    Error AddZip(std::shared_ptr<MemMap> map, int unzip_thread_num);
     void InitDexCache(uint32_t init_flags);
     [[nodiscard]] QueryExecutionGuard EnterQueryExecution(uint32_t required_flags);
     void LeaveQueryExecution();

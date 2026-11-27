@@ -30,7 +30,8 @@
     V(OPEN_ZIP_FILE_FAILED, "Open zip file failed") \
     V(OPEN_FILE_FAILED, "Open file failed") \
     V(ADD_DEX_AFTER_CROSS_BUILD, "Add dex after cross build")\
-    V(WRITE_FILE_INCOMPLETE, "Incomplete file written")
+    V(WRITE_FILE_INCOMPLETE, "Incomplete file written") \
+    V(INVALID_DEX_FILE, "Invalid DEX file")
 
 
 #endif //DEXKIT_ERROR_LIST_H
